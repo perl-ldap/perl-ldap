@@ -7,11 +7,11 @@
 #
 # This program was originally written by Clif Harden.
 # Some of the software in the LDAP search subroutine was orginally
-# written by Graham Barr.  It is based on Graham Barr's PERL LDAP 
+# written by Graham Barr.  It is based on Graham Barr's PERL LDAP
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.43 2003/02/05 04:57:57 charden Exp $
+# $Id: tklkup,v 2.0 2003/02/10 04:06:42 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -29,12 +29,13 @@ use Data::Dumper;
 use MIME::Base64;
 use Net::LDAP qw(:all);
 use Net::LDAP::Filter;
-use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
+use Net::LDAP::Util qw( ldap_explode_dn ldap_error_name ldap_error_text);
 use Net::LDAP::Constant;
 use Net::LDAP::DSML;
+use Net::LDAP::LDIF;
 use Getopt::Std;
-
 use Tk;
+use Tk::NoteBook;
 use Tk::ErrorDialog;
 use Tk::LabFrame;
 use Tk::ROText;
@@ -48,29 +49,27 @@ use subs qw/ops_items/;
 #
 my %Global = ();
 my %NC     = ();
-
-
-$Global{'jpeg'}   = 1;
-eval { require Tk::JPEG; }; 
+ 
+                                                                                $Global{'jpeg'}   = 1;
+eval { require Tk::JPEG; };
 $Global{'jpeg'}   = 0 if ( $@ );
-
+ 
 $Global{'splash'}   = 1;
 eval { require Tk::Splashscreen;
        require Tie::Watch;
       };
 $Global{'splash'}   = 0 if ( $@ );
-
+ 
 #
 # Window roots
-#
-$Global{'mainWindow'}   = undef();
+#                                                                               $Global{'mainWindow'}   = undef();
 $Global{'schemaWindow'} = undef();
 $Global{'histWindow'}   = undef();
 $Global{'portWindow'}   = undef();
 $Global{'bindWindow'}   = undef();
-
+ 
 my %schemaHash = ();
-
+ 
 &init_schemaHash;
 
 $Global{'LDAP_SERVER'} = "";
@@ -97,7 +96,7 @@ $Global{'infoFilter'} = "equal";
 $Global{'nismapname'} = 0;
 $Global{'records'} = 0;
 $Global{'mwwidth'} = 600;
-$Global{'mwheight'} = 430;
+$Global{'mwheight'} = 520;
 $Global{dirConnError} = undef();
 
 my $sbbframe;
@@ -109,40 +108,39 @@ my $defaultPort = 389;
 #--------------------------------------------------------
 # Handle the command line parameter(s)
 #--------------------------------------------------------
-
-getopts( 'hdr' );
-
+ 
+getopts( 'hrd:' );
+ 
 Usage() if ( $opt_h );
 
 my $debug  = $opt_d ? 1 : 0;
-
+ 
 # Fork this process on start up.
 #
 # If not in debug mode;
 # Fork a child process and kill the parent.
 # (That sounds nasty)
 #
-
-if ( !$debug && $Global{'platform'} eq 'unix' ) {
-
-
+                                                                                if ( !$debug && $Global{'platform'} eq 'unix' ) {
+ 
+ 
         FORK: {
-
+ 
                 if ( $pid = fork ) {
                         # this is parent process, so DIE
-                        # 
+                        #
                         exit;
-                        } 
+                        }
                 elsif ( defined $pid) {
                         # this is the child process, so keep on running
                         #
-                        &MAIN_PROCESS();                
-
+                        &MAIN_PROCESS();
+ 
                         } # End of elsif in FORK.
-
+ 
         } # End of FORK block.
-
-
+ 
+ 
 } # End of if.
 else {
         #
@@ -150,49 +148,150 @@ else {
         #
         &MAIN_PROCESS();
         } # End of else
-
-
-sub MAIN_PROCESS {
-
-my $rbuid;
-my $rbcn;
-my $rbsn;
-my $rbmail;
-my $rbclear;
-my $lframe;
-my $sframe;
-my $aframe;
-my $tframe;
-my $bframe;
-my @attribute = ();
-my @server    = ();
-
-#
-# Create Main Window
-#
+ 
+ 
+sub MAIN_PROCESS { 
 
 $Global{'mainWindow'} = MainWindow->new;
-$splash = $Global{'mainWindow'}->Splashscreen(-milliseconds => 0) 
+$splash = $Global{'mainWindow'}->Splashscreen(-milliseconds => 0)
         if ( $Global{splash} );
-$splframe = $splash->LabFrame(-label => "DIRECTORY SEARCH SPLASH SCREEN",
+$splframe = $splash->LabFrame(-label => "TKLKUP SPLASH SCREEN",
       -labelside => "acrosstop")
       ->pack() if ( $Global{splash} );
+ 
+$splashList = $splframe->Listbox( -height => 2, -width => 40  )
+        if ( $Global{splash} );
+$splashList->pack()
+        if ( $Global{splash} );
+$splash->Splash()
+        if ( $Global{splash} );
+$splashList->insert("0", "Reading initialization file")
+        if ( $Global{splash} );
+$splash->update()
+        if ( $Global{splash} );
 
-$splashList = $splframe->Listbox( -height => 2, -width => 40  ) 
+&initializeProgram;  # Read the dot file.
+
+$Global{'mainWindow'}->geometry("$Global{'mwwidth'}x$Global{'mwheight'}+$Global{'horz'}+$Global{'vert'}");
+
+$splash->update()
         if ( $Global{splash} );
-$splashList->pack() 
+ 
+&initializeBases;
+
+$splashList->insert("0", "Setting tklkup GUI.")
         if ( $Global{splash} );
-$splashList->insert("0", "Splash box") 
+$splash->update()
         if ( $Global{splash} );
-$splash->Splash() 
-        if ( $Global{splash} );
-$splash->update() 
-        if ( $Global{splash} );
+ 
+$Global{'mainWindow'}->title("TKLKUP");
+#
+# Create the Menubar
+#
+ 
+$Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
+ 
+$Global{'menubar'}->cascade(-label => "~Directory OPS",
+                  -menuitems => ops_items);
+$Global{'menubar'}->command(-label => "Set ~Bind Credentials",
+                  -command => \&BIND );
+$Global{'menubar'}->command(-label => "Set DSA ~Port",
+                  -command => \&PORT ); 
+
+#
+# Create process Exit button
+#
+ 
+$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION",
+                    -command => sub{ exit; },
+                    -font => $Global{'Font'},
+                    -borderwidth => 5  )
+                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
+
+
+$Global{nb} = $Global{'mainWindow'}->NoteBook()
+              ->pack(-expand => 1, -fill => 'both');
+$Global{p1} = $Global{nb}->add('SEARCH',-label => 'SEARCH');
+
+&initializeP1;
+
+$Global{p2} = $Global{nb}->add('SEARCH RESULTS',-label => 'SEARCH RESULTS');
+
+&initializeP2;
+
+
+$Global{p3} = $Global{nb}->add('SEARCH DISPLAY',-label => 'SEARCH DISPLAY');
+
+&initializeP3;
+
+$Global{p4} = $Global{nb}->add('SCHEMA',-label => 'SCHEMA DATA');
+
+&initializeP4;
+
+$Global{p5} = $Global{nb}->add('CREATE ENTRY',-label => 'CREATE ENTRY');
+
+&initializeP5;
+
+$splash->Destroy() if ( $Global{splash} );
+ 
+$splash = undef();
+
+$Global{mainWindow}->repeat(1000, \&update_schema);
+#
+# Run the Main loop looking for events.
+# 
+
+MainLoop;
+
+}
+
+sub ops_items
+{
+ 
+[
+ 
+[ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
+ 
+];
+ 
+ 
+}# End of subroutine ops_items
+
+sub update_schema
+{
+
+&schema if ( $Global{schemaServer} ne $Global{LDAP_SERVER} ); 
+$Global{schemaServer} = $Global{LDAP_SERVER}
+     if ( $Global{schemaServer} ne $Global{LDAP_SERVER} ); 
+ 
+} # End of subroutine update_schema
+
+
+sub init_schemaHash
+{
+ 
+ $schemaHash{ 'schema' } = undef();
+ $schemaHash{ 'obj' }  = {};
+ $schemaHash{ 'tree' } = {};
+ 
+ $schemaHash{ 'atts' } = [];
+ $schemaHash{ 'ocs' }  = [];
+ $schemaHash{ 'mrs' }  = [];
+ $schemaHash{ 'nfm' }  = [];
+ $schemaHash{ 'lsyn' } = [];
+ $schemaHash{ 'dits' } = [];
+ $schemaHash{ 'ditc' } = [];
+ $schemaHash{ 'mru' }  = [];
+ 
+} # End of subroutine init_schemaHash
+
+sub initializeProgram
+{
 #
 # Check for dot file, use it to configure program.
 #
-
-if ( $Global{'platform'} eq 'unix' ) 
+ 
+if ( $Global{'platform'} eq 'unix' )
 {
  $ENV{'TMP'} = "/tmp";
 }
@@ -200,222 +299,112 @@ else
 {
  $ENV{'TMP'} = "./";
 }
-
-$splashList->insert("0", "Reading initialization file") 
-        if ( $Global{splash} );
-$splash->update() 
-        if ( $Global{splash} );
+ 
 #
 #  Active State Perl does not always set ENV HOME.
 #
-
+ 
 if ( !$ENV{"HOME"} )
 {
  $ENV{"HOME"} = "./";
 }
-
+ 
 my $dotfile = $ENV{"HOME"} . "/.tklkup";
-
-if ( -e $dotfile && -r $dotfile )
+                                                                                if ( -e $dotfile && -r $dotfile )
 {
-
+ 
 open(DOT, "<$dotfile");
-
+ 
 @Input = <DOT>;
-
+ 
 foreach (@Input)
 {
-
+ 
 my @data = ();
-
+ 
 if ( /^#/ || /^\s+$/ ) { next; }
-
+ 
 chomp();
 @data = split(/:/);
-
+ 
 $data[1] =~ s/^\s*//;
 $data[1] =~ s/\s+$//;
 $data[2] =~ s/^\s*// if ( defined($data[2]) );
 $data[2] =~ s/\s+$// if ( defined($data[2]) );
-
-$_ = $data[0];
+ 
+$_ = $data[0]; 
 
 TYPE: {
-
+ 
     /^hand/i && do {
                      $Global{'hand'} = $data[1];
                      last TYPE; };
-
+ 
     /^port/i && do {
                      $Global{'port'} = $data[1];
                      last TYPE; };
-
+ 
     /^limit/i && do {
-                     if (defined($data[1]) ) 
-                     { 
-                      $Global{'limit'} = $data[1]; 
+                     if (defined($data[1]) )
+                     {
+                      $Global{'limit'} = $data[1];
                      }
-                     else 
-                     { 
-                      $Global{'limit'} = 30; 
+                     else
+                     {
+                      $Global{'limit'} = 30;
                      }
                      last TYPE; };
-
+ 
     /^attribute/i && do {
                      push(@attribute, $data[1]);
                      last TYPE; };
-
+ 
     /^server/i && do {
                      push(@server, $data[1]);
                      if ( defined($data[2]) )
                      {
                      $server{$data[1]} = $data[2];
                      }
-		     last TYPE; };
+                     last TYPE; }; 
 
     /^font/i && do {
                      $Global{'Font'} = $data[1];
                      last TYPE; };
-
+ 
     /^nismapname/i && do {
                      $Global{'nismapname'} = 1;
                      last TYPE; };
-
+ 
     /^mwwidth/i && do {
                      $Global{'mwwidth'} = $data[1];
                      last TYPE; };
-
+ 
     /^mwheight/i && do {
                      $Global{'mwheight'} = $data[1];
                      last TYPE; };
-
+ 
                      my $error =  "Parsing configuration file found an undefined type:  $_";
                      ERROR(\$error);
-
+ 
     } # End of case TYPE
-
+ 
 }
-
+ 
 close(DOT);
-
-}
-
+ 
+}                                                                                
 #
 # Default is for left hand people!
 # Over ride the dot file if the -r command line
 # option is used.
 #
-
+ 
 if ( defined($opt_r) ) {
-
+ 
 $Global{'hand'}   = $opt_r ? 'right' : 'left';
 # my $Global{'hand'}   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
-
-}
-
-$Global{'mainWindow'}->geometry("$Global{'mwwidth'}x$Global{'mwheight'}+$Global{'horz'}+$Global{'vert'}");
-
-$splashList->insert("0", "Determining search bases.") 
-        if ( $Global{splash} );
-$splash->update() 
-        if ( $Global{splash} );
-#
-# Default directory server.
-#
-if ( @server < 1 ) 
-{ 
-$server[0] = "ldap.umich.edu"; 
-}
-$Global{'LDAP_SERVER'} = $server[0];
-$Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
-
-#
-# Default directory search base.
-#
-
-$error = dirConn();  # connect and bind to the directory.
-
-if ( !$error )
-{
-#
-# Find the branches of the directory.
-#
-
-if ( !$error || $Global{setVersion} )
-{ 
  
- if ( defined($server{$server[0]}) )
- {
- # user defined base
- my $t1 = [];
- $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
- ${$NC{$server{$server[0]}}}[1] = $t1;      # 
-
- push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
- push(@base, @$t1);
- }
- else
- {
- my $error = 0;
- my $entry;
- my $mesg;
- # use root_dse to find the bases
-
- @base = ();
-
- $entry = $Global{ldap}->root_dse();
- if ( defined($entry) )
- {
-   my $attr = $entry->get_value('namingContexts', asref => 1);
-   if ( defined($attr) )
-   {
-    foreach my $ncbase ( @$attr )
-    {
-     $splashList->insert("1", "Searching $ncbase") 
-        if ( $Global{splash} );
-     $splash->update() 
-        if ( $Global{splash} );
-     my $t1 = [];
-     ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-     ${$NC{$ncbase}}[1] = $t1;      # 
-     push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
-     push(@base, @$t1);
-    }
-   }
- }
-
- }
- }
 }
-else
-{
-  if ( defined($Global{dirConnError}) ) 
-  {
-  ERROR(\$Global{dirConnError});
-  }
-  else
-  {
-  ERROR($error);
-  }
-
-}
-
- if ( @base >= 1)
- {
- $LDAP_SEARCH_BASE = $base[0];
- }
- else
- {
- $LDAP_SEARCH_BASE = "";
- }
-
-
-$splashList->insert("0", "Setting tklkup GUI.") 
-        if ( $Global{splash} );
-$splash->update() 
-        if ( $Global{splash} );
-
-$Global{'mainWindow'}->title("TKLKUP");
 
 #
 # Default directory search attributes.
@@ -429,72 +418,149 @@ if ( $#attribute < 1 )
 
 push(@attribute,"Filter");  # put roll your on filter at the end
 
+
+} # End of subroutine initializeProgram
+
+sub initializeBases
+{
 #
-# Create the Menubar
-# 
-
-$Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
-
-$Global{'menubar'}->cascade(-label => "~Directory OPS",
-                  -menuitems => ops_items);
-$Global{'menubar'}->command(-label => "Set ~Bind Credentials", 
-                  -command => \&BIND );
-$Global{'menubar'}->command(-label => "Set DSA ~Port", 
-                  -command => \&PORT );
+# Default directory server.
+#
+if ( @server < 1 )
+{
+$server[0] = "ldap.umich.edu";
+}
+$Global{'LDAP_SERVER'} = $server[0];
+$Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
 #
-# Create process Exit button
+# Default directory search base.
+#
+$error = &dirConn();  # connect and bind to the directory.
+ 
+if ( !$error )
+{
+#
+# Find the branches of the directory.
+#
+ 
+if ( !$error || $Global{setVersion} )
+{
+ 
+ if ( defined($server{$server[0]}) )
+ {
+ # user defined base
+ my $t1 = [];
+ $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
+ ${$NC{$server{$server[0]}}}[1] = $t1;      #
+ 
+ push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
+ push(@base, @$t1);
+ }
+ else
+ {
+ my $error = 0;
+ my $entry;
+ my $mesg;
+ # use root_dse to find the bases
+ 
+ @base = ();
+ $entry = $Global{ldap}->root_dse();
+ if ( defined($entry) )
+ {
+   my $attr = $entry->get_value('namingContexts', asref => 1);
+   if ( defined($attr) )
+   {
+    foreach my $ncbase ( @$attr )
+    {
+     $splashList->insert("1", "Searching $ncbase")
+        if ( $Global{splash} );
+     $splash->update()
+        if ( $Global{splash} );
+     my $t1 = [];
+     ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
+     ${$NC{$ncbase}}[1] = $t1;      #
+     push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
+     push(@base, @$t1);
+    }
+   }
+ }
+ 
+ }
+ }
+}
+else
+{
+  if ( defined($Global{dirConnError}) )
+  {
+  ERROR(\$Global{dirConnError});
+  }
+  else
+  {
+   ERROR($error);
+  }
+ 
+}
+ 
+ if ( @base >= 1)
+ {
+ $LDAP_SEARCH_BASE = $base[0];
+ }
+ else
+ {
+ $LDAP_SEARCH_BASE = "";
+ }
+
+} # End of subroutine initializeBases
+
+#
+#  Initialize panel 1
 #
 
-$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION", 
-                    -command => sub{ exit; }, 
-                    -font => $Global{'Font'}, 
-                    -borderwidth => 5  ) 
-                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
-
-$dsaframe = $Global{'mainWindow'}->Frame()
+sub initializeP1
+{
+$dsaframe = $Global{p1}->Frame()
       ->pack( -fill => "both", -side => "top" );
-
-
+ 
+ 
 $sframe = $dsaframe->LabFrame(-label => "DIRECTORY SERVER",
       -labelside => "acrosstop")
       ->pack(  -side => $Global{'hand'}  );
-
+ 
 $stframe = $sframe->Frame()
       ->pack( -fill => "x", -side => "top" );
-
+ 
 $sbframe = $sframe->Frame()
       ->pack( -fill => "x", -side => "bottom" );
-
+ 
 $Global{'slist'} = $stframe ->Listbox( -height => 1  );
-
+ 
 $Global{'slist'}->pack( -side => $Global{'hand'}  );
-
+ 
 $Global{'slist'}->insert("end", $Global{'LDAP_SERVER'});
-
+ 
 #
 # Create directory server selection button
 # This is where the user will select the directory server to
 # query.
 #
-
+ 
 $smenu = $stframe -> Menubutton(-text => "SELECT\nSERVER",
                   -relief => "raised", -font => $Global{'Font'},
                   -borderwidth => 3 )
                   -> pack(-side => $Global{'hand'}, -anchor => "center",
                           -pady => 2 );
-
+ 
 #
 # Set up the select directory server radio buttons.
 #
-
+ 
 foreach (@server)
 {
    $smenu->radiobutton( -label => $_, -variable => \$Global{'LDAP_SERVER'},
          -value => $_, -command => \&server, -font => $Global{'Font'} );
-
-}
-
+ 
+}                                                                                
 #
 # Create a LDAP version Checkbutton that will set up  variable
 # setVersion to set the LDAP version before each directory query.
@@ -502,46 +568,45 @@ foreach (@server)
  
 $setVersion = $sbframe -> Checkbutton(
                        -text => "LDAP VERSION 3, DEFAULT",
-                       -variable =>  \$Global{'setVersion'}, -onvalue => 3, 
+                       -variable =>  \$Global{'setVersion'}, -onvalue => 3,
                        -offvalue => 2, -font => $Global{'Font'} )
                        -> pack(-side => "left", -anchor => "center" );
  
 $setVersion->select();
-
-
+ 
+ 
 #
 # Create search base list box.
 #
-
+ 
 $sbbframe = $dsaframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => $Global{'hand'}, -pady => 1 );
-
+ 
 $sbblist = $sbbframe ->Listbox( -width => 30, -height => 1  );
-
+ 
 $sbblist->pack(-side => $Global{'hand'} );
-
+ 
 $sbblist->insert("end", $LDAP_SEARCH_BASE);
-
-#
+                                                                                #
 # Create directory server search base.
 # This is the point from which the search operation
 # will start from.
 #
-
+ 
 $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
-                 -relief => "raised", -font => $Global{'Font'}, 
+                 -relief => "raised", -font => $Global{'Font'},
                  -borderwidth => 3 )
                  -> pack(-side => "left", -anchor => "w" );
-
-$splashList->insert("0", "Creating cascading search base menus.") 
+ 
+$splashList->insert("0", "Creating cascading search base menus.")
         if ( $Global{splash} );
-$splash->update() 
+$splash->update()
         if ( $Global{splash} );
 #
 # Create the cascade search base menus
 #
-
+ 
 @NcKeys = sort(keys(%NC));
  
 foreach ( @NcKeys )
@@ -549,11 +614,10 @@ foreach ( @NcKeys )
   my $t1 = $NC{$_};
   $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
 }
-                                                                                
-#
+                                                                                #
 # Set up the select search base radio buttons.
 #
-
+ 
 foreach $Nc (@NcKeys)
 {
  
@@ -561,134 +625,129 @@ foreach $Nc (@NcKeys)
   {
      push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
                        -variable => \$LDAP_SEARCH_BASE,
-                       -value => $_, -command => \&base, 
+                       -value => $_, -command => \&base,
                        -font => $Global{'Font'} ) );
   }
  
-} 
-
+}
+ 
  
 foreach my $Nclabel ( @NcKeys )
 {
   $sbmenu->cascade(-label => "$Nclabel");
   $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
-
-#
+                                                                                #
 # Create bottom Search Directory frame
 #
-
-$bframe = $Global{'mainWindow'}->Frame(-borderwidth => 2,
+ 
+$bframe = $Global{p1}->Frame(-borderwidth => 2,
       -relief => "raised")->pack(
       -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
-
+ 
 #
 # Create Search Directory button
 #
-
-$bframe -> Button(-text => "SEARCH THE DIRECTORY", 
-        -command =>  \&search, 
-        -font => $Global{'Font'}, -borderwidth => 3 ) 
+ 
+$bframe -> Button(-text => "SEARCH THE DIRECTORY",
+        -command =>  \&search,
+        -font => $Global{'Font'}, -borderwidth => 3 )
         -> pack( -fill => "both");
-
-$attframe = $Global{'mainWindow'}->Frame()
+ 
+$attframe = $Global{p1}->Frame()
       ->pack( -fill => "both", -side => "bottom");
-
+ 
 $msgframe = $attframe->LabFrame(-label => "Process Messages",
       -labelside => "acrosstop" )
       ->pack( -fill => "both", -side => "top", -padx => 1, -pady => 1 );
-
+ 
 #
 # Create Bottom Attribute frame.
 # This is where the user will enter data to be
 # searched for.
 #
-
-
-$tframe = $attframe->LabFrame(-label => "ATTRIBUTE DATA",
+ 
+                                                                                $tframe = $attframe->LabFrame(-label => "ATTRIBUTE DATA",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "bottom" );
-
+ 
 #
 # Create Text Entry list box.
 #
-
-$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 ) 
+ 
+$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 )
       -> pack(-fill => 'x');
-
-
+ 
+ 
 #
 # Create frame for clear buttons.
 #
-
+ 
 $cframe = $attframe->Frame()
       ->pack( -fill => "both", -side => "bottom" );
-
-
+ 
+ 
 #
 # Create Clear Attribute Data and Search Directory buttons
 #
-
-$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear, 
+$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear,
         -font => $Global{'Font'}, -borderwidth => 3 )
         -> pack( -side => $Global{'hand'} );
-
+ 
 #
 # Create get Filter selection menu button.
 #
-
+ 
 $sfcmenu = $cframe -> Menubutton(-text => " SET FILTER CONDITON",
                  -relief => "raised", -font => $Global{'Font'},
                  -borderwidth => 3 )
                  -> pack(-side => $Global{'hand'} );
-
+ 
 #
 # Set up the filter type radio buttons.
 #
-
+ 
 $rbsf   = $sfcmenu -> radiobutton(-label =>   "equal",
                   -variable => \$Global{'infoFilter'},
                   -value => "equal", -command => \&setFilter );
-
+ 
 $rbsf   = $sfcmenu -> radiobutton(-label =>   "begins with",
                   -variable => \$Global{'infoFilter'},
                   -value => "begins with", -command => \&setFilter );
-
-
+ 
+ 
 $rbsf   = $sfcmenu -> radiobutton(-label =>   "ends with",
                   -variable => \$Global{'infoFilter'},
                   -value => "ends with", -command => \&setFilter );
-
-
-$rbsf   = $sfcmenu -> radiobutton(-label =>   "contains",
+ 
+                                                                                $rbsf   = $sfcmenu -> radiobutton(-label =>   "contains",
                   -variable => \$Global{'infoFilter'},
                   -value => "contains", -command => \&setFilter );
-
-
+ 
+ 
 $flclist = $cframe ->Listbox( -width => 11, -height => 1  );
-
+ 
 $flclist->pack(-side => $Global{'hand'} );
-
+ 
 $flclist->insert(0, $Global{'infoFilter'});
-
+ 
 #
 # Create get root dse entry button.
 #
-
-$splashList->insert("0", "Creating root dse and attribute buttons.") 
+ 
+$splashList->insert("0", "Creating root dse and attribute buttons.")
         if ( $Global{splash} );
-$splash->update() 
+$splash->update()
         if ( $Global{splash} );
-
+ 
 #
 # Create left attribute selection frame
 # This is where the user will select the attribute to be searched.
-#
-
+#                                                                                
 $aframe = $attframe->LabFrame(-label => "ATTRIBUTES",
       -labelside => "acrosstop")
       ->pack( -side => $Global{'hand'} );
-
+ 
 #
 # First set up the 4 main Radio buttons.
 #
@@ -703,16 +762,14 @@ my $sptr = 0;
 while ( $sptr <= 3 )
 {
 $_ = shift(@attribute);
-
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$Global{'info'},
-         -value => "$_", -font => $Global{'Font'} ) 
+ 
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$Global{'info'},         -value => "$_", -font => $Global{'Font'} )
          -> pack( -side => "$Global{'hand'}");
-
-if ( !$sptr ) { $rbsn->select(); } # select first attribute
-
+ 
+if ( !$sptr ) { $rbsn->select(); } # select first attribute                      
 ++$sptr;
 }
-
+ 
 } # End of if ( $#attribute > 4 )
 else
 {
@@ -724,17 +781,17 @@ my $sptr = 0;
 while ( @attribute )
 {
 $_ = shift(@attribute);
-
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_", 
+ 
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_",
                   -variable => \$Global{'info'},
-                  -value => "$_", -font => $Global{'Font'} ) 
+                  -value => "$_", -font => $Global{'Font'} )
                   -> pack( -side => "bottom", -anchor => "w");
-
+ 
 if ( !$sptr ) { $rbsn->select(); } # select first attribute
-
+ 
 ++$sptr;
 }
-
+ 
 }
 
 #
@@ -742,61 +799,749 @@ if ( !$sptr ) { $rbsn->select(); } # select first attribute
 # This is where the user will select any special attribute to
 # search on.
 #
-
+ 
 $amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
                  -relief => "raised", -font => $Global{'Font'},
                  -borderwidth => 3 )
                  -> pack( -side => "bottom", -anchor => "w" );
-
+ 
 #
 # Create radio buttons in attributes selection box.
 #
 #
-
+ 
 foreach (@attribute)
 {
-
+ 
    $amenu->radiobutton( -label => $_, -variable => \$Global{'info'},
           -value => $_, -font => $Global{'Font'});
-
+ 
 } # End of foreach (@attribute)
-
+ 
 $msgbox = $msgframe ->Scrolled('Listbox', -scrollbars => 's',
         -width => 50, -height => 2 );
-
+ 
 $msgbox->pack( -side => "left" );
 
-$splash->Destroy() if ( $Global{splash} );
-
-$splash = undef();
 #
-# Run the Main loop looking for events.
+# Allow mainWindow to update
 #
 
-MainLoop;
+$Global{'mainWindow'}->update;
 
-sub ops_items
+
+
+} # End of subroutine initializeP1
+
+
+#
+#  Initialize panel 2
+#
+
+sub initializeP2
 {
 
-[
+$tpframe = $Global{p2} ->Frame(-borderwidth => 2,-relief => "raised") ->pack(-side => "top", -fill => "x");
+$bmframe = $Global{p2} ->Frame ->pack(-side => "bottom", -fill => "x");
+$hlframe = $tpframe ->Frame(-borderwidth => 2,-relief => "raised") ->pack( -side => "right");
+$btframe = $tpframe ->Frame(-borderwidth => 2,-relief => "raised") ->pack( -side => "left", -fill => "both");
 
-[ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
-"",
-[ 'command', 'Explore Directory ~Schema ', -accelerator => "Ctrl-s", -command => \&SCHEMA ],
+#
+# Create Hierarchial DN list box, this is where the DN data
+# tree will be displayed.
+#
 
-];
+$Global{'searchHList'} = $hlframe ->Scrolled('HList', 
+            -font       => $Global{'Font'},
+            -scrollbars => 'se',
+            -width      => 50, 
+            -height     => 20,
+            -itemtype   => 'text',
+            -separator  => '/',
+            -selectmode => 'single',
+            -browsecmd  => sub {
+#
+            my $objects = shift;   # get base and the dn
 
+            &ldapAction($objects);
+
+            } # End of subroutine browsecmd
+
+   );  # End of Scrolled HList.
+
+$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
+
+$Global{'searchHList'}->pack(-side => "right");
+
+#
+# Create ldap display button
+#
+$Global{actionDisplay} = $btframe->Button( -text => "DISPLAY", 
+           -command => \&ldapActionDisplay, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionDisplay}));
+ 
+
+#
+# Create ldap rename button
+#
+$Global{actionRename} = $btframe->Button( -text => "RENAME", 
+           -command => \&getRenameData, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionRename}));
+ 
+#
+# Create ldap edit button
+#
+$Global{actionEdit} = $btframe->Button(-text => " EDIT ", 
+           -command => \&ldapActionEdit,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionEdit}));
+ 
+#
+# Create ldap delete button
+#
+$Global{actionDelete} = $btframe->Button(-text => "DELETE", 
+           -command => \&questionAction,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionDelete}));
+ 
+ 
+#
+# Create save to ldif button
+#
+$Global{actionLdif} = $btframe->Button(-text => "SAVE\nTO\nLDIF", 
+           -command => \&ldapActionSaveToLdif,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionLdif}));
+ 
+ 
+#
+# Create process cancel button
+#
+$Global{actionCancel} = $btframe->Button(-text => "CANCEL", 
+           -command => \&ldapActionCancel,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionCancel}));
+ 
+$bmlframe = $bmframe ->LabFrame(-label => "LDIF FILE NAME") 
+           ->pack(-side => "top", -fill => "x");
+
+#
+# Create Text Entry list box.
+#
+
+$bmlframe->Entry(-textvariable => \$Global{'ldifFile'}, 
+           -width => 25 ) 
+           -> pack(-fill => 'x');
+
+#
+# Create save all to ldif button
+#
+$Global{actionLdifAll} = $bmframe->Button( -text => "Save all to ldif", 
+           -command => \&ldapActionMultiSaveToLdif, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{actionLdifAll}));
+ 
+#$Global{'searchHList'}->delete('all');  
+$Global{actionDelete}->configure( -state => 'disable');
+$Global{actionDisplay}->configure( -state => 'disable');
+$Global{actionEdit}->configure( -state => 'disable');
+$Global{actionRename}->configure( -state => 'disable');
+$Global{actionLdif}->configure( -state => 'disable');
+$Global{actionCancel}->configure( -state => 'disable');
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
+
+
+
+} # End of subroutine initializeP2
+
+
+#
+#  Initialize panel 3
+#
+
+sub initializeP3
+{
+
+my $cframe;
+my $lframe;
+my $rbclear;
+
+#
+# Create frame for clear buttons.
+#
+
+
+$cframe = $Global{p3}->Frame()
+      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
+
+#
+# Create Clear Data
+#
+
+$cframe -> Button(-text => "     CLEAR DATA     ", 
+     -command =>  \&display_clear, -font => $Global{'Font'},
+     -borderwidth => 3 ) 
+     ->pack( -fill => 'both' );
+
+#
+# Create list frame.
+#
+
+$lframe = $Global{p3}->LabFrame(-label => "DIRECTORY DATA",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
+      -variable =>  \$display_clear, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-anchor => 'sw' );
+
+$rbclear->select();
+
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 80, -height => 20, -wrap => 'none', 
+        -font => $Global{'Font'}  );
+
+$list->pack(-fill => "both", -expand => 1 );
+
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
+
+
+
+} # End of subroutine initializeP3
+
+#
+#  Initialize panel 4
+#
+
+sub initializeP4
+{
+
+# Search the directory for schema data
+#
+#
+#
+
+my $srbclear;
+my $srbfile;
+my $srbfilelabel;
+my $slframe;
+my $ssframe;
+my $sbbframe;
+my $aframe;
+my $tframe;
+my $sbframe;
+#my $sslist;
+
+#$Global{mainWindow}->Busy(-recurse => 1);
+#$ssframe = $Global{'p4'}->LabFrame(-label => "DIRECTORY SERVER",
+#      -labelside => "acrosstop")
+#      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
+#
+#$sslist = $ssframe ->Listbox( -height => 1  );
+#
+#$sslist->pack(-fill => "both", -expand => 1 );
+#
+#$sslist->insert("end", $Global{'LDAP_SERVER'});
+
+#
+# Create bottom Search Directory frame
+#
+
+$sbframe = $Global{'p4'}->Frame( -borderwidth => 2, 
+                        -relief => "raised")->pack(
+                        -fill => "both", -side => "bottom", 
+                        -padx => 2);
+
+#
+# Create Search Directory button
+#
+
+$sbframe -> Button(-text => "RETRIEVE DIRECTORY SCHEMA", 
+         -command =>  \&schema, -font => $Global{'Font'}, -borderwidth => 3 )
+         -> pack( -fill => "both");
+
+$srbfilelabel = $Global{'p4'}->LabFrame(-label => "SCHEMA DUMP TO FILE",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -anchor => "w", -padx => 2);
+
+$srbfile = $srbfilelabel -> Checkbutton( 
+          -text => "Write schema data to file, enter file name in text box below this line.   ",
+          -variable =>  \$Global{'sfile'}, -onvalue => 1, -offvalue => 0,
+          -font => $Global{'Font'} )
+          -> pack(-anchor => "w" );
+
+$srbfilelabel -> Checkbutton( 
+          -text => "Write schema data to file in DSML XML format.",
+          -variable =>  \$Global{'xml'}, -onvalue => 1, -offvalue => 0,
+          -font => $Global{'Font'} )
+          -> pack(-anchor => "w" );
+
+#
+# Create Text Entry list box.
+#
+
+$srbfilelabel->Entry(-textvariable => \$Global{'fdata'}, -width => 25 ) 
+      -> pack(-fill => 'x');
+
+#
+# Create list frame.
+#
+
+$slframe = $Global{'p4'}->LabFrame(-label => "DIRECTORY SCHEMA DATA",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top",
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+#$srbclear = $slframe -> Checkbutton(
+#                     -text => "Clear directory data on each query.",
+#                     -variable =>  \$Global{'sclear'}, -onvalue => 1,
+#                     -offvalue => 0, -font => $Global{'Font'} )
+#                     -> pack(-anchor => 'nw' );
+#
+#$srbclear->select();
+
+$selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
+                                 -labelside => "acrosstop" )
+                                 ->pack( -side => $Global{'hand'}, 
+                                 -expand => 1, -fill => "both" );
+
+$sellframe = $selframe->Frame( -borderwidth => 0, 
+                        -relief => "raised")->pack(
+                        -fill => "both", -side => "top", 
+                        -padx => 0, -pady => 0);
+
+$sellAll = $sellframe -> Checkbutton(-text => "ALL",
+      -variable =>  \$selectAll, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellAll->select();
+
+$sellObj = $sellframe -> Checkbutton(-text => "objectClasses",
+      -variable =>  \$selectObj, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellMatch = $sellframe -> Checkbutton(-text => "matchingRules",
+      -variable =>  \$selectMatch, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellAtt = $sellframe -> Checkbutton(-text => "attributeType",
+      -variable =>  \$selectAtt, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+
+$sellsyn = $sellframe -> Checkbutton(-text => "ldapsyntaxes",
+      -variable =>  \$selectSyn, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellnf = $sellframe -> Checkbutton(-text => "nameforms",
+      -variable =>  \$selectNf, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$selldsr = $sellframe -> Checkbutton(-text => "ditstructurerules",
+      -variable =>  \$selectDsr, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$selldcr = $sellframe -> Checkbutton(-text => "ditcontentrules",
+      -variable =>  \$selectDcr, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
+      -variable =>  \$selectMru, -onvalue => 1, -offvalue => 0, 
+      -font => $Global{'Font'} )
+      -> pack(-side => "top", -anchor => 'w' );
+
+
+      $sellframe -> Button(-text => "SHOW HIERARCHIAL\nOBJECTCLASS TREE",
+      -command =>  \&Hierarchial,  -font => $Global{'Font'},
+      -borderwidth => 3 )
+      -> pack(-side => "bottom" );
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+$slframe ->Button(-text => "     CLEAR DATA     ",
+     -command =>  \&schema_clear, -font => $Global{'Font'},
+     -borderwidth => 3 ) 
+     -> pack(-side => "bottom", -fill => "both",  -padx => 5 );
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 50, -height => 20, -wrap => 'none', 
+        -font => $Global{'Font'}  );
+
+$schema_list->pack( -side => "bottom" );
+
+
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
+
+} # End of subroutine initializeP4
+
+#
+#  Initialize panel 5
+#
+
+sub initializeP5
+{
+ 
+$ldifframe = $Global{p5} ->LabFrame(-label => "LDIF FILE NAME") 
+           ->pack(-side => "top", -fill => "x");
+
+#
+# Create Text Entry list box.
+#
+
+$ldifframe->Entry(-textvariable => \$Global{'createLdifFile'}, 
+           -width => 25 ) 
+           -> pack(-fill => 'x');
+
+#
+# Create Create Ldif Entry button
+#
+$Global{createLdifEntry} = $ldifframe->Button( 
+           -text => "CREATE ENTRY FROM LDIF FILE", 
+           -command => \&ldapActionCreateLdifEntry, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
+           if ( !Exists($Global{createLdifEntry}));
+ 
+
+
+} # End of subroutine initializeP5
+
+sub histSearch_clear {
+
+#
+# Clear out text in List Box
+#
+
+$Global{'searchList'}->delete("1.0", "end");
+
+} # End of clear subroutine
+ 
+sub histSearch_cancel{
+
+$Global{'searchList'}->destroy if Tk::Exists($Global{'searchList'});
+$Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
+} # End of cancel subroutine
+
+
+#
+# Search the directory for data
+#
+
+sub search 
+{
+my $mesg;
+my $error;
+my $att_wanted;
+my %opt = (
+  'd' => 0
+);
+
+$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
+#
+# Destroy the dn history list if it exists.
+#
+$Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
+
+#
+# Parameter(s) to return
+#
+
+if ( $Global{'setVersion'} == 3 )
+{
+#
+# Default to return everything.
+#
+$att_wanted = [ "*", 
+                "createTimeStamp",
+                "modifyTimeStamp",
+                "creatorsName",
+                "modifiersName" ];
+}
+else
+{
+#
+#
+# If you have only version 2 ldap servers you will need to 
+# to add the attributes that you want data returned for to
+# this list.
+#
+#
+$att_wanted = [ "cn" ,
+                "sn",
+                "mail",
+                "modifyTimeStamp",
+                "creatorsName",
+                "modifiersName" ];
+}
+
+#
+# Set Filter options.
+# 
+if (  $Global{'info'} eq "Filter" )
+{
+$match = $Global{'adata'};
+}
+else
+{
+if ( $Global{'infoFilter'} =~ /^equal$/ )
+{
+  $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+}
+elsif ( $Global{'infoFilter'} =~ /^begins with$/ )
+   {
+     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . "*)";
+   }
+elsif ( $Global{'infoFilter'} =~ /^ends with$/ )
+   {
+     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . ")";
+   }
+elsif ( $Global{'infoFilter'} =~ /^contains$/ )
+   {
+     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . "*)";
+   }
+   else
+   {
+     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+   }
 
 }
 
-sub AClear {
+$error = 0;  # initialize error flag.
 
+$Global{filter} = Net::LDAP::Filter->new($match) or $error = 1;
+
+if ( $error == 1 )
+{
+   $error = "Bad filter $match.";
+   ERROR(\$error);
+   return;
+}
+
+if ( !defined($Global{ldap}) )
+{
+
+$error = dirConn();
+
+if ( $error == 1 )
+{
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "search $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+  return;
+}
+
+}
+ 
+#
+# Display the DN search results list box.
+#
+$Global{nb}->raise("SEARCH RESULTS");
+
+$msgbox->delete("0.0", "end");
+$msgbox->update;
+$Global{'records'} = 0;  # initialize record count.
+$Global{'searchResults'} = {};  # initialize results hash.
+
+$mesg = $Global{ldap}->search(
+  base   => $LDAP_SEARCH_BASE,
+  filter => $Global{filter},
+  attrs  => $att_wanted,
+  callback => \&print_entry,
+); 
+   
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+   ERROR($mesg->code);
+}
+
+
+#
+# Create Hierarchial DN list box data tree, 
+# and display data.
+#
+
+
+eval
+{
+#
+# Create the base point.
+#
+$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
+
+$results = $Global{'searchResults'};
+
+@dnKeys = sort(keys(%$results));
+
+#
+# build the hierachical list using the DN
+#
+foreach my $dnvar ( @dnKeys ) 
+{
+ $var = $$results{$dnvar};  # get entry data array
+ $shbase = $LDAP_SEARCH_BASE . "/" . $$var[0]; # create new leaf
+ $Global{'searchHList'}->add($shbase, -text => $$var[0]); # add leaf to tree.
+}
+$Global{'searchHList'}->pack(-side => "right");
+};  # End of eval
+
+ERROR( \$@ ) if ( $@ );
+
+
+#
+# Get and print out the record attributes.
+#
+
+sub print_entry {
+  my($mesg,$entry) = @_;
+  my @ref = ();
+  my $dn;
+  my $max;
+  my $data = [];
+  my $information = {};
+
+  if ( !defined($entry) )
+  { 
+    return;
+  }
+ 
+  $dn = $entry->dn;           # store the entry dn
+  ++$Global{'records'};
+  $msgbox->delete("0.0", "end") 
+           if ( !($Global{'records'} % 10 ));
+  $msgbox->update if ( !($Global{'records'} % 10 ));
+  $msgbox->insert("0.0", "Entries found: $Global{'records'}") 
+           if ( !($Global{'records'} % 10 ));
+  $msgbox->update if ( !($Global{'records'} % 10 ));
+  #
+  #
+  #
+  @ref = $mesg->referrals();
+  if ( @ref )
+  {
+  foreach (@ref )
+  {
+    my $rvar = "LDAP Referral: $_";
+    ERROR(\$rvar);
+  }
+
+  }
+  else
+  {
+  #
+  # Get a list of record attributes
+  #
+  
+  my @attrs = sort $entry->attributes;
+  $max = 0;
+  #
+  # Calculate each attribute`s text length.
+  # We use this to create a pretty print out in the 
+  # List Box
+  #
+  
+  foreach (@attrs) { $max = length($_) if length($_) > $max }
+
+  #
+  # Get attribute`s data
+  #
+  
+  foreach (@attrs) {
+#    my $attr = $entry->get_value($_, asref => 1);
+     my $attr = [];
+    @$attr = $entry->get_value($_);
+    next unless $attr;
+
+    if ( /^jpegPhoto/i )
+    {
+      #
+      # record jpegPhoto data.
+      #
+      $encoded = encode_base64(@$attr[0]);
+      $$information{$_} = $encoded;
+      next;
+    }
+
+    $$information{$_} = $attr;  # record ldap data
+
+    next;
+    
+  }
+ }
+push(@$data, $dn);   # dn of entry
+push(@$data, $max);  # max attribute string lenght
+push(@$data, $information);
+${$Global{'searchResults'}}{$dn} = $data;
+}
+
+$Global{mainWindow} -> Unbusy;  # window is not busy
+} # End of search subroutine
+
+sub AClear {
+ 
 #
 # Clear out text in Attribute Box
 #
-
+ 
 $Global{'adata'} = "";
-
+ 
 } # End of AClear subroutine
 
 #
@@ -820,6 +1565,11 @@ $Global{ldap} = undef if ( defined($Global{ldap}) );
 
 $Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
 $sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
+
+#
+# Destroy the dn history list if it exists.
+#
+$Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
 
 $Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 $Global{mainWindow} -> update;  # Allow Tk to update
@@ -933,6 +1683,7 @@ else
   {
   ERROR(\$Global{dirConnError});
   $msgbox->insert("1", "$Global{dirConnError}");
+  $msgbox->update;
   }
   else
   {
@@ -952,6 +1703,7 @@ else
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 
 $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
+$Global{mainWindow} -> update;  #
 
 $Global{mainWindow} -> Unbusy;  # window is not busy
 } # End of server subroutine
@@ -976,6 +1728,392 @@ sub setFilter {
 $flclist->insert(0 , $Global{'infoFilter'});
 
 } # End of setFilter subroutine
+
+
+#
+# Make the correction and bind to the directory server.
+#
+ 
+sub dirConn
+{
+my $error;
+$error = 0;
+ 
+$Global{dirConnError} = undef();
+ 
+ #
+ # Make the connection to the directory server
+ #
+ 
+if ( $Global{port} == 636 )
+{
+ 
+eval
+{
+  require Net::LDAPS;
+};
+if ($@)
+{
+$msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
+return -1;
+}
+                                                                                $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{d},
+                        ) or $error = 1;
+if ( $error )
+{
+$Global{dirConnError} = "LDAPS connection error to $Global{'LDAP_SERVER'}.";
+return 1;
+}
+ 
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt_d,
+                        ) or $error = 1;
+if ( $error )
+{
+$Global{dirConnError} = "LDAP connection error to $Global{'LDAP_SERVER'}.";
+return 1;
+}
+ 
+}
+ 
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}",
+                       dn => "$Global{'binddn'}",
+                       version => $Global{'setVersion'},
+                       );
+ 
+if ( $mesg->code && $mesg->code != 48 )
+{
+#  $errstr = $mesg->code;
+#  ERROR($errstr);
+  return $mesg->code;
+}
+ 
+return 0;
+ 
+} # End of subroutine dirConn
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# Detect and record the sub-bases, or branches, of the directory.
+#
+ 
+sub getBases()
+{
+my $mesg;
+my ( $host, $base ) = @_;
+my @base = ();
+my $ptr;
+my $match;
+my $error = 0;  # initialize error flag.
+ 
+if ( $Global{'nismapname'} )
+{
+ #
+ # Solaris Native LDAP enabled
+ #
+ $match = "(|(o=*)(ou=*)(nismapname=*))";  #search only for ou entries.
+}
+else
+{
+ $match = "(|(o=*)(ou=*))";  #search only for ou entries.
+}
+
+my $f = Net::LDAP::Filter->new($match) or $error = 1;
+ 
+if ( $error )
+{
+$error = "getBases subroutine Bad filter $match";
+ERROR(\$error);
+return @base;
+}
+ 
+push(@base,$base);
+$ptr = 0;
+ 
+while ( $ptr < @base )
+{
+ if ( @base < $Global{'limit'} )
+ {
+     $splashList->insert("1", "Searching $base")
+        if ( defined( $splash) );
+     $splash->update()
+        if ( defined( $splash) );
+     $msgbox->insert("0", "Searching $base")
+        if ( defined( $msgbox) );
+     $msgbox->update()
+        if ( defined( $msgbox) );
+  my @new_base = calBase($base, $f );
+  push(@base, @new_base);
+ }
+ $base = $base[++$ptr];
+}
+ 
+return @base;
+ 
+} # End of subroutine getBases()
+
+ 
+sub calBase()
+{
+my ( $base, $f ) = @_;
+my $mesg;
+my $entry;
+my $errstr;
+my $error = 0;
+my @new_base = ();
+ 
+$mesg = $Global{ldap}->search(
+  base   => $base,
+  filter => $f,
+  attrs  => [ "cn","nismapname" ],
+  scope  => "one",
+);
+ 
+#
+# Check for an error on search
+# Search call work, but there was an ldap error.
+#
+ 
+if ( $mesg->code && $mesg->code != 11 )
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+   return @new_base;
+}
+else
+ {
+ 
+ $entry = $mesg->entry;
+ 
+ return @new_base unless defined($entry);
+ $count = $mesg->count();
+ 
+ for($i = 0 ; $i < $count ; $i++)
+ {
+ my $entry = $mesg->entry($i);
+ 
+ $dn = $entry->dn;
+ $_ = $dn;
+ 
+#
+# Record only dn that start with ou=, or in some cases nismapname.
+# Normal entrys can be mixed in with these objects.
+#
+ if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i ) )
+ {
+  push(@new_base, $dn);  # record only dn that start with ou=
+ }
+ elsif ( /^ou=/ )
+ {
+  push(@new_base, $dn);  # record only dn that start with ou=
+ }
+ 
+ }
+return @new_base;
+ 
+}                                                                                
+} # End of subroutine calBase()
+
+#
+# Determine new mainWindow position.
+#
+sub globalPos
+{
+ 
+my @pos;
+@pos = split(/\+/,$Global{'mainWindow'}->geometry());
+$Global{'horz'} = $pos[1];
+$Global{'vert'} = $pos[2];
+ 
+} # End of subrountine globalPos
+                                                                                sub root_cancel
+{
+ $Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'});
+} # End of subrountine root_cancel
+
+#
+# Display jpegPhoto in separate window if Tk::JPEG is used.
+#
+sub displayPhoto
+{
+my ($picture, $dn) = @_;
+my $jpegFile = $ENV{'TMP'} ."/jpegfile.$$";
+#
+# Store the jpeg data to a temp file.
+#
+open(TMP, "+>$jpegFile");
+$| = 1;
+ 
+print TMP $picture;
+close(TMP);
+ 
+if ( !-e "$jpegFile" )
+{
+my $str = "Could not create temporary jpeg file $jpegFile";
+ERROR( \$str );
+return;
+}
+ 
+#
+# Create a TK window to display the jpeg picture.
+#
+my $mw  = MainWindow->new();
+$mw->title("JPEG PHOTO DISPLAY");
+my $list = $mw ->Listbox( -height => 1, width => length($dn)  );
+$list->pack( -side => "top" );
+$list->insert("end", $dn);
+
+my $image = $mw->Photo(-file => $jpegFile, -format => "jpeg" );
+ 
+$mw->Label(-image => $image)->pack(-expand => 1, -fill => 'both');
+$mw->Button(-text => 'CLOSE WINDOW', -command => [destroy => $mw])->pack;
+MainLoop;
+ 
+unlink $jpegFile;
+ 
+} # End of displayPhoto 
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# Create Main Error Window
+#
+ 
+sub ERROR {
+my ($errcode ) = @_;
+my $errmsg;
+ 
+return if ($errcode == 48 && $Global{'setVersion'} == 3 ); # Anonymous bind error, not really an error.
+ 
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
+ 
+if ( ref($errcode) )
+{
+$errmsg = $$errcode;
+}
+else                                                                            {
+$errmsg = ldap_error_text($errcode);
+}
+ 
+my @errmsg = split(/\n/,$errmsg);
+ 
+#
+# Create Main Error Window
+#
+if ( ! Exists($Global{'errorWindow'} ) )
+{
+$Global{'errorWindow'} = MainWindow->new;
+ 
+$Global{'errorWindow'}->title("ERROR MESSAGES");
+ 
+$Global{'errorWindow'}->geometry("+$x+$y");
+#
+# Create process dismiss button
+#
+$Global{'errorWindow'}->Button( -text => "DISMISS", -command => \&dismiss,
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+$errlist = $Global{'errorWindow'} ->Scrolled(Listbox, -scrollbars => 'se',
+                                  -width => 70, -height => 10  );
+ 
+$errlist->pack(-fill => "both", -expand => 1 );
+}
+ 
+$errlist->insert("end", "Error Code: $errcode") if ( !ref($errcode) );
+$errlist->insert("end", "") if ( !ref($errcode) );
+
+foreach my $msg ( @errmsg )
+{
+$errlist->insert("end", $msg);
+}
+ 
+sub dismiss{
+ 
+$Global{'errorWindow'}->destroy() if Tk::Exists($Global{'errorWindow'});
+$errlist = undef();
+ 
+} # End of dismiss subroutine
+ 
+} # End of ERROR subroutine
+ 
+
+
+
+
+
+
+
+ 
+#
+# LDAP Error check, some return codes are not really errors.
+# You can retry the ldap action after waiting a while.
+#
+ 
+sub CheckError {
+ 
+my ( $error ) = @_;
+ 
+#
+# Check for DSA busy or internal error
+#
+ 
+if ( $Global{loopCount} > 61 ) {
+  return 0;  # return an error condition.
+}
+ 
+++$Global{loopCount};    # Increment the loop counter.
+
+if ( $error =~ /too busy/ ||
+     $error =~ /Server encountered an internal error/ )
+   {
+   #
+   # DSA Busy.
+   #
+   sleep 1;
+   return 1;  # No error, try again
+   }
+else {
+   #
+   # DSA did not return "DSA busy" message
+   #
+   return 0;  # error
+ 
+   }
+ 
+} # End of subrountine  CheckError
+
+
 
 
 #
@@ -1083,71 +2221,6 @@ $Global{'bindWindow'} = undef();
 
  
 #
-# Create Main Error Window
-#
- 
-sub ERROR {
-my ($errcode ) = @_;
-my $errmsg;
-
-return if ($errcode == 48 && $Global{'setVersion'} == 3 ); # Anonymous bind error, not really an error.
-
-my $x = $Global{'horz'} + 150;
-my $y = $Global{'vert'} + 150;
-
-if ( ref($errcode) )
-{ 
-$errmsg = $$errcode;
-}
-else
-{
-$errmsg = ldap_error_text($errcode);
-}
-
-my @errmsg = split(/\n/,$errmsg);
-
-#
-# Create Main Error Window
-#
-if ( ! Exists($Global{'errorWindow'} ) )
-{ 
-$Global{'errorWindow'} = MainWindow->new;
- 
-$Global{'errorWindow'}->title("ERROR MESSAGES");
- 
-$Global{'errorWindow'}->geometry("+$x+$y");
-#
-# Create process dismiss button
-#
-$Global{'errorWindow'}->Button( -text => "DISMISS", -command => \&dismiss, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
- 
-$errlist = $Global{'errorWindow'} ->Scrolled(Listbox, -scrollbars => 'se',
-                                  -width => 70, -height => 10  );
-
-$errlist->pack(-fill => "both", -expand => 1 );
-}
-
-$errlist->insert("end", "Error Code: $errcode") if ( !ref($errcode) );
-$errlist->insert("end", "") if ( !ref($errcode) );
-
-foreach my $msg ( @errmsg )
-{
-$errlist->insert("end", $msg);
-}
-
-sub dismiss{ 
- 
-$Global{'errorWindow'}->destroy() if Tk::Exists($Global{'errorWindow'});
-$errlist = undef();
- 
-} # End of dismiss subroutine
-
-} # End of ERROR subroutine
-
-
-#
 # Create Main Port Window
 #
  
@@ -1209,8 +2282,6 @@ $Global{'portWindow'} = undef();
 } # End of accept subroutine
 } # End of PORT subroutine
 
-
-} # End of MAIN_PROCESS subroutine
 
 
 #
@@ -1299,224 +2370,8 @@ foreach $ahash ( @$ocs)
 
 #
 #
-# Search the directory for schema data
-#
-#
 #
 
-sub SCHEMA 
-{
-
-my $srbclear;
-my $srbfile;
-my $srbfilelabel;
-my $slframe;
-my $ssframe;
-my $sbbframe;
-my $aframe;
-my $tframe;
-my $sbframe;
-#my $sslist;
-$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
-&globalPos();
-my $x = $Global{'horz'} + 100;
-my $y = $Global{'vert'} + 100;
-#
-# Create Main Window
-#
-if (!  Exists($Global{'schemaWindow'}) )
-{
-$Global{'schemaWindow'} = MainWindow->new;
-
-$Global{'schemaWindow'}->title("DIRECTORY SCHEMA DISPLAY");
-
-$Global{'schemaWindow'}->geometry("+$x+$y");
-#
-# Create process Exit button
-#
-
-$schemaExit = $Global{'schemaWindow'}->Button( 
-                       -text => "EXIT SCHEMA DISPLAY", 
-                       -command => \&schema_cancel, -font => $Global{'Font'}, 
-                       -borderwidth => 5 )
-                       -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
-
-$ssframe = $Global{'schemaWindow'}->LabFrame(-label => "DIRECTORY SERVER",
-      -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
-
-$sslist = $ssframe ->Listbox( -height => 1  );
-
-$sslist->pack(-fill => "both", -expand => 1 );
-
-$sslist->insert("end", $Global{'LDAP_SERVER'});
-
-#
-# Create bottom Search Directory frame
-#
-
-$sbframe = $Global{'schemaWindow'}->Frame( -borderwidth => 2, 
-                        -relief => "raised")->pack(
-                        -fill => "both", -side => "bottom", 
-                        -padx => 2, -pady => 2);
-
-#
-# Create Search Directory button
-#
-
-$sbframe -> Button(-text => "RETRIEVE DIRECTORY SCHEMA", 
-         -command =>  \&schema, -font => $Global{'Font'}, -borderwidth => 3 )
-         -> pack( -fill => "both");
-
-$srbfilelabel = $Global{'schemaWindow'}->LabFrame(-label => "SCHEMA DUMP TO FILE",
-      -labelside => "acrosstop")
-      ->pack( -fill => "both", -anchor => "w", -padx => 2, -pady => 2);
-
-$srbfile = $srbfilelabel -> Checkbutton( 
-          -text => "Write schema data to file, enter file name in text box below this line.   ",
-          -variable =>  \$Global{'sfile'}, -onvalue => 1, -offvalue => 0,
-          -font => $Global{'Font'} )
-          -> pack(-anchor => "w" );
-
-$srbfilelabel -> Checkbutton( 
-          -text => "Write schema data to file in DSML XML format.",
-          -variable =>  \$Global{'xml'}, -onvalue => 1, -offvalue => 0,
-          -font => $Global{'Font'} )
-          -> pack(-anchor => "w" );
-
-#
-# Create Text Entry list box.
-#
-
-$srbfilelabel->Entry(-textvariable => \$Global{'fdata'}, -width => 25 ) 
-      -> pack(-fill => 'x');
-
-#
-# Create list frame.
-#
-
-$slframe = $Global{'schemaWindow'}->LabFrame(-label => "DIRECTORY SCHEMA DATA",
-      -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "top", -pady => 2,
-      -expand => 1);
-
-#
-# Create a Clear Data Radiobutton that will execute subroutine clear
-# to clear the List box before each directory query.
-#
-
-$srbclear = $slframe -> Checkbutton(
-                     -text => "Clear directory data on each query.",
-                     -variable =>  \$Global{'sclear'}, -onvalue => 1,
-                     -offvalue => 0, -font => $Global{'Font'} )
-                     -> pack(-anchor => 'nw' );
-
-$srbclear->select();
-
-$selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
-                                 -labelside => "acrosstop" )
-                                 ->pack( -side => $Global{'hand'}, 
-                                 -expand => 1, -fill => "both" );
-
-$sellframe = $selframe->Frame( -borderwidth => 0, 
-                        -relief => "raised")->pack(
-                        -fill => "both", -side => "top", 
-                        -padx => 0, -pady => 0);
-
-$sellAll = $sellframe -> Checkbutton(-text => "ALL",
-      -variable =>  \$selectAll, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$sellAll->select();
-
-$sellObj = $sellframe -> Checkbutton(-text => "objectClasses",
-      -variable =>  \$selectObj, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$sellMatch = $sellframe -> Checkbutton(-text => "matchingRules",
-      -variable =>  \$selectMatch, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$sellAtt = $sellframe -> Checkbutton(-text => "attributeType",
-      -variable =>  \$selectAtt, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-
-$sellsyn = $sellframe -> Checkbutton(-text => "ldapsyntaxes",
-      -variable =>  \$selectSyn, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$sellnf = $sellframe -> Checkbutton(-text => "nameforms",
-      -variable =>  \$selectNf, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$selldsr = $sellframe -> Checkbutton(-text => "ditstructurerules",
-      -variable =>  \$selectDsr, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$selldcr = $sellframe -> Checkbutton(-text => "ditcontentrules",
-      -variable =>  \$selectDcr, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-$sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
-      -variable =>  \$selectMru, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-side => "top", -anchor => 'w' );
-
-
-      $sellframe -> Button(-text => "SHOW HIERARCHIAL\nOBJECTCLASS TREE",
-      -command =>  \&Hierarchial,  -font => $Global{'Font'},
-      -borderwidth => 3 )
-      -> pack(-side => "bottom" );
-
-#
-# Create Clear Attribute Data and Search Directory buttons
-#
-
-$slframe ->Button(-text => "     CLEAR DATA     ",
-     -command =>  \&schema_clear, -font => $Global{'Font'},
-     -borderwidth => 3 ) 
-     -> pack(-side => "bottom", -fill => "both",  -padx => 5 );
-#
-# Create a ROText Box that will actually contain the 
-# returned directory data.
-#
-
-$schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 50, -height => 20, -wrap => 'none', 
-        -font => $Global{'Font'}  );
-
-$schema_list->pack( -side => "bottom" );
-
-
-#
-# Allow mainWindow to update
-#
-
-$Global{'mainWindow'}->update;
-
-&schema;
-
-}
-else
-{
- my $wstate = $Global{'schemaWindow'}->state();
- if ( $wstate =~ /iconic/ || $wstate =~ /withdrawn/ )
- {
-   $Global{'schemaWindow'}->deiconify() 
-          if Tk::Exists($Global{'schemaWindow'});
-   $Global{'schemaWindow'}->raise() 
-          if Tk::Exists($Global{'schemaWindow'});
- }
-}
 
 sub schema_clear {
 
@@ -1527,20 +2382,10 @@ sub schema_clear {
 $schema_list->delete("1.0", "end");
 
 } # End of clear subroutine
-
- 
-sub schema_cancel{
- 
-# $schemaWindow->withdraw if Tk::Exists($schemaWindow);
-$Global{'schemaWindow'}->destroy if Tk::Exists($Global{'schemaWindow'});
-$Global{'schemaWindow'} = undef(); 
-} # End of cancel subroutine
  
 #
 #
 # Get the directory schema
-#
-#
 #
 
 sub schema 
@@ -1551,10 +2396,14 @@ my $error = 0;
 $schemaHash{'obj'} = {};
 $schemaHash{'tree'} = {};
 
+$msgbox->insert("0.0", "Retrieving schema information.");
+$msgbox->update;
 
+
+&schema_clear();
 my $dt = "/tmp/schema.dat.$$";
 
-if ( $Global{'sclear'} ) { &schema_clear(); }
+#if ( $Global{'sclear'} ) { &schema_clear(); }
 
 if ( ! defined($Global{ldap}) )
 {
@@ -1807,26 +2656,6 @@ else
 
 } # End of schema subroutine
 
-$Global{mainWindow} -> Unbusy;  # window is not busy
-} # End of SCHEMA subroutine
-
-sub init_schemaHash
-{
-
- $schemaHash{ 'schema' } = undef();
- $schemaHash{ 'obj' }  = {};
- $schemaHash{ 'tree' } = {};
-
- $schemaHash{ 'atts' } = [];
- $schemaHash{ 'ocs' }  = [];
- $schemaHash{ 'mrs' }  = [];
- $schemaHash{ 'nfm' }  = [];
- $schemaHash{ 'lsyn' } = [];
- $schemaHash{ 'dits' } = [];
- $schemaHash{ 'ditc' } = [];
- $schemaHash{ 'mru' }  = [];
-
-}
 
 sub Hierarchial 
 {
@@ -1869,23 +2698,15 @@ foreach my $aobj ( @$ocs)
    #
    my $oid;
    undef($oid);
-#   print "$aobj\n";
    $oid = $$aobj{'oid'}; 
    next if ( !defined($oid) );
-#   print "oid; $oid\n";
-#   print "sup ",$$aobj{'sup'},"\n"; 
-#   print "name ",$$aobj{'name'},"\n"; 
     @sup = $$aobj{'sup'}[0];
     @name = $$aobj{'name'};
-#    print "sup : @sup\n";
-#   @sup = $schema->item( $oid, 'sup' ); # objectclass superior
-#   @name = $schema->item( $oid, 'name' ); # objectclass name
 
    $$obj{"$name[0]"} = [ "$oid", "$sup[0]" ]; # store data
 
 }
 
-#return;
 
 #
 # get objectclass hash keys.
@@ -2226,75 +3047,29 @@ $Global{'searchHistWindow'} = undef();
 # Create ldapAction Window
 #
  
-sub ldapAction {
+sub ldapAction 
+{
 
 $Global{'ldapActionDN'} = shift;
-
-&globalPos(); 
-my $x = $Global{'horz'} + 20;
-my $y = $Global{'vert'} + 30;
- 
-#
-# Create Main ldapAction Window
-#
- 
-$Global{'ldapActionWindow'} = MainWindow->new;
- 
-$Global{'ldapActionWindow'}->title("LDAP ACTION");
- 
-$Global{'ldapActionWindow'}->geometry("+$x+$y");
-
-#
-# Create ldap display button
-#
-$Global{'ldapActionWindow'}->Button( -text => "DISPLAY", -command => \&ldapActionDisplay, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
- 
-
-#
-# Create ldap rename button
-#
-$Global{'ldapActionWindow'}->Button( -text => "RENAME", 
-           -command => \&getRenameData, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
- 
-#
-# Create ldap edit button
-#
-$Global{'ldapActionWindow'}->Button(-text => " EDIT ", 
-           -command => \&ldapActionEdit,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
- 
-#
-# Create ldap delete button
-#
-$Global{'ldapActionWindow'}->Button(-text => "DELETE", 
-           -command => \&questionAction,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
- 
- 
-#
-# Create process cancel button
-#
-$Global{'ldapActionWindow'}->Button(-text => "CANCEL", -command => \&ldapActionCancel,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
+$Global{actionDelete}->configure( -state => 'normal');
+$Global{actionDisplay}->configure( -state => 'normal'); 
+$Global{actionEdit}->configure( -state => 'normal');
+$Global{actionRename}->configure( -state => 'normal');
+$Global{actionLdif}->configure( -state => 'normal');
+$Global{actionCancel}->configure( -state => 'normal');
+} # End of ldapAction subroutine
  
 sub ldapActionCancel{
 
 delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+$Global{actionDelete}->configure( -state => 'disable');
+$Global{actionDisplay}->configure( -state => 'disable'); 
+$Global{actionEdit}->configure( -state => 'disable');
+$Global{actionRename}->configure( -state => 'disable');
+$Global{actionLdif}->configure( -state => 'disable');
+$Global{actionCancel}->configure( -state => 'disable');
 
 } # End of cancel subroutine
- 
-} # End of ldapAction subroutine
 
 #
 # Do LDAP entry data display.
@@ -2314,24 +3089,19 @@ my @infoKeys;
 my @DNs = ();
 if ( !$Global{'ldapActionDN'} )
 {
-delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+&ldapActionCancel;
 return;
 }
 my $objects = $Global{'ldapActionDN'};
+&ldapActionCancel;
 
-&displaySearch();  # create the entry data display window.
+#
+# Display the DN search results list box.
+#
+$Global{nb}->raise("SEARCH DISPLAY");
 
 delete($Global{'ldapActionDN'});
  
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
-
-
 # clear the entry data display window.
 if ( $display_clear ) { &display_clear(); }
 #
@@ -2423,20 +3193,12 @@ my $text;
 
 if ( !$Global{'ldapActionDN'} )
 {
-delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+&ldapActionCancel();
 return;
 }
 my $objects = $Global{'ldapActionDN'};
 
-delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+&ldapActionCancel();
 
 return if Tk::Exists($Global{'editWindow'});
 
@@ -2784,7 +3546,8 @@ $Global{'tmpADD'}{$$attr} = $$tbox->get('1.0','1.end');
  
 } # End of add_data subroutine
  
-sub makeChanges {
+sub makeChanges 
+{
 
 my $tmp = $Global{'tmpADD'};
 my @Keys = sort(keys(%$tmp));
@@ -2848,7 +3611,8 @@ $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
 
 } # End of clear subroutine
  
-sub change_cancel{
+sub change_cancel
+{
  
 $Global{tmpADD} = {};
 $Global{tmpDELETE} = {};
@@ -2873,21 +3637,13 @@ my $do_it;
 
 if ( !$Global{'ldapActionDN'} )
 {
-delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+&ldapActionCancel();
 return;
 }
 my $objects = $Global{'ldapActionDN'};
 
-delete($Global{'ldapActionDN'});
+&ldapActionCancel();
  
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
-
 @DNs = split(/\//,$objects); # split base from dn.
 $error = 0;
 
@@ -2948,7 +3704,316 @@ while ($do_it == 1 )
 
 }
 
+#
+# Destroy the dn history list if it exists.
+#
+$Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
+$Global{nb}->raise('Search');
+
 } # End of ldapActionDelete subroutine
+
+
+
+#
+# Do create entry from ldif file.
+#
+
+sub ldapActionCreateLdifEntry
+{
+my $error;
+my $mesg;
+my $f;
+my $ldif;
+my @entry;
+my $do_it;
+ 
+ 
+$error = 0;
+
+if ( !defined($Global{ldap}) )
+{
+ 
+$error = dirConn();
+ 
+if ( $error == 1 )
+{
+  if ( defined($Global{dirConnError}) )
+  {
+  $error = "ldapActionCreateLdifEntry $Global{dirConnError}";
+  ERROR(\$error);
+  return;
+  }
+  else
+  {
+  ERROR($error);
+  return;
+  }
+}
+ 
+}
+
+@entry = ();
+
+  if ( $Global{createLdifFile} && -f $Global{createLdifFile})
+  {
+       $ldif = Net::LDAP::LDIF->new( "$Global{createLdifFile}", "r", 
+               onerror => 'undef' );
+
+       if ( $ldif->error() )
+       {
+        $mesg = "MESG create entry error msg: " . $ldif->error() . "\n";
+        $mesg .= "Error lines:\n" . $ldif->error_lines() . "\n";
+        ERROR(\$mesg);
+
+       }
+
+       while( not $ldif->eof() ) {
+          $entry = $ldif->read_entry();
+          if ( $ldif->error() ) 
+          {
+             $mesg = "LDIF create entry error msg: " . $ldif->error() . "\n";
+             $mesg .= "Error lines:\n" . $ldif->error_lines() . "\n";
+             ERROR(\$mesg);
+
+          }
+          else 
+          {
+
+          #print Dumper($entry),"\n\n";
+
+          $op = $$entry{changetype};
+
+          if ( $op =~  /add/)
+          {
+          $mesg = $Global{ldap}->add($entry);
+          }
+          else
+          {
+          $op = $$entry{changes};
+          $mesg = $Global{ldap}->modify($entry);
+          }
+          if ( $mesg->code )
+          {
+          ERROR($mesg->code);
+          }
+          }
+       }
+
+       $ldif->done();
+     
+      @entry = undef;
+  }
+  else
+  {
+    $msgbox->insert("0", "LDIF file not defined or does not exist.")
+       if ( defined( $msgbox) );
+    $msgbox->update()
+       if ( defined( $msgbox) );
+    $mesg = "LDIF file not defined or does not exist.";
+    ERROR(\$mesg);
+  }
+
+  $mesg = undef;
+
+
+
+} # End of ldapActionCreateLdifEntry subroutine
+
+
+#
+# Do LDAP multi-entry save to ldif
+#
+
+sub ldapActionMultiSaveToLdif
+{
+my $error;
+my $mesg;
+my $f;
+my $ldif;
+my @entry;
+my $do_it;
+ 
+&ldapActionCancel();
+ 
+$error = 0;
+
+if ( !defined($Global{ldap}) )
+{
+ 
+$error = dirConn();
+ 
+if ( $error == 1 )
+{
+  if ( defined($Global{dirConnError}) )
+  {
+  $error = "ldapActionRename $Global{dirConnError}";
+  ERROR(\$error);
+  return;
+  }
+  else
+  {
+  ERROR($error);
+  return;
+  }
+}
+ 
+}
+
+@entry = ();
+
+$mesg = $Global{ldap}->search(
+  base   => $LDAP_SEARCH_BASE,
+  filter => $Global{filter},
+  attrs  => $att_wanted,
+);
+ 
+if ( $mesg->code && $mesg->code != 48 )
+{
+   ERROR($mesg->code);
+}
+
+if ( $mesg->count )
+{
+  if ( $Global{ldifFile} )
+  {
+    @entry = $mesg->all_entries;
+ 
+       $ldif = Net::LDAP::LDIF->new( "$Global{ldifFile}", "w", 
+               onerror => 'undef' );
+       $ldif->write(@entry, -encode => "base64");
+       $ldif->done();
+     
+      @entry = undef;
+  }
+  else
+  {
+    $msgbox->insert("0", "LDIF file not defined.")
+       if ( defined( $msgbox) );
+    $msgbox->update()
+       if ( defined( $msgbox) );
+  }
+
+  $mesg = undef;
+}
+else
+{
+     $msgbox->insert("0", "No entry found for ldif storage.")
+        if ( defined( $msgbox) );
+     $msgbox->update()
+        if ( defined( $msgbox) );
+}
+
+} # End of ldapActionSaveToLdif subroutine
+
+
+
+#
+# Do single LDAP entry save to ldif
+#
+
+sub ldapActionSaveToLdif
+{
+my $error;
+my $mesg;
+my $f;
+my $ldif;
+my @entry;
+my $do_it;
+ 
+if ( !$Global{'ldapActionDN'} )
+{
+&ldapActionCancel();
+return;
+}
+my $objects = $Global{'ldapActionDN'};
+
+&ldapActionCancel();
+ 
+@DNs = split(/\//,$objects); # split base from dn.
+$error = 0;
+
+if ( !defined($Global{ldap}) )
+{
+ 
+$error = dirConn();
+ 
+if ( $error == 1 )
+{
+  if ( defined($Global{dirConnError}) )
+  {
+  $error = "ldapActionRename $Global{dirConnError}";
+  ERROR(\$error);
+  return;
+  }
+  else
+  {
+  ERROR($error);
+  return;
+  }
+}
+ 
+}
+
+@entry = ();
+
+$mesg = $Global{ldap}->search(
+  base   => $LDAP_SEARCH_BASE,
+  filter => $Global{filter},
+  attrs  => $att_wanted,
+);
+ 
+if ( $mesg->code && $mesg->code != 48 )
+{
+   ERROR($mesg->code);
+}
+
+if ( $mesg->count )
+{
+  if ( $Global{ldifFile} )
+  {
+    @entry = $mesg->all_entries;
+ 
+    foreach $entry (@entry)
+    {
+
+     my $edn = $entry->dn;
+     if ( $DNs[1] eq $edn )
+     {
+       $ldif = Net::LDAP::LDIF->new( "$Global{ldifFile}", "w", 
+               onerror => 'undef' );
+       $ldif->write($entry, -encode => "base64");
+       $ldif->done();
+
+     }
+     else 
+     {
+       $entry = undef;
+     }
+
+    }
+
+  }
+  else
+  {
+    $msgbox->insert("0", "LDIF file not defined.")
+       if ( defined( $msgbox) );
+    $msgbox->update()
+       if ( defined( $msgbox) );
+  }
+
+ $mesg = undef;
+
+}
+else
+{
+     $msgbox->insert("0", "No entry found for ldif storage.")
+        if ( defined( $msgbox) );
+     $msgbox->update()
+        if ( defined( $msgbox) );
+}
+
+} # End of ldapActionSaveToLdif subroutine
+
 
 #
 # Do LDAP entry rename.
@@ -3028,13 +4093,20 @@ if ( $mesg->code )
 
 }
 
+#
+# Destroy the dn history list if it exists.
+#
+$Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
+$Global{nb}->raise('SEARCH');
+
 }
  
 #
 # Create Rename DATA  Window
 #
  
-sub getRenameData {
+sub getRenameData 
+{
 $Global{'newsuperior'} = "";
 $Global{'newrdn'} = "";
 $Global{'RenameDN'} = "";
@@ -3050,21 +4122,13 @@ my @DNs;
 
 if ( !$Global{'ldapActionDN'} )
 {
-delete($Global{'ldapActionDN'});
- 
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
+&ldapActionCancel();
 return;
 }
 my $objects = $Global{'ldapActionDN'};
 
-delete($Global{'ldapActionDN'});
+&ldapActionCancel();
  
-$Global{'ldapActionWindow'}->destroy() 
-       if Tk::Exists($Global{'ldapActionWindow'});
-delete($Global{'ldapActionWindow'}); 
-
 @DNs = split(/\//,$objects); # split base from dn.
 
 $Global{'RenameDN'} = $DNs[1];
@@ -3178,104 +4242,8 @@ delete($Global{'index'}) if ( defined($Global{'index'}));
 
 } # End of getRenameData subroutine
 
-
-sub displaySearch()
+sub display_clear 
 {
-# my $displayWindow;
-my $cframe;
-my $lframe;
-my $rbclear;
-#my $list;
-&globalPos();
-my $x = $Global{'horz'} + 100;
-my $y = $Global{'vert'} + 100;
-#
-# Create Main Window
-#
-if (!Exists($displayWindow) )
-{
-
-$displayWindow = MainWindow->new;
-
-$displayWindow->title("DIRECTORY SEARCH DISPLAY");
-
-$displayWindow->geometry("+$x+$y");
-
-#
-# Create process Exit button
-#
-
-$displayWindow->Button(-text => "CLOSE SEARCH DISPLAY RESULT WINDOW", 
-              -command => \&display_cancel, -font => $Global{'Font'},
-              -borderwidth => 5 )
-              -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
-
-#
-# Create frame for clear buttons.
-#
-
-
-$cframe = $displayWindow->Frame()
-      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
-
-#
-# Create Clear Data
-#
-
-$cframe -> Button(-text => "     CLEAR DATA     ", 
-     -command =>  \&display_clear, -font => $Global{'Font'},
-     -borderwidth => 3 ) 
-     ->pack( -fill => 'both' );
-
-#
-# Create list frame.
-#
-
-$lframe = $displayWindow->LabFrame(-label => "DIRECTORY DATA",
-      -labelside => "acrosstop" )
-      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
-      -expand => 1);
-
-#
-# Create a Clear Data Radiobutton that will execute subroutine clear
-# to clear the List box before each directory query.
-#
-
-$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
-      -variable =>  \$display_clear, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-anchor => 'sw' );
-
-$rbclear->select();
-
-#
-# Create a ROText Box that will actually contain the 
-# returned directory data.
-#
-
-$list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 80, -height => 20, -wrap => 'none', 
-        -font => $Global{'Font'}  );
-
-$list->pack(-fill => "both", -expand => 1 );
-
-}
-else 
-{
-
- $displayWindow->update;
- my $wstate = $displayWindow->state();
- if ( $wstate =~ /iconic/ ||  $wstate =~ /withdrawn/ )
- {
-   $displayWindow->deiconify() 
-       if Tk::Exists($displayWindow); 
- }
- $displayWindow->raise() 
-     if Tk::Exists($displayWindow);
-}                                                                               
-
-
-sub display_clear {
 
 #
 # Clear out text in List Box
@@ -3285,17 +4253,6 @@ $list->delete("1.0", "end");
 
 } # End of clear subroutine
  
-sub display_cancel{
- 
-$displayWindow->destroy if Tk::Exists($displayWindow);
- 
-} # End of cancel subroutine
-
-} # End of subroutine displaySearch
-
-
-
-
 
 sub displayEdit()
 {
@@ -3306,7 +4263,7 @@ my $erbclear;
 my $x = $Global{'horz'} + 75;
 my $y = $Global{'vert'} + 75;
 #
-# Create Main Window
+# Create Edit Window
 #
 if (!Exists($Global{'editWindow'}) )
 {
@@ -3402,7 +4359,8 @@ delete($Global{'add_new_attribute'});
 #
 # Execute any LDAP add, delete, or replace changes.
 #
-sub changeEntry {
+sub changeEntry 
+{
 my $errstr;
 my $mesg;
 my $error = 0;  # initialize error flag.
@@ -3588,525 +4546,13 @@ $Global{'editWindow'}->destroy if Tk::Exists($Global{'editWindow'});
 $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
 $Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
 
-} # End of changeEntry subroutine
- 
-
-sub displayDnList
-{
-&globalPos();
-my $x = $Global{'horz'};
-my $y = $Global{'vert'}  + 230 ;
-
-#
-# Set up the Tk windows.
-#
-#
-
-if ( ! Exists($Global{'searchHistWindow'} ) ) 
-{
-  eval 
-     { 
-       $Global{'searchHistWindow'} = MainWindow->new(); 
-       $Global{'searchHistWindow'}->title("SEARCH RESULTS");
-     };
-  ERROR(\$@) if ( $@ ); 
-
-}
-else 
-{
-
- my $wstate = $Global{'searchHistWindow'}->state();
- if ( $wstate =~ /iconic/ ||  $wstate =~ /withdrawn/ )
- {
-   $Global{'searchHistWindow'}->deiconify() 
-       if Tk::Exists($Global{'searchHistWindow'}); 
- }
- $Global{'searchHistWindow'}->raise() 
-     if Tk::Exists($Global{'searchHistWindow'});
-}                                                                               
-
-$Global{'searchHistWindow'}->geometry("+$x+$y"); 
-
-
-#
-# Create process Exit button
-#
-
-$hbuttonSearch = $Global{'searchHistWindow'}->Button(
-              -text => "CLOSE SEARCH DISPLAY WINDOW", 
-              -command => \&histSearch_cancel, -font => $Global{'Font'},
-              -borderwidth => 5 )
-              -> pack(-fill => "both", -padx => 2, -pady => 2 ) 
-              if ( Exists($Global{'searchHistWindow'} ) && 
-                   !Exists($hbuttonSearch ) );
-
-#
-# Create Hierarchial DN list box, this is where the DN data
-# tree will be displayed.
-#
-
-$Global{'searchHList'} = $Global{'searchHistWindow'}
-   ->Scrolled('HList', 
-            -font       => $Global{'Font'},
-            -scrollbars => 'se',
-            -width      => 50, 
-            -height     => 20,
-            -itemtype   => 'text',
-            -separator  => '/',
-            -selectmode => 'single',
-            -browsecmd  => sub {
-#
-            my $objects = shift;   # get base and the dn
-
-            return if ( Tk::Exists($Global{'ldapActionWindow'})) ;
-            &ldapAction($objects);
-
-            } # End of subroutine browsecmd
-
-   );  # End of Scrolled HList.
-
-
-
-sub histSearch_clear {
-
-#
-# Clear out text in List Box
-#
-
-$Global{'searchList'}->delete("1.0", "end");
-
-} # End of clear subroutine
- 
-sub histSearch_cancel{
-
-$Global{'searchList'}->destroy if Tk::Exists($Global{'searchList'});
-$Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
-$Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
-} # End of cancel subroutine
-
-} # End of subroutine displayDnList
-
-#
-# Search the directory for data
-#
-
-sub search 
-{
-my $mesg;
-my $error;
-my $att_wanted;
-my %opt = (
-  'd' => 0
-);
-
-$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 #
 # Destroy the dn history list if it exists.
 #
-$Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
+$Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
+$Global{nb}->raise('SEARCH');
 
-#
-# Parameter(s) to return
-#
-
-if ( $Global{'setVersion'} == 3 )
-{
-#
-# Default to return everything.
-#
-$att_wanted = [ "*", 
-                "createTimeStamp",
-                "modifyTimeStamp",
-                "creatorsName",
-                "modifiersName" ];
-}
-else
-{
-#
-#
-# If you have only version 2 ldap servers you will need to 
-# to add the attributes that you want data returned for to
-# this list.
-#
-#
-$att_wanted = [ "cn" ,
-                "sn",
-                "mail",
-                "modifyTimeStamp",
-                "creatorsName",
-                "modifiersName" ];
-}
-
-#
-# Set Filter options.
-# 
-if (  $Global{'info'} eq "Filter" )
-{
-$match = $Global{'adata'};
-}
-else
-{
-if ( $Global{'infoFilter'} =~ /^equal$/ )
-{
-  $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
-}
-elsif ( $Global{'infoFilter'} =~ /^begins with$/ )
-   {
-     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . "*)";
-   }
-elsif ( $Global{'infoFilter'} =~ /^ends with$/ )
-   {
-     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . ")";
-   }
-elsif ( $Global{'infoFilter'} =~ /^contains$/ )
-   {
-     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . "*)";
-   }
-   else
-   {
-     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
-   }
-
-}
-
-$error = 0;  # initialize error flag.
-
-my $f = Net::LDAP::Filter->new($match) or $error = 1;
-
-if ( $error == 1 )
-{
-   $error = "Bad filter $match.";
-   ERROR(\$error);
-   return;
-}
-
-if ( !defined($Global{ldap}) )
-{
-
-$error = dirConn();
-
-if ( $error == 1 )
-{
-  if ( defined($Global{dirConnError}) ) 
-  {
-  $error = "search $Global{dirConnError}";
-  ERROR(\$error);
-  }
-  else
-  {
-  ERROR($error);
-  }
-  return;
-}
-
-}
- 
-#
-# Display the DN search results list box.
-#
-displayDnList();
-
-$msgbox->delete("0.0", "end");
-$msgbox->update;
-$Global{'records'} = 0;  # initialize record count.
-$Global{'searchResults'} = {};  # initialize results hash.
-
-$mesg = $Global{ldap}->search(
-  base   => $LDAP_SEARCH_BASE,
-  filter => $f,
-  attrs  => $att_wanted,
-  callback => \&print_entry,
-); 
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-   ERROR($mesg->code);
-}
-
-
-#
-# Create Hierarchial DN list box data tree, 
-# and display data.
-#
-
-
-eval
-{
-#
-# Create the base point.
-#
-$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
-
-$results = $Global{'searchResults'};
-
-@dnKeys = sort(keys(%$results));
-
-#
-# build the hierachical list using the DN
-#
-foreach my $dnvar ( @dnKeys ) 
-{
- $var = $$results{$dnvar};  # get entry data array
- $shbase = $LDAP_SEARCH_BASE . "/" . $$var[0]; # create new leaf
- $Global{'searchHList'}->add($shbase, -text => $$var[0]); # add leaf to tree.
-}
-$Global{'searchHList'}->pack(-side => "right");
-};  # End of eval
-
-ERROR( \$@ ) if ( $@ );
-
-
-#
-# Get and print out the record attributes.
-#
-
-sub print_entry {
-  my($mesg,$entry) = @_;
-  my @ref = ();
-  my $dn;
-  my $max;
-  my $data = [];
-  my $information = {};
-
-  if ( !defined($entry) )
-  { 
-    return;
-  }
- 
-  $dn = $entry->dn;           # store the entry dn
-  ++$Global{'records'};
-  $msgbox->delete("0.0", "end") 
-           if ( !($Global{'records'} % 10 ));
-  $msgbox->update if ( !($Global{'records'} % 10 ));
-  $msgbox->insert("0.0", "Entries found: $Global{'records'}") 
-           if ( !($Global{'records'} % 10 ));
-  $msgbox->update if ( !($Global{'records'} % 10 ));
-  #
-  #
-  #
-  @ref = $mesg->referrals();
-  if ( @ref )
-  {
-  foreach (@ref )
-  {
-    my $rvar = "LDAP Referral: $_";
-    ERROR(\$rvar);
-  }
-
-  }
-  else
-  {
-  #
-  # Get a list of record attributes
-  #
-  
-  my @attrs = sort $entry->attributes;
-  $max = 0;
-  #
-  # Calculate each attribute`s text length.
-  # We use this to create a pretty print out in the 
-  # List Box
-  #
-  
-  foreach (@attrs) { $max = length($_) if length($_) > $max }
-
-  #
-  # Get attribute`s data
-  #
-  
-  foreach (@attrs) {
-#    my $attr = $entry->get_value($_, asref => 1);
-     my $attr = [];
-    @$attr = $entry->get_value($_);
-    next unless $attr;
-
-    if ( /^jpegPhoto/i )
-    {
-      #
-      # record jpegPhoto data.
-      #
-      $encoded = encode_base64(@$attr[0]);
-      $$information{$_} = $encoded;
-      next;
-    }
-
-    $$information{$_} = $attr;  # record ldap data
-
-    next;
-    
-  }
- }
-push(@$data, $dn);   # dn of entry
-push(@$data, $max);  # max attribute string lenght
-push(@$data, $information);
-${$Global{'searchResults'}}{$dn} = $data;
-}
-
-$Global{mainWindow} -> Unbusy;  # window is not busy
-} # End of search subroutine
-
-#
-# Display jpegPhoto in separate window if Tk::JPEG is used.
-#
-sub displayPhoto
-{
-my ($picture, $dn) = @_; 
-my $jpegFile = $ENV{'TMP'} ."/jpegfile.$$";
-#
-# Store the jpeg data to a temp file.
-#
-open(TMP, "+>$jpegFile");
-$| = 1;
-
-print TMP $picture;
-close(TMP);
-
-if ( !-e "$jpegFile" )
-{
-my $str = "Could not create temporary jpeg file $jpegFile";
-ERROR( \$str );
-return;
-}
-
-#
-# Create a TK window to display the jpeg picture.
-#
-my $mw  = MainWindow->new();
-$mw->title("JPEG PHOTO DISPLAY");
-my $list = $mw ->Listbox( -height => 1, width => length($dn)  );  
-$list->pack( -side => "top" );  
-$list->insert("end", $dn);                                                                                 
-my $image = $mw->Photo(-file => $jpegFile, -format => "jpeg" );
-
-$mw->Label(-image => $image)->pack(-expand => 1, -fill => 'both');
-$mw->Button(-text => 'CLOSE WINDOW', -command => [destroy => $mw])->pack;
-MainLoop;
-
-unlink $jpegFile;
-
-} # End of displayPhoto
-
-#
-# Detect and record the sub-bases, or branches, of the directory.
-#
-
-sub getBases()
-{
-my $mesg;
-my ( $host, $base ) = @_;
-my @base = ();
-my $ptr;
-my $match;
-my $error = 0;  # initialize error flag.
-
-if ( $Global{'nismapname'} )
-{
- #
- # Solaris Native LDAP enabled
- #
- $match = "(|(o=*)(ou=*)(nismapname=*))";  #search only for ou entries.
-}
-else
-{
- $match = "(|(o=*)(ou=*))";  #search only for ou entries.
-}
-
-my $f = Net::LDAP::Filter->new($match) or $error = 1;
- 
-if ( $error )
-{
-$error = "getBases subroutine Bad filter $match";
-ERROR(\$error);
-return @base;
-} 
-
-push(@base,$base);
-$ptr = 0;
-
-while ( $ptr < @base )
-{
- if ( @base < $Global{'limit'} )
- { 
-     $splashList->insert("1", "Searching $base") 
-        if ( defined( $splash) );
-     $splash->update() 
-        if ( defined( $splash) );
-     $msgbox->insert("0", "Searching $base") 
-        if ( defined( $msgbox) );
-     $msgbox->update() 
-        if ( defined( $msgbox) );
-  my @new_base = calBase($base, $f );
-  push(@base, @new_base);
- }
- $base = $base[++$ptr];
-}
-
-return @base;
-
-} # End of subroutine getBases()
-
-
-sub calBase()
-{
-my ( $base, $f ) = @_;
-my $mesg;
-my $entry;
-my $errstr;
-my $error = 0;
-my @new_base = ();
-
-$mesg = $Global{ldap}->search(
-  base   => $base,
-  filter => $f,
-  attrs  => [ "cn","nismapname" ],
-  scope  => "one",
-);
-
-#
-# Check for an error on search
-# Search call work, but there was an ldap error.
-#
-
-if ( $mesg->code && $mesg->code != 11 ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return @new_base;
-}
- else
- {
-
- $entry = $mesg->entry;
-
- return @new_base unless defined($entry);
- $count = $mesg->count();
-
- for($i = 0 ; $i < $count ; $i++) 
- {
- my $entry = $mesg->entry($i);
-
- $dn = $entry->dn;
- $_ = $dn;
-
-#
-# Record only dn that start with ou=, or in some cases nismapname.
-# Normal entrys can be mixed in with these objects.
-#
- if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i ) )
- {
-  push(@new_base, $dn);  # record only dn that start with ou=
- }
- elsif ( /^ou=/ )
- {
-  push(@new_base, $dn);  # record only dn that start with ou=
- }
-
- }
-return @new_base;
-
-}
-
-} # End of subroutine calBase()
+} # End of changeEntry subroutine
 
 #
 # Get and display the root dse entry.
@@ -4222,135 +4668,6 @@ foreach $attr (@Attributes)
 } # End of subrountine rootDse
 
 
-#
-# Make the correction and bind to the directory server.
-#
-
-sub dirConn
-{
-my $error;
-$error = 0;
-
-$Global{dirConnError} = undef();
-
- #
- # Make the connection to the directory server
- #
-
-
-if ( $Global{port} == 636 )
-{
-
-eval 
-{
-  require Net::LDAPS;
-};
-if ($@)
-{
-$msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
-return -1;
-}
-
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-if ( $error )
-{
-$Global{dirConnError} = "LDAPS connection error to $Global{'LDAP_SERVER'}.";
-return 1;
-}
-
-}
-else
-{
-$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-if ( $error )
-{
-$Global{dirConnError} = "LDAP connection error to $Global{'LDAP_SERVER'}.";
-return 1;
-}
-
-}
-
-$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
-                       dn => "$Global{'binddn'}", 
-                       version => $Global{'setVersion'},
-                       );
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-#  $errstr = $mesg->code;
-#  ERROR($errstr);
-  return $mesg->code;
-}
-
-
-return 0;
-
-} # End of subroutine dirConn
-
-
-#
-# Determine new mainWindow position.
-#
-sub globalPos 
-{
-
-my @pos;
-@pos = split(/\+/,$Global{'mainWindow'}->geometry());
-$Global{'horz'} = $pos[1];
-$Global{'vert'} = $pos[2];
-
-} # End of subrountine globalPos
-
-sub root_cancel
-{
- $Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'}); 
-} # End of subrountine root_cancel
-
-#
-# LDAP Error check, some return codes are not really errors.
-# You can retry the ldap action after waiting a while.
-#
-
-sub CheckError {
- 
-my ( $error ) = @_;
- 
-#
-# Check for DSA busy or internal error
-#
- 
-if ( $Global{loopCount} > 61 ) {
-  return 0;  # return an error condition.
-}
- 
-++$Global{loopCount};    # Increment the loop counter.
- 
-if ( $error =~ /too busy/ ||
-     $error =~ /Server encountered an internal error/ )
-   {
-   #
-   # DSA Busy.
-   #
-   sleep 1;
-   return 1;  # No error, try again
-   }
-else {
-   #
-   # DSA did not return "DSA busy" message
-   #
-   return 0;  # error
- 
-   }
- 
-} # End of subrountine  CheckError 
 
 #----------------------------------------#
 # Usage() - display simple usage message #
@@ -4360,6 +4677,12 @@ sub Usage
    print( "Usage: [-h] | [-d]\n" );
    print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
    print( "\t      Will not fork process.\n" );
+   print( "\t      Value: 0 - display tklkup messages only.\n" );
+   print( "\t      Value: 1 - Show outgoing packets (using asn_hexdump).\n" );
+   print( "\t      Value: 2 - Show incoming packets (using asn_hexdump).\n" );
+   print( "\t      Value: 4 - Show outgoing packets (using asn_dump).\n" );
+   print( "\t      Value: 8 - Show incoming packets (using asn_dump).\n" );
+   print( "\t      These values can be add to display several functions.\n" );
    print( "\t-h    Help.  Display this message.\n" );
    print( "\n" );
    print( "\t      Perldoc pod documentation is included in this script.\n" );
@@ -4384,7 +4707,7 @@ directory server.  It is GUI based with several buttons for
 selecting directory servers, search bases, attributes and
 for enabling the Directory Schema Search window.
 
-This script has been tested on Solaris, RedHat 6.0 Linux, 
+This script has been tested on Solaris, RedHat 6.0 Linux, RedHat 73, 
 Mandrake 6.5  and ActiveState Perl 628 but should work with 
 any system that has PERL and the required modules installed in 
 it.
@@ -4555,11 +4878,6 @@ will display the information obtained from the root dse entry.
 If the root dse entry can not be obtained then an error message
 window will be displayed.  This menu has a "Hot" key, Ctrl-r.
 
-The I<EXPLORE DIRECTORY SCHEMA> menu will activate the 
-Directory Schema Search Window.  This menu has a "Hot" key, Ctrl-s.
-For information about this window see the Schema section of 
-the manual.  
-
 The I<SET BIND CREDENTIALS> button will activate a window 
 that is separate from the main window.  This menu has a 
 "Hot" key, Alt-b.
@@ -4585,6 +4903,9 @@ At the bottom of the window is the Accept button, pressing
 this button will set the bind DN and the password.  Pressing the
 accept button will cause the program to bind to the currently
 selected directory server.
+
+Having both the dn and password fields blank and pressing the
+accept key will cause an anonymous bind to the directory.
 
 The I<DIRECTORY PORT> button will activate a window 
 that is separate from the main window.  This menu has a 
@@ -4616,6 +4937,12 @@ change to a new directory server.
 I<EXIT THE APPLICATION> button.  Just below the main menu bar is 
 the "Exit" button.  When a mouse click is done on the "Exit" button 
 the program will terminate.
+
+The tklkup GUI is made of five display and control panels;
+SEARCH, SEARCH RESULTS, SEARCH DISPLAY, SCHEMA DATA, and 
+CREATE ENTRY;
+
+=head1 SEARCH Panel
 
 The I<LDAP VERSION> "RadioButton" diamond will select the
 LDAP protocol version.  When selected the "RadioButton" 
@@ -4712,38 +5039,31 @@ string in any way.
 I<SEARCH THE DIRECTORY> button.  At the bottom of the GUI is 
 the "Search" button.  When a mouse click is done on the 
 "SEARCH THE DIRECTORY" button the program will execute a ldap search
-of the directory.
+of the directory.  After the search is completed the SEARCH RESULTS
+panel will be brought to the foreground for the user.
 
 -------------------------------------------------------------------
 
-=head1 Display Search Results
+=head1 SEARCH RESULTS Panel
 
 When the SEARCH THE DIRECTORY button is pressed the Search Results 
-window will be displayed.
+panel will be brought to the foreground of the GUI.
 
-At the top of the GUI is the "Close Display Search Result Window" 
-button.  When a mouse click is done on the "Close Display Search Result
-Window" button the Display Search Result window will be withdrawn.  
-The window is not destroyed, it just made invisible and disabled.
-
-The Search Result window can be destroyed by enabling the proper 
-window manager destroy function.
-
-The hierarchial text box is where the results of the directory search 
-will be displayed.  If there were valid results returned from the 
+At the top right side of the panel is the hierarchial text box where 
+the DN results of the directory search will be displayed.  If there 
+were valid results returned from the 
 search a list of DN entry(s) will be displayed in the hierarchial 
-list box.  Selecting a DN will cause a LDAP Action window to 
-appear in which the user can select to view, rename, edit, or 
-delete the corresponding DS's directory data.
+list box.  Selecting a DN will cause the five LDAP Action buttons to 
+the left of the  hierarchial text box to be put in the active state.
+It is with these 5 buttons that the user can select to view, rename, edit,
+save to a ldif file, or delete the corresponding DS's directory data.
 
--------------------------------------------------------------------
+=head1 LDAP ACTION BUTTONS
 
-=head1 LDAP ACTION WINDOW
-
-The LDAP Action window has 4 buttons inside of it; 
-
-I<DISPLAY> - Will display A Directory Search Display window to 
-appear with the corresponding data in it.
+I<DISPLAY> - Will display the selected DN's information in the 
+Directory Data text box that is located in the SEARCH DISPLAY
+panel. The SEARCH DISPLAY panel will be brought to the foreground
+of the GUI.
 
 I<RENAME> - Will display a MODDN INFORMATION window in which the
 user will input the needed information for modifing an entry's
@@ -4757,13 +5077,23 @@ corresponding entry data in it.  It is from this window that the
 user can change directory data.  This window is discribed in 
 detail later in this document.
 
+I<SAVE TO LDIF> - Will cause the entry that is selected to be written
+to the file specified in the LDIF FILE NAME text box.
+
 I<CANCEL> - Will cancel the action request for the select DN.
+
+=head1 SAVE ALL TO LDIF BUTTON
+
+At the bottom of the SEARCH RESULTS panel is the SAVE ALL TO LDIF 
+button, pressing this button will cause the previous search to be 
+re-executed and all of the search results will be written to the 
+file specified in the LDIF FILE NAME text box.
 
 -------------------------------------------------------------------
 
-=head1 DIRECTORY SEARCH DISPLAY WINDOW
-
-I<DIRECTORY SEARCH DISPLAY> is the window where data for the
+=head1 SEARCH DISPLAY PANEL
+ 
+I<DIRECTORY SEARCH DISPLAY> is the panel where data for the
 selected DN is displayed. Data is displayed in the read only
 Directory Data text box.  Associated with the Directory Data 
 text box is the "RadioButton" that determines how often the
@@ -4980,47 +5310,31 @@ directory entry to be deleted.
 
 -------------------------------------------------------------------
 
-=head1 Schema Window.
+=head1 SCHEMA DATA PANEL
 
-=head2 Directory Schema Search Window
-
-This function is used to lookup schema information from a LDAP 
-directory server.  The directory server to be searched is 
-selected from the Directory Search window.
+This panel has schema information from a LDAP directory server.  
+This data is retrieved, with in one second, upon connection to the 
+selected directory server.  This action takes place upon start up
+of the program or when a new directory server is selected.
 
 =head2 Directory Schema Display Window Operation
 
-When the Explore Directory Schema button is pressed in the
-Directory Search window, the Directory Schema Display window 
-will be displayed on your computer.  The graphical user 
-interface, GUI, has several sections to it.  
-
-At the top of the GUI is the "Exit Schema Display" button.  
-When a mouse click is done on the "Close Schema Search Window" 
-button the schema window will be destroyed.  
-
-The Directory Schema Display window can be destroyed by 
-enabling the proper window manager destroy function.
+When the SCHEMA DATA panel tab is pressed, the SCHEMA DATA
+panel is brought to the foreground of the GUI.
 
 When the Write Data To File RadioButton is selected the 
 LDAP Schema data will be written to the file listed 
-in the text box below the RadioButton text.  Once the data 
-has been written to the file a message will be written to the
-DIRECTORY SCHEMA DATA text box stating that the data has been
-written to a file and will list the file name. Upon 
-completion of the schema dump operation the RadioButton and 
-text in the file name text box will be reset.
-
-Associated with the Directory Schema Data text box is the "CheckButton"
-that determines how often the data in the directory text
-box is cleared.  If the "CheckButton" is selected, colored
-red, the directory data text box will be cleared out before
-each directory query.  If the "CheckButton" is not selected
-the directory data text box will NOT be cleared out until 
-the Clear Data button in clicked or the CLEAR DIRECTORY DATA
-ON EACH QUERY "CheckButton" is selected.  By default the 
-CheckButton is select to clear out the data in the Directory
-Schema Data text box on each query.
+in the text box below the RadioButton text.  By selecting
+the DSML XML RadionButton, the data will be written to the
+file in XML format.  Once the data has been written to the file a 
+message will be written to the DIRECTORY SCHEMA DATA text box 
+stating that the data has been written to a file and will list 
+the file name. Upon completion of the schema dump operation 
+the RadioButton and text in the file name text box will be reset.
+At the bottom of the GUI is the "Retrieve Directory Schema" button.  
+When a mouse click is done on the "Retrieve Directory Schema" 
+button the script will query the directory server for schema information
+and then write the information to the file.
 
 Associated with the Directory Schema Data text box is a series of
 "CheckButtons" that determines what of the schema objects will be
@@ -5109,6 +5423,17 @@ displayed in that objectclass's section.
 
 -------------------------------------------------------------------
 
+=head1 CREATE ENTRY PANEL
+
+This panel is currently under construction.
+
+Currently the user can create an entry from a LDIF file.
+
+When the user presses the "CREATE ENTRY FROM LDIF FILE" button,
+the file listed in the "LDIF FILE NAME" text box will be used
+to create the entries listed in the ldif formatted file.
+
+-------------------------------------------------------------------
 
 =head1 REQUIREMENTS
 
@@ -5169,10 +5494,9 @@ charden@pobox.com.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2001 Clif Harden. All rights reserved. This program is
+Copyright (c) 1999-2003 Clif Harden. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =cut
-
 
