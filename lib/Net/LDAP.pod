@@ -115,6 +115,12 @@ that was called.
 
 =back
 
+=item version
+
+Set the protocol version being used (default is LDAPv2). This is
+useful if you want to avoid sending a bind operation and therefore
+have to use LDAPv3.
+
 =back
 
 Example
@@ -843,6 +849,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.9 2001/07/06 09:18:52 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.10 2001/07/06 12:17:35 gbarr Exp $>
 
 =cut
