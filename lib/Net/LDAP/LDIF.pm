@@ -48,6 +48,8 @@ sub new {
   # Default the error handling to die 
   $opt{'onerror'} = 'die' unless exists $opt{'onerror'};
 
+  $opt{'lowercase'} ||= 0;
+
   my $self = {
     change => 0,
     changetype => "modify",
@@ -271,10 +273,10 @@ sub _wrap {
 }
 
 sub _write_attr {
-  my($attr,$val,$wrap) = @_;
+  my($attr,$val,$wrap,$lower) = @_;
   my $v;
   foreach $v (@$val) {
-    my $ln = $attr;
+    my $ln = $lower ? lc $attr : $attr;
     if ($v =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
       require MIME::Base64;
       $ln .= ":: " . MIME::Base64::encode($v,"");
@@ -287,11 +289,11 @@ sub _write_attr {
 }
 
 sub _write_attrs {
-  my($entry,$wrap) = @_;
+  my($entry,$wrap,$lower) = @_;
   my $attr;
   foreach $attr ($entry->attributes) {
     my $val = $entry->get_value($attr, asref => 1);
-    _write_attr($attr,$val,$wrap);
+    _write_attr($attr,$val,$wrap,$lower);
   }
 }
 
@@ -330,6 +332,7 @@ sub write_entry {
   my $entry;
   my $change = $self->{change};
   my $wrap = int($self->{'wrap'});
+  my $lower = $self->{'lowercase'};
   local($\,$,); # output field and record separators
 
   unless ($self->{'fh'}) {
@@ -361,14 +364,14 @@ sub write_entry {
         next;
       }
       elsif ($type eq 'add') {
-        _write_attrs($entry,$wrap);
+        _write_attrs($entry,$wrap,$lower);
         next;
       }
       elsif ($type eq 'modrdn') {
-        print _write_attr('newrdn',$entry->get_value('newrdn'),$wrap);
+        print _write_attr('newrdn',$entry->get_value('newrdn'),$wrap,$lower);
         print 'deleteoldrdn: ',$entry->get_value('deleteoldrdn'),"\n";
         my $ns = $entry->get_value('newsuperior');
-        print _write_attr('newsuperior',$ns,$wrap) if defined $ns;
+        print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
         next;
       }
 
@@ -384,7 +387,7 @@ sub write_entry {
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           print $type,": ",$attr,"\n";
-          _write_attr($attr,$val,$wrap);
+          _write_attr($attr,$val,$wrap,$lower);
         }
       }
     }
@@ -392,7 +395,7 @@ sub write_entry {
     else {
        print "\n" if tell($self->{'fh'});
        _write_dn($entry->dn,$self->{'encode'},$wrap);
-       _write_attrs($entry,$wrap);
+       _write_attrs($entry,$wrap,$lower);
     }
   }
 
