@@ -66,6 +66,12 @@ sub new {
     write_count => ($mode eq 'a' and tell($fh) > 0) ? 1 : 0,
   };
 
+  # fetch glob for URL type attributes (one per LDIF object)
+  if ($mode eq "r") {
+    require Symbol;
+    $self->{_attr_fh} = Symbol::gensym();
+  }
+
   bless $self, $pkg;
 }
   
@@ -102,6 +108,33 @@ sub _read_lines {
   }
 
   @ldif;
+}
+
+
+# read attribute value from URL (currently only file: URLs)
+sub _read_url_attribute {
+  my $self = shift;
+  my $url = shift;
+  my @ldif = @_;
+  my $line;
+
+  if ($url =~ s/^file:(?:\/\/)?//) {
+    my $fh = $self->{_attr_fh};
+    unless (open($fh, '<', $url)) {
+      $self->_error("can't open $line: $!", @ldif);
+      return;
+    }
+    { # slurp in whole file at once
+      local $/;
+      $line = <$fh>;
+    }
+    close($fh);
+  } else {
+    $self->_error("unsupported URL type", @ldif);
+    return;
+  }
+
+  $line;
 }
 
 
@@ -191,6 +224,8 @@ sub _read_entry {
         }
  
         $line =~ s/^([-;\w]+):\s*// and $attr = $1;
+
+        # base64 encoded attribute: decode it
         if ($line =~ s/^:\s*//) {
           eval { require MIME::Base64 };
           if ($@) {
@@ -198,6 +233,11 @@ sub _read_entry {
             return;
           }
           $line = MIME::Base64::decode($line);
+        }
+        # url attribute: read in file:// url, fail on others
+        elsif ($line =~ s/^\<\s*(.*?)\s*$/$1/) {
+          $line = $self->_read_url_attribute($line, @ldif);
+          return  if !defined($line);
         }
  
         if( defined($modattr) && $attr ne $modattr ) {
@@ -228,6 +268,7 @@ sub _read_entry {
     foreach $line (@ldif) {
       $line =~ s/^([-;\w]+):\s*// && ($attr = $1) or next;
   
+      # base64 encoded attribute: decode it
       if ($line =~ s/^:\s*//) {
         eval { require MIME::Base64 };
         if ($@) {
@@ -235,6 +276,11 @@ sub _read_entry {
           return;
         }
         $line = MIME::Base64::decode($line);
+      }
+      # url attribute: read in file:// url, fail on others
+      elsif ($line =~ s/^\<\s*(.*?)\s*$/$1/) {
+        $line = $self->_read_url_attribute($line, @ldif);
+        return  if !defined($line);
       }
   
       if ($attr eq $last) {
