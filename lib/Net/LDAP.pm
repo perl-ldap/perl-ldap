@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= 0.23;
+$VERSION 	= 0.23_01;
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -186,23 +186,23 @@ my %ptype = qw(
 
 sub bind {
   my $ldap = shift;
-  my $acnt = @_;
   my $arg  = &_dn_options;
 
   require Net::LDAP::Bind;
   my $mesg = $ldap->message('Net::LDAP::Bind' => $arg);
 
-  $ldap->version($arg->{version})
+  $ldap->version(delete $arg->{version})
     if exists $arg->{version};
 
-  my $dn = $arg->{dn} || '';
+  my $dn      = delete $arg->{dn} || '';
+  my $control = delete $arg->{control};
 
   my %stash = (
     name    => ref($dn) ? $dn->dn : $dn,
     version => $ldap->version,
   );
 
-  my($auth_type,$passwd) = $acnt ? () : (simple => '');
+  my($auth_type,$passwd) = scalar(keys %$arg) ? () : (simple => '');
 
   keys %ptype; # Reset iterator
   while(my($param,$type) = each %ptype) {
@@ -232,14 +232,14 @@ sub bind {
     };
 
     # Save data, we will need it later
-    $mesg->_sasl_info($stash{name},$arg->{control},$sasl);
+    $mesg->_sasl_info($stash{name},$control,$sasl);
   }
 
   $stash{authentication} = { $auth_type => $passwd };
 
   $mesg->encode(
     bindRequest => \%stash,
-    controls    => $arg->{control}
+    controls    => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
