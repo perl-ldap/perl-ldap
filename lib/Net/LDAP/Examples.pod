@@ -510,8 +510,8 @@ information about returned attributes.
   }
 
 The process is the basically the same for getting objectClass 
-information.  Where schema->all_attributes() is used, substitute 
-schema->all_objectclasses().  From that point on the process is
+information.  Where schema-E<gt>all_attributes() is used, substitute 
+schema-E<gt>all_objectclasses().  From that point on the process is
 the same for both objectClasses and attributes. 
 
 =head1 BUGS
@@ -520,7 +520,7 @@ None known, but there may be some
 
 =head1 AUTHOR  (of this document)
 
-Russell Biggs <rgb@ticnet.com>
+Russell Biggs E<lt>rgb@ticnet.comE<gt>
 
 =head1 COPYRIGHT
 
@@ -528,7 +528,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.5 2003/05/06 12:16:54 chrisridd Exp $>
+I<$Id: Examples.pod,v 1.6 2003/05/07 10:59:12 chrisridd Exp $>
 
 =cut
 
