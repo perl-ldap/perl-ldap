@@ -12,6 +12,7 @@ $VERSION = "0.01";
 
 use strict;
 
+sub supported_feature        { _supported_feature( @_, 'supportedFeatures'       ) }
 sub supported_extension      { _supported_feature( @_, 'supportedExtension'      ) }
 sub supported_version        { _supported_feature( @_, 'supportedLDAPVersion'    ) }
 sub supported_control        { _supported_feature( @_, 'supportedControl'        ) }
@@ -58,6 +59,11 @@ C<get_value> is identical to L<Net::LDAP::Entry/get_value>
 
 Returns true if the server supports all of the specified
 extension OIDs
+
+=item supported_feature ( OID_LIST )
+
+Returns true if the server supports all of the specified
+feature OIDs
 
 =item supported_version ( VERSION_LIST )
 

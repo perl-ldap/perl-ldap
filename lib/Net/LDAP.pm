@@ -889,6 +889,7 @@ sub root_dse {
 		  altServer
 		  supportedExtension
 		  supportedControl
+		  supportedFeatures
 		  supportedSASLMechanisms
 		  supportedLDAPVersion
 		)];
