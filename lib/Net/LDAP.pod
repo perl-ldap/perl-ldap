@@ -524,9 +524,9 @@ B<Example>
 
  my $schema = $ldap->schema();
  # get objectClasses
- @ocs = $schema->objectclasses();
+ @ocs = $schema->all_objectclasses();
  # Get the attributes
- @atts = $schema->attributes();
+ @atts = $schema->all_attributes();
 
 =item search ( OPTIONS )
 
@@ -913,6 +913,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.21 2003/05/06 15:47:37 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.22 2003/05/06 16:58:22 gbarr Exp $>
 
 =cut
