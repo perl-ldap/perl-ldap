@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION = 0.20_03;
+$VERSION = 0.21;
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -59,14 +59,9 @@ sub _dn_options {
 
 sub _err_msg {
   my $mesg = shift;
-  my $errstr = $mesg->error;
-  unless ($errstr) {
-    require Net::LDAP::Util;
-    $errstr = Net::LDAP::Util::ldap_error_name($mesg->code);
-  }
-  my $dn = $mesg->dn || '';
-  $errstr = "$dn: $errstr" if $dn;
-  $errstr;
+  my $errstr = $mesg->dn || '';
+  $errstr .= ": " if $errstr;
+  $errstr . $mesg->error;
 }
 
 my %onerror = (
@@ -81,8 +76,8 @@ my %onerror = (
 sub _error {
   my ($ldap, $mesg) = splice(@_,0,2);
 
-  $mesg->set_error($ldap, @_);
-  $ldap->{net_ldap_onerror} and !$ldap->{net_ldap_async}
+  $mesg->set_error(@_);
+  $ldap->{net_ldap_onerror} && !$ldap->{net_ldap_async}
     ? scalar &{$ldap->{net_ldap_onerror}}($mesg)
     : $mesg;
 }
@@ -352,7 +347,7 @@ sub modify {
 	    operation => $opcode,
 	    modification => {
 	      type => $chg->[$i],
-	      vals => $chg->[$i+1]
+	      vals => ref($chg->[$i+1]) ? $chg->[$i+1] : [$chg->[$i+1]]
 	    }
 	  };
 	  $i += 2;

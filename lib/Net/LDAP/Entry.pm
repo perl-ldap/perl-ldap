@@ -6,9 +6,10 @@ package Net::LDAP::Entry;
 
 use strict;
 use Net::LDAP::ASN qw(LDAPEntry);
+use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 sub new {
   my $self = shift;
@@ -52,13 +53,13 @@ sub dn {
 sub get_attribute {
   require Carp;
   Carp::carp("->get_attribute depricated, use ->get_value") if $^W;
-  shift->get_value(@_, asref => 1);
+  shift->get_value(@_, asref => !wantarray);
 }
 
 sub get {
   require Carp;
   Carp::carp("->get depricated, use ->get_value") if $^W;
-  shift->get_value(@_, asref => 1);
+  shift->get_value(@_, asref => !wantarray);
 }
 
 
@@ -209,8 +210,13 @@ sub update {
   elsif ($self->{'changetype'} eq 'delete') {
     $mesg = $ldap->delete($self, 'callback' => $cb);
   }
-  else {
+  elsif (defined $self->{'changes'}) {
     $mesg = $ldap->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb);
+  }
+  else {
+    require Net::LDAP::Message;
+    $mesg = Net::LDAP::Message->new( {} );
+    $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
   }
 
   return $mesg;

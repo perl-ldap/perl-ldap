@@ -492,6 +492,12 @@ information about returned attributes.
   foreach ( @attributes)
   {
         print "attributeType\n";
+
+        #
+        # Get and display the oid number of the objectclass.
+        #
+        $oid = $schema->name2oid( "$_" );
+
         #
         # Get the various items associated with
         # this attribute.
@@ -544,7 +550,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.3 2000/08/16 11:07:34 gbarr Exp $>
+I<$Id: Examples.pod,v 1.4 2000/09/12 09:17:09 gbarr Exp $>
 
 =cut
 

@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.3 2000/08/16 11:07:34 gbarr Exp $
+# $Id: Message.pm,v 1.4 2000/09/12 09:17:09 gbarr Exp $
 # Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -10,7 +10,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.04";
+$VERSION = "1.05";
 
 my $MsgID = 0;
 
@@ -71,7 +71,7 @@ sub referrals {
     : ();
 }
 
-sub error {
+sub server_error {
   my $self = shift;
 
   $self->sync unless exists $self->{resultCode};
@@ -79,6 +79,13 @@ sub error {
   exists $self->{errorMessage}
     ? $self->{errorMessage}
     : undef
+}
+
+sub error {
+  my $self = shift;
+  $self->server_error
+    or require Net::LDAP::Util
+    and Net::LDAP::Util::ldap_error_desc( $self->code );
 }
 
 sub set_error {

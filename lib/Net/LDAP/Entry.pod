@@ -218,21 +218,21 @@ is called.
 
 
 
-=item update ( [ CLIENT ] )
+=item update ( CLIENT )
 
-Update the directory server with any changes that have been made
-locally. This means any calls that have been made to add, replace
-or delete since the last call to changetype or update was made.
+Update the directory server with any changes that have been made locally
+to the attributes of this entry. This means any calls that have been
+made to add, replace or delete since the last call to changetype or
+update was made.
 
-CLIENT should be a C<Net::LDAP> object where the update
-should be sent to.
+This method B<cannot> be used to modify the DN of the entry on the server,
+for that see the C<moddn> method in L<Net::LDAP|Net::LDAP>.
 
-CLIENT is only optional is the B<Net::LDAP::Entry> object was created
-by a search on a directory server. In which case, if omitted, the
-update will be sent back to the same server.
+CLIENT is a C<Net::LDAP> object where the update will be sent to.
 
-The result will be an object of type L<Net::LDAP::Message|Net::LDAP::Message> as returned
-by the add, modify or delete method called on CLIENT.
+The result will be an object of type
+L<Net::LDAP::Message|Net::LDAP::Message> as returned by the add, modify
+or delete method called on CLIENT.
 
 =back
 
@@ -256,6 +256,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.4 2000/08/16 11:07:34 gbarr Exp $>
+I<$Id: Entry.pod,v 1.5 2000/09/12 09:17:09 gbarr Exp $>
 
 =cut

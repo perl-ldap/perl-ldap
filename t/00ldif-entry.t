@@ -47,15 +47,15 @@ print "ok 3\n";
 print "not " unless join(":",sort $e->attributes(nooptions => 1)) eq "associateddomain:counting:description:l:lastmodifiedby:lastmodifiedtime:name:o:postaladdress:st:streetaddress:telephonenumber";
 print "ok 4\n";
 
-$r = $e->get('name');
+$r = $e->get_value('name', asref => 1);
 print "not " unless $r and @$r == 1 and $r->[0] eq 'Graham Barr';
 print "ok 5\n";
 
-$r = $e->get('name;en-us');
+$r = $e->get_value('name;en-us', asref => 1);
 print "not " unless $r and @$r == 1 and $r->[0] eq 'Bob';
 print "ok 6\n";
 
-$r = $e->get('name', alloptions => 1);
+$r = $e->get_value('name', alloptions => 1, asref => 1);
 print "not " unless $r and  join("*", sort keys %$r) eq "*;en-us";
 print "ok 7\n";
 

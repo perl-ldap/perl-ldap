@@ -1,4 +1,4 @@
-# $Id: ASN.pm,v 1.2 2000/06/29 06:07:52 gbarr Exp $
+# $Id: ASN.pm,v 1.3 2000/09/12 09:17:09 gbarr Exp $
 
 package Net::LDAP::ASN;
 
@@ -322,8 +322,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     SortRequestDummy ::= SEQUENCE {
 	order SEQUENCE OF SEQUENCE {
 	    type         OCTET STRING,
-	    orderingRule OCTET STRING OPTIONAL,
-	    reverseOrder BOOLEAN OPTIONAL } }
+	    orderingRule [0] OCTET STRING OPTIONAL,
+	    reverseOrder [1] BOOLEAN OPTIONAL } }
 
     SortRequest ::= COMPONENTS OF SortRequestDummy
 
