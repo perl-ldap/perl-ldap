@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.9 2001/12/25 01:09:47 charden Exp $
+# $Id: DSML.pm,v 1.10 2001/12/29 22:51:14 charden Exp $
 #
 
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
@@ -108,6 +108,10 @@ sub end_dsml {
   qq!</dsml:dsml>\n!;
 }
 
+sub close
+{
+my $self = shift;
+}
 sub DESTROY { shift->close }
 
 #transform any entity chararcters
