@@ -1,3 +1,8 @@
+Change 522 on 2000/05/19 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Return an error when there are unmatched ()
+
 Change 517 on 2000/05/15 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::Search

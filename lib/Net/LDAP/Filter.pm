@@ -7,7 +7,7 @@ package Net::LDAP::Filter;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.10";
+$VERSION = "0.11";
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -180,6 +180,10 @@ sub parse {
     # Process the end of  (& (...)(...))
 
     elsif ($filter =~ s/^\)\s*//o) {
+      unless (@stack) {
+	$ErrStr = "Bad filter, unmatched )";
+	return undef;
+      }
       my($myop,$mydata) = ($op,$cur);
       ($op,$cur) = @{ pop @stack };
 	# Need to do more checking here
@@ -214,6 +218,10 @@ sub parse {
   if (length $filter) {
     # If we have anything left in the filter, then there is a problem
     $ErrStr = "Bad filter, error before " . substr($filter,0,20);
+    return undef;
+  }
+  if (@stack) {
+    $ErrStr = "Bad filter, unmatched (";
     return undef;
   }
 
