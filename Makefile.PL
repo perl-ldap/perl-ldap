@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.10 2002/06/03 15:48:12 gbarr Exp $
+# $Id: Makefile.PL,v 1.11 2003/03/09 11:00:50 chrisridd Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -63,8 +63,8 @@ check_module('IO::Socket::SSL',0.81) or print <<"EDQ","\n";
 The IO::Socket::SSL module is needed ONLY IF you intend to use LDAPS
 EDQ
 
-check_module('XML::Parser') or print <<"EDQ","\n";
-The XML::Parser module is needed ONLY IF you intend to read/write DSML files
+check_module('XML::SAX::Base') or print <<"EDQ","\n";
+The XML::SAX::Base module is needed ONLY IF you intend to read/write DSML files
 EDQ
 
 check_module('MIME::Base64') or print <<"EDQ","\n";

@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.17 2002/09/11 12:49:55 gbarr Exp $
+# $Id: DSML.pm,v 1.18 2003/03/09 11:00:31 chrisridd Exp $
 # 
 
 use strict;
@@ -836,6 +836,14 @@ easier for a human.
 
 =over 4
 
+=item start_dsml( )
+
+Start a DSML file.
+
+= item end_dsml( )
+
+End a DSML file.
+
 =item write_entry( ENTRY )
 
 Entry is a Net::LDAP::Entry object. The write method will parse
@@ -867,7 +875,7 @@ Graham Barr   gbarr@pobox.com
 =head1 SEE ALSO
 
 L<Net::LDAP>,
-L<XML::Parser>
+L<XML::SAX::Base>
 
 =head1 COPYRIGHT
 
