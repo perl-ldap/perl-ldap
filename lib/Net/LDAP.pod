@@ -180,7 +180,7 @@ See L</CALLBACKS> below
 B<Example>
 
   $mesg = $ldap->search( @search_args );
-  
+
   $ldap->abandon( $mesg ); # This could be written as $mesg->abandon
 
 
@@ -218,7 +218,7 @@ B<Example>
 
   # $entry is an object of class Net::LDAP::Entry
   $mesg = $ldap->add( $entry );
-  
+
   $mesg = $ldap->add( $DN,
     attrs => [
       name  => 'Graham Barr',
@@ -284,9 +284,9 @@ of L<Authen::SASL>.
 B<Example>
 
   $ldap->bind; # Anonymous bind
-  
+
   $ldap->bind( $DN, password => $password);
-  
+
   # $sasl is an object of class Authen::SASL
   $ldap->bind( $DN, sasl => $sasl, version => 3);
 
@@ -420,7 +420,7 @@ the all instances of the attribute will be deleted.
 
 =item replace
 
-The <replace> option takes a argument in the same form as B<add>, but will
+The B<replace> option takes a argument in the same form as B<add>, but will
 cause any existing attributes with the same name to be replaced. If the
 value for any attribute in the HASH is a reference to an empty ARRAY
 the all instances of the attribute will be deleted.
@@ -882,16 +882,15 @@ http://www.pobox.com/~gbarr/perl-ldap/.
 =head1 ACKNOWLEDGEMENTS
 
 This document is based on a document originally written by Russell Fulton
-<r.fulton@auckland.ac.nz>.
+E<lt>r.fulton@auckland.ac.nzE<gt>.
 
-Chris Ridd <chris.ridd@messagingdirect.com> for the many hours spent
+Chris Ridd E<lt>chris.ridd@isode.comE<gt> for the many hours spent
 testing and contribution of the ldap* command line utilities.
 
 =head1 MAILING LIST
 
 A discussion mailing list is hosted by sourceforge at
-<perl-ldap-dev@lists.sourceforge.net> Don't be put off by the -dev
-in the name, the list is open for all questions.
+E<lt>perl-ldap@perl.orgE<gt> No subscription is necessary!
 
 =head1 BUGS
 
@@ -903,16 +902,16 @@ list.
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2002 Graham Barr. All rights reserved. This program is
+Copyright (c) 1997-2003 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.23 2003/05/06 21:20:24 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.24 2003/05/07 10:39:10 chrisridd Exp $>
 
 =cut
