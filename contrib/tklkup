@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.29 2002/10/08 01:41:31 charden Exp $
+# $Id: tklkup,v 1.30 2002/11/06 04:27:37 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,11 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.30  2002/11/06 04:27:37  charden
+# Corrected a few pod errors that podchecker found.
+#
 # Revision 1.29  2002/10/08 01:41:31  charden
+#
 # Change the way search base(s) are displayed.  Instead of one big list,
 # the base list has been setup as a cascading menu based on the
 # namingContext(s) of the directory server.
@@ -4348,7 +4352,7 @@ To be used this file must have user read permission.
 
 There are 5 commands that can be used with this file;
 hand, attribute, server, limit, and port.
- 
+
  hand -> values: left or right.  Defines where the 
                  attribute label box will be place.
 
@@ -4357,7 +4361,7 @@ hand, attribute, server, limit, and port.
 
  port -> value: default is 389.  User should set this
                  to match their needs.
- 
+
  nismapname -> Solaris Native LDAP uses nismapname to define
                the automounter directory branches.  Default
                is to not use Solaris Native LDAP.  Uncomment
@@ -4412,8 +4416,8 @@ hand, attribute, server, limit, and port.
            None of this is a problem if all of your servers have 
            the same DIT layouts. Just define them with the 
            same search base, there should be little or no delay
-           when switching to the new server.          
-           
+           when switching to the new server.
+
  Now a word about directory branch, or search base, detection.  
  There are many things that can prevent this function from working
  properly.  Several version 2 LDAP servers that this was tested 
@@ -4431,11 +4435,12 @@ hand, attribute, server, limit, and port.
  script is still working is because search limit exceeded messages
  are displayed on the console that initiated the tklkup script.
  Who wants to wait a hour while the script figures this out.
- 
+
  If you decide to use auto search base detection you will just have
  to try it and hope it works.
 
-=back 4
+=back
+
 -------------------------------------------------------------------
 
 =head1 tklkup
@@ -4465,7 +4470,7 @@ diamond will be red in color.  This indicates that the
 ldap connection will use the version I<3> protocol.  To use 
 ldap version I<2> protocol press the "RadioButton" diamond 
 so that it becomes a gray color.
- 
+
 The I<SELECT SERVER> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the directory server the
@@ -4650,8 +4655,8 @@ I<CANCEL> - Will cancel the action request for the select DN.
 -------------------------------------------------------------------
 
 =head1 DIRECTORY SEARCH DISPLAY WINDOW
- 
-I<DIRECTORY SEARCH DISPLAY> is the window where data for the 
+
+I<DIRECTORY SEARCH DISPLAY> is the window where data for the
 selected DN is displayed. Data is displayed in the read only
 Directory Data text box.  Associated with the Directory Data 
 text box is the "RadioButton" that determines how often the
@@ -4703,8 +4708,8 @@ Directory Data text box.  These 4 functions are;
          Wrap ->  When selected will prompt the user
          to choose how to do line wrapping in the 
          Directory Data text box.
-  
-The CLEAR DATA button will clear out the text that 
+
+The CLEAR DATA button will clear out the text that
 appears in the Directory Data text box.
 
 =head2 JPEG Photo Display.
@@ -4962,7 +4967,7 @@ Directory Data text box.  These 4 functions are;
          Wrap ->  When selected will prompt the user
          to choose how to do line wrapping in the 
          Directory Data text box.
-  
+
 The Clear Data button will clear out the text that 
 appears in the Directory Schema Data text box.
 
