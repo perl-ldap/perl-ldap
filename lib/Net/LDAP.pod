@@ -17,7 +17,7 @@ Net::LDAP - Lightweight Directory Access Protocol
  
  $mesg->code && die $mesg->error;
  
- foreach $entry ($mesg->all_entries) { $entry->dump; }
+ foreach $entry ($mesg->entries) { $entry->dump; }
  
  $mesg = $ldap->unbind;   # take down session
  
