@@ -20,16 +20,16 @@ Net::LDAP::Entry - An LDAP entry object
   # or
 
   use Net::LDAP::Entry;
-  
+
   $entry = Net::LDAP::Entry->new;
 
   $entry->add(
     attr1 => 'value1',
     attr2 => [qw(value1 value2)]
   );
-  
+
   $entry->delete( 'unwanted' );
-  
+
   $entry->replace(
     attr1 => 'newvalue'
     attr2 => [qw(new values)]
@@ -73,7 +73,7 @@ Returns a copy of the B<Net::LDAP::Entry> object.
 
 
 
-=item add ( ATTR => VALUE [, ATTR2 => VALUE2 ... ] )
+=item add ( ATTR =E<gt> VALUE [, ATTR2 =E<gt> VALUE2 ... ] )
 
 Add one or more new attributes to the entry. Each value
 must be a scalar variable or a reference to an array. The
@@ -160,7 +160,7 @@ setting the entry attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
 
 
 
-=item delete ( ATTR [ => VALUE [, ATTR2 => VALUE2... ]] )
+=item delete ( ATTR [ =E<gt> VALUE [, ATTR2 =E<gt> VALUE2... ]] )
 
 Delete the values of given attributes from the entry. Values are
 references to arrays; passing a reference to an empty array is the
@@ -202,8 +202,8 @@ values for the given attribute, or the empty list if the attribute does
 not exist. In a scalar context returns the first value for the attribute
 or undef if the attribute does not exist.
 
-The return value may be changed by OPTIONS, which is a list of name => value
-pairs, valid options are :-
+The return value may be changed by OPTIONS, which is a list of name
+=E<gt> value pairs, valid options are :-
 
 =over 4
 
@@ -233,7 +233,7 @@ If TRUE then the result will be a reference to an array containing all the
 values for the attribute, or undef if the attribute does not exist.
 
   $scalar = $entry->get_value('name');
-  
+
 $scalar will be the first value for the C<name> attribute, or C<undef> if the
 entry does not contain a C<name> attribute.
 
@@ -251,7 +251,7 @@ thier contents should B<NOT> be modified directly.
 
 
 
-=item replace ( ATTR => VALUE [, ATTR2 => VALUE2 ... ] )
+=item replace ( ATTR =E<gt> VALUE [, ATTR2 =E<gt> VALUE2 ... ] )
 
 Similar to add, except that the values given will replace
 any values that already exist for the given attributes.
@@ -288,10 +288,10 @@ L<Net::LDAP::LDIF>
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>.
+Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>.
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
@@ -301,6 +301,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.10 2003/02/22 18:26:39 kartik_subbarao Exp $>
+I<$Id: Entry.pod,v 1.11 2003/05/07 10:57:16 chrisridd Exp $>
 
 =cut
