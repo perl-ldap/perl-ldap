@@ -16,6 +16,12 @@ associateddomain: umich.edu
 counting: one
 counting: two
 counting: three
+first: 1
+first: 2
+first: 3
+second: a
+second: b
+second: c
 
 dn: o=University of Michigan, c=US
 changetype: modify
@@ -28,6 +34,16 @@ add: counting
 counting: one
 counting: two
 counting: three
+-
+add: first
+first: 1
+first: 2
+first: 3
+-
+add: second
+second: a
+second: b
+second: c
 -
 replace: telephonenumber
 telephonenumber: 911

@@ -26,6 +26,7 @@ $e->changetype('modify');
 $e->delete('objectclass');
 $e->delete('o',['UM']);
 $e->add('counting',[qw(one two three)]);
+$e->add('first',[qw(1 2 3)], 'second',[qw(a b c)]);
 $e->replace('telephonenumber' => ['911']);
 
 $outfile = "$TEMPDIR/00-out2.ldif";
@@ -41,10 +42,10 @@ print "ok 2\n";
 $e->add('name' => 'Graham Barr');
 $e->add('name;en-us' => 'Bob');
 
-print "not " unless join(":",sort $e->attributes) eq "associateddomain:counting:description:l:lastmodifiedby:lastmodifiedtime:name:name;en-us:o:postaladdress:st:streetaddress:telephonenumber";
+print "not " unless join(":",sort $e->attributes) eq "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:name;en-us:o:postaladdress:second:st:streetaddress:telephonenumber";
 print "ok 3\n";
 
-print "not " unless join(":",sort $e->attributes(nooptions => 1)) eq "associateddomain:counting:description:l:lastmodifiedby:lastmodifiedtime:name:o:postaladdress:st:streetaddress:telephonenumber";
+print "not " unless join(":",sort $e->attributes(nooptions => 1)) eq "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:o:postaladdress:second:st:streetaddress:telephonenumber";
 print "ok 4\n";
 
 $r = $e->get_value('name', asref => 1);

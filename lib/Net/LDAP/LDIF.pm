@@ -376,6 +376,7 @@ sub write_entry {
         next;
       }
 
+      my $dash=0;
       foreach my $chg (@changes) {
         unless (ref($chg)) {
           $type = $chg;
@@ -383,11 +384,11 @@ sub write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
+	  print "-\n" if $dash++;
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           print $type,": ",$attr,"\n";
           _write_attr($attr,$val,$wrap,$lower);
-	  print "-\n";
         }
       }
     }
