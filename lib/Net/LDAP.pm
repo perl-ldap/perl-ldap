@@ -761,6 +761,36 @@ sub root_dse {
   return $ldap->{net_ldap_rootdse};
 }
 
+sub start_tls {
+  my $ldap = shift;
+  my $arg  = &_options;
+
+  require Net::LDAP::Extension;
+  my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
+
+  return _error($ldap, $mesg, LDAP_PARAM_ERROR, "StartTLS requires LDAPv3")
+    if $ldap->version < 3;
+
+  $mesg->encode(
+    extendedReq => {
+      requestName => "1.3.6.1.4.1.1466.20037",
+    }
+  );
+
+  $ldap->_sendmesg($mesg);
+  $mesg->sync();
+
+  return _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@)
+    if $mesg->code;
+
+  require Net::LDAPS;
+  IO::Socket::SSL::context_init( { Net::LDAPS::SSL_context_init_args($arg) } );
+  my $sock = $ldap->socket;
+  (IO::Socket::SSL::socketToSSL($sock) and tie *{$sock}, 'IO::Socket::SSL', $sock)
+    ? $mesg
+    : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
+}
+
 # what version are we talking?
 sub version {
   my $ldap = shift;

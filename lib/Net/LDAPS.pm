@@ -16,6 +16,19 @@ my %verify = qw(none 0 optional 1 require 3);
 
 sub _connect {
   my ($ldap, $host, $arg) = @_;
+
+  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
+    PeerAddr 	    => $host,
+    PeerPort 	    => $arg->{'port'} || '636',
+    Proto    	    => 'tcp',
+    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
+    SSL_context_init_args($arg)
+  );
+}
+
+sub SSL_context_init_args {
+  my $arg = shift;
+
   my $verify = 0;
   my ($clientcert,$clientkey);
   
@@ -34,11 +47,7 @@ sub _connect {
       }
   }
 
-  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
-    PeerAddr 	    => $host,
-    PeerPort 	    => $arg->{'port'} || '636',
-    Proto    	    => 'tcp',
-    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
+  (
     SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
     SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : undef,
     SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : undef,
