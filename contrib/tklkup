@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.20 2001/12/15 05:06:43 charden Exp $
+# $Id: tklkup,v 1.21 2001/12/17 01:35:45 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,13 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.21  2001/12/17 01:35:45  charden
+# Added fail safe code to the DELETE entry operation.  This forces the
+# user to confirm the delete entry request.
+# Added pod documentation for the DELETE fail safe window.
+#
 # Revision 1.20  2001/12/15 05:06:43  charden
+#
 # Corrected pod documentation error.
 #
 # Revision 1.19  2001/12/15 04:57:15  charden
@@ -2078,6 +2084,54 @@ $Global{'histWindow'}->destroy if Tk::Exists($Global{'histWindow'});
 
 } # End of subroutine  Hierarchial 
 
+
+ 
+#
+# Create Accept/Cancel Window
+#
+ 
+sub questionAction {
+my $x = $Global{'horz'} + 0;
+my $y = $Global{'vert'} + 50;
+ 
+#
+# Create Main Window
+#
+ 
+$Global{'answerWindow'} = MainWindow->new;
+ 
+$Global{'answerWindow'}->title("BIND TO DIRECTORY");
+ 
+$Global{'answerWindow'}->geometry("+$x+$y");
+#
+# Create process accept button
+#
+$Global{'answerWindow'}->Button( -text => "ACCEPT", -command => \&doAction, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+#
+# Create process cancel button
+#
+$Global{'answerWindow'}->Button(-text => "CANCEL", -command => \&cancelAction, 
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
+ 
+sub cancelAction{
+ 
+$Global{'answerWindow'}->destroy() if Tk::Exists($Global{'answerWindow'});
+delete($Global{'answerWindow'}); 
+} # End of cancel subroutine
+ 
+sub doAction{ 
+ 
+$Global{'answerWindow'}->destroy() if Tk::Exists($Global{'answerWindow'});
+delete($Global{'answerWindow'}); 
+&ldapActionDelete;
+ 
+} # End of accept subroutine
+} # End of BIND subroutine
+
  
 #
 # Create ldapAction Window
@@ -2128,7 +2182,7 @@ $Global{'ldapActionWindow'}->Button(-text => " EDIT ",
 # Create ldap delete button
 #
 $Global{'ldapActionWindow'}->Button(-text => "DELETE", 
-           -command => \&ldapActionDelete,
+           -command => \&questionAction,
            -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
  
@@ -4064,6 +4118,17 @@ Currently this function is I<NOT> working.  However it will
 display the data for the currently selected DN.
 
 There can only be one of these windows active at a time.
+
+-------------------------------------------------------------------
+
+=head1 DIRECTORY DELETE CONFIRM WINDOW.
+
+When the DELETE button is selected, before the actual deletion
+takes place, a window will be displayed with a Cancel and Accept
+buttons. This gives the user a fail safe in case the user selects
+the DELETE button by accident.  Pressing the Cancel will cancel
+the delete request, pressing the Accept button will cause the
+directory entry to be deleted.
 
 -------------------------------------------------------------------
 
