@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 1.3 2003/06/24 21:58:58 kartik_subbarao Exp $
+# $Id: ldifdiff.pl,v 1.4 2004/02/09 20:10:55 kartik_subbarao Exp $
 
 =head1 NAME
 
@@ -76,7 +76,8 @@ GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 	'k|keyattr=s' => \$keyattr,
 	'sharedattrs=s' => sub { my @a=split(/,/,$_[1]); @sharedattrs{@a}=(1)x @a }
 	);
-%ciscmp = (objectclass => 1, manager => 1, owner => 1, uniquemember => 1)
+%ciscmp = (objectclass => 1, manager => 1, member => 1, owner => 1,
+		   uniquemember => 1)
 	unless keys %ciscmp;
 %dnattrs = (manager => 1, member => 1, owner => 1, uniquemember => 1)
 	unless keys %dnattrs;
