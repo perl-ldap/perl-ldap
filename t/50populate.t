@@ -5,34 +5,21 @@ BEGIN {
   start_server();
 }
 
-print "1..44\n";
+print "1..7\n";
 
 $ldap = client();
 print "ok 1\n";
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
 
-print "#",$mesg->code,"\n";
-print "not " if $mesg->code;
+print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
 print "ok 2\n";
 
-print "not " unless $ldif = Net::LDAP::LDIF->new("data/50-in.ldif","r",
-				changetype => 'add');
+print "not " unless ldif_populate($ldap, "data/50-in.ldif");
 print "ok 3\n";
 
-my $i = 4;
-foreach $e ($ldif->read_cmd) {
-  print "ok ",$i++,"\n";
-  $mesg = $e->update($ldap);
-  if ($mesg->code) {
-    $e->dump;
-    print "# ",$mesg->code,": ",$mesg->error,"\n";
-    print "not ";
-  }
-  print "ok ",$i++,"\n";
-}
-
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
-  print "#",$mesg->code,"\n";
+print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
+print "ok 4\n";
 
-compare_ldif("50",$i,$mesg,$mesg->sorted);
+compare_ldif("50",5,$mesg,$mesg->sorted);

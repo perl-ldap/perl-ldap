@@ -1,6 +1,8 @@
 BEGIN {
 
-  require "test.cfg" if -f "test.cfg";
+  foreach (qw(my.cfg test.cfg)) {
+    -f and require "$_" and last;
+  }
 
   undef $SERVER_EXE unless $SERVER_EXE and -x $SERVER_EXE;
 
@@ -33,6 +35,7 @@ BEGIN {
     $LDAP_VERSION = 3;
   }
 
+  $LDAP_VERSION ||= 2;
   mkdir($TEMPDIR,0777);
   die "$TEMPDIR is not a directory" unless -d $TEMPDIR;
 }
@@ -45,7 +48,7 @@ use File::Basename qw(basename);
 my $pid;
 
 sub start_server {
-  my $version_nneded = shift || 2;
+  my $version_needed = shift || 2;
 
   unless ($LDAP_VERSION >= $version_needed and $LDAPD[0] and -x $LDAPD[0]) {
     print "1..0\n";
@@ -148,6 +151,24 @@ sub compare($$) {
        && open(FH2,"<".$_[1])
        && 0 == File::Compare::compare(*FH1,*FH2, -s FH1)
   );
+}
+
+sub ldif_populate {
+  my ($ldap, $file, $change) = @_;
+  my $ok = 1;
+
+  my $ldif = Net::LDAP::LDIF->new($file,"r", changetype => $change || 'add')
+	or return;
+
+  while (my $e = $ldif->read_entry) {
+    $mesg = $e->update($ldap);
+    if ($mesg->code) {
+      $ok = 0;
+      Net::LDAP::LDIF->new(qw(- w))->write_entry($e);
+      print "# ",$mesg->code,": ",$mesg->error,"\n";
+    }
+  }
+  $ok;
 }
 
 1;

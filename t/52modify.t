@@ -5,51 +5,26 @@ BEGIN {
   start_server();
 }
 
-my $i = 4;
-
-
-
-print "1..56\n";
+print "1..7\n";
 
 $ldap = client();
 print "ok 1\n";
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
 
-print "not " if $mesg->code;
+print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
 print "ok 2\n";
 
-print "not " unless $ldif = Net::LDAP::LDIF->new("data/52-in.ldif","r",
-				changetype => 'add');
+print "not " unless ldif_populate($ldap, "data/52-in.ldif");
 print "ok 3\n";
 
-foreach $e ($ldif->read_cmd) {
-  print "ok ",$i++,"\n";
-  $mesg = $e->update($ldap);
-  if ($mesg->code) {
-    print "# ",$mesg->code," ",$mesg->error,"\n";
-    print "not ";
-  }
-  print "ok ",$i++,"\n";
-}
-
 # load modify LDIF
-print "not " unless $ldif = Net::LDAP::LDIF->new("data/52-mod.ldif","r",
-				changetype => 'modify');
-
-foreach $e ($ldif->read_cmd) {
-  print "ok ",$i++,"\n";
-  $mesg = $e->update($ldap);
-  if ($mesg->code) {
-    print "# ",$mesg->code," ",$mesg->error,"\n";
-    print "not ";
-  }
-  print "ok ",$i++,"\n";
-}
+print "not " unless ldif_populate($ldap, "data/52-mod.ldif", 'modify');
+print "ok 4\n";
 
 # now search the database
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 
-compare_ldif("52",$i,$mesg,$mesg->sorted);
+compare_ldif("52",5,$mesg,$mesg->sorted);
 

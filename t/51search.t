@@ -8,30 +8,19 @@ BEGIN {
 my $i = 4;
 
 
-print "1..53\n";
+print "1..15\n";
 
 $ldap = client();
 print "ok 1\n";
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
 
-print "not " if $mesg->code;
+print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
 print "ok 2\n";
 
-print "not " unless $ldif = Net::LDAP::LDIF->new("data/51-in.ldif","r",
-				changetype => 'add');
+print "not " unless ldif_populate($ldap, "data/51-in.ldif");
 print "ok 3\n";
 
-foreach $e ($ldif->read_cmd) {
-  print "ok ",$i++,"\n";
-  $mesg = $e->update($ldap);
-  if ($mesg->code) {
-    $e->dump;
-    print "# ",$mesg->code," ",$mesg->error,"\n";
-    print "not ";
-  }
-  print "ok ",$i++,"\n";
-}
 
 # now search the database
 
