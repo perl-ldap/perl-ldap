@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15_01";
+$VERSION = "0.15_02";
 
 my %mode = qw(w > r < a >>);
 
@@ -356,7 +356,7 @@ sub _write_attr {
   my $res = 1;	# result value
   foreach $v (@$val) {
     my $ln = $lower ? lc $attr : $attr;
-    if ($v =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
+    if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
       require MIME::Base64;
       $ln .= ":: " . MIME::Base64::encode($v,"");
     }
