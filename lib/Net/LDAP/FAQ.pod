@@ -1138,6 +1138,10 @@ http://ldapzone.com/
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
 
+Eine deutsche LDAP Website 
+A german LDAP Website
+http://verzeichnisdienst.de/ldap/Perl/index.html
+
 The 2 following URLs deal mainly with Microsoft's
 Active Directory.
 
