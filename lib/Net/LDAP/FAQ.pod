@@ -870,9 +870,6 @@ strongAuthenticationUser auxiliary object class. Others might also.
 
 =head2 URL(s).
 
-Deploying LDAP                                  
-http://bostonlight.com/ldap/
-
 Directory Services Mark Language (DSML)
 http://www.dsml.org/
 
@@ -913,6 +910,15 @@ http://www.nexor.com/info/directory.htm/
 
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
+
+The 2 following URLs deal mainly with Microsoft's
+Active Directory.
+
+Directory Works
+http://directoryworks.com/
+
+ActiveX LDAP Client
+http://www.polonia-online.com/ldap/
 
 =head2 BOOK(s)
 
