@@ -22,9 +22,9 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= "0.26";
+$VERSION 	= "0.26_01";
 @ISA     	= qw(Net::LDAP::Extra);
-$LDAP_VERSION 	= 2;      # default LDAP protocol version
+$LDAP_VERSION 	= 3;      # default LDAP protocol version
 
 # Net::LDAP::Extra will only exist is someone use's the module. But we need
 # to ensure the package stash exists or perl will complain that we inherit
