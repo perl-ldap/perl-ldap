@@ -536,8 +536,8 @@ sub _parse_schema {
       # Extract the maximum length of a syntax
       #
       if ( exists $schema_entry{syntax}) {
-	$schema_entry{syntax} =~ s/{(\d+)}//;
-	$schema_entry{max_length} = $1 || 0;
+	$schema_entry{syntax} =~ s/{(\d+)}//
+	  and $schema_entry{max_length} = $1;
       }
 
       #
