@@ -143,6 +143,13 @@ The update method will call the modify method on the client object, which
 will result in any changes that have been made locally being made to the
 entry on the directory server.
 
+=item moddn/modrdn
+
+The update method will call the moddn method on the client object, which
+will result in any DN changes that have been made locally being made
+to the entry on the directory server. These DN changes are specified by
+setting the entry attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
+
 =back
 
 
@@ -251,8 +258,9 @@ to the attributes of this entry. This means any calls that have been
 made to add, replace or delete since the last call to changetype or
 update was made.
 
-This method B<cannot> be used to modify the DN of the entry on the server,
-for that see the C<moddn> method in L<Net::LDAP>.
+This method can also be used to modify the DN of the entry on the server,
+by specifying moddn or modrdn as the changetype, and setting the entry 
+attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
 
 CLIENT is a C<Net::LDAP> object where the update will be sent to.
 
@@ -282,6 +290,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.7 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: Entry.pod,v 1.8 2001/10/05 14:36:00 gbarr Exp $>
 
 =cut
