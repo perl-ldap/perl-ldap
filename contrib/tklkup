@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.2 2003/02/13 02:18:18 charden Exp $
+# $Id: tklkup,v 2.21 2003/02/14 04:46:52 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -197,25 +197,57 @@ $Global{'menubar'}->command(-label => "Set ~Bind Credentials",
                   -command => \&BIND );
 $Global{'menubar'}->command(-label => "Set DSA ~Port",
                   -command => \&PORT ); 
+$Global{'menubar'}->command(-label => "~EXIT PROGRAM",
+                  -command => sub{exit;} ); 
 
 #
 # Create process Exit button
 #
+$mwf = $Global{'mainWindow'} -> Frame() -> pack(-side => "top");
+
+$mwf ->Label( -text => "DIRECTORY SERVER") ->pack (-side =>"left");
+$Global{'slist'} = $mwf ->Listbox( -height => 1  );
  
-$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION",
-                    -command => sub{ exit; },
-                    -font => $Global{'Font'},
-                    -borderwidth => 5  )
-                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
+$Global{'slist'}->pack( -side => "left", -padx => 2, -pady => 5  );
+ 
+$Global{'slist'}->insert("end", $Global{'LDAP_SERVER'});
+ 
+#
+# Create directory server selection button
+# This is where the user will select the directory server to
+# query.
+#
+ 
+$smenu = $mwf -> Menubutton(-text => "SELECT SERVER",
+                  -relief => "raised", -font => $Global{'Font'},
+                  -borderwidth => 3 )
+                  -> pack(-side => "left", -pady => 2, -padx => 5 );
+ 
+
+#
+# Create a LDAP version Checkbutton that will set up  variable
+# setVersion to set the LDAP version before each directory query.
+#
+ 
+$setVersion = $mwf -> Checkbutton(
+                       -text => "LDAP VERSION 3",
+                       -variable =>  \$Global{'setVersion'}, -onvalue => 3,
+                       -offvalue => 2, -font => $Global{'Font'} )
+                       -> pack(-side => "left", -anchor => "center" );
+ 
+$setVersion->select();
+ 
+#$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION",
+#                    -command => sub{ exit; },
+#                    -font => $Global{'Font'},
+#                    -borderwidth => 5  )
+#                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
 
 
 $Global{nb} = $Global{'mainWindow'}->NoteBook()
               ->pack(-expand => 1, -fill => 'both');
-$Global{p1} = $Global{nb}->add('SEARCH',-label => 'SEARCH');
 
-&initializeP1;
-
-$Global{p2} = $Global{nb}->add('SEARCH RESULTS',-label => 'SEARCH RESULTS');
+$Global{p2} = $Global{nb}->add('SEARCH',-label => 'SEARCH');
 
 &initializeP2;
 
@@ -231,6 +263,10 @@ $Global{p4} = $Global{nb}->add('SCHEMA',-label => 'SCHEMA DATA');
 $Global{p5} = $Global{nb}->add('CREATE ENTRY',-label => 'CREATE ENTRY');
 
 &initializeP5;
+
+$Global{p1} = $Global{nb}->add('INFO',-label => 'INFO');
+
+&initializeP1;
 
 $splash->Destroy() if ( $Global{splash} );
  
@@ -262,10 +298,12 @@ sub update_schema
 
 if ( $Global{schemaServer} ne $Global{CORE_SERVER} )
 {
+$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 $Global{schema_timer}->cancel;
 &schema if ( $Global{schemaServer} ne $Global{CORE_SERVER} ); 
 $Global{schemaServer} = $Global{LDAP_SERVER};
 $Global{schema_timer} = $Global{mainWindow}->repeat(1000, \&update_schema);
+$Global{mainWindow} -> Unbusy;  # window is not busy
 }
  
 } # End of subroutine update_schema
@@ -526,35 +564,6 @@ sub initializeP1
 $dsaframe = $Global{p1}->Frame()
       ->pack( -fill => "both", -side => "top" );
  
- 
-$sframe = $dsaframe->LabFrame(-label => "DIRECTORY SERVER",
-      -labelside => "acrosstop")
-      ->pack(  -side => $Global{'hand'}  );
- 
-$stframe = $sframe->Frame()
-      ->pack( -fill => "x", -side => "top" );
- 
-$sbframe = $sframe->Frame()
-      ->pack( -fill => "x", -side => "bottom" );
- 
-$Global{'slist'} = $stframe ->Listbox( -height => 1  );
- 
-$Global{'slist'}->pack( -side => $Global{'hand'}  );
- 
-$Global{'slist'}->insert("end", $Global{'LDAP_SERVER'});
- 
-#
-# Create directory server selection button
-# This is where the user will select the directory server to
-# query.
-#
- 
-$smenu = $stframe -> Menubutton(-text => "SELECT\nSERVER",
-                  -relief => "raised", -font => $Global{'Font'},
-                  -borderwidth => 3 )
-                  -> pack(-side => $Global{'hand'}, -anchor => "center",
-                          -pady => 2 );
- 
 #
 # Set up the select directory server radio buttons.
 #
@@ -564,36 +573,101 @@ foreach (@server)
    $smenu->radiobutton( -label => $_, -variable => \$Global{'LDAP_SERVER'},
          -value => $_, -command => \&server, -font => $Global{'Font'} );
  
-}                                                                                
+}
+
+$dsads = $dsaframe ->LabFrame( -labelside => "acrosstop",
+                   -label => "DIRECTORY SERVER") ->pack (-side =>"left");
+$Global{dsadsls} = $dsads->Listbox( -height => 1  );
+$Global{dsadsls}->pack( -side => "top", -padx => 2, -pady => 5  );
+$Global{dsadsls}->insert("end", $Global{'LDAP_SERVER'});
+
+$dsasb = $dsaframe ->LabFrame( -labelside => "acrosstop",
+                   -label => "SEARCH BASE") ->pack (-side =>"left");
+$Global{dsasbls} = $dsasb->Listbox( -height => 1  );
+$Global{dsasbls}->pack( -side => "left", -padx => 2, -pady => 5  );
+$Global{dsasbls}->insert("end", $LDAP_SEARCH_BASE);
+
+$dsapt = $dsaframe ->LabFrame( -labelside => "acrosstop",
+                   -label => "PORT") ->pack (-side =>"left");
+$Global{dsaptls} = $dsapt->Listbox( -height => 1  );
+$Global{dsaptls}->pack( -side => "left", -padx => 2, -pady => 5  );
+$Global{dsaptls}->insert("end", $Global{port});
+
+$attframe = $Global{p1}->Frame()
+      ->pack( -fill => "both", -side => "bottom");
+ 
+$msgframe = $attframe->LabFrame(-label => "Process Messages",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 1, -pady => 1 );
+ 
+ 
+$splashList->insert("0", "Creating root dse and attribute buttons.")
+        if ( $Global{splash} );
+$splash->update()
+        if ( $Global{splash} );
+ 
+$msgbox = $msgframe ->Scrolled('Listbox', -scrollbars => 's',
+        -width => 50, -height => 10 );
+ 
+$msgbox->pack( -side => "left" );
+
 #
-# Create a LDAP version Checkbutton that will set up  variable
-# setVersion to set the LDAP version before each directory query.
+# Allow mainWindow to update
 #
- 
-$setVersion = $sbframe -> Checkbutton(
-                       -text => "LDAP VERSION 3, DEFAULT",
-                       -variable =>  \$Global{'setVersion'}, -onvalue => 3,
-                       -offvalue => 2, -font => $Global{'Font'} )
-                       -> pack(-side => "left", -anchor => "center" );
- 
-$setVersion->select();
- 
- 
+
+$Global{'mainWindow'}->update;
+
+
+
+} # End of subroutine initializeP1
+
+
+#
+#  Initialize panel 2
+#
+
+sub initializeP2
+{
+
+$tpframe = $Global{p2} ->Frame(-borderwidth => 2,-relief => "raised") ->pack(-side => "top", -fill => "x");
+$bmframe = $Global{p2} ->Frame ->pack(-side => "bottom", -fill => "x");
+$hlframe = $tpframe ->Frame(-borderwidth => 2,-relief => "raised") ->pack( -side => "right");
+
 #
 # Create search base list box.
 #
  
-$sbbframe = $dsaframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
+$sbbframe = $hlframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
       -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => $Global{'hand'}, -pady => 1 );
+      ->pack( -side => "top", -anchor => "e");
+
+#
+# Create the Attributes frame
+#
+
+$aframe = $tpframe ->LabFrame(-label => "ATTRIBUTES",
+          -labelside => "acrosstop",
+          -relief => "raised") 
+          ->pack( -side => "left", -fill => "both");
+
+$btframe = $tpframe ->Frame(-borderwidth => 2,
+           -relief => "raised") 
+           ->pack( -side => "left", -fill => "both");
+
+#
+# Create the search base box
+#
+
+$sbblist = $sbbframe ->Listbox( -width => 38, -height => 1  );
  
-$sbblist = $sbbframe ->Listbox( -width => 30, -height => 1  );
- 
-$sbblist->pack(-side => $Global{'hand'} );
+$sbblist->pack(-side => $Global{hand});
  
 $sbblist->insert("end", $LDAP_SEARCH_BASE);
-                                                                                #
-# Create directory server search base.
+$Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
+   if ( $Global{dsasbls} );
+
+#
+# Create directory server search base button.
 # This is the point from which the search operation
 # will start from.
 #
@@ -601,7 +675,182 @@ $sbblist->insert("end", $LDAP_SEARCH_BASE);
 $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
                  -relief => "raised", -font => $Global{'Font'},
                  -borderwidth => 3 )
-                 -> pack(-side => "left", -anchor => "w" );
+                 -> pack(-side => $Global{hand} );
+ 
+#
+# Create Hierarchial DN list box, this is where the DN data
+# tree will be displayed.
+#
+
+$Global{'searchHList'} = $hlframe ->Scrolled('HList', 
+            -font       => $Global{'Font'},
+            -scrollbars => 'se',
+            -width      => 53, 
+            -height     => 13,
+            -itemtype   => 'text',
+            -separator  => '/',
+            -selectmode => 'single',
+            -browsecmd  => sub {
+#
+            my $objects = shift;   # get base and the dn
+
+            &ldapAction($objects);
+
+            } # End of subroutine browsecmd
+
+   );  # End of Scrolled HList.
+
+$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
+
+$Global{'searchHList'}->pack(-side => "right");
+
+
+#
+# Create additional attributes selection button
+# This is where the user will select any special attribute to
+# search on.
+#
+ 
+$amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
+                 -relief => "raised", -font => $Global{'Font'},
+                 -borderwidth => 3 )
+                 -> pack( -side => "top", -anchor => "w" );
+ 
+#
+# First set up the 4 main attribute Radio buttons.
+#
+#
+# If there are other attribute after the first 4 then set them
+# up inside the select additional attributes button.
+#
+#
+if ( $#attribute > 4 )
+{
+my $sptr = 0;
+while ( $sptr <= 3 )
+{
+$_ = shift(@attribute);
+ 
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$Global{'info'},         -value => "$_", -font => $Global{'Font'} )
+         -> pack( -side => "top", -anchor => 'w');
+ 
+if ( !$sptr ) { $rbsn->select(); } # select first attribute                      
+++$sptr;
+}
+ 
+} # End of if ( $#attribute > 4 )
+else
+{
+#
+# Less than 4 attributes in user create initialization
+# file, this is valid if that is what the user wants.
+#
+my $sptr = 0;
+while ( @attribute )
+{
+$_ = shift(@attribute);
+ 
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_",
+                  -variable => \$Global{'info'},
+                  -value => "$_", -font => $Global{'Font'} )
+                  -> pack( -side => "top", -anchor => "w");
+ 
+if ( !$sptr ) { $rbsn->select(); } # select first attribute
+ 
+++$sptr;
+}
+ 
+}
+ 
+#
+# Create radio buttons in attributes selection box.
+#
+#
+ 
+foreach (@attribute)
+{
+   $amenu->radiobutton( -label => $_, -variable => \$Global{'info'},
+          -value => $_, -font => $Global{'Font'});
+} # End of foreach (@attribute)
+ 
+ 
+#
+# Create ldap delete button
+#
+$Global{actionDelete} = $btframe->Button(-text => "DELETE ", 
+           -command => \&questionAction,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionDelete}));
+ 
+ 
+#
+# Create save to ldif button
+#
+$Global{actionLdif} = $btframe->Button(-text => "SAVE TO\nLDIF", 
+           -command => \&ldapActionSaveToLdif,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionLdif}));
+ 
+ 
+#
+# Create ldap display button
+#
+$Global{actionDisplay} = $btframe->Button( -text => "DISPLAY", 
+           -command => \&ldapActionDisplay, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
+           if ( !Exists($Global{actionDisplay}));
+ 
+#
+# Create ldap rename button
+#
+$Global{actionRename} = $btframe->Button( -text => "RENAME ", 
+           -command => \&getRenameData, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionRename}));
+ 
+#
+# Create ldap edit button
+#
+$Global{actionEdit} = $btframe->Button(-text => " EDIT  ", 
+           -command => \&ldapActionEdit,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionEdit}));
+ 
+#
+# Create process cancel button
+#
+$Global{actionCancel} = $btframe->Button(-text => "CANCEL ", 
+           -command => \&ldapActionCancel,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionCancel}));
+
+$bmlframe = $bmframe ->LabFrame(-label => "LDIF FILE NAME",
+           -labelside => "acrosstop") 
+           ->pack(-side => "bottom", -fill => "x");
+
+#
+# Create save all to ldif button
+#
+$Global{actionLdifAll} = $bmlframe->Button( -text => "SAVE ALL TO LDIF", 
+           -command => \&ldapActionMultiSaveToLdif, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "left", -anchor => "w", -padx => 5, -pady => 2 ) 
+           if ( !Exists($Global{actionLdifAll}));
+
+#
+# Create Text Entry list box.
+#
+
+$bmlframe->Entry(-textvariable => \$Global{'ldifFile'}, 
+           -width => 45 ) 
+           -> pack(-side => "left", -anchor => "w", -fill => 'x');
+ 
  
 $splashList->insert("0", "Creating cascading search base menus.")
         if ( $Global{splash} );
@@ -641,29 +890,6 @@ foreach my $Nclabel ( @NcKeys )
   $sbmenu->cascade(-label => "$Nclabel");
   $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
-                                                                                #
-# Create bottom Search Directory frame
-#
- 
-$bframe = $Global{p1}->Frame(-borderwidth => 2,
-      -relief => "raised")->pack(
-      -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
- 
-#
-# Create Search Directory button
-#
- 
-$bframe -> Button(-text => "SEARCH THE DIRECTORY",
-        -command =>  \&search,
-        -font => $Global{'Font'}, -borderwidth => 3 )
-        -> pack( -fill => "both");
- 
-$attframe = $Global{p1}->Frame()
-      ->pack( -fill => "both", -side => "bottom");
- 
-$msgframe = $attframe->LabFrame(-label => "Process Messages",
-      -labelside => "acrosstop" )
-      ->pack( -fill => "both", -side => "top", -padx => 1, -pady => 1 );
  
 #
 # Create Bottom Attribute frame.
@@ -671,42 +897,40 @@ $msgframe = $attframe->LabFrame(-label => "Process Messages",
 # searched for.
 #
  
-                                                                                $tframe = $attframe->LabFrame(-label => "ATTRIBUTE DATA",
+$tframe = $bmframe->LabFrame(-label => "ATTRIBUTE DATA",
       -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "bottom" );
+      ->pack( -fill => "both", -side => "bottom" , -anchor => "w");
  
 #
 # Create Text Entry list box.
 #
  
-$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 )
-      -> pack(-fill => 'x');
- 
- 
-#
-# Create frame for clear buttons.
-#
- 
-$cframe = $attframe->Frame()
-      ->pack( -fill => "both", -side => "bottom" );
- 
+$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 27 )
+      -> pack(-side => "left",-anchor => "w", );
  
 #
 # Create Clear Attribute Data and Search Directory buttons
 #
-$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear,
-        -font => $Global{'Font'}, -borderwidth => 3 )
-        -> pack( -side => $Global{'hand'} );
+$tframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear,
+        -font => $Global{'Font'}, -borderwidth => 5 )
+        -> pack( -side => "left", -anchor => "w", -pady => 2, -padx => 2 );
  
 #
 # Create get Filter selection menu button.
 #
  
-$sfcmenu = $cframe -> Menubutton(-text => " SET FILTER CONDITON",
+$sfcmenu = $tframe -> Menubutton(-text => "SET FILTER\nCONDITON",
                  -relief => "raised", -font => $Global{'Font'},
-                 -borderwidth => 3 )
-                 -> pack(-side => $Global{'hand'} );
+                 -borderwidth => 5 )
+                 -> pack(-side => "left", -anchor => "w", 
+                 -pady => 2, -padx => 2 );
  
+$flclist = $tframe ->Listbox( -width => 11, -height => 1  );
+ 
+$flclist->pack(-side => 'top', -anchor => "w" );
+ 
+$flclist->insert(0, $Global{'infoFilter'});
+
 #
 # Set up the filter type radio buttons.
 #
@@ -727,232 +951,15 @@ $rbsf   = $sfcmenu -> radiobutton(-label =>   "ends with",
                                                                                 $rbsf   = $sfcmenu -> radiobutton(-label =>   "contains",
                   -variable => \$Global{'infoFilter'},
                   -value => "contains", -command => \&setFilter );
- 
- 
-$flclist = $cframe ->Listbox( -width => 11, -height => 1  );
- 
-$flclist->pack(-side => $Global{'hand'} );
- 
-$flclist->insert(0, $Global{'infoFilter'});
- 
-#
-# Create get root dse entry button.
-#
- 
-$splashList->insert("0", "Creating root dse and attribute buttons.")
-        if ( $Global{splash} );
-$splash->update()
-        if ( $Global{splash} );
- 
-#
-# Create left attribute selection frame
-# This is where the user will select the attribute to be searched.
-#                                                                                
-$aframe = $attframe->LabFrame(-label => "ATTRIBUTES",
-      -labelside => "acrosstop")
-      ->pack( -side => $Global{'hand'} );
- 
-#
-# First set up the 4 main Radio buttons.
-#
-#
-# If there are other attribute after the first 4 then set them
-# up inside the select additional attributes button.
-#
-#
-if ( $#attribute > 4 )
-{
-my $sptr = 0;
-while ( $sptr <= 3 )
-{
-$_ = shift(@attribute);
- 
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$Global{'info'},         -value => "$_", -font => $Global{'Font'} )
-         -> pack( -side => "$Global{'hand'}");
- 
-if ( !$sptr ) { $rbsn->select(); } # select first attribute                      
-++$sptr;
-}
- 
-} # End of if ( $#attribute > 4 )
-else
-{
-#
-# Less than 4 attributes in user create initialization
-# file, this is valid if that is what the user wants.
-#
-my $sptr = 0;
-while ( @attribute )
-{
-$_ = shift(@attribute);
- 
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_",
-                  -variable => \$Global{'info'},
-                  -value => "$_", -font => $Global{'Font'} )
-                  -> pack( -side => "bottom", -anchor => "w");
- 
-if ( !$sptr ) { $rbsn->select(); } # select first attribute
- 
-++$sptr;
-}
- 
-}
 
 #
-# Create additional attributes selection button
-# This is where the user will select any special attribute to
-# search on.
+# Create Search Directory button
 #
  
-$amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
-                 -relief => "raised", -font => $Global{'Font'},
-                 -borderwidth => 3 )
-                 -> pack( -side => "bottom", -anchor => "w" );
- 
-#
-# Create radio buttons in attributes selection box.
-#
-#
- 
-foreach (@attribute)
-{
- 
-   $amenu->radiobutton( -label => $_, -variable => \$Global{'info'},
-          -value => $_, -font => $Global{'Font'});
- 
-} # End of foreach (@attribute)
- 
-$msgbox = $msgframe ->Scrolled('Listbox', -scrollbars => 's',
-        -width => 50, -height => 2 );
- 
-$msgbox->pack( -side => "left" );
-
-#
-# Allow mainWindow to update
-#
-
-$Global{'mainWindow'}->update;
-
-
-
-} # End of subroutine initializeP1
-
-
-#
-#  Initialize panel 2
-#
-
-sub initializeP2
-{
-
-$tpframe = $Global{p2} ->Frame(-borderwidth => 2,-relief => "raised") ->pack(-side => "top", -fill => "x");
-$bmframe = $Global{p2} ->Frame ->pack(-side => "bottom", -fill => "x");
-$hlframe = $tpframe ->Frame(-borderwidth => 2,-relief => "raised") ->pack( -side => "right");
-$btframe = $tpframe ->Frame(-borderwidth => 2,-relief => "raised") ->pack( -side => "left", -fill => "both");
-
-#
-# Create Hierarchial DN list box, this is where the DN data
-# tree will be displayed.
-#
-
-$Global{'searchHList'} = $hlframe ->Scrolled('HList', 
-            -font       => $Global{'Font'},
-            -scrollbars => 'se',
-            -width      => 50, 
-            -height     => 20,
-            -itemtype   => 'text',
-            -separator  => '/',
-            -selectmode => 'single',
-            -browsecmd  => sub {
-#
-            my $objects = shift;   # get base and the dn
-
-            &ldapAction($objects);
-
-            } # End of subroutine browsecmd
-
-   );  # End of Scrolled HList.
-
-$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
-
-$Global{'searchHList'}->pack(-side => "right");
-
-#
-# Create ldap display button
-#
-$Global{actionDisplay} = $btframe->Button( -text => "DISPLAY", 
-           -command => \&ldapActionDisplay, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionDisplay}));
- 
-
-#
-# Create ldap rename button
-#
-$Global{actionRename} = $btframe->Button( -text => "RENAME", 
-           -command => \&getRenameData, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionRename}));
- 
-#
-# Create ldap edit button
-#
-$Global{actionEdit} = $btframe->Button(-text => " EDIT ", 
-           -command => \&ldapActionEdit,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionEdit}));
- 
-#
-# Create ldap delete button
-#
-$Global{actionDelete} = $btframe->Button(-text => "DELETE", 
-           -command => \&questionAction,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionDelete}));
- 
- 
-#
-# Create save to ldif button
-#
-$Global{actionLdif} = $btframe->Button(-text => "SAVE\nTO\nLDIF", 
-           -command => \&ldapActionSaveToLdif,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionLdif}));
- 
- 
-#
-# Create process cancel button
-#
-$Global{actionCancel} = $btframe->Button(-text => "CANCEL", 
-           -command => \&ldapActionCancel,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionCancel}));
- 
-$bmlframe = $bmframe ->LabFrame(-label => "LDIF FILE NAME") 
-           ->pack(-side => "top", -fill => "x");
-
-#
-# Create Text Entry list box.
-#
-
-$bmlframe->Entry(-textvariable => \$Global{'ldifFile'}, 
-           -width => 25 ) 
-           -> pack(-fill => 'x');
-
-#
-# Create save all to ldif button
-#
-$Global{actionLdifAll} = $bmframe->Button( -text => "Save all to ldif", 
-           -command => \&ldapActionMultiSaveToLdif, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
-           if ( !Exists($Global{actionLdifAll}));
+$bmframe -> Button(-text => "SEARCH THE DIRECTORY",
+        -command =>  \&search,
+        -font => $Global{'Font'}, -borderwidth => 5 )
+        -> pack( -side => "bottom", -fill => "both");
  
 #$Global{'searchHList'}->delete('all');  
 $Global{actionDelete}->configure( -state => 'disable');
@@ -1049,9 +1056,8 @@ $Global{'mainWindow'}->update;
 sub initializeP4
 {
 
+#
 # Search the directory for schema data
-#
-#
 #
 
 my $srbclear;
@@ -1063,18 +1069,6 @@ my $sbbframe;
 my $aframe;
 my $tframe;
 my $sbframe;
-#my $sslist;
-
-#$Global{mainWindow}->Busy(-recurse => 1);
-#$ssframe = $Global{'p4'}->LabFrame(-label => "DIRECTORY SERVER",
-#      -labelside => "acrosstop")
-#      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
-#
-#$sslist = $ssframe ->Listbox( -height => 1  );
-#
-#$sslist->pack(-fill => "both", -expand => 1 );
-#
-#$sslist->insert("end", $Global{'LDAP_SERVER'});
 
 #
 # Create bottom Search Directory frame
@@ -1129,14 +1123,6 @@ $slframe = $Global{'p4'}->LabFrame(-label => "DIRECTORY SCHEMA DATA",
 # Create a Clear Data Radiobutton that will execute subroutine clear
 # to clear the List box before each directory query.
 #
-
-#$srbclear = $slframe -> Checkbutton(
-#                     -text => "Clear directory data on each query.",
-#                     -variable =>  \$Global{'sclear'}, -onvalue => 1,
-#                     -offvalue => 0, -font => $Global{'Font'} )
-#                     -> pack(-anchor => 'nw' );
-#
-#$srbclear->select();
 
 $selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
                                  -labelside => "acrosstop" )
@@ -1397,7 +1383,6 @@ if ( $error == 1 )
 #
 # Display the DN search results list box.
 #
-$Global{nb}->raise("SEARCH RESULTS");
 
 $msgbox->delete("0.0", "end");
 $msgbox->update;
@@ -1567,7 +1552,8 @@ $Global{ldap} = undef if ( defined($Global{ldap}) );
 
 $Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
 $sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
-
+$Global{dsadsls}->insert(0, $Global{'LDAP_SERVER'})
+    if ( $Global{dsadsls} );
 #
 # Destroy the dn history list if it exists.
 #
@@ -1701,6 +1687,8 @@ else
 }
 
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
+$Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
+   if ( $Global{dsasbls} );
 
 $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 $Global{mainWindow} -> update;  #
@@ -1716,6 +1704,8 @@ sub base {
 #
 
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
+$Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
+   if ( $Global{dsasbls} );
 
 } # End of base subroutine
 
@@ -2243,6 +2233,7 @@ $Global{'portWindow'} = undef();
 sub portAccept{ 
  
 $Global{'port'} = $port_data;
+$Global{dsaptls}->insert(0, $Global{port});
 $Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
 $Global{'portWindow'} = undef(); 
  
@@ -4873,27 +4864,16 @@ port number will I<NOT> cause the program to issue a new
 connection to the directory server.  The user must re-select or
 change to a new directory server.
 
+I<EXIT PROGRAM> button.  Just below the main menu bar is 
+the "Exit" button.  When a mouse click is done on the "EXIT PROGRAM"
+ button the program will terminate. This menu has a "Hot" key, Alt-e.
 
 -------------------------------------------------------------------
 
 =head1 Tklkup GUI
 
-I<EXIT THE APPLICATION> button.  Just below the main menu bar is 
-the "Exit" button.  When a mouse click is done on the "Exit" button 
-the program will terminate.
-
-The tklkup GUI is made of five display and control panels;
-SEARCH, SEARCH RESULTS, SEARCH DISPLAY, SCHEMA DATA, and 
-CREATE ENTRY;
-
-=head1 SEARCH Panel
-
-The I<LDAP VERSION> "RadioButton" diamond will select the
-LDAP protocol version.  When selected the "RadioButton" 
-diamond will be red in color.  This indicates that the 
-ldap connection will use the version I<3> protocol.  To use 
-ldap version I<2> protocol press the "RadioButton" diamond 
-so that it becomes a gray color.
+Just below the Menu Bar is a section of the GUI that is displayed
+at all time regardless of which panel is displayed.
 
 The I<SELECT SERVER> button will activate a 
 drop down menu.  From the menu the user will select the 
@@ -4908,6 +4888,21 @@ that is selected.  If the GUI is icon-ed or exited, the tear
 off window will follow the actions of the GUI.  All other 
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
+
+The I<LDAP VERSION> "RadioButton" diamond will select the
+LDAP protocol version.  When selected the "RadioButton" 
+diamond will be red in color.  This indicates that the 
+ldap connection will use the version I<3> protocol.  To use 
+ldap version I<2> protocol press the "RadioButton" diamond 
+so that it becomes a gray color.
+
+At this point the tklkup GUI is made of five display and 
+control panels;  SEARCH,  SEARCH DISPLAY, SCHEMA DATA, CREATE ENTRY, 
+and INFO;
+
+-------------------------------------------------------------------
+
+=head1 SEARCH Panel
 
 The I<SELECT BASE> button will activate a cascading 
 drop down menu that contains the NamingContexts of the directory
@@ -4934,12 +4929,6 @@ wishes to use in the directory search.  When selected the
 SEARCH BASE text box will display the directory search base 
 that is selected.  
 
-The I<Process Messages> text window is where process messages
-will be displayed.  The messages are indicators of what is
-happening during the excution of the program.  By selecting 
-a line of text and moving the cursor up or down, the user
-can scroll thru the messages.
-
 The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the attribute the
@@ -4953,54 +4942,15 @@ window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The I<CLEAR ATTRIBUTE DATA> button will clear out the text
-that appears in the Attribute Data text box.
-
-The I<SET FILTER CONDITION> button will activate a drop down menu.  
-From the menu the user will select the "RadioButton" that 
-corresponds to the filter conditions the user wishes to use 
-in the directory search.  When selected the "RadioButton" 
-diamond will turn red in color.  This menu is a designed 
-to be a "I<tear off>" menu, selecting the 
-"---------------" line will cause the pull down menu to 
-become a separate window that is still somewhat controlled 
-by the GUI.  If the GUI is icon-ed or exited, the tear off 
-window will follow the actions of the GUI.  All other 
-actions like moving or closing just the torn off window 
-must be done by the user's window manager.
-The four filter conditions control how the search filter
-will be created.  Just to the side of the I<SET FILTER CONDITION>
-button is a text box that displays the filter condition
-that is selected.
-
-The I<ATTRIBUTE DATA> text box is where the user will enter 
-the data to be searched for.  The program will automatically
-put the beginning and ending parenthesis around the data.
-If the I<Filter> attribute is selected this is where the 
-I<COMPLETE> filter is entered, the program will not modify this
-string in any way.
-
-I<SEARCH THE DIRECTORY> button.  At the bottom of the GUI is 
-the "Search" button.  When a mouse click is done on the 
-"SEARCH THE DIRECTORY" button the program will execute a ldap search
-of the directory.  After the search is completed the SEARCH RESULTS
-panel will be brought to the foreground for the user.
-
--------------------------------------------------------------------
-
-=head1 SEARCH RESULTS Panel
-
-When the SEARCH THE DIRECTORY button is pressed the Search Results 
-panel will be brought to the foreground of the GUI.
-
-At the top right side of the panel is the hierarchial text box where 
-the DN results of the directory search will be displayed.  If there 
-were valid results returned from the 
-search a list of DN entry(s) will be displayed in the hierarchial 
-list box.  Selecting a DN will cause the five LDAP Action buttons to 
-the left of the  hierarchial text box to be put in the active state.
-It is with these 5 buttons that the user can select to view, rename, edit,
-save to a ldif file, or delete the corresponding DS's directory data.
+Just under the I<SELECT BASE> button is the hierarchial text 
+box where the DN results of the directory search will be displayed.
+If there were valid results returned from the search a list of DN 
+entry(s) will be displayed in the hierarchial list box.  Selecting 
+a DN will cause the five LDAP Action buttons to the left of the 
+hierarchial text box to be put in the active state.  It is with 
+these 5 buttons that the user can select to view, rename, edit,
+save to a ldif file, or delete the corresponding DSA's directory 
+data.
 
 =head1 LDAP ACTION BUTTONS
 
@@ -5026,6 +4976,38 @@ to the file specified in the LDIF FILE NAME text box.
 
 I<CANCEL> - Will cancel the action request for the select DN.
 
+I<SEARCH THE DIRECTORY> button.  At the bottom of the GUI is 
+the "Search" button.  When a mouse click is done on the 
+"SEARCH THE DIRECTORY" button the program will execute a ldap search
+of the directory.  
+
+The I<ATTRIBUTE DATA> text box is where the user will enter 
+the data to be searched for.  The program will automatically
+put the beginning and ending parenthesis around the data.
+If the I<Filter> attribute is selected this is where the 
+I<COMPLETE> filter is entered, the program will not modify this
+string in any way.
+
+The I<CLEAR ATTRIBUTE DATA> button will clear out the text
+that appears in the Attribute Data text box.
+
+The I<SET FILTER CONDITION> button will activate a drop down menu.  
+From the menu the user will select the "RadioButton" that 
+corresponds to the filter conditions the user wishes to use 
+in the directory search.  When selected the "RadioButton" 
+diamond will turn red in color.  This menu is a designed 
+to be a "I<tear off>" menu, selecting the 
+"---------------" line will cause the pull down menu to 
+become a separate window that is still somewhat controlled 
+by the GUI.  If the GUI is icon-ed or exited, the tear off 
+window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+The four filter conditions control how the search filter
+will be created.  Just to the side of the I<SET FILTER CONDITION>
+button is a text box that displays the filter condition
+that is selected.
+
 =head1 SAVE ALL TO LDIF BUTTON
 
 At the bottom of the SEARCH RESULTS panel is the SAVE ALL TO LDIF 
@@ -5037,7 +5019,7 @@ file specified in the LDIF FILE NAME text box.
 
 =head1 SEARCH DISPLAY PANEL
  
-I<DIRECTORY SEARCH DISPLAY> is the panel where data for the
+The I<SEARCH DISPLAY> is the panel where data for the
 selected DN is displayed. Data is displayed in the read only
 Directory Data text box.  Associated with the Directory Data 
 text box is the "RadioButton" that determines how often the
@@ -5376,6 +5358,22 @@ Currently the user can create an entry from a LDIF file.
 When the user presses the "CREATE ENTRY FROM LDIF FILE" button,
 the file listed in the "LDIF FILE NAME" text box will be used
 to create the entries listed in the ldif formatted file.
+
+-------------------------------------------------------------------
+
+
+=head1 INFO PANEL
+
+This panel is mainly for information.
+
+The I<Process Messages> text window is where process messages
+will be displayed.  The messages are indicators of what is
+happening during the excution of the program.  By selecting 
+a line of text and moving the cursor up or down, the user
+can scroll thru the messages.
+
+This panel can be considered to be under construction.
+
 
 -------------------------------------------------------------------
 
