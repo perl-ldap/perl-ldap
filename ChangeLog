@@ -1,3 +1,61 @@
+2004-01-01 09:49  Graham Barr
+
+	* data/00-in.ldif:
+
+	Add blank line after version line
+	
+2004-01-01 09:45  Graham Barr
+
+	* lib/Net/LDAP/Schema.pm:
+
+	Fix Net::LDAP::Schema to not ignore superior objectclass' attributes
+	in derived objectclasses without attributes
+	
+2004-01-01 09:43  Graham Barr
+
+	* lib/Net/LDAP/: LDIF.pm, LDIF.pod:
+
+	Patch from Peter Marschall to Net::LDAP::LDIF
+	* it separates the "version: 1" line from the first entry by a blank line
+	* it allows the version() method to set the version number and documents it.
+	* it makes the option "change" to the constructor explicit and documents it
+	  in Net::LDAP::LDIF.pod (defaulting to the current change => 0)
+	* it allows entries with changetype "moddn" to be treated correctly
+	  (current version treats them as modifies)
+	* it allows the "deleteoldrdn" attribute in the entry to be missing
+	  and treats the absent attribute as 0. (in the current version
+	  scalar chokes if the entry does not contain a deleteoldrdn attribute)
+	
+2004-01-01 09:32  Graham Barr
+
+	* lib/Net/LDAP/Bind.pm:
+
+	Add $VERSION to Net::LDAP::Bind
+	
+2003-12-31 21:49  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Handle socket failure better in _sendmesg
+	
+2003-12-10 20:31  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pod:
+
+	Added change description
+	
+2003-11-10 18:31  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Change decryptkey to keydecrypt. Didn't we do this once already?
+	
+2003-10-17 22:39  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.30
+	
 2003-10-17 22:22  Graham Barr
 
 	* lib/Net/LDAP/Bind.pm:

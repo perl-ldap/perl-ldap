@@ -1,4 +1,4 @@
-# Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1997-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -27,7 +27,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.30";
+$VERSION 	= "0.31";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 

@@ -1,3 +1,11 @@
+perl-ldap 0.31  1 Jan 2004
+==========================
+
+* Fixed bug that could cause methods to return an integer instead of an object
+* Fixed bug causing Schema.pm to ignore superior classes that had no attributes
+* Documentation updates
+* Updates to LDIF module
+
 perl-ldap 0.30 17 Oct 2003
 ==========================
 
