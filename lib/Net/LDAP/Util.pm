@@ -583,7 +583,7 @@ in scalar mode.
 
 ## convert a list of values from its LDAP filter encoding ##
 # Synopsis:  @values = unescape_dn_value(@escaped)
-sub unescape_dn_value($)
+sub unescape_dn_value(@)
 {
 my @values = @_;
 
