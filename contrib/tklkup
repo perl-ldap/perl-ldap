@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.0 2003/02/10 04:06:42 charden Exp $
+# $Id: tklkup,v 2.1 2003/02/11 03:41:01 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -109,11 +109,11 @@ my $defaultPort = 389;
 # Handle the command line parameter(s)
 #--------------------------------------------------------
  
-getopts( 'hrd:' );
+getopts( 'hnrd:' );
  
 Usage() if ( $opt_h );
 
-my $debug  = $opt_d ? 1 : 0;
+my $debug  = $opt_n ? 1 : 0;
  
 # Fork this process on start up.
 #
@@ -236,7 +236,7 @@ $splash->Destroy() if ( $Global{splash} );
  
 $splash = undef();
 
-$Global{mainWindow}->repeat(1000, \&update_schema);
+$Global{schema_timer} = $Global{mainWindow}->repeat(1000, \&update_schema);
 #
 # Run the Main loop looking for events.
 # 
@@ -260,9 +260,13 @@ sub ops_items
 sub update_schema
 {
 
-&schema if ( $Global{schemaServer} ne $Global{LDAP_SERVER} ); 
-$Global{schemaServer} = $Global{LDAP_SERVER}
-     if ( $Global{schemaServer} ne $Global{LDAP_SERVER} ); 
+if ( $Global{schemaServer} ne $Global{CORE_SERVER} )
+{
+$Global{schema_timer}->cancel;
+&schema if ( $Global{schemaServer} ne $Global{CORE_SERVER} ); 
+$Global{schemaServer} = $Global{LDAP_SERVER};
+$Global{schema_timer} = $Global{mainWindow}->repeat(1000, \&update_schema);
+}
  
 } # End of subroutine update_schema
 
@@ -1293,7 +1297,7 @@ $Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 # Destroy the dn history list if it exists.
 #
 $Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
-
+ 
 #
 # Parameter(s) to return
 #
@@ -1389,7 +1393,7 @@ if ( $error == 1 )
 }
 
 }
- 
+
 #
 # Display the DN search results list box.
 #
@@ -1411,7 +1415,6 @@ if ( $mesg->code && $mesg->code != 48 )
 {
    ERROR($mesg->code);
 }
-
 
 #
 # Create Hierarchial DN list box data tree, 
@@ -1443,7 +1446,6 @@ $Global{'searchHList'}->pack(-side => "right");
 };  # End of eval
 
 ERROR( \$@ ) if ( $@ );
-
 
 #
 # Get and print out the record attributes.
@@ -1603,14 +1605,13 @@ $error = dirConn();
 if ( !$error )
 {
 
-
 if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
  # user defined base
  my $t1 = [];
  $NC{$server{$Global{'LDAP_SERVER'}}} = [ "0" ];  # dummy load in position 0
  ${$NC{$server{$Global{'LDAP_SERVER'}}}}[1] = $t1;      #
- push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));             
+ push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));
 
 }
 elsif ( $Global{setVersion} == 3 )
@@ -1639,7 +1640,7 @@ elsif ( $Global{setVersion} == 3 )
 
 #
 # Create the cascade search base menus
-#                                                                               
+#
 @NcKeys = sort(keys(%NC));
  
 foreach ( @NcKeys )
@@ -1674,7 +1675,6 @@ foreach my $Nclabel ( @NcKeys )
 $sbmenu->cascade(-label => "$Nclabel");
 $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
-
 
 }
 else
@@ -1757,7 +1757,8 @@ if ($@)
 $msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
 return -1;
 }
-                                                                                $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
                           debug => $opt{d},
@@ -1800,18 +1801,6 @@ return 0;
  
 } # End of subroutine dirConn
  
-
-
-
-
-
-
-
-
-
-
-
-
 #
 # Detect and record the sub-bases, or branches, of the directory.
 #
@@ -1930,7 +1919,7 @@ else
  }
 return @new_base;
  
-}                                                                                
+}
 } # End of subroutine calBase()
 
 #
@@ -1945,7 +1934,8 @@ $Global{'horz'} = $pos[1];
 $Global{'vert'} = $pos[2];
  
 } # End of subrountine globalPos
-                                                                                sub root_cancel
+
+sub root_cancel
 {
  $Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'});
 } # End of subrountine root_cancel
@@ -1991,18 +1981,6 @@ MainLoop;
 unlink $jpegFile;
  
 } # End of displayPhoto 
-
-
-
-
-
-
-
-
-
-
-
-
 
 #
 # Create Main Error Window
@@ -2067,14 +2045,6 @@ $errlist = undef();
  
 } # End of ERROR subroutine
  
-
-
-
-
-
-
-
- 
 #
 # LDAP Error check, some return codes are not really errors.
 # You can retry the ldap action after waiting a while.
@@ -2112,9 +2082,6 @@ else {
    }
  
 } # End of subrountine  CheckError
-
-
-
 
 #
 # Create Main Bind Window
@@ -2353,16 +2320,7 @@ foreach $ahash ( @$ocs)
    }
    }
  
-}                                                                               
-
-
-   #
-   # Get the various other items associated with
-   # this attribute.
-   #
-#      next if ( $value eq 'type');
-
-#      $value =~ tr/a-z/A-Z/;
+}
 
 }
 
@@ -2793,7 +2751,7 @@ else
  $Global{'histWindow'}->raise() 
         if Tk::Exists($Global{'histWindow'}); 
  }
-}                                                                               
+}
 
 $Global{'histWindow'}->geometry("+$x+$y"); 
 #
@@ -3354,7 +3312,6 @@ $acframe = $Global{'changeWindow'}->Frame()
  
 $acframe -> Button(-text => "     ACCEPT DATA CHANGE     ",
       -command =>  \&makeChanges,
-#      -command =>  [ \&makeChanges,\$ADD,\$DELETE,\$REPLACE ],
       -font => $Global{'Font'},
       -borderwidth => 3 )
       ->pack( -fill => 'both' );
@@ -3418,19 +3375,6 @@ $Global{'newAttribute'}->pack(-fill => "both", -expand => 1 );
 $Global{'newAttributeReady'} = 1 ;
 
 }
-
-
-# 
-##
-## Create process add new attribute button
-##
-# 
-#$Global{'changeWindow'}->Button(-text => "ADD\nATTRIBUTE",
-#      -command => [\&add_attribute, $attr, $Value, \$outerframe],
-#      -font => $Global{'Font'}, -borderwidth => 5 )
-#      -> pack(-side => $Global{'hand'},
-#      -padx => 2, -pady => 2 ) ;
-
  
 #
 # Create process Add button
@@ -3509,12 +3453,10 @@ if ( $Global{'multi'} )
 $Global{'tmpDELETE'}{$$attr} = $$Value;
 $Global{'tmpADD'}{$$attr} = $$tbox->get('1.0','1.end');
 
-# print '|',$Global{'tmpREPLACE'}{$$attr},"|\n"; 
 }
 else
 {
 $Global{'tmpREPLACE'}{$$attr} = $$tbox->get('1.0','1.end');
-# print '||',$Global{'tmpREPLACE'}{$$attr},"||\n"; 
 
 }
  
@@ -3619,7 +3561,7 @@ $Global{tmpDELETE} = {};
 $Global{tmpREPLACE} = {};
 $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
  
-} # End of cancel subroutine                                                    
+} # End of cancel subroutine
 
 
 
@@ -4674,9 +4616,10 @@ foreach $attr (@Attributes)
 #----------------------------------------#
 sub Usage
 {
-   print( "Usage: [-h] | [-d]\n" );
-   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
-   print( "\t      Will not fork process.\n" );
+   print( "Usage: [-h] | [-d <#> ] | [-n]\n" );
+   print( "\t-d    Perl-LDAP debug mode. Display debug messages to stdout.\n" );
+   print( "\t      Should be used with -n so that process will not fork a\n" );
+   print( "\t      new process.\n" );
    print( "\t      Value: 0 - display tklkup messages only.\n" );
    print( "\t      Value: 1 - Show outgoing packets (using asn_hexdump).\n" );
    print( "\t      Value: 2 - Show incoming packets (using asn_hexdump).\n" );
@@ -4684,6 +4627,7 @@ sub Usage
    print( "\t      Value: 8 - Show incoming packets (using asn_dump).\n" );
    print( "\t      These values can be add to display several functions.\n" );
    print( "\t-h    Help.  Display this message.\n" );
+   print( "\t-n    Tklkup debug mode. Display debug messages to stdout.\n" );
    print( "\n" );
    print( "\t      Perldoc pod documentation is included in this script.\n" );
    print( "\t      To read the pod documentation do the following;\n" );
