@@ -257,7 +257,8 @@ sub _string {    # prints things of the form (<op> (<list>) ... )
       return "($_[1]->{type}=$str)";
     };
     /^extensibleMatch/ and do {
-      my $str = "($_[1]->{type}";
+      my $str = "(";
+      $str .= $_[1]->{type} if defined $_[1]->{type};
       $str .= ":dn" if $_[1]->{dnAttributes};
       $str .= ":$_[1]->{matchingRule}" if defined $_[1]->{matchingRule};
       $str .= ":=" . _escape($_[1]->{matchValue}) . ")";
