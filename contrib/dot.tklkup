@@ -15,6 +15,12 @@ limit: 30
 #
 port: 389
 #
+#  Uncomment nismapname if you are using Solaris Native
+#  LDAP.  Solaris Native LDAP uses nismapname to define
+#  the automounter directory branches.
+#
+#nismapname
+#
 # Set up the search attributes you want listed on
 # the Attribute and Select Additional Attributes button.
 #
