@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.6 2001/05/19 02:48:00 charden Exp $
+# $Id: tklkup,v 1.7 2001/06/15 02:48:46 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,6 +21,16 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.7  2001/06/15 02:48:46  charden
+# Added many enhancements.
+# Added the ability to display jpegPhoto attributes when they are encountered
+# if the Tk::JPEG module is installed.
+# Added the ability to do a hierarchical tree graph of objectclasses.  When a
+# branch of the tree is selected, a listing of the objectclasses and their
+# attributes is displayed in a list box.
+# Added the ability to display the ROOT DSE entry if it can be  obtained.
+# Changed several look and feel items, made everything more consistent.
+#
 # Revision 1.6  2001/05/19 02:48:00  charden
 # Corrected code that uses the nameContext to determine branches,
 # or bases, in the directory.
@@ -84,34 +94,49 @@ use Tk;
 use Tk::ErrorDialog;
 use Tk::LabFrame;
 use Tk::ROText;
-
+use Tk::HList;
+use Tk::Label;
 #
 # Global variables, wish I did not have to use them
 # but Tk forces me to.
 #
+my %Global     = {};
 
-my $bindpw = "";
-my $binddn = "";
-my $adata = "";
-my $uid = "";
-my $info = "";
-my $slist;
-my $setVersion;
-my $clear;
-my $sfile = 0;
-my $fdata = "";
-my $hand = 'left';
-my $horz = 200;
-my $vert = 20;
-my $Font = "7x5";
-my $CORE_SERVER;
+$Global{'jpeg'}   = 1;
+eval { use Tk::JPEG; }; 
+$Global{'jpeg'}   = 0 if ( $@ );
+
+$Global{'mainWindow'}   = undef();
+$Global{'schemaWindow'} = undef();
+$Global{'histWindow'}   = undef();
+$Global{'portWindow'}   = undef();
+$Global{'bindWindow'}   = undef();
+
+my %schemaHash = {};
+
+&init_schemaHash;
+
+$Global{'LDAP_SERVER'} = "";
+$Global{'bindpw'} = "";
+$Global{'binddn'} = "";
+$Global{'adata'} = "";
+$Global{'info'} = "";
+$Global{'slist'} = 0;
+$Global{'setVersion'} = 0;
+$Global{'sfile'} = 0;
+$Global{'fdata'} = "";
+$Global{'hand'}  = 'left';
+$Global{'horz'} = 200;
+$Global{'vert'} = 20;
+$Global{'Font'} = "7x5";
+$Global{'CORE_SERVER'} = "";
+$Global{'sclear'} = 0;
+$Global{'limit'}  = 30;
+$Global{'port'}   = 389;
 my $sbbframe;
 my @base       = ();
 my $base       = "";
 my @BaseButton = ();
-my $sclear;
-my $limit = 30;
-my $port = 389;
 my $defaultPort = 389;
 
 #--------------------------------------------------------
@@ -170,7 +195,7 @@ my $rbcn;
 my $rbsn;
 my $rbmail;
 my $rbclear;
-my $mainWindow;
+#my $mainWindow;
 my $lframe;
 my $sframe;
 my $aframe;
@@ -213,21 +238,21 @@ $_ = $data[0];
 TYPE: {
 
     /^hand/i && do {
-                     $hand = $data[1];
+                     $Global{'hand'} = $data[1];
                      last TYPE; };
 
     /^port/i && do {
-                     $port = $data[1];
+                     $Global{'port'} = $data[1];
                      last TYPE; };
 
     /^limit/i && do {
                      if (defined($data[1]) ) 
                      { 
-                      $limit = $data[1]; 
+                      $Global{'limit'} = $data[1]; 
                      }
                      else 
                      { 
-                      $limit = 30; 
+                      $Global{'limit'} = 30; 
                      }
                      last TYPE; };
 
@@ -244,10 +269,11 @@ TYPE: {
 		     last TYPE; };
 
     /^font/i && do {
-                     $Font = $data[1];
+                     $Global{'Font'} = $data[1];
                      last TYPE; };
 
-                     print "Default found undefine type:  $_";
+                     my $error =  "Parsing configuration file found an undefined type:  $_";
+                     ERROR($error);
 
     } # End of case TYPE
 
@@ -265,8 +291,8 @@ close(DOT);
 
 if ( defined($opt_r) ) {
 
-$hand   = $opt_r ? 'right' : 'left';
-# my $hand   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
+$Global{'hand'}   = $opt_r ? 'right' : 'left';
+# my $Global{'hand'}   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
 
 }
 
@@ -277,8 +303,8 @@ if ( @server < 1 )
 { 
 $server[0] = "ldap.umich.edu"; 
 }
-$LDAP_SERVER = $server[0];
-$CORE_SERVER = $LDAP_SERVER;
+$Global{'LDAP_SERVER'} = $server[0];
+$Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
 #
 # Default directory search base.
@@ -290,7 +316,7 @@ $CORE_SERVER = $LDAP_SERVER;
  
  if ( defined($server{$server[0]}) )
  {
- @base =  getBases($LDAP_SERVER, $server{$server[0]});
+ @base =  getBases($Global{'LDAP_SERVER'}, $server{$server[0]});
  }
  else
  {
@@ -298,17 +324,17 @@ $CORE_SERVER = $LDAP_SERVER;
  my $entry;
  my $mesg;
 
- my $ldap = new Net::LDAP( $LDAP_SERVER,
+ my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                            timeout => 1,
-                           port => $port,
+                           port => $Global{'port'},
                            debug => $opt{'d'},
                          ) or $error = 1;
 
     if ( !$error )
     {
 
-    $mesg = $ldap->bind( password => "$bindpw", 
-                         dn => "$binddn", 
+    $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
+                         dn => "$Global{'binddn'}", 
                          version => $version,
                        ) or $error = 1;
    
@@ -328,7 +354,7 @@ $CORE_SERVER = $LDAP_SERVER;
         {
          foreach my $ncbase ( @$attr )
          {
-          push(@base, getBases($LDAP_SERVER, $ncbase));
+          push(@base, getBases($Global{'LDAP_SERVER'}, $ncbase));
          }
         }
         else 
@@ -342,7 +368,7 @@ $CORE_SERVER = $LDAP_SERVER;
     {
     @base = ();
     }
-  $ldap->unbind;
+  $ldap->unbind if ( defined($ldap));
  }
 
  if ( @base >= 1)
@@ -369,28 +395,28 @@ if ( $#attribute < 1 )
 # Create Main Window
 #
 
-$mainWindow = MainWindow->new;
+$Global{'mainWindow'} = MainWindow->new;
 
-$mainWindow->title("Directory Search");
+$Global{'mainWindow'}->title("DIRECTORY SEARCH");
 
-$mainWindow->geometry("+$horz+$vert");
+$Global{'mainWindow'}->geometry("+$Global{'horz'}+$Global{'vert'}");
 #
 # Create process Exit button
 #
 
-$mainWindow->Button(-text => "EXIT", 
-                    -command => sub{ exit; }, -font => $Font, 
+$Global{'mainWindow'}->Button(-text => "EXIT", 
+                    -command => sub{ exit; }, -font => $Global{'Font'}, 
                     -borderwidth => 5  ) 
                     -> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
 
 
-$dsaframe = $mainWindow->Frame()
+$dsaframe = $Global{'mainWindow'}->Frame()
       ->pack( -fill => "both", -side => "top" );
 
 
 $sframe = $dsaframe->LabFrame(-label => "DIRECTORY SERVER",
       -labelside => "acrosstop")
-      ->pack(  -side => "left"  );
+      ->pack(  -side => $Global{'hand'}  );
 
 $stframe = $sframe->Frame()
       ->pack( -fill => "x", -side => "top" );
@@ -398,11 +424,11 @@ $stframe = $sframe->Frame()
 $sbframe = $sframe->Frame()
       ->pack( -fill => "x", -side => "bottom" );
 
-$slist = $stframe ->Listbox( -height => 1  );
+$Global{'slist'} = $stframe ->Listbox( -height => 1  );
 
-$slist->pack( -side => "left" );
+$Global{'slist'}->pack( -side => $Global{'hand'}  );
 
-$slist->insert("end", $LDAP_SERVER);
+$Global{'slist'}->insert("end", $Global{'LDAP_SERVER'});
 
 #
 # Create directory server selection button
@@ -411,9 +437,10 @@ $slist->insert("end", $LDAP_SERVER);
 #
 
 $smenu = $stframe -> Menubutton(-text => "SELECT\nSERVER",
-                 -relief => "raised", -font => $Font, -borderwidth => 3 )
-                 -> pack(-side => "left", -anchor => "center",
-                         -pady => 2 );
+                  -relief => "raised", -font => $Global{'Font'},
+                  -borderwidth => 3 )
+                  -> pack(-side => $Global{'hand'}, -anchor => "center",
+                          -pady => 2 );
 
 #
 # Set up the select directory server radio buttons.
@@ -421,8 +448,8 @@ $smenu = $stframe -> Menubutton(-text => "SELECT\nSERVER",
 
 foreach (@server)
 {
-   $smenu->radiobutton( -label => $_, -variable => \$LDAP_SERVER,
-         -value => $_, -command => \&server, -font => $Font );
+   $smenu->radiobutton( -label => $_, -variable => \$Global{'LDAP_SERVER'},
+         -value => $_, -command => \&server, -font => $Global{'Font'} );
 
 }
 
@@ -434,9 +461,9 @@ foreach (@server)
 #
  
 $abind = $stframe -> Button(-text => " BIND TO\n DIRECTORY",
-                 -relief => "raised", -command => \&BIND, -font => $Font,
-                 -borderwidth => 3 )
-                 -> pack( -side => "left", -anchor => "w", -pady => 2);
+                 -relief => "raised", -command => \&BIND, 
+                 -font => $Global{'Font'}, -borderwidth => 3 )
+                 -> pack( -side => $Global{'hand'}, -anchor => "w", -pady => 2);
 #
 # Create a LDAP version Checkbutton that will set up  variable
 # setVersion to set the LDAP version before each directory query.
@@ -444,8 +471,8 @@ $abind = $stframe -> Button(-text => " BIND TO\n DIRECTORY",
  
 $setVersion = $sbframe -> Checkbutton(
                        -text => "SET LDAP VERSION, LDAP V3 DEFAULT",
-                       -variable =>  \$setVersion, -onvalue => 1, 
-                       -offvalue => 0, -font => $Font )
+                       -variable =>  \$Global{'setVersion'}, -onvalue => 1, 
+                       -offvalue => 0, -font => $Global{'Font'} )
                        -> pack(-side => "left", -anchor => "center" );
  
 $setVersion->select();
@@ -457,11 +484,11 @@ $setVersion->select();
 
 $sbbframe = $dsaframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
       -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "left", -pady => 1 );
+      ->pack( -fill => "both", -side => $Global{'hand'}, -pady => 1 );
 
 $sbblist = $sbbframe ->Listbox( -width => 30, -height => 1  );
 
-$sbblist->pack(-side => "left" );
+$sbblist->pack(-side => $Global{'hand'} );
 
 $sbblist->insert("end", $LDAP_SEARCH_BASE);
 
@@ -472,7 +499,8 @@ $sbblist->insert("end", $LDAP_SEARCH_BASE);
 #
 
 $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
-                 -relief => "raised", -font => $Font, -borderwidth => 3 )
+                 -relief => "raised", -font => $Global{'Font'}, 
+                 -borderwidth => 3 )
                  -> pack(-side => "left", -anchor => "w" );
 
 #
@@ -484,7 +512,8 @@ foreach (@base)
 {
    push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
                      -variable => \$LDAP_SEARCH_BASE,
-                     -value => $_, -command => \&base, -font => $Font ) );
+                     -value => $_, -command => \&base, 
+                     -font => $Global{'Font'} ) );
 
 }
 
@@ -492,7 +521,8 @@ foreach (@base)
 # Create bottom Search Directory frame
 #
 
-$bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "raised")->pack(
+$bframe = $Global{'mainWindow'}->Frame(-borderwidth => 2,
+      -relief => "raised")->pack(
       -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
 
 #
@@ -500,10 +530,11 @@ $bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "raised")->pack(
 #
 
 $bframe -> Button(-text => "SEARCH DIRECTORY", -command =>  \&search, 
-        -font => $Font, -borderwidth => 3 ) -> pack( -fill => "both");
+        -font => $Global{'Font'}, -borderwidth => 3 ) 
+        -> pack( -fill => "both");
 
 
-$attframe = $mainWindow->Frame()
+$attframe = $Global{'mainWindow'}->Frame()
       ->pack( -fill => "both", -side => "bottom");
 
 #
@@ -521,7 +552,7 @@ $tframe = $attframe->LabFrame(-label => "ATTRIBUTE DATA",
 # Create Text Entry list box.
 #
 
-$tframe->Entry(-textvariable => \$adata, -width => 25 ) 
+$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 ) 
       -> pack(-fill => 'x');
 
 
@@ -537,8 +568,18 @@ $cframe = $attframe->Frame()
 #
 
 $cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear, 
-        -font => $Font, -borderwidth => 3 )
-        -> pack( -side => $hand );
+        -font => $Global{'Font'}, -borderwidth => 3 )
+        -> pack( -side => $Global{'hand'} );
+
+
+#
+# Create get root dse entry button.
+#
+
+$cframe -> Button(-text => "OBTAIN ROOT DSE ENTRY", 
+        -command =>  \&rootDse, 
+        -font => $Global{'Font'}, -borderwidth => 3 )
+        -> pack( -side => $Global{'hand'} );
 
 #
 # Create left attribute selection frame
@@ -547,7 +588,7 @@ $cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear,
 
 $aframe = $attframe->LabFrame(-label => "ATTRIBUTES",
       -labelside => "acrosstop")
-      ->pack( -side => $hand );
+      ->pack( -side => $Global{'hand'} );
 
 #
 # First set up the 4 main Radio buttons.
@@ -564,8 +605,9 @@ while ( $sptr <= 3 )
 {
 $_ = shift(@attribute);
 
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
-         -value => "$_", -font => $Font ) -> pack( -side => "$hand");
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$Global{'info'},
+         -value => "$_", -font => $Global{'Font'} ) 
+         -> pack( -side => "$Global{'hand'}");
 
 if ( !$sptr ) { $rbsn->select(); } # select first attribute
 
@@ -584,8 +626,9 @@ while ( @attribute )
 {
 $_ = shift(@attribute);
 
-$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
-                  -value => "$_", -font => $Font ) 
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", 
+                  -variable => \$Global{'info'},
+                  -value => "$_", -font => $Global{'Font'} ) 
                   -> pack( -side => "bottom", -anchor => "w");
 
 if ( !$sptr ) { $rbsn->select(); } # select first attribute
@@ -602,7 +645,8 @@ if ( !$sptr ) { $rbsn->select(); } # select first attribute
 #
 
 $amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
-                 -relief => "raised", -font => $Font, -borderwidth => 3 )
+                 -relief => "raised", -font => $Global{'Font'},
+                 -borderwidth => 3 )
                  -> pack( -side => "bottom", -anchor => "w" );
 
 #
@@ -613,8 +657,8 @@ $amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
 foreach (@attribute)
 {
 
-   $amenu->radiobutton( -label => $_, -variable => \$info,
-          -value => $_, -font => $Font);
+   $amenu->radiobutton( -label => $_, -variable => \$Global{'info'},
+          -value => $_, -font => $Global{'Font'});
 
 } # End of foreach (@attribute)
 
@@ -635,8 +679,8 @@ $prtframe = $attframe->LabFrame(-label => "DIRECTORY PORT",
  
 $abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
                    -relief => "raised", -command => \&SCHEMA, 
-                   -font => $Font, -borderwidth => 3 )
-                   -> pack( -side => "$hand", -anchor => "w" );
+                   -font => $Global{'Font'}, -borderwidth => 3 )
+                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
 
 #
 # Create port button.
@@ -646,11 +690,11 @@ $abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
  
 $abind = $prtframe -> Button(-text => "SET DIRECTORY\nPORT",
                    -relief => "raised", -command => \&PORT, 
-                   -font => $Font, -borderwidth => 3 )
-                   -> pack( -side => "$hand", -anchor => "w" );
+                   -font => $Global{'Font'}, -borderwidth => 3 )
+                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
 
 
-#$_ = $mainWindow->geometry();
+#$_ = $Global{'mainWindow'}->geometry();
 
 #/^=?(\d+x\d+)?([+-]\d+[+-]\d+)?$/;
 
@@ -668,7 +712,7 @@ sub AClear {
 # Clear out text in Attribute Box
 #
 
-$adata = "";
+$Global{'adata'} = "";
 
 } # End of AClear subroutine
 
@@ -680,8 +724,8 @@ my $ptr;
 # Put directory server name in list box
 #
 
-$slist->insert(0 , $LDAP_SERVER);
-$sslist->insert(0 , $LDAP_SERVER) if ( Exists($sslist) ) ;
+$Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
+$sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
 
 #if ( !$mybase )
 #{
@@ -701,11 +745,11 @@ $sbmenu->menu->delete($ptr);
 
 @base = ();
 
-if ( $CORE_SERVER ne $LDAP_SERVER && defined($server{$LDAP_SERVER} ) )
+if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
 
 
-@base = getBases($LDAP_SERVER, $server{$LDAP_SERVER});
+@base = getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}});
 
 }
 else
@@ -714,17 +758,17 @@ else
  my $mesg;
  my $entry;
 
- my $ldap = new Net::LDAP( $LDAP_SERVER,
+ my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                            timeout => 1,
-                           port => $port,
+                           port => $Global{'port'},
                            debug => $opt{'d'},
                          ) or $error = 1;
 
     if ( !$error )
     {
 
-    $mesg = $ldap->bind( password => "$bindpw", 
-                         dn => "$binddn", 
+    $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
+                         dn => "$Global{'binddn'}", 
                          version => $version,
                        ) or $error = 1;
 
@@ -744,7 +788,7 @@ else
         {
           foreach my $ncbase ( @$attr )
           {
-            push( @base, getBases($LDAP_SERVER, $ncbase));
+            push( @base, getBases($Global{'LDAP_SERVER'}, $ncbase));
           }
         }
         else 
@@ -758,7 +802,7 @@ else
     {
     @base = ();
     }
-  $ldap->unbind;
+  $ldap->unbind if ( defined($ldap));
 
 }
 
@@ -779,7 +823,8 @@ foreach (@base)
 {
    push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
                      -variable => \$LDAP_SEARCH_BASE,
-                     -value => $_, -command => \&base, -font => $Font ) );
+                     -value => $_, -command => \&base, 
+                     -font => $Global{'Font'} ) );
 
 }
 
@@ -789,12 +834,12 @@ $LDAP_SEARCH_BASE = $base[0];
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 
 
-$CORE_SERVER = $LDAP_SERVER;
+$Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
 } # End of server subroutine
 
 
-sub attribute {
+#sub attribute {
 
 #
 # Build a correct Filter string from the data
@@ -802,11 +847,11 @@ sub attribute {
 # radiobutton selection.
 #
 
-my $tmp = "(" . $uid . "=";
+#my $tmp = "(" . $uid . "=";
 
-$info = $tmp;
+#$info = $tmp;
 
-} # End of attribute subroutine
+#} # End of attribute subroutine
 
 
 sub base {
@@ -828,33 +873,33 @@ sub BIND {
  
 $dn_data = "";
 $pw_data = "";
-my $x = $horz + 150;
-my $y = $vert + 150;
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
  
 #
 # Create Main Bind Window
 #
  
-$bindWindow = MainWindow->new;
+$Global{'bindWindow'} = MainWindow->new;
  
-$bindWindow->title("Bind To Directory");
+$Global{'bindWindow'}->title("BIND TO DIRECTORY");
  
-$bindWindow->geometry("+$x+$y");
+$Global{'bindWindow'}->geometry("+$x+$y");
 #
 # Create process accept button
 #
-$bindWindow->Button( -text => "Accept", -command => \&accept, 
-           -font => $Font, -borderwidth => 3 )
+$Global{'bindWindow'}->Button( -text => "ACCEPT", -command => \&accept, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
  
 #
 # Create process cancel button
 #
-$bindWindow->Button(-text => "Cancel", -command => \&cancel, 
-           -font => $Font, -borderwidth => 3)
+$Global{'bindWindow'}->Button(-text => "CANCEL", -command => \&cancel, 
+           -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
  
-my $binddnframe = $bindWindow->LabFrame(-label => "DN",
+my $binddnframe = $Global{'bindWindow'}->LabFrame(-label => "DN",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
  
@@ -865,7 +910,7 @@ my $binddnframe = $bindWindow->LabFrame(-label => "DN",
 $binddnframe->Entry(-textvariable => \$dn_data, -width => 25 )
       -> pack(-fill => 'x');
  
-my $bindpwframe = $bindWindow->LabFrame(-label => "PASSWORD",
+my $bindpwframe = $Global{'bindWindow'}->LabFrame(-label => "PASSWORD",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
  
@@ -874,21 +919,22 @@ my $bindpwframe = $bindWindow->LabFrame(-label => "PASSWORD",
 #
  
 $bindpwframe->Entry(-show => '*', -textvariable => \$pw_data, 
-                    -width => 25, -font => $Font )
+                    -width => 25, -font => $Global{'Font'} )
                     -> pack(-fill => 'x');
  
 sub cancel{
  
-$bindWindow->destroy() if Tk::Exists($bindWindow);
- 
+$Global{'bindWindow'}->destroy() if Tk::Exists($Global{'bindWindow'});
+$Global{'bindWindow'} = undef(); 
 } # End of cancel subroutine
  
 sub accept{ 
  
-$binddn = $dn_data;
-$bindpw = $pw_data;
+$Global{'binddn'} = $dn_data;
+$Global{'bindpw'} = $pw_data;
  
-$bindWindow->destroy() if Tk::Exists($bindWindow);
+$Global{'bindWindow'}->destroy() if Tk::Exists($Global{'bindWindow'});
+$Global{'bindWindow'} = undef(); 
  
 } # End of accept subroutine
 } # End of BIND subroutine
@@ -901,13 +947,21 @@ $bindWindow->destroy() if Tk::Exists($bindWindow);
  
 sub ERROR {
 my ($errcode ) = @_;
+my $errmsg;
 
 return if ($errcode == 48 ); # Anonymous bind error, not really an error.
 
-my $x = $horz + 150;
-my $y = $vert + 150;
- 
-my $errmsg = ldap_error_text($errstr);
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
+
+if ( ref($errcode) == SCALAR )
+{ 
+my $errmsg = ldap_error_text($errcode);
+}
+else
+{
+$errmsg = $errcode;
+}
 
 my @errmsg = split(/\n/,$errmsg);
 
@@ -917,14 +971,14 @@ my @errmsg = split(/\n/,$errmsg);
  
 $errorWindow = MainWindow->new;
  
-$errorWindow->title("Error Messages");
+$errorWindow->title("ERROR MESSAGES");
  
 $errorWindow->geometry("+$x+$y");
 #
 # Create process dismiss button
 #
 $errorWindow->Button( -text => "DISMISS", -command => \&dismiss, 
-           -font => $Font, -borderwidth => 3 )
+           -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
  
 $errlist = $errorWindow ->Listbox( -width => 70, -height => 10  );
@@ -942,7 +996,7 @@ sub dismiss{
  
 $errorWindow->destroy() if Tk::Exists($errorWindow);
  
-} # End of accept subroutine
+} # End of dismiss subroutine
 } # End of ERROR subroutine
 
 
@@ -952,34 +1006,34 @@ $errorWindow->destroy() if Tk::Exists($errorWindow);
  
 sub PORT {
  
-$port_data = $port;
-my $x = $horz + 150;
-my $y = $vert + 150;
+$port_data = $Global{'port'};
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
  
 #
 # Create Main Port Window
 #
  
-$portWindow = MainWindow->new;
+$Global{'portWindow'} = MainWindow->new;
  
-$portWindow->title("Directory Port");
+$Global{'portWindow'}->title("DIRECTORY PORT");
  
-$portWindow->geometry("+$x+$y");
+$Global{'portWindow'}->geometry("+$x+$y");
 #
 # Create process accept button
 #
-$portWindow->Button( -text => "Accept", -command => \&portAccept, 
-           -font => $Font, -borderwidth => 3 )
+$Global{'portWindow'}->Button( -text => "ACCEPT", -command => \&portAccept, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
  
 #
 # Create process cancel button
 #
-$portWindow->Button(-text => "Cancel", -command => \&portCancel, 
-           -font => $Font, -borderwidth => 3)
+$Global{'portWindow'}->Button(-text => "CANCEL", -command => \&portCancel, 
+           -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
  
-my $portframe = $portWindow->LabFrame(-label => "PORT",
+my $portframe = $Global{'portWindow'}->LabFrame(-label => "PORT",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
  
@@ -993,15 +1047,17 @@ $portframe->Entry(-textvariable => \$port_data, -width => 10 )
  
 sub portCancel{
  
-$portWindow->destroy() if Tk::Exists($portWindow);
+$Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
+$Global{'portWindow'} = undef(); 
  
 } # End of cancel subroutine
  
 sub portAccept{ 
  
-$port = $port_data;
+$Global{'port'} = $port_data;
  
-$portWindow->destroy() if Tk::Exists($portWindow);
+$Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
+$Global{'portWindow'} = undef(); 
  
 } # End of accept subroutine
 } # End of PORT subroutine
@@ -1027,18 +1083,18 @@ foreach ( @$ocs)
    #
    # Get and display the oid number of the objectclass.
    #
-   my $oid = $schema->name2oid( "$_" );
+   my $oid = $schemaHash{'schema'}->name2oid( "$_" );
    
    #
    # Get the various other items associated with
    # this attribute.
    #
-   my @items = $schema->items( "$oid" );
+   my @items = $schemaHash{'schema'}->items( "$oid" );
    foreach my $value ( @items )
    {
       next if ( $value eq 'type');
 
-      @item = $schema->item( $oid, $value );
+      @item = $schemaHash{'schema'}->item( $oid, $value );
       $value =~ tr/a-z/A-Z/;
       if ( defined(@item) && $item[0] == 1 )
       {
@@ -1075,7 +1131,6 @@ sub SCHEMA
 my $srbclear;
 my $srbfile;
 my $srbfilelabel;
-# my $schemaWindow;
 my $slframe;
 my $ssframe;
 my $sbbframe;
@@ -1083,28 +1138,28 @@ my $aframe;
 my $tframe;
 my $sbframe;
 #my $sslist;
-my $x = $horz + 100;
-my $y = $vert + 100;
+my $x = $Global{'horz'} + 100;
+my $y = $Global{'vert'} + 100;
 #
 # Create Main Window
 #
-if (!  Exists($schemaWindow) )
+if (!  Exists($Global{'schemaWindow'}) )
 {
-$schemaWindow = MainWindow->new;
+$Global{'schemaWindow'} = MainWindow->new;
 
-$schemaWindow->title("Directory Schema Search");
+$Global{'schemaWindow'}->title("DIRECTORY SCHEMA SEARCH");
 
-$schemaWindow->geometry("+$x+$y");
+$Global{'schemaWindow'}->geometry("+$x+$y");
 #
 # Create process Exit button
 #
 
-$schemaWindow->Button( -text => "Close Schema Search Window", 
-                       -command => \&schema_cancel, -font => $Font, 
+$Global{'schemaWindow'}->Button( -text => "CLOSE SCHEMA SEARCH WINDOW", 
+                       -command => \&schema_cancel, -font => $Global{'Font'}, 
                        -borderwidth => 5 )
                        -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
 
-$ssframe = $schemaWindow->LabFrame(-label => "DIRECTORY SERVER",
+$ssframe = $Global{'schemaWindow'}->LabFrame(-label => "DIRECTORY SERVER",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
 
@@ -1112,13 +1167,13 @@ $sslist = $ssframe ->Listbox( -height => 1  );
 
 $sslist->pack(-fill => "both", -expand => 1 );
 
-$sslist->insert("end", $LDAP_SERVER);
+$sslist->insert("end", $Global{'LDAP_SERVER'});
 
 #
 # Create bottom Search Directory frame
 #
 
-$sbframe = $schemaWindow->Frame( -borderwidth => 2, 
+$sbframe = $Global{'schemaWindow'}->Frame( -borderwidth => 2, 
                         -relief => "raised")->pack(
                         -fill => "both", -side => "bottom", 
                         -padx => 2, -pady => 2);
@@ -1127,23 +1182,24 @@ $sbframe = $schemaWindow->Frame( -borderwidth => 2,
 # Create Search Directory button
 #
 
-$sbframe -> Button(-text => "Retrieve Directory Schema", 
-         -command =>  \&schema, -font => $Font, -borderwidth => 3 )
+$sbframe -> Button(-text => "RETRIEVE DIRECTORY SCHEMA", 
+         -command =>  \&schema, -font => $Global{'Font'}, -borderwidth => 3 )
          -> pack( -fill => "both");
 
-$srbfilelabel = $schemaWindow->LabFrame(-label => "SCHEMA DUMP TO FILE",
+$srbfilelabel = $Global{'schemaWindow'}->LabFrame(-label => "SCHEMA DUMP TO FILE",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -anchor => "w", -padx => 2, -pady => 2);
 
 $srbfile = $srbfilelabel -> Checkbutton( 
           -text => "Write schema data to file, enter file\nname in text box below this line.   ",
-          -variable =>  \$sfile, -onvalue => 1, -offvalue => 0, -font => $Font )
+          -variable =>  \$Global{'sfile'}, -onvalue => 1, -offvalue => 0,
+          -font => $Global{'Font'} )
           -> pack(-anchor => "w" );
 #
 # Create Text Entry list box.
 #
 
-$srbfilelabel->Entry(-textvariable => \$fdata, -width => 25 ) 
+$srbfilelabel->Entry(-textvariable => \$Global{'fdata'}, -width => 25 ) 
       -> pack(-fill => 'x');
 
 
@@ -1151,7 +1207,7 @@ $srbfilelabel->Entry(-textvariable => \$fdata, -width => 25 )
 # Create list frame.
 #
 
-$slframe = $schemaWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
+$slframe = $Global{'schemaWindow'}->LabFrame(-label => "DIRECTORY SCHEMA DATA",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -pady => 2,
       -expand => 1);
@@ -1163,100 +1219,99 @@ $slframe = $schemaWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
 
 $srbclear = $slframe -> Checkbutton(
                      -text => "Clear directory data on each query.",
-                     -variable =>  \$sclear, -onvalue => 1, -offvalue => 0,
-                     -font => $Font )
+                     -variable =>  \$Global{'sclear'}, -onvalue => 1,
+                     -offvalue => 0, -font => $Global{'Font'} )
                      -> pack(-anchor => 'nw' );
 
 $srbclear->select();
 
 $selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
                                  -labelside => "acrosstop" )
-      ->pack( -side => "right", -expand => 1, -fill => "both" );
+      ->pack( -side => $Global{'hand'}, -expand => 1, -fill => "both" );
 
 $sellframe = $selframe->Frame( -borderwidth => 0, 
                         -relief => "raised")->pack(
                         -fill => "both", -side => "top", 
                         -padx => 0, -pady => 0);
 
-$sellAll = $sellframe -> Checkbutton(-text => "All",
+$sellAll = $sellframe -> Checkbutton(-text => "ALL",
       -variable =>  \$selectAll, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $sellAll->select();
 
 $sellObj = $sellframe -> Checkbutton(-text => "objectClasses",
       -variable =>  \$selectObj, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $sellMatch = $sellframe -> Checkbutton(-text => "matchingRules",
       -variable =>  \$selectMatch, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $sellAtt = $sellframe -> Checkbutton(-text => "attributeType",
       -variable =>  \$selectAtt, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 
 $sellsyn = $sellframe -> Checkbutton(-text => "ldapsyntaxes",
       -variable =>  \$selectSyn, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $sellnf = $sellframe -> Checkbutton(-text => "nameforms",
       -variable =>  \$selectNf, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $selldsr = $sellframe -> Checkbutton(-text => "ditstructurerules",
       -variable =>  \$selectDsr, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $selldcr = $sellframe -> Checkbutton(-text => "ditcontentrules",
       -variable =>  \$selectDcr, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
 $sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
       -variable =>  \$selectMru, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
+
+
+      $sellframe -> Button(-text => "SHOW HIERARCHIAL OBJECTCLASS TREE",
+      -command =>  \&Hierarchial,  -font => $Global{'Font'},
+      -borderwidth => 3 )
+      -> pack(-side => "bottom" );
 
 #
 # Create Clear Attribute Data and Search Directory buttons
 #
 
-if ( $hand eq 'left' )
-{
-$slframe ->Button(-text => "     Clear Data     ",
-     -command =>  \&schema_clear, -font => $Font, -borderwidth => 3 ) 
-     -> pack(-side => "bottom", -anchor => 'sw', -padx => 5 );
-}
-else
-{
-$slframe ->Button(-text => "     Clear Data     ",
-     -command =>  \&schema_clear, -font => $Font, -borderwidth => 3 )
-     -> pack(-side => "bottom", -anchor => 'se', -padx => 5 );
-}
+$slframe ->Button(-text => "     CLEAR DATA     ",
+     -command =>  \&schema_clear, -font => $Global{'Font'},
+     -borderwidth => 3 ) 
+     -> pack(-side => "bottom", -fill => "both",  -padx => 5 );
 #
 # Create a ROText Box that will actually contain the 
 # returned directory data.
 #
 
 $schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 50, -height => 20, -wrap => 'none', -font => $Font  );
+        -width => 50, -height => 20, -wrap => 'none', 
+        -font => $Global{'Font'}  );
 
 $schema_list->pack( -side => "bottom" );
 
 }
 else
 {
-$schemaWindow->deiconify() if Tk::Exists($schemaWindow);
-$schemaWindow->raise() if Tk::Exists($schemaWindow);
+$Global{'schemaWindow'}->deiconify() if Tk::Exists($Global{'schemaWindow'});
+$Global{'schemaWindow'}->raise() if Tk::Exists($Global{'schemaWindow'});
 }
 
 sub schema_clear {
@@ -1273,10 +1328,15 @@ $schema_list->delete("1.0", "end");
 sub schema_cancel{
  
 # $schemaWindow->withdraw if Tk::Exists($schemaWindow);
-$schemaWindow->destroy if Tk::Exists($schemaWindow);
- 
+$Global{'schemaWindow'}->destroy if Tk::Exists($Global{'schemaWindow'});
+$Global{'schemaWindow'} = undef(); 
 } # End of cancel subroutine
  
+
+
+
+
+
 
 #
 #
@@ -1289,13 +1349,31 @@ sub schema
 {
 my $mesg;
 my $error;
+
+$schemaHash{'obj'} = {};
+$schemaHash{'tree'} = {};
+#my %obj = ();
+#my %tree = ();
+
+#my @atts = ();
+#my @ocs = ();
+#my @mrs = ();
+#my @nfm = ();
+#my @lsyn = ();
+#my @dits = ();
+#my @ditc = ();
+#my @mru = ();
+
+
+
+
 my $dt = "/tmp/schema.dat.$$";
 
-if ( $sclear ) { &schema_clear(); }
+if ( $Global{'sclear'} ) { &schema_clear(); }
 
 my $version;
 
-if ( $setVersion ) 
+if ( $Global{'setVersion'} ) 
 { 
 $version = 3;
 }
@@ -1308,9 +1386,9 @@ $version = 2;
 # Connect to directory server
 # 
 
-my $ldap = new Net::LDAP( $LDAP_SERVER,
+my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                           timeout => 1,
-                          port => $port,
+                          port => $Global{'port'},
                           debug => $opt{'d'},
                         ) or $error = 1;
 
@@ -1320,8 +1398,8 @@ if ( $error == 1 )
    return;
 }
 
-$mesg = $ldap->bind( password => "$bindpw", 
-                     dn => "$binddn", 
+$mesg = $ldap->bind( password => "$Global{'bindpw'}", 
+                     dn => "$Global{'binddn'}", 
                      version => $version,
                    ) or $error = 1;
 
@@ -1347,29 +1425,30 @@ $schema = undef();
 my @items;
 my @item;
 
-$schema = $ldap->schema();
+$schemaHash{'schema'} = $ldap->schema();
 
-if ( defined($schema) )
+if ( defined($schemaHash{'schema'}) )
 {
-if ( $sfile && defined($schema) )
+if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
 {
   #
   # write to file instead of text box
   #
-  $schema->dump( $fdata );
-  $schema_list->insert("end",  "Schema data written to file: $fdata\n");
-  $sfile = 0;
-  $fdata = "";
-  $ldap->unbind;
+  $schemaHash{'schema'}->dump( $Global{'fdata'} );
+  $schema_list->insert("end",  "Schema data written to file: $Global{'fdata'}\n");
+  $Global{'sfile'} = 0;
+  $Global{'fdata'} = "";
+  $ldap->unbind if ( defined($ldap));
   return;
 }
 
-
+$ra_atts = [];
 #
 # Get the attributes
 #
- 
-@atts = $schema->attributes(); 
+@$ra_atts = $schemaHash{'schema'}->attributes(); 
+$schemaHash{'atts'} = $ra_atts; 
+
 
 #
 # Display the attributes
@@ -1377,27 +1456,35 @@ if ( $sfile && defined($schema) )
  
 if ( $selectAll || $selectAtt  )
 {
-&print_loop($schema_list, \@atts, "attributeType") if ( defined(@atts) );
+&print_loop($schema_list, $schemaHash{'atts'}, "attributeType") 
+  if ( defined($schemaHash{'atts'}) );
 }
 
+$ra_atts = [];
 #
 # Get the schema objectclasses
 #
-@ocs = $schema->objectclasses(); 
-
+@$ra_atts = $schemaHash{'schema'}->objectclasses(); 
+$schemaHash{'ocs'} = $ra_atts;
 #
 # Display the objectclasses
 #
  
 if ( $selectAll || $selectObj )
 {
-&print_loop($schema_list, \@ocs, "objectClasses") if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses") 
+    if ( defined($schemaHash{'ocs'}) );
 }
+
+#&Hierarchial($schemaHash{'ocs'}, \%obj, \%tree, \$schemaHash{'schema'}) 
+#    if ( defined($schemaHash{'ocs'}) );
 
 #
 # Get the schema matchingrules
 #
-@ocs = $schema->matchingrules(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->matchingrules(); 
+$schemaHash{'mrs'} = $ra_atts;
 
 #
 # Display the matchingrules
@@ -1405,13 +1492,16 @@ if ( $selectAll || $selectObj )
  
 if ( $selectAll || $selectMatch )
 {
-&print_loop($schema_list, \@ocs, "matchingRules" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'mrs'}, "matchingRules" ) 
+    if ( defined($schemaHash{'mrs'}) );
 }
 
 #
 # Get the schema matchingruleuse
 #
-@ocs = $schema->matchingruleuse(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->matchingruleuse(); 
+$schemaHash{'mru'} = $ra_atts;
 
 #
 # Display the matchingruleuse
@@ -1419,13 +1509,16 @@ if ( $selectAll || $selectMatch )
  
 if ( $selectAll || $selectMru )
 {
-&print_loop($schema_list, \@ocs, "matchingRuleUse" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'mru'}, "matchingRuleUse" ) 
+    if ( defined($schemaHash{'mru'}) );
 }
 
 #
 # Get the schema ldapsyntaxes
 #
-@ocs = $schema->syntaxes(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->syntaxes(); 
+$schemaHash{'lsyn'} = $ra_atts;
 
 #
 # Display the ldapsyntaxes
@@ -1433,13 +1526,16 @@ if ( $selectAll || $selectMru )
  
 if ( $selectAll || $selectSyn )
 {
-&print_loop($schema_list, \@ocs, "ldapSyntax" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'lsyn'}, "ldapSyntax" ) 
+    if ( defined($schemaHash{'lsyn'}) );
 }
 
 #
 # Get the schema nameForms
 #
-@ocs = $schema->nameforms(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->nameforms(); 
+$schemaHash{'nfm'} = $ra_atts;
 
 #
 # Display the nameForms
@@ -1447,13 +1543,16 @@ if ( $selectAll || $selectSyn )
  
 if ( $selectAll || $selectNf )
 {
-&print_loop($schema_list, \@ocs, "nameForms" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'nfm'}, "nameForms" ) 
+    if ( defined($schemaHash{'nfm'}) );
 }
 
 #
 # Get the schema ditstructurerules
 #
-@ocs = $schema->ditstructurerules(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->ditstructurerules(); 
+$schemaHash{'dits'} = $ra_atts;
 
 #
 # Display the ditstructurerules
@@ -1461,21 +1560,25 @@ if ( $selectAll || $selectNf )
  
 if ( $selectAll || $selectDsr )
 {
-&print_loop($schema_list, \@ocs, "ditstructurerules" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'dits'}, "ditstructurerules" ) 
+    if ( defined($schemaHash{'dits'}) );
 }
 
 #
-# Get the schema ditstructurerules
+# Get the schema ditcontentrules
 #
-@ocs = $schema->ditcontentrules(); 
+$ra_atts = [];
+@$ra_atts = $schemaHash{'schema'}->ditcontentrules(); 
+$schemaHash{'ditc'} = $ra_atts;
 
 #
-# Display the nameForms
+# Display the ditcontentrules
 #
  
 if ( $selectAll || $selectDcr )
 {
-&print_loop($schema_list, \@ocs, "ditcontentrules" ) if ( defined(@ocs) );
+&print_loop($schema_list, $schemaHash{'ditc'}, "ditcontentrules" ) 
+    if ( defined($schemaHash{'ditc'}) );
 }
 
 } # End of if ( defined($schema) ) 
@@ -1497,12 +1600,318 @@ else
 
 }
 
-$ldap->unbind;
+$ldap->unbind if ( defined($ldap));
 
 } # End of schema subroutine
 
 } # End of SCHEMA subroutine
 
+sub init_schemaHash
+{
+
+ $schemaHash{ 'schema' } = undef();
+ $schemaHash{ 'obj' }  = {};
+ $schemaHash{ 'tree' } = {};
+
+ $schemaHash{ 'atts' } = [];
+ $schemaHash{ 'ocs' }  = [];
+ $schemaHash{ 'mrs' }  = [];
+ $schemaHash{ 'nfm' }  = [];
+ $schemaHash{ 'lsyn' } = [];
+ $schemaHash{ 'dits' } = [];
+ $schemaHash{ 'ditc' } = [];
+ $schemaHash{ 'mru' }  = [];
+
+}
+
+sub Hierarchial 
+{
+my $x = $Global{'horz'};
+my $y = $Global{'vert'}  + 200 ;
+my $ocs = $schemaHash{'ocs'};
+my $obj = $schemaHash{'obj'};
+$schemaHash{'tree'} = {};
+my $tree = $schemaHash{'tree'};
+my $schema = $schemaHash{'schema'};
+my @tmpKeys;
+my $size;
+my $Path;
+my $done;
+my @sup;
+my @name;
+my $name;
+my $SUP;
+my $array;
+
+if ( !defined($ocs) || !defined($tree) || 
+     !defined($obj) || !defined($schema) )
+{
+   #
+   # No schema data available
+   #
+   my $error = "LDAP Schema data is not available.";
+   ERROR($error);
+   return;
+}
+
+#
+# Get the schema objectClasses
+#
+foreach ( @$ocs)
+{
+   #
+   # Get the oid number of the objectclass.
+   #
+   my $oid;
+   undef($oid);
+
+   $oid = $schema->name2oid( "$_" ); 
+   next if ( !defined($oid) );
+ 
+   @sup = $schema->item( $oid, 'sup' ); # objectclass superior
+   @name = $schema->item( $oid, 'name' ); # objectclass name
+
+   $$obj{"$name[0]"} = [ "$oid", "$sup[0]" ]; # store data
+
+}
+
+#
+# get objectclass hash keys.
+#
+@tmpKeys = sort(keys(%$obj)) if (defined($$obj{'top'}));
+
+$$tree{'top'} = [0,]; # pre-load top objectclass.
+
+foreach (@tmpKeys)
+{
+
+next if ( $_ eq "" || $_ eq "top" );
+
+$done = 0;  # initialize done flag
+$Path = "";  # initialize objectclass Path 
+
+$name = $_;
+while ( !$done )
+{
+
+$SUP = $$obj{$_}->[1]; # get current objectclass's superior
+$SUP = "top" if ( $SUP eq "" );  # on null superior, make top superior
+if ( $Path eq "" )
+{
+$Path = $SUP;  # Start objectclass path.
+}
+else
+{
+$Path = $SUP . "/" . $Path;  # add new objectclass to path.
+}
+$done = 1 if ( $SUP eq 'top' ) ; # when we reach objectclass top we are done.
+$_ = $SUP;  # walk back up the chain
+
+}
+
+if ( defined($$tree{$Path}) )
+{
+#
+# Path key has already been initialized, add current objectclass 
+# to list.
+#
+$array = $$tree{$Path};
+push(@$array,$name);
+}
+else 
+{
+#
+# Path key needs to be initialized, add current objectclass 
+# to list.
+#
+$$tree{$Path} = [0, "$name"];
+}
+
+}
+
+#
+# Set up the Tk windows.
+#
+#
+
+if ( ! Exists($Global{'histWindow'} ) ) 
+{
+  eval 
+     { 
+       $Global{'histWindow'} = MainWindow->new(); 
+     };
+  print "$@" if ( defined($@)); }
+else 
+{
+$Global{'histWindow'}->deiconify() if Tk::Exists($Global{'histWindow'}); 
+$Global{'histWindow'}->raise() if Tk::Exists($Global{'histWindow'}); 
+}                                                                               
+
+$Global{'histWindow'}->geometry("+$x+$y"); 
+$Global{'histWindow'}->title("HIERARCHICAL OBJECTCLASS DISPLAY WINDOW");
+#
+# Create label box
+#
+
+if ( !Exists($Global{'label'}) )
+{
+$Global{'label'} = $Global{'histWindow'}->Label()->pack;
+}
+
+#
+# Create process Exit button
+#
+
+$hbutton = $Global{'histWindow'}->Button(
+              -text => "CLOSE HIERARCHICAL DISPLAY WINDOW", 
+              -command => \&hist_cancel, -font => $Global{'Font'},
+              -borderwidth => 5 )
+              -> pack(-fill => "both", -padx => 2, -pady => 2 ) 
+              if ( Exists($Global{'histWindow'} ) && 
+                   !Exists($hbutton ) );
+
+#
+# Create list box, this is where the selected objectclass data will
+# be displayed.
+#
+
+if ( !Exists($Global{'list'}) )
+{
+$Global{'list'} = $Global{'histWindow'}->Scrolled('ROText',
+            -scrollbars => 'se', -width=>50, -wrap => "none",
+            -font => $Global{'Font'}, -height => 20 ) 
+            ->pack(-side => "left");
+}
+
+
+#
+# Create Hierarchial list box, this is where the objectclass data
+# tree will be displayed.
+#
+
+$Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList', 
+            -font       => $Global{'Font'},
+            -scrollbars => 'se',
+            -width      => 50, 
+            -height     => 20,
+            -itemtype   => 'text',
+            -separator  => '/',
+            -selectmode => 'single',
+            -browsecmd  => sub {
+#
+            my $objects = shift;
+            my $oid;
+            my @objectclasses = ();
+            @objectclasses = split(/\//,$objects);
+            $Global{'list'}->delete("1.0", "end");
+            $Global{'label'}->configure(-text=>$objects);
+            $Global{'list'}->insert("end", " \n");
+
+            foreach my $var (@objectclasses)
+            {
+            $oid = $$obj{$var}->[0];
+
+               #
+               # Get the various other items associated with
+               # this attribute.
+               #
+               my @items = $schema->items( "$oid" );
+               foreach my $value ( @items )
+               {
+                  next if ( $value eq 'type');
+
+                  @item = $schema->item( $oid, $value );
+                  $value =~ tr/a-z/A-Z/;
+                  if ( defined(@item) && $item[0] == 1 )
+                  {
+                     $Global{'list'}->insert("end", "$value\n");
+                     next;
+                  }
+                  if ( defined(@item) && $#item >= 0 )
+                  {
+                     if ( $value eq 'MAY' || $value eq 'MUST' )
+                     {
+                     $Global{'list'}->insert("end", "$value contain:  @item\n");
+                     }
+                     else
+                     {
+                     $Global{'list'}->insert("end", "$value:  @item\n");
+                     }
+                  }
+               }
+
+            $Global{'list'}->insert("end", " \n");
+            $Global{'list'}->insert("end", "--------------------------------------------------\n");
+            $Global{'list'}->insert("end", " \n");
+            }
+
+            } # End of subroutine browsecmd
+
+            );  # End of Scrolled HList.
+
+
+@tmpKeys = sort(keys(%$tree));
+my $base;
+$base = "";
+
+#
+# Create Hierarchial list box data tree, 
+# and display data.
+#
+
+eval{
+foreach ( @tmpKeys ) {
+    my $array = $$tree{$_};
+    if ( @$array[0] == 0 ) 
+    {
+      @$array[0] = 1;
+      $Global{'hlist'}->add($_, -text=>$_);  # do the base.
+    }
+
+    $base = $_; 
+    $array = $$tree{$_};
+    $ptr = 0;
+    foreach my $var ( @$array )
+    {
+    if ( !$ptr )
+    {
+      $ptr = 1;
+      next;
+    }
+    $_ = $base . "/" . $var; 
+    $Global{'hlist'}->add($_, -text => $var);
+    if ( defined($$tree{$_}) )
+    {
+      my $aptr = $$tree{$_};
+      @$aptr[0] = 1;
+    } 
+    }
+
+}
+$Global{'hlist'}->pack(-side => "right");
+};
+print "$@" if ( defined($@));
+
+sub hist_clear {
+
+#
+# Clear out text in List Box
+#
+
+$Global{'list'}->delete("1.0", "end");
+
+} # End of clear subroutine
+ 
+sub hist_cancel{
+
+$Global{'list'}->destroy if Tk::Exists($Global{'list'});
+$Global{'hlist'}->destroy if Tk::Exists($Global{'hlist'});
+$Global{'histWindow'}->destroy if Tk::Exists($Global{'histWindow'});
+#$Global{'tree'} = {};
+#$Global{'obj'} = {};
+} # End of cancel subroutine
+
+} # End of subroutine  Hierarchial 
 
 
 sub displaySearch()
@@ -1512,8 +1921,8 @@ my $cframe;
 my $lframe;
 my $rbclear;
 #my $list;
-my $x = $horz + 100;
-my $y = $vert + 100;
+my $x = $Global{'horz'} + 100;
+my $y = $Global{'vert'} + 100;
 #
 # Create Main Window
 #
@@ -1521,7 +1930,7 @@ if (!  Exists($displayWindow) )
 {
 $displayWindow = MainWindow->new;
 
-$displayWindow->title("Directory Display Search");
+$displayWindow->title("DIRECTORY DISPLAY SEARCH");
 
 $displayWindow->geometry("+$x+$y");
 
@@ -1529,9 +1938,10 @@ $displayWindow->geometry("+$x+$y");
 # Create process Exit button
 #
 
-$displayWindow->Button(-text => "Close Display Search Result Window", 
-              -command => \&display_cancel, -font => $Font, -borderwidth => 5 )
-             -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+$displayWindow->Button(-text => "CLOSE DISPLAY SEARCH RESULT WINDOW", 
+              -command => \&display_cancel, -font => $Global{'Font'},
+              -borderwidth => 5 )
+              -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
 
 #
 # Create frame for clear buttons.
@@ -1546,8 +1956,9 @@ $cframe = $displayWindow->Frame()
 #
 
 $cframe -> Button(-text => "     CLEAR DATA     ", 
-     -command =>  \&display_clear, -font => $Font, -borderwidth => 3 ) 
-     ->pack( -side => $hand );
+     -command =>  \&display_clear, -font => $Global{'Font'},
+     -borderwidth => 3 ) 
+     ->pack( -side => $Global{'hand'} );
 
 #
 # Create list frame.
@@ -1565,7 +1976,7 @@ $lframe = $displayWindow->LabFrame(-label => "DIRECTORY DATA",
 
 $rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
       -variable =>  \$display_clear, -onvalue => 1, -offvalue => 0, 
-      -font => $Font )
+      -font => $Global{'Font'} )
       -> pack(-anchor => 'sw' );
 
 $rbclear->select();
@@ -1576,7 +1987,8 @@ $rbclear->select();
 #
 
 $list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 60, -height => 20, -wrap => 'none', -font => $Font  );
+        -width => 60, -height => 20, -wrap => 'none', 
+        -font => $Global{'Font'}  );
 
 $list->pack(-fill => "both", -expand => 1 );
 
@@ -1620,7 +2032,7 @@ my $mesg;
 my $error;
 my $version;
 
-if ( $setVersion ) 
+if ( $Global{'setVersion'} ) 
 { 
 $version = 3;
 }
@@ -1662,7 +2074,7 @@ my $att_wanted = [ "*",
 # Set Filter options.
 # 
 
-$match = "(" . $info . '=' . $adata . ")";
+$match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
 
 $error = 0;  # initialize error flag.
 
@@ -1674,9 +2086,9 @@ if ( $error == 1 )
    return;
 }
 
-my $ldap = new Net::LDAP( $LDAP_SERVER,
+my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                           timeout => 1,
-                          port => $port,
+                          port => $Global{'port'},
                         ) or $error = 1; 
 
 if ( $error == 1 )
@@ -1685,11 +2097,12 @@ if ( $error == 1 )
    return;
 }
 
-$mesg = $ldap->bind( password => "$bindpw", 
-                     dn => "$binddn",
+$mesg = $ldap->bind( password => $Global{'bindpw'}, 
+                     dn => $Global{'binddn'},
                      version => $version,
                    ) or $error = 1;
-   
+  
+
 if ( $mesg->code ) 
 {
    $errstr = $mesg->code;
@@ -1725,7 +2138,7 @@ if ( $mesg->code )
    return;
 }
 
-$ldap->unbind;
+$ldap->unbind if ( defined($ldap));
 
 #
 # Get and print out the record attributes.
@@ -1794,11 +2207,23 @@ sub print_entry {
   foreach (@attrs) {
     my $attr = $entry->get_value($_, asref => 1);
     next unless $attr;
+
+    if ( /^jpegPhoto/ )
+    {
+      #
+      # Display jpegPhoto in separate window if Tk::JPEG is used.
+      #
+      displayPhoto(@$attr[0], $dn ) if ( $Global{'jpeg'}) ;  
+      $dstring = sprintf "%${max}s: JpegPhoto binary data is not being displayed.\n",$_,$encoded;
+      $list->insert("end",  "$dstring");
+      next;
+    }
+
     if(ref($attr)) {
       foreach $a (@$attr) {
       #
       # Format data and print data into List Box
-      #
+      # 
         if ( /;binary$/ )
         {
         $encoded = encode_base64($a);
@@ -1840,6 +2265,46 @@ sub print_entry {
 } # End of search subroutine
 
 #
+# Display jpegPhoto in separate window if Tk::JPEG is used.
+#
+sub displayPhoto
+{
+my ($picture, $dn) = @_; 
+my $jpegFile = "/tmp/jpegfile.$$";
+#
+# Store the jpeg data to a temp file.
+#
+open(TMP, "+>$jpegFile");
+$| = 1;
+
+print TMP $picture;
+close(TMP);
+
+if ( !-e "$jpegFile" )
+{
+ERROR( "Could not create temporary jpeg file $jpegFile");
+return;
+}
+
+#
+# Create a TK window to display the jpeg picture.
+#
+my $mw  = MainWindow->new();
+$mw->title("JPEG PHOTO DISPLAY");
+my $list = $mw ->Listbox( -height => 1, width => length($dn)  );  
+$list->pack( -side => "top" );  
+$list->insert("end", $dn);                                                                                 
+my $image = $mw->Photo(-file => $jpegFile, -format => "jpeg" );
+
+$mw->Label(-image => $image)->pack(-expand => 1, -fill => 'both');
+$mw->Button(-text => 'CLOSE WINDOW', -command => [destroy => $mw])->pack;
+MainLoop;
+
+unlink $jpegFile;
+
+} # End of displayPhoto
+
+#
 # Detect and record the sub-bases, or branches, of the directory.
 #
 
@@ -1858,7 +2323,7 @@ my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
 
 my $ldap = new Net::LDAP( $host,
                           timeout => 30,
-                          port => $port,
+                          port => $Global{'port'},
                         ) or $error = 1;
 
 #
@@ -1867,12 +2332,13 @@ my $ldap = new Net::LDAP( $host,
 
 if ( $error == 1 )
 {
-   print "Connect error:  $@\n";
+   my $error = "getBases LDAP connect error.";
+   ERROR($error);
    return @base;
 }
 
-$mesg = $ldap->bind( password => "$bindpw", 
-                     dn => "$binddn", 
+$mesg = $ldap->bind( password => "$Global{'bindpw'}", 
+                     dn => "$Global{'binddn'}", 
                      version => 3,
                    ) or $error = 1;
 
@@ -1880,25 +2346,25 @@ $mesg = $ldap->bind( password => "$bindpw",
 # Check for an error on bind
 #
    
+if ( $error == 1 )
+{
+   my $error = "getBases LDAP bind error.";
+   ERROR($error);
+   return @base;
+}
+
 if ( $mesg->code ) 
 {
   $errstr = $mesg->code;
   ERROR($errstr);
 }
  
-if ( $error == 1 )
-{
-   print "Bind error:  $@\n";
-   $ldap->unbind;
-   return @base;
-}
-
 push(@base,$base);
 $ptr = 0;
 
 while ( $ptr < @base )
 {
- if ( @base < $limit )
+ if ( @base < $Global{'limit'} )
  { 
   my @new_base = calBase($base, $ldap, $f );
   push(@base, @new_base);
@@ -1906,7 +2372,7 @@ while ( $ptr < @base )
  $base = $base[++$ptr];
 }
 
-$ldap->unbind;
+$ldap->unbind if ( defined($ldap));
 return @base;
 
 } # End of subroutine getBases()
@@ -1934,8 +2400,8 @@ $mesg = $ldap->search(
 #
 if ( $error == 1 )
 {
-   print "Search error:  $@\n";
-   sleep 5;
+   my $error = "getBases LDAP search error.";
+   ERROR($error);
    return @new_base;
 }
 
@@ -1948,10 +2414,7 @@ if ( $error == 1 )
 if ( $mesg->code ) 
 {
    $errstr = $mesg->code;
-   print"Error code:  $errstr\n";
-   print"Error on base:  $base\n";
-   $errstr = ldap_error_text($errstr);
-   print"$errstr\n";
+   ERROR($errstr);
    return @new_base;
 }
  else
@@ -1986,7 +2449,114 @@ return @new_base;
 
 } # End of subroutine calBase()
 
+#
+# Get and display the root dse entry.
+#
 
+sub rootDse
+{
+my $base;
+my $ebutton;
+my $list;
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
+my $error;
+
+if ( $Global{'setVersion'} != 1 )
+{
+$error = "LDAP version is not equal to 3.";
+ERROR($error);
+return;
+}
+
+my $version = 3;
+
+my $ldap = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
+$ldap->bind( version => $version ) or die;
+my $root = $ldap->root_dse();
+
+my @Attributes = ( qw( namingContexts supportedLDAPVersion 
+                    supportedControl supportedExtension altServer ) );
+if ( !defined($root) )
+{
+   my $error =  "Root DSE entry could not be obtained.";
+   ERROR($error);
+}
+
+#
+# Set up the Tk windows.
+#
+#
+ 
+if ( ! Exists($Global{'rootWindow'} ) )
+{
+  eval
+     {
+       $Global{'rootWindow'} = MainWindow->new();
+     };
+  print "$@" if ( defined($@)); }
+else
+{
+$Global{'rootWindow'}->deiconify() if Tk::Exists($Global{'rootWindow'});
+$Global{'rootWindow'}->raise() if Tk::Exists($Global{'rootWindow'});
+}
+
+$Global{'rootWindow'}->title("ROOT DSE ENTRY");
+ 
+$Global{'rootWindow'}->geometry("+$x+$y"); 
+
+#
+# Create label box
+#
+ 
+if ( !Exists($label) )
+{
+$label = $Global{'rootWindow'}->Label()->pack;
+}
+ 
+#
+# Create process Exit button
+#
+ 
+$ebutton = $Global{'rootWindow'}->Button(
+              -text => "CLOSE ROOT DSE DISPLAY WINDOW",
+              -command => \&root_cancel, -font => $Global{'Font'},
+              -borderwidth => 5 )
+              -> pack(-fill => "both", -padx => 2, -pady => 2 )
+              if ( Exists($Global{'rootWindow'} ) &&
+                   !Exists($ebutton ) );
+ 
+#
+# Create list box, this is where the selected objectclass data will
+# be displayed.
+#
+ 
+if ( !Exists($list) )
+{
+$list = $Global{'rootWindow'}->Scrolled('ROText',
+            -scrollbars => 'se', -width=>50, -wrap => "none",
+            -font => $Global{'Font'}, -height => 10 )
+            ->pack();
+}
+ 
+foreach $attr (@Attributes)
+{
+
+$base = $root->get_value( $attr, asref => 1); 
+foreach (@$base)
+{
+$list->insert("end", "$attr:  $_\n");
+}
+
+}
+
+$ldap->unbind;
+
+}
+sub root_cancel
+{
+$Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'}); 
+}
 #----------------------------------------#
 # Usage() - display simple usage message #
 #----------------------------------------#
@@ -2092,7 +2662,7 @@ hand, attribute, server, limit, and port.
            I<delay> on displaying the new server name and 
            search base.  This is due to the fact that TK and 
            it's MainLoop() process are not multi-tasking.
-           The new search base has to be accquired and setup before 
+           The new search base has to be acquired and setup before 
            MainLoop() takes control of the process.
            Depending on the number of search bases this time period
            can be quite a few seconds.  
@@ -2118,7 +2688,7 @@ hand, attribute, server, limit, and port.
  Some of the ldap servers I worked with would never return the 
  information I expected, auto detection never functioned on these
  systems.
- There is one college ldap server on the internet that has so 
+ There is one college ldap server on the Internet that has so 
  many bases that it takes over an hour to figure out all the 
  search bases.  The only way the operator knows that the 
  script is still working is because search limit exceeded messages
@@ -2170,7 +2740,7 @@ must be done by the user's window manager.
 The I<BIND TO DIRECTORY> button will activate a window 
 that is separate from the main window.  
 
-The new window contains two buttons and two text boxs. 
+The new window contains two buttons and two text boxes. 
 For security reasons nothing is initially displayed in the 
 text boxes.  Pressing the accept button with this setup
 will cause the bind DN and password to be set to null
@@ -2221,6 +2791,13 @@ must be done by the user's window manager.
 The I<CLEAR ATTRIBUTE DATA> button will clear out the text
 that appears in the Attribute Data text box.
 
+The I<OBTAIN ROOT DSE ENTRY> button will attempt to obtain the
+root dse entry for the selected directory server.  If the root
+dse entry is obtained a separate window will be displayed that 
+will display the information obtained from the root dse entry.
+If the root dse entry can not be obtained then an error message
+window will be displayed.
+
 The I<ATTRIBUTE DATA> text box is where the user will enter 
 the data to be searched for.
 
@@ -2264,7 +2841,7 @@ button.  Pressing the button will
 At the top of the GUI is the "Close Display Search Result Window" 
 button.  When a mouse click is done on the "Close Display Search Result
  Window" button the Display Search Result window will be withdrawn.  
-The window is not distroyed, it just made invisiable and disabled.
+The window is not destroyed, it just made invisible and disabled.
 
 The Display Search Result window can be destroyed by 
 enabling the proper window manager destroy function.
@@ -2324,6 +2901,16 @@ ON EACH QUERY "RadioButton" is selected.
 The CLEAR DATA button will clear out the text that 
 appears in the Directory Data text box.
 
+=head2 JPEG Photo Display.
+
+If the Tk::JPEG module is installed in the user's Perl system,
+when a jpegPhoto attribute is read a separate I<JPEG PHOTO DISPLAY>
+window will be display.  Inside this window will be the jpeg photo,
+a list box containing the DN of the entry, and a I<CLOSE WINDOW> button.
+
+If the Tk::JPEG module is I<NOT> installed in the user's Perl 
+system, nothing will be displayed for the jpegPhoto.
+
 -------------------------------------------------------------------
 
 =head1 Schema Window.
@@ -2343,8 +2930,7 @@ interface, GUI, has several sections to it.
 
 At the top of the GUI is the "Close Schema Search Window" button.  
 When a mouse click is done on the "Close Schema Search Window" 
-button the schema window will be withdraw.  The window is not
-distroyed, it just made invisiable and disabled.
+button the schema window will be destroyed.  
 
 The Directory Schema Search window can be destroyed by 
 enabling the proper window manager destroy function.
@@ -2371,10 +2957,11 @@ Schema Data text box on each query.
 
 Associated with the Directory Schema Data text box is a series of
 "CheckButtons" that determines what of the schema objects will be
-displayed.  There are 4 Checkbuttons; ALL, objectClass, matchingRules,
-and attributeTypes.  If the "CheckButton" is selected, colored
-red, then schema objects of that type will be displayed in the 
-Directory Schema Data text box. 
+displayed.  There are 9 Checkbuttons; ALL, objectClass, matchingRules,
+attributeTypes, ldapsyntaxes, nameforms, ditstructurerules, 
+ditcontentrules, and matchingruleuse.  If the "CheckButton" is 
+selected, colored red, then schema objects of that type will be 
+displayed in the Directory Schema Data text box. 
 If the "CheckButton" is not selected, gray in color, then schema
 objects of this type will not be displayed in the Directory Schema
 Data text box.  By default the ALL CheckButton is select.
@@ -2424,9 +3011,34 @@ Directory Data text box.  These 4 functions are;
 The Clear Data button will clear out the text that 
 appears in the Directory Schema Data text box.
 
+The I<SHOW HIERARCHICAL OBJECTCLASS TREE> will cause one of two
+windows to be displayed.  For information about these windows see 
+the HIERARCHICAL OBJECTCLASS section of the manual.
+
 At the bottom of the GUI is the "Retrieve Directory Schema" button.  
 When a mouse click is done on the "Retrieve Directory Schema" 
 button the script will query the directory server for schema information.
+
+=head1 HIERARCHICAL OBJECTCLASS Window
+
+If no directory schema data has been obtained from the selected 
+directory server a error message window will be displayed stating
+that no schema data is available.
+
+If directory schema data has been obtained from the selected
+directory server a separate window will be displayed.
+The I<HIERARCHICAL OBJECTCLASS> window has two list boxes and 
+a I<CLOSE HIERARCHICAL DISPLAY WINDOW> button.  The 
+I<CLOSE HIERARCHICAL DISPLAY WINDOW> button will destroy the 
+I<HIERARCHICAL OBJECTCLASS> window.  In one of the list boxes will
+be a hierarchial tree of all of the objectclasses obtained from the
+directory server.  Doing a mouse button select on one of the 
+objects in the tree will cause information about that objectclass 
+branch to be displayed in the adjacent list box.  The most superior
+ojectclass will be at the top of the listing, the leaf objectclass
+will be at the bottom of the listing.  Each objectclass is separated
+by a dashed line.  All information about each objectclass will be 
+displayed in that objectclass's section.
 
 -------------------------------------------------------------------
 
@@ -2438,22 +3050,26 @@ To use this program you will need the following.
 
 
 At least PERL version 5.004.  You can get a stable version of PERL
-from the following URl;
+from the following URL;
    http://cpan.org/src/index.html
 
-Perl Tk800.015 module.  You can get this from the following URl;
+Perl Tk800.022 module.  You can get this from the following URL;
    ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Tk/
 
-Perl LDAP module.  You can get this from the following URl;
+If you wish to display a jpegPhoto attribute then you will need the
+Perl Tk-JPEG-2.014 module.  You can get this from the following URL;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Tk/
+
+Perl LDAP module.  You can get this from the following URL;
    ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Net/
 
-Depending on the modules loaded in your PERL system, you may need to
-load the following 2 PERL modules.
-
-Perl Convert-Berr module.  You can get this from the following URl;
+Perl Convert-ASN1 module.  You can get this from the following URL;
    ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Convert/
 
-Perl Digest-MD5 module.  You can get this from the following URl;
+Depending on the modules loaded in your PERL system, you may need to
+load the following PERL module.
+
+Perl Digest-MD5 module.  You can get this from the following URL;
    ftp://ftp.duke.edu/pub/CPAN/modules/by-module/MD5/
 
 Bundled inside each PERL module is instructions on how to install the 
