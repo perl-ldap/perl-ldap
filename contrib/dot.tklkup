@@ -2,6 +2,15 @@
 #  Initialization file for tklkup.  This file should reside
 #  in the user home directory as .tklkup.
 #
+#
+# Default main window width, user may need to adjust
+#
+mwwidth: 400
+#
+# Default main window height, user may need to adjust
+#
+mwheight: 540
+#
 #  Set up which side you want the Attributes pane to be displayed
 #  on.
 #
