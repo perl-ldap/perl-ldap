@@ -106,7 +106,7 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
 
 =head1 DESCRIPTION
 
-C<Net::LDAP::Control::Paged> provides an interface for the creation and manipulatrion
+C<Net::LDAP::Control::Paged> provides an interface for the creation and manipulation
 of objects that represent the C<pagedResultsControl> as described by RFC-2696.
 
 =head1 CONSTRUCTOR ARGUMENTS
@@ -119,7 +119,7 @@ L<Net::LDAP::Control> the following are provided.
 =item cookie
 
 The value to use as the cookie. This is not normally set when an object is
-created, but is set from the cookie value returned bu the server. This associates
+created, but is set from the cookie value returned by the server. This associates
 a search with a previous search, so the server knows to return the page
 of entries following the entries it returned the previous time.
 
