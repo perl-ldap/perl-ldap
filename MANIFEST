@@ -67,6 +67,7 @@ htdocs/Net/LDAP/Util.html
 htdocs/Net/LDAPS.html
 htdocs/index.html
 htdocs/index.xml
+install-nomake
 lib/Authen/SASL.pm
 lib/Authen/SASL.pod
 lib/Authen/SASL/CRAM_MD5.pm
