@@ -1,7 +1,5 @@
 package Net::LDAP::DSML;
 
-# $Id: DSML.pm,v 1.6 2001/12/19 04:37:24 charden Exp $
-
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
 # a Net::LDAP::Entry object. First
 # we'll convert XML into Net::LDAP::Entry with schema attributes and 
@@ -19,7 +17,10 @@ package Net::LDAP::DSML;
 # Added code to put schema data into DSML XML format.  Data
 # can be stored in an array reference or file.
 # 
-
+# 12/19/01 Clif Harden
+# Completed coding to put schema data into DSML XML format. 
+# 
+#
 
 use strict;
 use Net::LDAP::Entry;
@@ -37,53 +38,59 @@ sub new {
 sub open {
   my $self = shift;
   my $file = shift ;
-
+  my $dsml;
   my $fh = $file;  
-  my $close = 0;
 
   $self->finish
     if $self->{net_ldap_fh};
-
-  if (ref($file) or ref(\$file) eq "GLOB" or ref($file) eq "ARRAY") {
-    $close = 0;
+  
+  if ( ref($file) eq "ARRAY") 
+  {
+    $self->{net_ldap_fh} = $fh;
+    $self->{net_ldap_dsml_array} = $fh;
+    $dsml = $fh;
+    $self->{net_ldap_close} = -1;
+  }
+  elsif (ref($file) or ref(\$file) eq "GLOB") 
+  {
     $fh = $file;
+    $self->{net_ldap_fh} = $fh;
+    $self->{net_ldap_close} = 0;
+    $dsml = [];
+    $self->{net_ldap_dsml_array} = $dsml;
   }
   else {
     local *FH;
-    unless (open(FH,$file)) {
+    unless (open(FH,$file)) 
+    {
       $self->{error} = "Cannot open file '$file'";
       return 0;
     }
-    $close = 1;
     $fh = \*FH;
+    $self->{net_ldap_fh} = $fh;
+    $self->{net_ldap_close} = 1;
+    $dsml = [];
+    $self->{net_ldap_dsml_array} = $dsml;
   }
 
-  $self->{net_ldap_fh} = $fh;
-  $self->{net_ldap_close} = $close;
+  push(@$dsml, $self->start_dsml);
 
-  if ( ref($fh) eq "ARRAY" )
-  {
-    push(@$fh, $self->start_dsml);
-  }
-  else
-  {
-    print $fh $self->start_dsml;
-  }
   1;
 }
 
 sub finish {
   my $self = shift;
   my $fh = $self->{net_ldap_fh};
+  my $dsml = $self->{net_ldap_dsml_array};
+  my $close = $self->{net_ldap_close};
 
-  if ($fh) {
-    if ( ref($fh) eq "ARRAY" )
+
+  if ( $fh ) 
+  {
+    push(@$dsml, $self->end_dsml); #close both array or file.
+    if ( ref($fh) ne "ARRAY" )
     {
-      push(@$fh, $self->end_dsml);
-    }
-    else
-    {
-      print $fh $self->end_dsml;
+      print $fh @$dsml;
       close($fh) if $self->{net_ldap_close};
     }
   }
@@ -116,7 +123,7 @@ sub _normalize {
 sub write {
   my $self = shift;
   my $entry = shift;
-  #my @unknown = _print_schema(_print_entries(@_));
+  
   if (ref $entry eq 'Net::LDAP::Entry') {
     $self->_print_entry($entry)
   }
@@ -132,44 +139,67 @@ sub write {
 sub _print_schema {
   my ($self,$schema) = @_;
   my @atts;
-  my $fh = $self->{'net_ldap_fh'} or return;
+  my $mrs;
+  
+  my $fh = $self->{'net_ldap_dsml_array'} or return;
   return undef unless ($schema->isa('Net::LDAP::Schema')); 
 
-  if ( ref($fh) eq "ARRAY" )
-  {
-    push(@$fh, "<dsml:directory-schema>\n");
-  }
-  else
-  {
-  print  $fh  "<dsml:directory-schema>\n";
-  }
+  push(@$fh, "<dsml:directory-schema>\n");
+
+
+$mrs = {};  # Get hash space.
+#
+# Get the matchingrules
+#
+@atts = $schema->matchingrules();
+
+#
+# Build a hash of matchingrules, we will need their oids 
+# for the ordering, equality, and substring XML elements.
+#
+foreach my $var ( @atts)
+{
+   my $name;
+   my $oid;
+   my $values;
+   #
+   # Get the oid number of the object.
+   #
+   $oid = $schema->name2oid( "$var" );
+   #
+   # Get the name of this matchingrule
+   #
+   @$values = $schema->item( $oid, 'name' );
+   $name = $$values[0];
+   $$mrs{$name} = $oid;
+}
 
 #
 # Get the attributes
 #
 
-#@atts = $schema->attributes();
-#$self->{'net_ldap_title'} = "attribute-type";
-#$self->_print_loop( \@atts, $schema) if ( @atts );
+@atts = $schema->attributes();
+$self->{'net_ldap_title'} = "attribute-type";
+$self->_schemaToXML( \@atts, $schema,$mrs) if ( @atts );
 
 #
 # Get the schema objectclasses
 #
 @atts = $schema->objectclasses();
 $self->{'net_ldap_title'} = "objectclass-type";
-$self->_print_loop( \@atts,$schema) if ( @atts );
+$self->_schemaToXML( \@atts,$schema,$mrs) if ( @atts );
 
-}
+} # End of _print_schema subroutine
 
 #
 #  Subroutine to print items from the schema objects.
 #
 
-sub _print_loop()
+sub _schemaToXML()
 {
-my ( $self,$ocs,$schema ) = @_;
+my ( $self,$ocs,$schema,$mrs ) = @_;
 
-my $fh = $self->{'net_ldap_fh'} or return;
+my $fh = $self->{'net_ldap_dsml_array'} or return;
 my $title = $self->{'net_ldap_title'} or return;
 my %container;
 my $values;
@@ -183,7 +213,7 @@ foreach my $var ( @$ocs)
    #
    my $oid = $schema->name2oid( "$var" );
    $container{'id'} = $var;
-   
+  
    $container{'oid'} = $oid;
    #
    # Get the various other items associated with
@@ -216,17 +246,18 @@ foreach my $var ( @$ocs)
  my @keys = keys(%container);
  foreach my $name ( @keys )
  {
-  if ( ref($fh) eq "ARRAY" )
-  {
     #
     # Take care of the attribute-type and objectclass-type
-    # section first.  This part writes to a user supplied array.
+    # section first.  
     #
     if( $container{'id'} )
     {
+    # container{'id'} is just a place holder, formal beginning
+    # new objectclass or attribute.
     $dstring ="<dsml:$title  ";
     $dstring .= "id=\"";
-    $dstring .= $container{'id'};
+    $raData = $container{'name'};
+    $dstring .= "@$raData";
     delete($container{'id'} );
     if ( $container{'sup'} )
     {
@@ -237,9 +268,9 @@ foreach my $var ( @$ocs)
     { 
     $dstring .= "$super #";
     }
-    }
     chop($dstring); # Chop off "\""
     chop($dstring); # Chop off "#"
+    }
     if ( $container{'single-value'} )
     {
     $dstring .= "\"  ";
@@ -331,6 +362,42 @@ foreach my $var ( @$ocs)
      push(@$fh, $dstring);
      delete($container{'desc'} );
     }
+    elsif ( $name eq "ordering" )
+    {
+     $dstring = "<dsml:ordering>";
+     $raData = $container{'ordering'};
+     if ( $$mrs{$$raData[0]} )
+     {
+      $dstring .= "$$mrs{$$raData[0]}"; 
+      $dstring .= "</dsml:ordering>\n";
+      push(@$fh, $dstring);
+     }
+     delete($container{'ordering'} );
+    }
+    elsif ( $name eq "equality" )
+    {
+     $dstring = "<dsml:equality>";
+     $raData = $container{'equality'};
+     if ( $$mrs{$$raData[0]} )
+     {
+      $dstring .= "$$mrs{$$raData[0]}"; 
+      $dstring .= "</dsml:equality>\n";
+      push(@$fh, $dstring);
+     }
+     delete($container{'equality'} );
+    }
+    elsif ( $name eq "substr" )
+    {
+     $dstring = "<dsml:substring>";
+     $raData = $container{'substr'};
+     if ( $$mrs{$$raData[0]} )
+     {
+      $dstring .= "$$mrs{$$raData[0]}"; 
+      $dstring .= "</dsml:substring>\n";
+      push(@$fh, $dstring);
+     }
+     delete($container{'substr'} );
+    }
     elsif ( $container{'may'} )
     { 
       my $data = $container{'may'};
@@ -350,157 +417,14 @@ foreach my $var ( @$ocs)
       delete($container{'must'} );
     }
 
-  }
-  else
-  {
-    #
-    # Take care of the attribute-type and objectclass-type
-    # section first.  This part writes to a file.
-    #
-    if( $container{'id'} )
-    {
-    $dstring ="<dsml:$title  ";
-    $dstring .= "id=\"";
-    $dstring .= $container{'id'};
-    delete($container{'id'} );
-    if ( $container{'sup'} )
-    {
-    $dstring .= "\"  ";
-    $raData = $container{'sup'};
-    $dstring .= "superior=\"#";
-    foreach my $super (@$raData)
-    { 
-    $dstring .= "$super #";
-    }
-    }
-    chop($dstring); # Chop off "#"
-    chop($dstring); # Chop off " "
-    if ( $container{'single-value'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "single-value=\"true";
-    delete($container{'single-value'} );
-    }
-    if ( $container{'obsolete'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "obsolete=\"true";
-    delete($container{'obsolete'} );
-    }
-    if ( $container{'user-modification'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "user-modification=\"true";
-    delete($container{'user-modification'} );
-    }
-    if ( $container{'structural'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "type=\"";
-    $dstring .= $container{'structural'};
-    delete($container{'structural'} );
-    }
-    if ( $container{'abstract'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "type=\"";
-    $dstring .= "$container{'abstract'}";
-    delete($container{'abstract'} );
-    }
-    if ( $container{'auxiliary'} )
-    {
-    $dstring .= "\"  ";
-    $dstring .= "type=\"";
-    $dstring .= "$container{'auxiliary'}";
-    delete($container{'auxiliary'} );
-    }
-    $dstring .= "\">\n";
-    print  $fh $dstring;  # print to file
-
-    if ( $container{'name'} )
-    {
-     $dstring = "<dsml:name>";
-     $raData = $container{'name'};
-     $dstring .= "@$raData";
-     $dstring .= "</dsml:name>\n";
-     delete($container{'name'} );
-     print $fh $dstring;
-    }
-    $dstring = "<dsml:object-identifier>";
-    $dstring .= $container{'oid'};
-    $dstring .= "</dsml:object-identifier>\n";
-    delete($container{'oid'} );
-    print  $fh $dstring;  # print to file
-    }
-    #
-    # Opening element and attributes are done, 
-    # finish the other elements.
-    #
-    elsif ( $name eq "syntax" )
-    {
-     $dstring = "<dsml:syntax";
-     if ( $container{'max_length'} )
-     {
-      $dstring .= " bound=\""; 
-      $raData = $container{'max_length'};
-      $dstring .= "@$raData"; 
-      $dstring .= "\">"; 
-      delete($container{'max_length'} );
-     }
-     else 
-     {
-      $dstring .= ">"; 
-     }
-     $raData = $container{'syntax'};
-     $dstring .= "@$raData";
-     $dstring .= "</dsml:syntax>\n";
-     print  $fh $dstring;
-     delete($container{'syntax'} );
-    }
-    elsif ( $name eq "desc" )
-    {
-     $dstring = "<dsml:description>";
-     $raData = $container{'desc'};
-     $dstring .= "@$raData"; 
-     $dstring .= "</dsml:description>\n";
-     print  $fh $dstring;
-     delete($container{'desc'} );
-    }
-    elsif ( $container{'may'} )
-    { 
-      my $data = $container{'may'};
-      foreach my $t1 (@$data )
-      {
-        print  $fh "<dsml:attribute ref=\"#$t1\" required=\"false\"/>\n";
-      }
-      delete($container{'may'} );
-    }
-    elsif ( $container{'must'} )
-    { 
-      my $data = $container{'must'};
-      foreach my $t1 (@$data )
-      {
-        print  $fh "<dsml:attribute ref=\"#$t1\" required=\"true\"/>\n";
-      }
-      delete($container{'must'} );
-    }
-  }
  }
 
-if ( ref($fh) eq "ARRAY" )
-{
 $dstring ="</dsml:$title>\n";
 push(@$fh, $dstring);
-}
-else
-{
-print  $fh "</dsml:$title>\n";
-}
-
 %container = ();
 }
 
-} # End of subroutine print_loop
+} # End of _schemaToXML subroutine
 
 
 sub _print_entry {
@@ -509,29 +433,15 @@ sub _print_entry {
   my $count;
   my $dstring;
   
-  my $fh = $self->{'net_ldap_fh'} or return;
+  my $fh = $self->{'net_ldap_dsml_array'} or return;
   return undef unless ($entry->isa('Net::LDAP::Entry')); 
 
-  if ( ref($fh) eq "ARRAY" )
-  {
-    push(@$fh, "<dsml:directory-entries>\n");
-  }
-  else
-  {
-  print  $fh  "<dsml:directory-entries>\n";
-  }
+  push(@$fh, "<dsml:directory-entries>\n");
 
-  if ( ref($fh) eq "ARRAY" )
-  {
-    $dstring = "<dsml:entry dn=\"";
-    $dstring .= _normalize($entry->dn);
-    $dstring .= "\">\n";
-    push(@$fh, $dstring);
-  }
-  else
-  {
-  print $fh "<dsml:entry dn=\"",_normalize($entry->dn),"\">\n";
-  }
+  $dstring = "<dsml:entry dn=\"";
+  $dstring .= _normalize($entry->dn);
+  $dstring .= "\">\n";
+  push(@$fh, $dstring);
   
   my @attributes = $entry->attributes();
   
@@ -546,116 +456,57 @@ sub _print_entry {
     }
     
     if ($isOC) {
-     if ( ref($fh) eq "ARRAY" )
-     {
        push(@$fh, "<dsml:objectclass>\n");
-     }
-     else
-     {
-      print $fh "<dsml:objectclass>\n";
-     }
     }
     else { 
-      if ( ref($fh) eq "ARRAY" )
-      {
        $dstring = "<dsml:attr name=\"";
        $dstring .= _normalize($attr);
        $dstring .= "\">\n";
        push(@$fh, $dstring);
-      }
-      else
-      {
-      print $fh "<dsml:attr name=\"",_normalize($attr),"\">\n";
-      }
     }
     
     my @values = $entry->get_value($attr);
     
     for my $value (@values) {
        if ($isOC) {
-         if ( ref($fh) eq "ARRAY" )
-         {
           $dstring = "<dsml:oc-value>";
           $dstring .= _normalize($value);
           $dstring .= "</dsml:oc-value>\n";
           push(@$fh, $dstring);
-         }
-         else
-         {
-         print $fh "<dsml:oc-value>",_normalize($value),"</dsml:oc-value>\n";
-         }
        }
        else {
         #at some point we'll use schema object to determine 
         #this but until then we'll borrow this from Net::LDAP::LDIF
         if ($value=~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
           require MIME::Base64;
-         if ( ref($fh) eq "ARRAY" )
-         {
           $dstring = qq!<dsml:value  encoding="base64">!;
           $dstring .= MIME::Base64::encode($value);
           $dstring .= "</dsml:value>\n";
           push(@$fh, $dstring);
-         }
-         else
-         {
-          print $fh qq!<dsml:value  encoding="base64">!,
-       	     MIME::Base64::encode($value),
-       	     "</dsml:value>\n";
-          }
         }
         else {
-         if ( ref($fh) eq "ARRAY" )
-         {
           $dstring = "<dsml:value>";
           $dstring .= _normalize($value);
           $dstring .= "</dsml:value>\n";
           push(@$fh, $dstring);
-         }
-         else
-         {
-          print $fh "<dsml:value>",_normalize($value),"</dsml:value>\n";
-         }
         }
       }
     }
 
     if ($isOC) {
-      if ( ref($fh) eq "ARRAY" )
-      {
        push(@$fh, "</dsml:objectclass>\n");
-      }
-      else
-      {
-       print $fh "</dsml:objectclass>\n";
-      }
     }
     else {
-      if ( ref($fh) eq "ARRAY" )
-      {
        push(@$fh, "</dsml:attr>\n");
-      }
-      else
-      {
-       print $fh "</dsml:attr>\n";
-      }
     }
   }
 
-  if ( ref($fh) eq "ARRAY" )
-  {
-   $dstring = "</dsml:entry>\n";
-   $dstring .= "</dsml:directory-entries>\n";
-   push(@$fh, $dstring);
-  }
-  else
-  {
-   print $fh "</dsml:entry>\n";
-   print $fh "</dsml:directory-entries>\n";
-  }
+  $dstring = "</dsml:entry>\n";
+  $dstring .= "</dsml:directory-entries>\n";
+  push(@$fh, $dstring);
 
   1;
-}
+} # End of _print_entry subroutine
  
 # only parse DSML entry elements, no schema here
 sub read_entries {   
@@ -731,6 +582,8 @@ Net::LDAP::DSML -- A DSML Writer and Reader for Net::LDAP
 
 =head1 SYNOPSIS
 
+ For a directory entry;
+
  use Net::LDAP;
  use Net::LDAP::DSML;
  use IO::File;
@@ -744,18 +597,28 @@ Net::LDAP::DSML -- A DSML Writer and Reader for Net::LDAP
 
  my $dsml = Net::LDAP::DSML->new();
 
+ #
+ # For file i/o
+ #
  my $file = "testdsml.xml";
 
  my $io = IO::File->new($file,"w") or die ("failed to open $file as filehandle.$!\n");
  $dsml->open($io) or die ("DSML problems opening $file.$!\n"); ;
 
- #or
+ #      OR
+ #
+ # For file i/o
+ #
 
  open (IO,">$file") or die("failed to open $file.$!");
 
  $dsml->open(*IO) or die ("DSML problems opening $file.$!\n");
 
- #or
+ #      OR
+ #
+ # For array usage.
+ # Pass a reference to an array.
+ #
 
  my @data = ();
  $dsml->open(\@data) or die ("DSML problems opening with an array.$!\n");
@@ -773,6 +636,9 @@ Net::LDAP::DSML -- A DSML Writer and Reader for Net::LDAP
 
  die ("search failed with ",$mesg->code(),"\n") if $mesg->code();
 
+ For directory schema;
+
+ my $dsml = $ldap->schema();
  $dsml->write($schema);
  $dsml->finish();
 
@@ -797,11 +663,34 @@ Directory Service Markup Language (DSML) is the XML standard for
 representing directory service information in XML.
 
 At the moment this module only reads and writes DSML entry entities. It
-cannot process any schema entities because schema entities are processed
-differently than elements.
+can write DSML schema entities. 
+Reading DSML schema entities is a future project.
 
 Eventually this module will be a full level 2 consumer and producer
-enabling you to give you full DSML conformance.
+enabling you to give you full DSML conformance.  Currently this 
+module has the ability to be a level 2 producer.  The user must 
+understand the his/her directory server will determine the 
+consumer and producer level they can achieve.  
+
+To determine conformance, it is useful to divide DSML documents into 
+four types:
+
+  1.Documents containing no directory schema nor any references to 
+    an external schema. 
+  2.Documents containing no directory schema but containing at 
+    least one reference to an external schema. 
+  3.Documents containing only a directory schema. 
+  4.Documents containing both a directory schema and entries. 
+
+A producer of DSML must be able to produce documents of type 1.
+A producer of DSML may, in addition, be able to produce documents of 
+types 2 thru 4.
+
+A producer that can produce documents of type 1 is said to be a level 
+1 producer. A producer than can produce documents of all four types is 
+said to be a level 2 producer.
+
+=head1 CALLBACKS
 
 The module uses callbacks to improve performance (at least the appearance
 of improving performance ;) and to reduce the amount of memory required to
