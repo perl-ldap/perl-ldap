@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.23 2003/02/19 02:22:13 charden Exp $
+# $Id: tklkup,v 2.24 2003/02/21 02:31:52 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -51,7 +51,7 @@ my %Global = ();
 my %NC     = ();
  
                                                                                 $Global{'jpeg'}   = 1;
-eval { require Tk::JPEG; };
+eval 'require Tk::JPEG';
 $Global{'jpeg'}   = 0 if ( $@ );
  
 $Global{'splash'}   = 1;
@@ -1793,26 +1793,30 @@ $Global{dirConnError} = undef();
  
 if ( $Global{port} == 636 || $Global{'setSSL'} )
 {
- 
-eval
+
+$bindcommand = 'require Net::LDAPS; new Net::LDAPS( $Global{LDAP_SERVER}, timeout => 1, port => $Global{port}, debug => $opt{d} ) ';
+
+
+if ( $Global{'platform'} eq 'MSWin32')
 {
-  require Net::LDAPS;
-};
+$error = "This program currently does not support SSL on Microsoft Windows systems.";
+ERROR(\$error);
+return 1;
+ 
+}
+
+
+$Global{ldap} = eval $bindcommand;
 if ($@)
 {
 $msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
 return -1;
 }
 
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{d},
-                        ) or $error = 1;
-if ( $error )
+if ( !($Global{ldap}->isa('Net::LDAPS') ) )
 {
 $Global{dirConnError} = "LDAPS connection error to $Global{'LDAP_SERVER'}.";
-return 1;
+return -1;
 }
  
 }
