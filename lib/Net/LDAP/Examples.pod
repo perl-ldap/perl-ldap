@@ -469,7 +469,7 @@ Once we have a dn to search for, Net::LDAP will fetch the schema entry with
   $mesg = $self->search(
     base   => $dn,
     scope  => 'base',
-    filter => '(objectClass=*)',
+    filter => '(objectClass=subschema)',
   );
 
 Once the schema object has been initialized, schema methods 
@@ -484,56 +484,34 @@ information about returned attributes.
   # Get the attributes
   #
 
-  @attributes = $schema->attributes();
+  @attributes = $schema->all_attributes();
   #
   # Display the attributes
   #
 
   foreach ( @attributes)
   {
-        print "attributeType\n";
+        print "attributeType $_\n";
 
         #
-        # Get and display the oid number of the objectclass.
+        # Get a reference to the attribute details
         #
-        $oid = $schema->name2oid( "$_" );
+        $ar = $schema->attribute( $_ );
 
         #
-        # Get the various items associated with
-        # this attribute.
+        # Print all the details
         #
-        @attribute_items = $schema->items( "$oid" );
-        #
-        # Read returned item names and display their associated data.
-        #
-        foreach $value ( @attribute_items )
+        foreach $key ( keys $ar )
         {
-           # We know we are dealing with an attribute, ignore type.
-           next if ( $value eq 'type');  # Type  holds oc or at 
-           #
-           # Read the data for this item of this oid.
-           #
-           @item = $schema->item( $oid, $value );
-           #
-           # Some item names have no data, the name itself is data.
-           # This type of item has 1 as data.
-           #
-           if ( defined(@item) && $item[0] == 1 )
-           {
-           print "\t$value\n";
-           next;
-           }
-           if ( defined(@item) && $#item >= 0 )
-           {
-           print "\t$value:  @item\n";
-           }
-
+           print join("\n\t\t", "\t$key:",
+                      ref($ar->{$key}) ? @{$ar->{$key}} : $ar->{$key}),
+                 "\n";
         }
   }
 
 The process is the basically the same for getting objectClass 
-information.  Where schema->attributes() is used, substitute 
-schema->objectclasses().  From that point on the process is
+information.  Where schema->all_attributes() is used, substitute 
+schema->all_objectclasses().  From that point on the process is
 the same for both objectClasses and attributes. 
 
 =head1 BUGS
@@ -550,7 +528,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.4 2000/09/12 09:17:09 gbarr Exp $>
+I<$Id: Examples.pod,v 1.5 2003/05/06 12:16:54 chrisridd Exp $>
 
 =cut
 
