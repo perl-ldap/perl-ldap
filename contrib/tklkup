@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.38 2003/01/25 03:45:49 charden Exp $
+# $Id: tklkup,v 1.39 2003/01/25 05:00:26 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -1471,12 +1471,6 @@ $srbfilelabel -> Checkbutton(
 
 $srbfilelabel->Entry(-textvariable => \$Global{'fdata'}, -width => 25 ) 
       -> pack(-fill => 'x');
-
-#
-# Allow mainWindow to update
-#
-
-$Global{'mainWindow'}->update;
 
 #
 # Create list frame.
