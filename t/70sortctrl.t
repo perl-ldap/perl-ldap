@@ -22,6 +22,8 @@
 # This test should be expanded to test sort controls with
 # more than one attribute specified.
 
+use vars qw(%sortctrl);
+
 BEGIN { require "t/common.pl" }
 
 use Net::LDAP::LDIF;
