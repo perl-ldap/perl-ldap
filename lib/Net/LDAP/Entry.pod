@@ -261,7 +261,7 @@ values that already exist for the given attributes.
 B<NOTE>: these changes are local to the client and will not appear on
 the directory server until the C<update> method is called.
 
-=item update ( CLIENT )
+=item update ( CLIENT [, OPTIONS ] )
 
 Update the directory server with any changes that have been made
 locally to the attributes of this entry. This means any calls that
@@ -274,6 +274,9 @@ the entry attributes newrdn, deleteoldrdn, and (optionally)
 newsuperior.
 
 C<CLIENT> is a C<Net::LDAP> object where the update will be sent to.
+
+C<OPTIONS> may be options to the C<Net::LDAP> actions on CLIENT
+corresponding to the entry's changetype.
 
 The result will be an object of type L<Net::LDAP::Message> as returned
 by the add, modify or delete method called on CLIENT.
