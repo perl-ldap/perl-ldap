@@ -230,6 +230,9 @@ will return a hash reference that would be like
    ';en-us' => [ 'Bob' ]
  }
 
+If alloptions is not set or is set to false only the attribute values
+for the exactly matching name are returned.
+
 =item asref =E<gt> 1
 
 The result will be a reference to an array containing all the values
