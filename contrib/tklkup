@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.17 2001/09/07 01:13:31 charden Exp $
+# $Id: tklkup,v 1.18 2001/09/09 04:50:31 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,14 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.18  2001/09/09 04:50:31  charden
+# Corrected several errors regarding how the ldap version information was
+# set.  All ldap bind commands use the Global{setVersion} hash.
+# Added the nismapname option for detecting Solaris Native LDAP automounter
+# directory branches.
+#
 # Revision 1.17  2001/09/07 01:13:31  charden
+#
 # Added attributes subschemaSubentry and supportedSASLMechanisms to the
 # root_dse display list.
 #
@@ -177,7 +184,7 @@ $Global{'binddn'} = "";
 $Global{'adata'} = "";
 $Global{'info'} = "";
 $Global{'slist'} = 0;
-$Global{'setVersion'} = 0;
+$Global{'setVersion'} = 3;  # set version 3 ldap
 $Global{'sfile'} = 0;
 $Global{'fdata'} = "";
 $Global{'hand'}  = 'left';
@@ -191,6 +198,7 @@ $Global{'port'}   = 389;
 $Global{'platform'} = ($^O eq 'MSWin32') ? $^O : 'unix' ;
 $Global{'max'} = 0;
 $Global{'infoFilter'} = "equal";
+$Global{'nismapname'} = 0;
 
 my $sbbframe;
 my @base       = ();
@@ -350,6 +358,10 @@ TYPE: {
                      $Global{'Font'} = $data[1];
                      last TYPE; };
 
+    /^nismapname/i && do {
+                     $Global{'nismapname'} = 1;
+                     last TYPE; };
+
                      my $error =  "Parsing configuration file found an undefined type:  $_";
                      ERROR(\$error);
 
@@ -413,7 +425,7 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
     $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                          dn => "$Global{'binddn'}", 
-                         version => $version,
+                         version => $Global{'setVersion'},
                        ) or $error = 1;
    
    if ( $mesg->code ) 
@@ -552,8 +564,8 @@ $abind = $stframe -> Button(-text => " BIND TO\n DIRECTORY",
  
 $setVersion = $sbframe -> Checkbutton(
                        -text => "SET LDAP VERSION, LDAP V3 DEFAULT",
-                       -variable =>  \$Global{'setVersion'}, -onvalue => 1, 
-                       -offvalue => 0, -font => $Global{'Font'} )
+                       -variable =>  \$Global{'setVersion'}, -onvalue => 3, 
+                       -offvalue => 2, -font => $Global{'Font'} )
                        -> pack(-side => "left", -anchor => "center" );
  
 $setVersion->select();
@@ -888,7 +900,7 @@ else
 
     $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                          dn => "$Global{'binddn'}", 
-                         version => $version,
+                         version => $Global{'setVersion'},
                        ) or $error = 1;
 
    if ( $mesg->code ) 
@@ -1078,7 +1090,7 @@ sub ERROR {
 my ($errcode ) = @_;
 my $errmsg;
 
-return if ($errcode == 48 ); # Anonymous bind error, not really an error.
+return if ($errcode == 48 && $Global{'setVersion'} == 3 ); # Anonymous bind error, not really an error.
 
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
@@ -1508,17 +1520,6 @@ my $dt = "/tmp/schema.dat.$$";
 
 if ( $Global{'sclear'} ) { &schema_clear(); }
 
-my $version;
-
-if ( $Global{'setVersion'} ) 
-{ 
-$version = 3;
-}
-else
-{
-$version = 2;
-}
-
 #
 # Connect to directory server
 # 
@@ -1537,7 +1538,7 @@ if ( $error == 1 )
 
 $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                      dn => "$Global{'binddn'}", 
-                     version => $version,
+                     version => $Global{'setVersion'},
                    ) or $error = 1;
 
    
@@ -2382,18 +2383,7 @@ sub search
 {
 my $mesg;
 my $error;
-my $version;
-
-if ( $Global{'setVersion'} ) 
-{ 
-$version = 3;
-}
-else
-{
-$version = 2;
-}
-
-
+my $att_wanted;
 my %opt = (
   'd' => 0
 );
@@ -2411,15 +2401,34 @@ displayDnList();
 #
 # Parameter(s) to return
 #
+
+if ( $Global{'setVersion'} == 3 )
+{
+#
 # Default to return everything.
 #
+$att_wanted = [ "*", 
+                "createTimeStamp",
+                "modifyTimeStamp",
+                "creatorsName",
+                "modifiersName" ];
+}
+else
+{
 #
-
-my $att_wanted = [ "*", 
-                   "createTimeStamp",
-                   "modifyTimeStamp",
-                   "creatorsName",
-                   "modifiersName" ];
+#
+# If you have only version 2 ldap servers you will need to 
+# to add the attributes that you want data returned for to
+# this list.
+#
+#
+$att_wanted = [ "cn" ,
+                "sn",
+                "mail",
+                "modifyTimeStamp",
+                "creatorsName",
+                "modifiersName" ];
+}
 
 #
 # Set Filter options.
@@ -2476,7 +2485,7 @@ if ( $error == 1 )
 
 $mesg = $ldap->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
-                     version => $version,
+                     version => $Global{'setVersion'},
                    ) or $error = 1;
   
 
@@ -2713,9 +2722,19 @@ my $mesg;
 my ( $host, $base ) = @_;
 my @base = ();
 my $ptr;
+my $match;
 
-my $match = "(ou=*)";  #search for ou entries.
-
+if ( $Global{'nismapname'} )
+{
+ #
+ # Solaris Native LDAP enabled
+ #
+ $match = "(|(ou=*)(nismapname=*))";  #search only for ou entries.
+}
+else
+{
+ $match = "(ou=*)";  #search only for ou entries.
+}
 my $error = 0;  # initialize error flag.
 
 my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
@@ -2738,7 +2757,7 @@ if ( $error == 1 )
 
 $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                      dn => "$Global{'binddn'}", 
-                     version => 3,
+                     version => $Global{'setVersion'},
                    ) or $error = 1;
 
 #
@@ -2835,8 +2854,11 @@ if ( $mesg->code )
 # Record only dn that start with ou=
 # Normal entrys can be mixed in with these objects.
 #
-
- if ( /^ou=/ )
+ if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/ ) )
+ {
+  push(@new_base, $dn);  # record only dn that start with ou=
+ }
+ elsif ( /^ou=/ )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
@@ -2859,17 +2881,23 @@ my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
 my $error;
 
-if ( $Global{'setVersion'} != 1 )
-{
- $error = "LDAP version is not equal to 3.";
- ERROR(\$error);
- return;
-}
-
-my $version = 3;
+#if ( $Global{'setVersion'} != 3 )
+#{
+# $error = "LDAP version is not equal to 3.";
+# ERROR(\$error);
+# return;
+#}
 
 my $ldap = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
-$ldap->bind( version => $version ) or die;
+my $mesg = $ldap->bind( version => $Global{'setVersion'} ) or die;
+
+if ( $mesg->code  )
+{
+    $error = $mesg->code;
+    ERROR($error);
+    return if ( $mesg->code != 48 );
+
+}
 my $root = $ldap->root_dse();
 
 my @Attributes = ( qw(subschemaSubentry namingContexts supportedLDAPVersion 
@@ -3028,6 +3056,12 @@ hand, attribute, server, limit, and port.
 
  port -> value: default is 389.  User should set this
                  to match their needs.
+ 
+ nismapname -> Solaris Native LDAP uses nismapname to define
+               the automounter directory branches.  Default
+               is to not use Solaris Native LDAP.  Uncomment
+               this line in the dot.tklkup file to enable this
+               option.
 
  attribute -> attribute upon which the data search will be
               based.  One attribute per line.  There is one
