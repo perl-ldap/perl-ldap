@@ -71,6 +71,11 @@ Port to connect to on the remote server.
 Timeout passed to L<IO::Socket> when connecting the remote server.
 (Default: 120)
 
+=item multihomed
+
+Will be passed to L<IO::Socket> as the C<MultiHomed> parameter
+when connecting to the remote server
+
 =item debug
 
 If passed a non-zero value then debug data will be sent to C<STDERR>. The
@@ -894,6 +899,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.16 2002/06/03 15:35:52 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.17 2002/10/24 13:08:07 gbarr Exp $>
 
 =cut

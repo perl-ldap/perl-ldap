@@ -124,10 +124,11 @@ sub _connect {
   my ($ldap, $host, $arg) = @_;
 
   $ldap->{net_ldap_socket} = IO::Socket::INET->new(
-    PeerAddr => $host,
-    PeerPort => $arg->{port} || '389',
-    Proto    => 'tcp',
-    Timeout  => defined $arg->{timeout}
+    PeerAddr   => $host,
+    PeerPort   => $arg->{port} || '389',
+    Proto      => 'tcp',
+    MultiHomed => $arg->{multihomed},
+    Timeout    => defined $arg->{timeout}
 		 ? $arg->{timeout}
 		 : 120
   );
