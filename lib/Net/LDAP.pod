@@ -681,7 +681,7 @@ single control or a reference to an array of controls.
 
 A control is a reference to a HASH and should contain the three
 elements below. If any of the controls are blessed then the
-methoc C<to_asn> will be called which should return a reference
+method C<to_asn> will be called which should return a reference
 to a HASH containing the three elements described below.
 
 =over 4
@@ -764,6 +764,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.7 2001/02/12 14:17:38 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.8 2001/03/07 15:13:27 chrisridd Exp $>
 
 =cut
