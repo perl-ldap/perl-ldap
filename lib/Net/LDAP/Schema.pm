@@ -48,12 +48,12 @@ sub parse {
     elsif (UNIVERSAL::isa($arg, 'Net::LDAP::Search')) {
       unless ($entry = $arg->entry) {
 	$schema->{error} = 'Bad Argument';
-	return undef;
+	return $schema;
       }
     }
     else {
       $schema->{error} = 'Bad Argument';
-      return undef;
+      return $schema;
     }
   }
   elsif( -f $arg ) {
@@ -62,12 +62,12 @@ sub parse {
     $entry = $ldif->read();
     unless( $entry ) {
       $schema->{error} = "Cannot parse LDIF from file [$arg]";
-      return undef;
+      return $schema;
     }
   }
   else {
     $schema->{error} = "Can't load schema from [$arg]: $!";
-    return undef;
+    return $schema;
   }
 
   eval {
@@ -77,7 +77,7 @@ sub parse {
 
   if ($@) {
     $schema->{error} = $@;
-    return undef;
+    return $schema;
   }
 
   return $schema;
