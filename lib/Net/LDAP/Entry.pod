@@ -154,11 +154,16 @@ setting the entry attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
 
 
 
-=item delete ( [ ATTR [, ATTR2 ... ]] )
+=item delete ( ATTR [ => VALUE [, ATTR2 => VALUE2... ]] )
 
-Delete the given attributes from the entry. If no attributes
-are passed then the next call to update will cause the entry
-to be deleted from the server.
+Delete the values of given attributes from the entry. Values are
+references to arrays; passing a reference to an empty array is the
+same as passing undef, and will result in the entire attribute being
+deleted. If no attributes are passed then the next call to update will
+cause the entry to be deleted from the server. For example:
+
+    $entry->delete( 'mail' => [ 'foo.bar@example.com' ] );
+    $entry->delete( 'description' => [ ], 'streetAddress' => [ ] );
 
 B<NOTE>: these changes are local to the client and will not
 appear on the directory server until the C<update> method
@@ -290,6 +295,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.8 2001/10/05 14:36:00 gbarr Exp $>
+I<$Id: Entry.pod,v 1.9 2002/06/18 12:39:12 gbarr Exp $>
 
 =cut
