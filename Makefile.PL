@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.2 2000/05/22 20:59:50 gbarr Exp $
+# $Id: Makefile.PL,v 1.3 2000/06/29 06:07:51 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -50,21 +50,29 @@ sub check_module {
 
 print "\nChecking for installed modules\n\n";
 
-check_module('Convert::ASN1',0.03) or print <<"EDQ","\n";
-Convert::ASN1 version 0.03 or later is essential for perl-ldap
+check_module('Convert::ASN1',0.07) or print <<"EDQ","\n";
+Convert::ASN1 version 0.07 or later is essential for perl-ldap
 EDQ
 
 check_module('URI',1.02) && check_module('URI::ldap',1.10) or print <<"EDQ","\n";
-URI::ldap is needed if you want to parse LDAP URLs
+The URI::ldap module is needed ONLY IF you want to parse LDAP URLs
 EDQ
 
 check_module('Digest::MD5') or print <<"EDQ","\n";
-The Digest::MD5 module is needed if using the CRAM-MD5 SASL authentication
+The Digest::MD5 module is needed ONLY IF intend to use CRAM-MD5 SASL authentication
+EDQ
+
+check_module('IO::Socket::SSL') or print <<"EDQ","\n";
+The IO::Socket::SSL module is needed ONLY IF you intend to use LDAPS
+EDQ
+
+check_module('XML::Parser') or print <<"EDQ","\n";
+The XML::Parser module is needed ONLY IF you intend to read/write DSML files
 EDQ
 
 print "\n",<<"EDQ","\n" if $missing;
 ****************************************************************************
-You are missing some modules that may be needed for the modules in perl-ldap
+You are missing some modules that MAY be needed for the modules in perl-ldap
 to work correctly. Read the above messages and download any required
 modules from http://www.perl.com/CPAN
 ****************************************************************************

@@ -1,4 +1,4 @@
-# $Id: ASN.pm,v 1.1 2000/05/03 12:29:05 gbarr Exp $
+# $Id: ASN.pm,v 1.2 2000/06/29 06:07:52 gbarr Exp $
 
 package Net::LDAP::ASN;
 
@@ -155,7 +155,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     -- Net::LDAP    --GMB
     Control ::= SEQUENCE {
 	type             LDAPOID,                       -- controlType
-	critical         BOOLEAN , -- DEFAULT FALSE,    -- criticality
+	critical         BOOLEAN OPTIONAL, -- DEFAULT FALSE,    -- criticality
 	value            OCTET STRING OPTIONAL }        -- controlValue
 
     BindRequest ::= [APPLICATION 0] SEQUENCE {
@@ -219,7 +219,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	matchingRule    [1] MatchingRuleId OPTIONAL,
 	type            [2] AttributeDescription OPTIONAL,
 	matchValue      [3] AssertionValue,
-	dnAttributes    [4] BOOLEAN } -- DEFAULT FALSE }
+	dnAttributes    [4] BOOLEAN OPTIONAL } -- DEFAULT FALSE }
 
     SearchResultEntry ::= [APPLICATION 4] SEQUENCE {
 	objectName      LDAPDN,

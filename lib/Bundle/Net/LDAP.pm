@@ -25,6 +25,10 @@ URI
 
 URI::ldap
 
+IO::Socket::SSL
+
+XML::Parser
+
 Net::LDAP
 
 =head1 DESCRIPTION
@@ -37,7 +41,7 @@ Graham Barr
 
 =for html <hr>
 
-I<$Id: LDAP.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $>
+I<$Id: LDAP.pm,v 1.3 2000/06/29 06:07:52 gbarr Exp $>
 
 =cut
 

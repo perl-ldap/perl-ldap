@@ -36,11 +36,13 @@ data/slapd-conf.in
 data/slapd.at.conf
 data/slapd.oc.conf
 htdocs/Authen/SASL.html
+htdocs/Bundle/Net/LDAP.html
 htdocs/Net/LDAP.html
 htdocs/Net/LDAP/Constant.html
 htdocs/Net/LDAP/Control.html
 htdocs/Net/LDAP/Control/Sort.html
 htdocs/Net/LDAP/Control/SortResult.html
+htdocs/Net/LDAP/DSML.html
 htdocs/Net/LDAP/Entry.html
 htdocs/Net/LDAP/Examples.html
 htdocs/Net/LDAP/FAQ.html
@@ -52,6 +54,7 @@ htdocs/Net/LDAP/Reference.html
 htdocs/Net/LDAP/Schema.html
 htdocs/Net/LDAP/Search.html
 htdocs/Net/LDAP/Util.html
+htdocs/Net/LDAPS.html
 htdocs/index.html
 lib/Authen/SASL.pm
 lib/Authen/SASL.pod
@@ -70,6 +73,8 @@ lib/Net/LDAP/Control/Sort.pm
 lib/Net/LDAP/Control/SortResult.pm
 lib/Net/LDAP/Control/VLV.pm
 lib/Net/LDAP/Control/VLVResponse.pm
+lib/Net/LDAP/DSML.pm
+lib/Net/LDAP/DSML/Parser.pm
 lib/Net/LDAP/Entry.pm
 lib/Net/LDAP/Entry.pod
 lib/Net/LDAP/Examples.pod
@@ -88,6 +93,7 @@ lib/Net/LDAP/Schema.pod
 lib/Net/LDAP/Search.pm
 lib/Net/LDAP/Search.pod
 lib/Net/LDAP/Util.pm
+lib/Net/LDAPS.pm
 perl-ldap.ppd
 t/00ldif-entry.t
 t/01url.t

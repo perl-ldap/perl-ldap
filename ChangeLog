@@ -1,3 +1,19 @@
+Change 543 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::DSML
+	- New module from Mark Wilcox
+
+Change 542 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAPS
+	- New module added from Chris Ridd
+
+Change 541 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::ASN
+	- Convert::ASN1 does not support DEFAULT values, so the should be
+	  marked as OPTIONAL
+
 Change 540 on 2000/06/20 by <gbarr@pobox.com> (Graham Barr)
 
 	Examples.pod & Schema.pod updates from Clif Harden
