@@ -1,6 +1,7 @@
-# Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
-# This program is free software; you can redistribute it and/or
-# modify it under the same terms as Perl itself.
+# Copyright (c) 1999-2002 Graham Barr <gbarr@pobox.com> and
+# Norbert Klasen <norbert.klasen@daasi.de> All Rights Reserved.
+# This program is free software; you can redistribute it and/or modify
+# it under the same terms as Perl itself.
 
 package Net::LDAP::Util;
 
@@ -40,7 +41,7 @@ require Exporter;
   canonical_dn
   ldap_explode_dn
 );
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 =item ldap_error_name ( NUM )
 
@@ -225,37 +226,29 @@ sub ldap_error_desc {
 
 
 
-=item canonical_dn ( DN [, FOR_SORT ])
 
-Returns the given DN in a canonical form. Returns undef if DN is
-not a valid Distinguished Name
 
-If FOR_SORT is specified and is a I<true> value, the the DNs returned
-will have their RDN components in reverse order. This is primarily
-used for sorting.
+=item canonical_dn ( DN [ , OPTIONS ] )
 
-It performs the following operations on the given DN
+Returns the given B<DN> in a canonical form. Returns undef if B<DN> is
+not a valid Distinguished Name. (Note: The empty string "" is a valid DN.)
+B<DN> can either be a string or reference to an array of hashes as returned by 
+ldap_explode_dn, which is useful when constructing a DN.
+
+It performs the following operations on the given B<DN>:
 
 =over 4
 
 =item *
 
-Lowercases values that are # followed by hex.
-
-=item *
-
-Uppercases type names.
-
-=item *
-
-Removes the leading OID. characters if the type is an OID instead
+Removes the leading 'OID.' characters if the type is an OID instead
 of a name.
 
 =item *
 
-Escapes all RFC 2253 special characters, and any other character
-where the ASCII code is <32 or >= 127, with a backslash and a two
-digit hex code.
+Escapes all RFC 2253 special characters (",", "+", """, "\", "<", ">",
+";", "#", "=", " "), slashes ("/"), and any other character where the
+ASCII code is <32 as \hexpair.
 
 =item *
 
@@ -264,128 +257,262 @@ Converts all leading and trailing spaces in values to be \20.
 =item *
 
 If an RDN contains multiple parts, the parts are re-ordered so that
-the attribute names are in alphabetical order.
+the attribute type names are in alphabetical order.
 
 =back
 
-B<Note> values that are hex encoded (ie start with a #) are not
-decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
+B<OPTIONS> is a list of name/value pairs, valid options are:
+
+=over 4
+
+=item casefold
+
+Controls case folding of attribute type names. Attribute values are not
+affected by this option. The default is to uppercase. Valid values are:
+	
+=over 4
+
+=item lower
+
+Lowercase attribute type names.
+
+=item upper
+
+Uppercase attribute type names. This is the default.
+
+=item none
+
+Do not change attribute type names.
+
+=back
+
+=item mbcescape
+
+If TRUE, characters that are encoded as a multi-octet UTF-8 sequence 
+will be escaped as \(hexpair){2,*}.
+
+=item reverse
+
+If TRUE, the RDN sequence is reversed.
+
+=item separator
+
+Separator to use between RDNs. Defaults to comma (',').
+
+=back
 
 =cut
 
+sub canonical_dn($%) {
+  my ($dn, %opt) = @_;
 
-sub canonical_dn {
-  my ($dn, $rev) = @_;
-  my @dn = ldap_explode_dn($dn) or return undef;
-
-  my($comma, $plus) = $rev ? ("\000","\001") : (",", "+");
-
-  join($comma,
-    map {
-      my $h = $_;
-      my @t = sort keys %$h;
-      join($plus,
- 	map {
-	  "$_=$h->{$_}";
-	} $rev ? reverse(@t) : @t)
-    } $rev ? reverse(@dn) : @dn);
+  return $dn unless defined $dn and $dn ne '';
   
+  # create array of hash representation
+  my $rdns = ref($dn) eq 'ARRAY'
+		? $dn
+		: ldap_explode_dn( $dn )
+    or return undef; #error condition
+  
+  # assign specified or default separator value
+  my $separator = $opt{separator} || ',';
+
+  # flatten all RDNs into strings
+  my @flatrdns =
+    map {
+      my $rdn = $_;
+      my @types = sort keys %$rdn;
+      join('+',
+        map {
+          my $val = $rdn->{$_};
+          
+          if ( ref($val) ) {
+            $val = '#' . unpack("H*", $$val);
+          } else {
+            #escape insecure characters and optionally MBCs
+            if ( $opt{mbcescape} ) {
+              $val =~ s/([\x00-\x1f\/\\",=+<>#;\x7f-\xff])/
+                sprintf("\\%02x",ord($1))/xeg;
+            } else {
+              $val =~ s/([\x00-\x1f\/\\",=+<>#;])/
+                sprintf("\\%02x",ord($1))/xeg;
+            }
+            #escape leading and trailing whitespace
+            $val =~ s/(^\s+|\s+$)/
+              "\\20" x length $1/xeg; 
+          }
+          
+          # case fold attribute type and create return value
+          if ( !$opt{casefold} || $opt{casefold} eq 'upper' ) {
+            (uc $_)."=$val";
+          } elsif ( $opt{casefold} eq 'lower' ) {
+            (lc $_)."=$val";
+          } else {
+            "$_=$val";
+          }
+        } @types);
+    } @$rdns;
+  
+  # join RDNs into string, optionally reversing order
+  $opt{reverse}
+    ? join($separator, reverse @flatrdns)
+    : join($separator, @flatrdns);
 }
 
 
-=item ldap_explode_dn ( DN )
+=item ldap_explode_dn ( DN [ , OPTIONS ] )
 
-Explodes the given DN into a list of hashes. Each RDN will be
-a separate element in the list returned.
+Explodes the given B<DN> into an array of hashes and returns a reference to this 
+array. Returns undef if B<DN> is not a valid Distinguished Name.
 
-Each RDN is returned as a hash.
+A Distinguished Name is a sequence of Relative Distingushed Names (RDNs), which 
+themselves are sets of Attributes. For each RDN a hash is constructed with the 
+attribute type names as keys and the attribute values as corresponding values. 
+These hashes are then strored in an array in the order in which they appear 
+in the DN.
 
-Returns the empty list if DN is
-not a valid Distinguished Name
+For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
+[
+  {
+    'OU' => 'Sales',
+    'CN' => 'J. Smith'
+  },
+  {
+    'DC' => 'example'
+  },
+  {
+    'DC' => 'net'
+  }
+]
 
-It also performs the following operations on the given DN
+(RFC2253 string) DNs might also contain values, which are the bytes of the 
+BER encoding of the X.500 AttributeValue rather than some LDAP string syntax. 
+These values are hex-encoded and prefixed with a #. To distingush such BER 
+values, ldap_explode_dn uses references to the actual values, 
+e.g. '1.3.6.1.4.1.1466.0=#04024869,DC=example,DC=com' is exploded to:
+[
+  {
+    '1.3.6.1.4.1.1466.0' => \"\004\002Hi"
+  },
+  {
+    'DC' => 'example'
+  },
+  {
+    'DC' => 'com'
+  }
+];
+
+It also performs the following operations on the given DN:
 
 =over 4
 
 =item *
 
-Lowercases values that are # followed by hex.
-
-=item *
-
-Uppercases type names.
+Unescape "\" followed by ",", "+", """, "\", "<", ">", ";", "#", "=",
+" ", or a hexpair and and strings beginning with "#".
 
 =item *
 
 Removes the leading OID. characters if the type is an OID instead
 of a name.
 
-=item *
+=back
 
-Escapes all RFC 2253 special characters, and any other character
-where the ASCII code is <32 or >= 127, with a backslash and a two
-digit hex code.
+B<OPTIONS> is a list of name/value pairs, valid options are:
 
-=item *
+=over 4
 
-Converts all leading and trailing spaces in values to be \20.
+=item casefold
+
+Controls case folding of attribute types names. Attribute values are not
+affected by this option. The default is to uppercase. Valid values are:
+	
+=over 4
+
+=item lower
+
+Lowercase attribute types names.
+
+=item upper
+
+Uppercase attribute type names. This is the default.
+
+=item none
+
+Do not change attribute type names.
+
+=item reverse
+
+If TRUE, the RDN sequence is reversed.
 
 =back
 
-B<Note> values that are hex encoded (ie start with a #) are not
-decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
-
 =cut
 
-
-sub ldap_explode_dn {
-  my ($dn) = @_;
+sub ldap_explode_dn($%) {
+  my ($dn, %opt) = @_;
+  return undef unless defined $dn;
+  return [] if $dn eq '';
 
   my (@dn, %rdn);
   while (
-	 $dn =~ /\G(?:
-		\s*
-		([a-zA-Z][-a-zA-Z0-9]*|(?:[Oo][Ii][Dd]\.)?\d+(?:\.\d+)*)
-		\s*
-		=
-		\s*
-		(
-		  (?:[^\\",=+<>\#;]*[^\\",=+<>\#;\s]|\\(?:[\\ ",=+<>#;]|[0-9a-fA-F]{2}))*
-		  |
-		  \#(?:[0-9a-fA-F]{2})+
-		  |
-		  "(?:[^\\"]+|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*"
-		)
-		\s*
-		(?:([;,+])\s*(?=\S)|$)
-		)\s*/gcx)
+  $dn =~ /\G(?:
+    \s*
+    ([a-zA-Z][-a-zA-Z0-9]*|(?:[Oo][Ii][Dd]\.)?\d+(?:\.\d+)*)
+    \s*
+    =
+    \s*
+    (
+      (?:[^\\",=+<>\#;]*[^\\",=+<>\#;\s]|\s*\\(?:[\\ ",=+<>#;]|[0-9a-fA-F]{2}))* 
+      |
+      \#(?:[0-9a-fA-F]{2})+
+      |
+      "(?:[^\\"]+|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*"
+    )
+    \s*
+    (?:([;,+])\s*(?=\S)|$)
+    )\s*/gcx)
   {
     my($type,$val,$sep) = ($1,$2,$3);
 
-    $type =~ s/^oid\.(\d+(\.\d+)*)$/$1/i;
+    $type =~ s/^oid\.(\d+(\.\d+)*)$/$1/i; #remove leading "oid."
 
-    if ($val !~ /^#/) {
-      $val =~ s/^"(.*)"$/$1/;
-      $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2})
-               /length($1)==1 ? $1 : chr(hex($1))
-               /xeg;
-      $val =~ s/([\\",=+<>#;])/\\$1/g;
-      $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
-      $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
+    if ( !$opt{casefold} || $opt{casefold} eq 'upper' ) {
+      $type = uc $type;
+    } elsif ( $opt{casefold} eq 'lower' ) {
+      $type = lc($type);
     }
 
-    $rdn{uc $type} = $val;
+    if ( $val =~ s/^#// ) {
+      # decode hex-encoded BER value
+      my $tmp = pack('H*', $val);
+      $val = \$tmp;
+    } else {
+      # remove quotes
+      $val =~ s/^"(.*)"$/$1/;
+      # unescape characters
+      $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2}) 
+           /length($1)==1 ? $1 : chr(hex($1))
+           /xeg; 
+    }
+
+    $rdn{$type} = $val;
 
     unless (defined $sep and $sep eq '+') {
-      push @dn, { %rdn };
+      if ( $opt{reverse} ) {
+        unshift @dn, { %rdn };
+      } else {
+        push @dn, { %rdn };
+      }
       %rdn = ();
     }
   }
 
-  (length($dn) != (pos($dn)||0))
-    ? ()
-    : @dn;
+  length($dn) == (pos($dn)||0)
+    ? \@dn
+    : undef;
 }
+
 
 =back
 
@@ -395,13 +522,17 @@ Graham Barr <gbarr@pobox.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2000 Graham Barr. All rights reserved. This program is
+Copyright (c) 1999-2002 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
+ldap_explode_dn and canonical_dn also
+
+(c) 2002 Norbert Klasen, norbert.klasen@daasi.de, All Rights Reserved.
+
 =for html <hr>
 
-I<$Id: Util.pm,v 1.14 2002/01/31 15:25:52 gbarr Exp $>
+I<$Id: Util.pm,v 1.15 2002/06/03 15:26:46 gbarr Exp $>
 
 =cut
 
