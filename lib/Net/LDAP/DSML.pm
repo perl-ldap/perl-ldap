@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.8 2001/12/25 01:05:32 charden Exp $
+# $Id: DSML.pm,v 1.9 2001/12/25 01:09:47 charden Exp $
 #
 
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
@@ -30,7 +30,7 @@ use strict;
 use Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.06";
+$VERSION = "0.9";
 
 sub new {
   my $pkg = shift;
