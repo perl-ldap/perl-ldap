@@ -1,7 +1,7 @@
 #!perl -w
 use Net::LDAP::Schema;
 
-print "1..5\n";
+print "1..7\n";
 
 my $schema = Net::LDAP::Schema->new( "data/schema.in" ) or die "Cannot open schema";
 print "ok 1\n";
@@ -29,3 +29,9 @@ print "ok 5\n";
 print "The 'mhsOrganizationalUser' OC must have these attributes [",
 		join( ",", @atts ),
 		"]\n";
+
+print "not " if defined $schema->item('distinguishedName','max_length');
+print "ok 6\n";
+
+print "not " unless $schema->item('userPassword','max_length') == 128;
+print "ok 7\n";
