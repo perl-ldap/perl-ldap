@@ -136,7 +136,7 @@ don't encrypt!
 
 =item clientkey
 
-=item decryptkey
+=item keydecrypt
 
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
@@ -145,7 +145,7 @@ clientkey to the user's private key file. These files must be in PEM
 format.
 
 If the private key is encrypted (highly recommended!) then set
-decryptkey to a reference to a subroutine that returns the decrypting
+keydecrypt to a reference to a subroutine that returns the decrypting
 key. For example:
 
  $ldaps = new Net::LDAPS('myhost.example.com',
@@ -153,7 +153,7 @@ key. For example:
                          verify => 'require',
                          clientcert => 'mycert.pem',
                          clientkey => 'mykey.pem',
-                         decryptkey => sub { 'secret'; },
+                         keydecrypt => sub { 'secret'; },
                          capath => '/usr/local/cacerts/');
 
 =item capath
