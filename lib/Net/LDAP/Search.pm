@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 
 sub first_entry { # compat
@@ -131,9 +131,9 @@ sub sorted {
 	$i++;
       }
 
-      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, reverse => 1, separator => "\0"))
+      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, "reverse" => 1, separator => "\0"))
 		cmp
-	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, reverse => 1, separator => "\0"));
+	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, "reverse" => 1, separator => "\0"));
     }
     map { [ $_ ] } @{$self->{entries}};
 }
