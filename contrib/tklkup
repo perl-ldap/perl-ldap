@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.9 2001/07/29 18:54:12 charden Exp $
+# $Id: tklkup,v 1.10 2001/08/05 04:06:09 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.10  2001/08/05 04:06:09  charden
+# Change several lines of code so that Carp and warn would not
+# throw un-initialized variable warnings.
+#
 # Revision 1.9  2001/07/29 18:54:12  charden
+#
 # Corrected major stupid error on defining hashes Global and schemaHash.
 # Change the way that forking of tklkup takes place, will now only fork on
 # HPUX, Sun, and Linux.  It should not fork on Windows systems.
@@ -1113,7 +1118,7 @@ foreach ( @$ocs)
 
       @item = $schemaHash{'schema'}->item( $oid, $value );
       $value =~ tr/a-z/A-Z/;
-      if ( defined(@item) && $item[0] == 1 )
+      if ( @item && $item[0] eq '1' )
       {
          $list->insert("end", "\t$value\n");
          next;
@@ -1839,7 +1844,7 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
 
                   @item = $schema->item( $oid, $value );
                   $value =~ tr/a-z/A-Z/;
-                  if ( defined(@item) && $item[0] == 1 )
+                  if ( @item && $item[0] eq '1' )
                   {
                      $Global{'list'}->insert("end", "$value\n");
                      next;
