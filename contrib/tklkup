@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.12 2001/08/24 02:43:36 charden Exp $
+# $Id: tklkup,v 1.13 2001/08/24 03:03:55 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,13 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.13  2001/08/24 03:03:55  charden
+# Added code to set the environment variable HOME if it is not set.
+# ActiveState perl does not seem to have this variable set up like the
+# Unix version of perl.
+#
 # Revision 1.12  2001/08/24 02:43:36  charden
+#
 # Change the way a Unix or Microsoft system is detected.  Used the
 # Perl special variable that knows what platform the perl code was
 # compiled on.
@@ -238,6 +244,15 @@ my @server    = ();
 #
 # Check for dot file, use it to configure program.
 #
+
+#
+#  Active State Perl does not always set ENV HOME.
+#
+
+if ( !$ENV{"HOME"} )
+{
+ $ENV{"HOME"} = "./";
+}
 
 my $dotfile = $ENV{"HOME"} . "/.tklkup";
 
