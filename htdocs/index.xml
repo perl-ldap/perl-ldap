@@ -30,6 +30,7 @@
     <group>
       <module>Net::LDAP::Control</module>
       <module>Net::LDAP::Control::Paged</module>
+      <module>Net::LDAP::Control::ProxyAuth</module>
       <module>Net::LDAP::Control::Sort</module>
       <module>Net::LDAP::Control::SortResult</module>
       <module>Net::LDAP::Control::VLV</module>

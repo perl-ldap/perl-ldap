@@ -1,4 +1,4 @@
-# $Id: ASN.pm,v 1.3 2000/09/12 09:17:09 gbarr Exp $
+# $Id: ASN.pm,v 1.4 2001/04/10 16:30:27 gbarr Exp $
 
 package Net::LDAP::ASN;
 
@@ -355,6 +355,10 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 		      -- requested page size from client
 		      -- result set size estimate from server
 	cookie          OCTET STRING }
+
+     proxyAuthValue ::= SEQUENCE {
+         proxyDN LDAPDN
+     }
 
 LDAP_ASN
 

@@ -1,4 +1,4 @@
-# $Id: Control.pm,v 1.4 2000/07/30 21:03:50 gbarr Exp $
+# $Id: Control.pm,v 1.5 2001/04/10 16:30:27 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -20,6 +20,9 @@ my %Pkg2Type = (
   'Net::LDAP::Control::VLVResponse'	=> LDAP_CONTROL_VLVRESPONSE,     
 
   'Net::LDAP::Control::Paged'		=> LDAP_CONTROL_PAGED,
+
+  'Net::LDAP::Control::ProxyAuth'	=> LDAP_CONTROL_PROXYAUTHENTICATION,
+
 
   #LDAP_CONTROL_MANAGEDSAIT
   #LDAP_CONTROL_PERSISTENTSEARCH
@@ -282,6 +285,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Control.pm,v 1.4 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: Control.pm,v 1.5 2001/04/10 16:30:27 gbarr Exp $>
 
 =cut
