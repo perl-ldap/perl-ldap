@@ -7,9 +7,9 @@ OldChanges
 README
 RELEASE_NOTES
 TODO
-bin/ldapdelete.PL
-bin/ldapmodrdn.PL
-bin/ldapsearch.PL
+bin/ldapdelete
+bin/ldapmodrdn
+bin/ldapsearch
 contrib/README
 contrib/dot.tklkup
 contrib/isMember.pl

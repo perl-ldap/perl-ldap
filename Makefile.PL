@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.11 2003/03/09 11:00:50 chrisridd Exp $
+# $Id: Makefile.PL,v 1.12 2003/06/09 12:29:41 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -85,8 +85,6 @@ EDQ
 
 #--- Write the Makefile ---
 
-my %PL_FILES = map { ($a = $_) =~ s/\.PL// ? ($_,$a) : () } glob('bin/*.PL');
-
 my @ppd;
 
 if ($] >= 5.00503) {
@@ -99,8 +97,7 @@ if ($] >= 5.00503) {
 WriteMakefile(
   VERSION_FROM => $VERSION_FROM,
   NAME         => $DISTNAME,
-  EXE_FILES    => $opt_s ? [ values %PL_FILES ] : [],
-  PL_FILES     => \%PL_FILES,
+  EXE_FILES    => $opt_s ? [ grep -f, glob('bin/*') ] : [],
   clean        => {FILES => 'temp'},
   PREREQ_PM    => { 'Convert::ASN1' => 0.07 },
   @ppd,
