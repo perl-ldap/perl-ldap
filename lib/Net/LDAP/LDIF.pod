@@ -4,77 +4,90 @@ Net::LDAP::LDIF - LDIF reading and writing
 
 =head1 SYNOPSIS
 
-  use Net::LDAP::LDIF;
+ use Net::LDAP::LDIF;
 
-  $ldif = Net::LDAP::LDIF->new( "file.ldif", "r", onerror => 'undef' );
-  while( not $ldif->eof() ) {
-     $entry = $ldif->read_entry();
-     if ( $ldif->error() ) {
-        print "Error msg: ",$ldif->error(),"\n";
-        print "Error lines:\n",$ldif->error_lines(),"\n";
-     }
-     else {
-        # do stuff
-     }
-  }
-  $ldif->done();
+ $ldif = Net::LDAP::LDIF->new( "file.ldif", "r", onerror => 'undef' );
+ while( not $ldif->eof ( ) ) {
+   $entry = $ldif->read_entry ( );
+   if ( $ldif->error ( ) ) {
+     print "Error msg: ", $ldif->error ( ), "\n";
+     print "Error lines:\n", $ldif->error_lines ( ), "\n";
+   } else {
+     # do stuff
+   }
+ }
+ $ldif->done ( );
 
 =head1 DESCRIPTION
 
 B<Net::LDAP::LDIF> provides a means to convert between
-L<Net::LDAP::Entry> objects and LDAP entries represented
-in LDIF format files. Reading and writing are supported and may manipulate
+L<Net::LDAP::Entry> objects and LDAP entries represented in LDIF
+format files. Reading and writing are supported and may manipulate
 single entries or lists of entries.
 
-As when reading an entire file into memory with perl normally, take into
-account the possibility of memory use when loading an LDIF file in one go.
+As when reading an entire file into memory with perl normally, take
+into account the possibility of memory use when loading an LDIF file
+in one go.
 
 =head1 CONSTRUCTOR
 
 =over 4
 
-=item new ( [ FILE [, MODE [,OPTIONS ]]] )
+=item new ( FILE )
 
-FILE may be the name of a file or an already open filehandle. If a filename
-is passed in then it will be opened with the mode specified. If FILE begins
-or ends with a C<|> then FILE will be passed directly to C<open>
+Open the file read-only. C<FILE> may be the name of a file or an
+already open filehandle. If C<FILE> begins or ends with a C<|> then
+C<FILE> will be passed directly to C<open>.
 
-MODE defaults to "r" for read. You may specify "w" to for write+truncate or
-"a" for write+append.
+=item new ( FILE, MODE, OPTIONS )
 
-OPTIONS is a list of key-value pairs. Valid options are:
+Open the file with the given C<MODE>, eg "w" or "a". C<FILE> may be
+the name of a file or an already open filehandle. If C<FILE> begins or
+ends with a C<|> then C<FILE> will be passed directly to C<open>.
 
 =over 4
 
-=item encode
+=item encode =E<gt> 'none' | 'canonical' | 'base64'
 
 Some values in LDIF cannot be written verbatim and have to be encoded
-in some way. This option lets you specify how. Valid encoding options
-are 'none' (the default), 'canonical' (see
-L<Net::LDAP::Util/canonical_dn>), or 'base64'.
+in some way:
+
+=over 4
+
+=item 'none'
+
+The default.
+
+=item 'canonical'
+
+See L<Net::LDAP::Util/canonical_dn>.
+
+=item 'base64'
+
+Use base64.
 
 =back
 
-=item onerror
+=back
 
-If set then Net::LDAP::LDIF will check all responses for errors on all methods.
-If an error is detected then the specified action will be taken. Valid values
-and their actions are.
+=item onerror =E<gt> 'die' | 'warn' | undef
+
+Specify what happens when an error is detected.
 
 =over 4
 
-=item die
+=item 'die'
 
-Net::LDAP::LDIF will croak with an appropriate message.
+C<Net::LDAP::LDIF> will croak with an appropriate message.
 
-=item warn
+=item 'warn'
 
-Net::LDAP::LDIF will warn with an appropriate message.
+C<Net::LDAP::LDIF> will warn with an appropriate message.
 
 =item undef
 
-Net::LDAP::LDIF will warn with an appropriate message if C<-w> is in effect.
-The method that was called will return C<undef>
+C<Net::LDAP::LDIF> will warn with an appropriate message if C<-w> is
+in effect.  The method that was called will return C<undef>.
 
 =back
 
@@ -84,43 +97,47 @@ The method that was called will return C<undef>
 
 =over 4
 
-=item read_entry
+=item read_entry ( )
 
-Read one entry from the file and return it as a Net::LDAP::Entry object.
+Read one entry from the file and return it as a C<Net::LDAP::Entry>
+object.
 
-=item eof  
+=item eof ( )
 
-Returns true when the end of the file is reached.
+Returns I<true> when the end of the file is reached.
 
 =item write_entry ( ENTRIES )
 
+Write the entries to the LDIF file.
 
+=item done ( )
 
-=item done
+This method signals that the LDIF object is no longer needed. If a
+file was opened automatically when the object was created it will be
+closed. This method is called automatically via DESTROY when the
+object goes out of scope.
 
-This method signals that the LDIF object is no longer needed. If a file was
-opened automatically when the object was created it will be closed. This
-method is called automatically via DESTROY when the object goes out of scope.
-
-=item error
+=item error ( )
 
 Returns error message if error was found.
 
-=item error_lines
+=item error_lines ( )
 
 Returns lines that resulted in error.
 
-=item current_entry
+=item current_entry ( )
 
-Returns the current Net::LDAP::Entry object.
+Returns the current C<Net::LDAP::Entry> object.
 
-=item current_lines
+=item current_lines ( )
 
-Returns the lines that generated the current Net::LDAP::Entry object.
+Returns the lines that generated the current C<Net::LDAP::Entry>
+object.
 
-=item next_lines
+=item next_lines ( )
 
-Returns the lines that will generate the next Net::LDAP::Entry object.
+Returns the lines that will generate the next C<Net::LDAP::Entry>
+object.
 
 =back
 
@@ -128,14 +145,14 @@ Returns the lines that will generate the next Net::LDAP::Entry object.
 
 Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
-Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-E<lt>perl-ldap@perl.orgE<gt>.
+Please report any bugs, or post any suggestions, to the perl-ldap
+mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program is
-free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
+Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
 
 =for html <hr>
 
