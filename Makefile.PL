@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.5 2000/08/03 17:10:26 gbarr Exp $
+# $Id: Makefile.PL,v 1.6 2001/04/10 17:02:34 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -44,6 +44,7 @@ sub check_module {
     1;
   };
   $missing++ unless $ok;
+  $@ =~ s/^(Can't locate \S* in \@INC).*/$1/s;
   print $ok ? "ok\n" : "** FAILED **\n$@\n";
   $ok;
 }
@@ -99,27 +100,17 @@ WriteMakefile(
 
 sub MY::postamble {
 
-  my $ppd = $] >= 5.00503 ? 'ppd' : '';
-  my $mkhtml = "../bin/mkhtml";
-  my $html = '';
+<<EOS;
 
-  if ( -x $mkhtml ) {
-    $mkhtml = <<EDQ;
-mkhtml :
-	$mkhtml
-EDQ
-    $html = 'mkhtml';
-  }
-  else { $mkhtml = '' }
+run_mkhtml :
+	./mkhtml
 
-  return '' unless length($ppd.$html);
+run_mkmanf : run_mkhtml
+	./mkmanf
 
-<<"EDQ";
+distdir : run_mkhtml run_mkmanf
 
-distdir : $ppd $html
+EOS
 
-$mkhtml
-
-EDQ
 }
 
