@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 my %mode = qw(w > r < a >>);
 
@@ -376,19 +376,18 @@ sub write_entry {
         next;
       }
 
-      my $first = 0;
       foreach my $chg (@changes) {
         unless (ref($chg)) {
           $type = $chg;
           next;
         }
-        print "-\n" if $first++;
         my $i = 0;
         while ($i < @$chg) {
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           print $type,": ",$attr,"\n";
           _write_attr($attr,$val,$wrap,$lower);
+	  print "-\n";
         }
       }
     }
