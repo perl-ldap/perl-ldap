@@ -1,40 +1,19 @@
-#!perl -w
-use Net::LDAP::Schema;
+#!perl
 
-print "1..7\n";
+BEGIN {
+  require "t/common.pl";
+  start_server(version => 3);
+}
 
-my $schema = Net::LDAP::Schema->new( "data/schema.in" ) or die "Cannot open schema";
-print "ok 1\n";
+print "1..4\n";
 
-my @atts = $schema->all_attributes();
-print "not " unless @atts == 55;
-print "ok 2\n";
+$ldap = client();
+ok($ldap, "client");
 
-print "The schema contains ", scalar @atts, " attributes\n";
+$schema = $ldap->schema;
+ok($schema, "schema");
 
-my @ocs = $schema->all_objectclasses();
-print "not " unless @ocs == 22;
-print "ok 3\n";
-print "The schema contains ", scalar @ocs, " object classes\n";
+$ob = $schema->attribute('objectClass');
+ok($ob, 'objectClass');
 
-@atts = $schema->must( "person" );
-print "not " unless join(' ', sort map $_->{name}, @atts) eq join(' ',sort qw(cn sn objectClass));
-print "ok 4\n";
-print "The 'person' OC must have these attributes [",
-		join( ",", map $_->{name}, @atts ),
-		"]\n";
-@atts = $schema->may( "mhsOrganizationalUser" );
-print "not " if @atts;
-print "ok 5\n";
-print "The 'mhsOrganizationalUser' OC may have these attributes [",
-		join( ",", map $_->{name}, @atts ),
-		"]\n";
-
-print "not " if defined $schema->attribute('distinguishedName')->{max_length};
-print "ok 6\n";
-
-print "not " unless $schema->attribute('userPassword')->{max_length} == 128;
-print "ok 7\n";
-
-use Data::Dumper;
-print Dumper($schema);
+ok($ob->{syntax} eq '1.3.6.1.4.1.1466.115.121.1.38', 'syntax');

@@ -88,6 +88,7 @@ mkmanf
 t/00ldif-entry.t
 t/01canon_dn.t
 t/02filter.t
+t/03schema.t
 t/50populate.t
 t/51search.t
 t/52modify.t
