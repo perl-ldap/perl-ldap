@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.6 2001/04/10 17:02:34 gbarr Exp $
+# $Id: Makefile.PL,v 1.7 2001/12/03 16:20:26 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -65,6 +65,10 @@ EDQ
 
 check_module('XML::Parser') or print <<"EDQ","\n";
 The XML::Parser module is needed ONLY IF you intend to read/write DSML files
+EDQ
+
+check_module('MIME::Base64') or print <<"EDQ","\n";
+The MIME::Base64 module is needed ONLY IF you intend to read/write LDIF files
 EDQ
 
 print "\n",<<"EDQ","\n" if $missing;
