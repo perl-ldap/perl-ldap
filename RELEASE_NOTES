@@ -1,3 +1,14 @@
+perl-ldap 0.24 17 July 2001
+===========================
+
+* Added support for startTLS
+* Better error checking in Net::LDAP methods
+* VLV control now works
+* Can now use oid or name for the matchingRule in filter extensible matches
+* Major overhaul of LDIF.pm
+* $schema->name2oid is now context sensetive
+* test suite now works with openldap2
+
 perl-ldap 0.23 April 20 2001
 ============================
 

@@ -1,3 +1,327 @@
+2001-07-17 13:52  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.24
+	
+2001-07-16 23:40  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Fix dereference problem
+	
+2001-07-06 13:17  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Document the version option to Net::LDAP->new
+	
+2001-07-06 12:53  Graham Barr
+
+	* lib/Net/LDAPS.pm:
+
+	Avoid undef warnings
+	
+2001-07-06 11:56  Graham Barr
+
+	* install-nomake:
+
+	Add install-nomake for those who don't have make
+	
+2001-07-06 11:55  Graham Barr
+
+	* test.cfg, data/cert.pem, data/key.pem, data/slapd2-conf.in,
+	lib/Net/LDAP.pm, lib/Net/LDAPS.pm, t/54dse.t, t/55ssl.t,
+	t/common.pl:
+
+	Remove croaks from SSL/TLS methods
+	Add testing for Net::LDAPS and start_tls
+	
+2001-07-06 10:18  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Document the cipher, certificate and start_tls methods.
+	
+2001-07-06 10:16  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Move Net::LDAPS cipher and certificate methods in here, and make sure
+	they can only run when the socket is an IO::Socket::SSL one.
+	
+2001-07-06 10:15  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Inherit cipher and certificate methods, override inherited start_tls
+	method for safety, update descriptions of the constructor options a
+	bit, and insert a note about the use of LDAPv3/startTLS up front.
+	
+2001-07-06 02:57  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Corrected a mis-spelling.
+	Corrected a truncated line.
+	
+2001-07-05 22:36  Graham Barr
+
+	* lib/Net/: LDAP.pm, LDAPS.pm:
+
+	Add support for start_tls, tests and docs will follow
+	
+2001-07-05 12:14  Graham Barr
+
+	* lib/Net/LDAPS.pm:
+
+	Fix copy-paste typo
+	
+2001-07-04 12:51  uid26202
+
+	* lib/Net/: LDAP.pm, LDAPS.pm:
+
+	Use syswrite() instead of send(), so Net::LDAPS does not need to redefine _sendmesg()
+	Split out the connect from new(), so Net::LDAPS does not need to redefine new()
+	
+2001-07-03 20:30  Graham Barr
+
+	* contrib/: README, ldifsort.pl:
+
+	Add ldifsort.pl from Kartik Subbarao
+	
+2001-06-16 04:57  Clif Harden
+
+	* contrib/tklkup:
+
+	Made attribute jpegPhoto detection case insenitive.
+	Corrected error in window creation in subroutine ERROR.
+	Changed the way general error messages are submitted to subroutine
+	ERROR.
+	
+2001-06-15 03:48  Clif Harden
+
+	* contrib/tklkup:
+
+	Added many enhancements.
+	Added the ability to display jpegPhoto attributes when they are encountered
+	if the Tk::JPEG module is installed.
+	Added the ability to do a hierarchical tree graph of objectclasses.  When a
+	branch of the tree is selected, a listing of the objectclasses and their
+	attributes is displayed in a list box.
+	Added the ability to display the ROOT DSE entry if it can be  obtained.
+	Changed several look and feel items, made everything more consistent.
+	
+2001-06-14 21:14  Graham Barr
+
+	* test.cfg, t/70sortctrl.t:
+
+	Add a test for sort control
+	
+2001-06-14 21:13  Graham Barr
+
+	* t/: 50populate.t, 51search.t, 52modify.t, common.pl:
+
+	A few tweaks to share some more code
+	
+2001-06-14 21:12  Graham Barr
+
+	* lib/Net/LDAP/RFC.pod:
+
+	Documentation updates
+	
+2001-06-11 22:05  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix typo in element name in last checkin
+	
+2001-06-11 18:03  Graham Barr
+
+	* test.cfg, data/50-cmp.ldif, data/50-in.ldif, data/51-in.ldif,
+	data/51a-cmp.ldif, data/51b-cmp.ldif, data/51c-cmp.ldif,
+	data/51d-cmp.ldif, data/52-cmp.ldif, data/52-in.ldif,
+	data/52-mod.ldif, data/core.schema, data/cosine.schema,
+	data/inetorgperson.schema, data/slapd2-conf.in, t/50populate.t,
+	t/51search.t, t/52modify.t, t/common.pl:
+
+	Update test suite to work with either OpenLDAP1 or OpenLDAP2
+	
+2001-06-11 17:51  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Add more error checking
+	
+2001-06-11 17:49  Graham Barr
+
+	* lib/Net/LDAP/: Schema.pm, Schema.pod:
+
+	name2oid now handles multiple items with the same name. Returns an
+	error if called in a scalar context with a name that matches multiple
+	items.  Various other methods also return errors if called with a
+	name that matches multiple items
+	
+2001-06-11 17:36  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Add option to output attribute names as all lowercase.
+	
+2001-06-11 17:35  Graham Barr
+
+	* lib/Net/LDAP/: Search.pm, Search.pod:
+
+	Allow the user to specify multiple attributes to compare by. Use the
+	canonical DN if all attributes are equal
+	
+2001-06-11 17:29  Graham Barr
+
+	* lib/Net/LDAP/Util.pm:
+
+	Add an option to canonical_dn to return the DN in a form more useful for sorting
+	
+2001-06-11 17:20  Graham Barr
+
+	* lib/Net/LDAP/: ASN.pm, Control/VLV.pm:
+
+	Fix ASN/code mismatch so VLV controls work
+	
+2001-06-09 00:43  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Added comment about where to find the latest version of the FAQ.
+	Added section on getting search results.  This section has subsections
+	on the inline and callback approaches.
+	
+2001-05-30 04:10  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Added URL for Novell's LDAPzone developers web site.
+	Added ACI/ACL question and code snippet.
+	
+2001-05-19 03:48  Clif Harden
+
+	* contrib/tklkup:
+
+	Corrected code that uses the nameContext to determine branches,
+	or bases, in the directory.
+	Added code to create an error window for error message display. This
+	is for use by rountines that do not have a list window.
+	
+2001-05-18 22:06  Graham Barr
+
+	* lib/Net/LDAP/Filter.pm, t/02filter.t:
+
+	A filter can have the matchingRule name in an extensible match
+	
+2001-05-18 21:41  Graham Barr
+
+	* lib/Net/LDAP/: LDIF.pm, LDIF.pod:
+
+	Major updates to read/write methods with better error handling
+	(From Robbie Allen)
+	
+2001-05-18 21:39  Graham Barr
+
+	* lib/Net/LDAP/Search.pm:
+
+	Fix case type for hash key
+	
+2001-05-18 21:38  Graham Barr
+
+	* data/52-mod.ldif:
+
+	Fix bad LDIF
+	
+2001-05-18 21:37  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Improve the mistyped password detection in bind()
+	
+2001-05-18 21:34  Graham Barr
+
+	* README, RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.23
+	
+2001-05-15 03:56  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Removed Id tag, cvs appears to not use it like RCS does.
+	
+2001-05-15 03:54  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Move Id tag.
+	
+2001-05-15 03:45  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Added section on how to delete referrals.
+	Added section on what happens when an attribute is
+	      deleted that does not exist and how to use
+	      replace to correct the problems associated with
+	      this situation.
+	
+2001-04-24 03:59  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Installed new and better warning message about Netscape on Windows systems
+	munging file names.
+	
+2001-04-24 02:35  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added 3 warning paragraphs about Microsoft Windows systems
+	renaming files that end in *.gz to *_tar.tar.  Explained
+	how to correct the file name once the file was on the Windows
+	system.
+	
+	Added section that explains the difference between a ldap reference
+	and a ldap referral.
+	
+	Added section that explains how to set the version number of a
+	ldap connection.
+	
+	Added a new book listing.  This listing deals with Solaris 8 and
+	native SUN ldap.
+	
+2001-04-23 20:33  Graham Barr
+
+	* lib/Net/LDAP/Schema.pod:
+
+	Fix doc typo
+	
+2001-04-12 17:40  Graham Barr
+
+	* lib/Net/LDAP/: Filter.pm, Schema.pm, Util.pm:
+
+	Fix syntax to be 5.004_04 compatable
+	
+2001-04-11 10:20  Graham Barr
+
+	* t/01canon_dn.t:
+
+	Ensure the number of tests run matches the test count
+	
+2001-04-11 08:49  Graham Barr
+
+	* lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	Fix uninitialized warnings
+	
 2001-04-10 18:02  Graham Barr
 
 	* Makefile.PL:
