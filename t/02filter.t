@@ -75,6 +75,14 @@ my $asn = $Filter;
        'a169a021a209a3070402636e040161a3090402636e0403626172a3090402636e0403666f6fa021a209a3070402636e040162a3090402636e0403626172a3090402636e0403666f6fa021a209a3070402636e040163a3090402636e0403626172a3090402636e0403666f6f' ],
      [ '(| (cn=foo\(bar\)) (cn=test))', 
        'a11ca30e0402636e0408666f6f2862617229a30a0402636e040474657374' ],
+     [ '(cn=foo\\*)',
+	'a30a0402636e0404666f6f2a' ],
+     [ '(cn=foo\\\\*)',
+	'a40c0402636e30068004666f6f5c' ],
+     [ '(cn=\\\\*foo)',
+	'a40e0402636e300880015c8203666f6f' ],
+     [ '(cn=\\\\*foo\\\\*)',
+	'a40f0402636e300980015c8104666f6f5c' ],
      );
 
 print "1..", 4*scalar(@tests), "\n";
@@ -85,13 +93,15 @@ foreach $testref (@tests) {
     $binary = pack("H*", $binary);
     $testno ++;
     print "# ",$filter,"\n";
-    $filt = new Net::LDAP::Filter $filter;
+    $filt = new Net::LDAP::Filter $filter or print "not ";
     print "ok $testno\n";
     $testno ++;
     my $data = $asn->encode($filt) or print "# ",$asn->error,"\nnot ";
     print "ok $testno\n";
     $testno ++;
     unless($data eq $binary) {
+	require Data::Dumper;
+	print Data::Dumper::Dumper($filt);
 	print "got    ", unpack("H*", $data), "\n";
 	print "wanted ", unpack("H*", $binary), "\n";
 

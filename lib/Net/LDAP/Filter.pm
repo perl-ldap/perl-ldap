@@ -119,11 +119,13 @@ sub _encode {
   # If the op is = and contains one or more * not
   # preceeded by \ then do partial matches
 
-  if ($op eq '=' && $val =~ /^(?:(?:\\\*|[^*])*)\*/o) {
+  if ($op eq '=' && $val =~ /^(\\.|[^\\*]*)*\*/o ) {
+
     my $n = [];
     my $type = 'initial';
 
-    while ($val =~ s/^((?:\\\*|[^*])*)\*+//) {
+    #while ($val =~ s/^((?:\\\*|[^*])*)\*+//) {
+    while ($val =~ s/^((\\.|[^\\*]*)*)\*+//) {
       push(@$n, { $type, _unescape("$1") })         # $1 is readonly, copy it
 	if length $1;
 
