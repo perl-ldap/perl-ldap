@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-# Copyright (c) 1999 - 2001 Clif Harden.  All Rights Reserved
+# Copyright (c) 1999 - 2003 Clif Harden.  All Rights Reserved
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU GENERAL PUBLIC LICENSE.
 #----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.41 2003/01/27 17:46:21 charden Exp $
+# $Id: tklkup,v 1.42 2003/02/01 05:46:56 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -98,6 +98,7 @@ $Global{'nismapname'} = 0;
 $Global{'records'} = 0;
 $Global{'mwwidth'} = 600;
 $Global{'mwheight'} = 430;
+$Global{dirConnError} = undef();
 
 my $sbbframe;
 my @base       = ();
@@ -115,11 +116,7 @@ Usage() if ( $opt_h );
 
 my $debug  = $opt_d ? 1 : 0;
 
-#
-#
-
 # Fork this process on start up.
-#
 #
 # If not in debug mode;
 # Fork a child process and kill the parent.
@@ -162,13 +159,11 @@ my $rbcn;
 my $rbsn;
 my $rbmail;
 my $rbclear;
-#my $mainWindow;
 my $lframe;
 my $sframe;
 my $aframe;
 my $tframe;
 my $bframe;
-#my $sbmenu;
 my @attribute = ();
 my @server    = ();
 
@@ -338,53 +333,15 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 # Default directory search base.
 #
 
- #
- # Find the branches of the directory.
- #
-
-$error = 0;
-
-if ( $Global{port} == 636 )
-{
-
-eval 
-{
-  require Net::LDAPS;
-};
-if ($@)
-{
-$msgbox->insert("0.0", $@) if ($@);
-return;
-}
-
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
-else
-{
-$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
+$error = dirConn();  # connect and bind to the directory.
 
 if ( !$error )
 {
-$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
-                       dn => "$Global{'binddn'}", 
-                       version => $Global{'setVersion'},
-                       );
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-  $errstr = $mesg->code;
-  ERROR($errstr);
-}
-if ( $mesg->code || $Global{setVersion} )
+#
+# Find the branches of the directory.
+#
+
+if ( !$error || $Global{setVersion} )
 { 
  
  if ( defined($server{$server[0]}) )
@@ -427,14 +384,19 @@ if ( $mesg->code || $Global{setVersion} )
    }
  }
 
-  #$Global{ldap}->unbind if ( defined($Global{ldap}) );
-  #$Global{ldap} = undef if ( defined($Global{ldap}) );
  }
  }
 }
 else
 {
-  print "Error:  $@\n";
+  if ( defined($Global{dirConnError}) ) 
+  {
+  ERROR(\$Global{dirConnError});
+  }
+  else
+  {
+  ERROR($error);
+  }
 
 }
 
@@ -453,7 +415,7 @@ $splashList->insert("0", "Setting tklkup GUI.")
 $splash->update() 
         if ( $Global{splash} );
 
-$Global{'mainWindow'}->title("DIRECTORY SEARCH");
+$Global{'mainWindow'}->title("TKLKUP");
 
 #
 # Default directory search attributes.
@@ -484,12 +446,11 @@ $Global{'menubar'}->command(-label => "Set DSA ~Port",
 # Create process Exit button
 #
 
-$Global{'mainWindow'}->Button(-text => "EXIT", 
+$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION", 
                     -command => sub{ exit; }, 
                     -font => $Global{'Font'}, 
                     -borderwidth => 5  ) 
                     -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
-
 
 $dsaframe = $Global{'mainWindow'}->Frame()
       ->pack( -fill => "both", -side => "top" );
@@ -625,10 +586,10 @@ $bframe = $Global{'mainWindow'}->Frame(-borderwidth => 2,
 # Create Search Directory button
 #
 
-$bframe -> Button(-text => "SEARCH DIRECTORY", -command =>  \&search, 
+$bframe -> Button(-text => "SEARCH THE DIRECTORY", 
+        -command =>  \&search, 
         -font => $Global{'Font'}, -borderwidth => 3 ) 
         -> pack( -fill => "both");
-
 
 $attframe = $Global{'mainWindow'}->Frame()
       ->pack( -fill => "both", -side => "bottom");
@@ -718,10 +679,6 @@ $splashList->insert("0", "Creating root dse and attribute buttons.")
         if ( $Global{splash} );
 $splash->update() 
         if ( $Global{splash} );
-##$cframe -> Button(-text => "OBTAIN ROOT DSE ENTRY", 
-##        -command =>  \&rootDse, 
-##        -font => $Global{'Font'}, -borderwidth => 3 )
-##        -> pack( -side => $Global{'hand'} );
 
 #
 # Create left attribute selection frame
@@ -888,42 +845,14 @@ while ( @BaseButton >= 1  )
 @BaseButton = ();  # Delete the old stuff.
 @NcKeys = ();  # Delete the old stuff.
 
-if ( $Global{port} == 636 )
-{
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                         timeout => 1,
-                         port => $Global{'port'},
-                         debug => $opt{'d'},
-                        ) or $error = 1;
-}
-else
-{
-$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                         timeout => 1,
-                         port => $Global{'port'},
-                         debug => $opt{'d'},
-                        ) or $error = 1;
-}
-
 $msgbox->delete("0.0", "end");
 $msgbox->update();
+
+$error = dirConn();
 
 if ( !$error )
 {
 
-$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
-                    dn => "$Global{'binddn'}", 
-                    version => $Global{'setVersion'},
-                    );
-
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-$errstr = $mesg->code;
-ERROR($errstr);
-}
-
-if ( !$mesg->code || $Global{setVersion} == 3 )
-{
 
 if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
@@ -934,7 +863,7 @@ if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));             
 
 }
-else
+elsif ( $Global{setVersion} == 3 )
 {
  my $entry;
  # use root_dse to find the bases
@@ -955,11 +884,6 @@ else
      }
    }
  }
-
-#  $Global{ldap}->unbind if ( defined($Global{ldap}));
-#  $Global{ldap} = undef if ( defined($Global{ldap}));
-
-}
 
 }
 
@@ -1005,8 +929,15 @@ $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
 else
 {
-$msgbox->insert("1", "Connection error.");
-
+  if ( defined($Global{dirConnError}) ) 
+  {
+  ERROR(\$Global{dirConnError});
+  $msgbox->insert("1", "$Global{dirConnError}");
+  }
+  else
+  {
+  ERROR($error);
+  }
 }
 
 if ( @NcKeys)
@@ -1024,21 +955,6 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
 $Global{mainWindow} -> Unbusy;  # window is not busy
 } # End of server subroutine
-
-
-#sub attribute {
-
-#
-# Build a correct Filter string from the data
-# passed from the Additional Attributes
-# radiobutton selection.
-#
-
-#my $tmp = "(" . $uid . "=";
-
-#$info = $tmp;
-
-#} # End of attribute subroutine
 
 
 sub base {
@@ -1149,9 +1065,11 @@ if ( $mesg->code && $mesg->code != 48 )
 }
 else
 {
+$Global{'bindWindow'}->Busy(-recurse => 1);
 $Global{'binddn'} = $dn_data;
 $Global{'bindpw'} = $pw_data;
 &server;
+$Global{'bindWindow'}->Unbusy;
 }
 
 } 
@@ -1211,8 +1129,8 @@ $errlist = $Global{'errorWindow'} ->Scrolled(Listbox, -scrollbars => 'se',
 $errlist->pack(-fill => "both", -expand => 1 );
 }
 
-$errlist->insert("end", "Error Code: $errcode");
-$errlist->insert("end", "");
+$errlist->insert("end", "Error Code: $errcode") if ( !ref($errcode) );
+$errlist->insert("end", "") if ( !ref($errcode) );
 
 foreach my $msg ( @errmsg )
 {
@@ -1410,14 +1328,15 @@ if (!  Exists($Global{'schemaWindow'}) )
 {
 $Global{'schemaWindow'} = MainWindow->new;
 
-$Global{'schemaWindow'}->title("DIRECTORY SCHEMA SEARCH");
+$Global{'schemaWindow'}->title("DIRECTORY SCHEMA DISPLAY");
 
 $Global{'schemaWindow'}->geometry("+$x+$y");
 #
 # Create process Exit button
 #
 
-$Global{'schemaWindow'}->Button( -text => "CLOSE SCHEMA SEARCH WINDOW", 
+$schemaExit = $Global{'schemaWindow'}->Button( 
+                       -text => "EXIT SCHEMA DISPLAY", 
                        -command => \&schema_cancel, -font => $Global{'Font'}, 
                        -borderwidth => 5 )
                        -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
@@ -1625,19 +1544,6 @@ my $error = 0;
 
 $schemaHash{'obj'} = {};
 $schemaHash{'tree'} = {};
-#my %obj = ();
-#my %tree = ();
-
-#my @atts = ();
-#my @ocs = ();
-#my @mrs = ();
-#my @nfm = ();
-#my @lsyn = ();
-#my @dits = ();
-#my @ditc = ();
-#my @mru = ();
-
-
 
 
 my $dt = "/tmp/schema.dat.$$";
@@ -1649,40 +1555,18 @@ if ( ! defined($Global{ldap}) )
 #
 # Connect to directory server
 # 
-
-if ( $Global{port} == 636 )
-{
- $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
-else
-{
- $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
+$error = dirConn();
 
 if ( $error == 1 )
 {
-   $schema_list->insert("end",  "Connect error:  $@\n");
-   return;
-}
-
-$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
-                     dn => "$Global{'binddn'}", 
-                     version => $Global{'setVersion'},
-                   );
-
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $schema_list->insert("end",  "$Global{dirConnError}\n");
+  }
+  else
+  {
+  ERROR($error);
+  }
    return;
 }
 
@@ -2995,40 +2879,21 @@ $error = 0;
 
 if ( !defined($Global{ldap}) )
 {
-if ( $Global{port} == 636 )
-{
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
-else
-{
-$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
+
+$error = dirConn();
 
 if ( $error == 1 )
 {
-   $errstr = "Delete connect error on ldap server $Global{'LDAP_SERVER'}\n";
-   ERROR($errstr);
-   return;
-}
-
-$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
-                     dn => $Global{'binddn'},
-                     version => $Global{'setVersion'},
-                   );
-
-if ( $mesg->code ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "ldapActionDelete $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+  return;
 }
 
 }
@@ -3089,43 +2954,23 @@ return;
 
 if ( !defined($Global{ldap}) )
 {
-if ( $Global{port} == 636 )
-{
-$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
-else
-{
-$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
+
+$error = dirConn();
 
 if ( $error == 1 )
 {
-   $list->insert("end",  "Connect error:  $@\n");
-   return;
-   $errstr = "Rename connect error on ldap server $Global{'LDAP_SERVER'}\n";
-   ERROR($errstr);
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "ldapActionRename $Global{dirConnError}";
+  ERROR(\$error);
+  return;
+  }
+  else
+  {
+  ERROR($error);
+  }
 }
 
-$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
-                     dn => $Global{'binddn'},
-                     version => $Global{'setVersion'},
-                   );
-  
-
-if ( $mesg->code ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
-}
 
 } 
  
@@ -3544,42 +3389,23 @@ my $do_it;
 
 if ( !defined($Global{ldap}) )
 {
-if ( $Global{port} == 636 )
-{
- $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
-else
-{
- $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
+
+$error = dirConn();
  
 if ( $error == 1 )
 {
-   $errstr = "Connect error:  $@\n";
-   ERROR($errstr);
-   return;
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "changeEntry $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+  return;
 }
  
-$mesg = $Global{ldap}->bind( password => $Global{'bindpw'},
-                     dn => $Global{'binddn'},
-                     version => $Global{'setVersion'},
-                   );
-
-if ( $mesg->code )
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
-}
-
 }
 #
 # Execute any LDAP add changes.
@@ -3925,46 +3751,28 @@ my $f = Net::LDAP::Filter->new($match) or $error = 1;
 
 if ( $error == 1 )
 {
-   ERROR("Bad filter $match.");
+   $error = "Bad filter $match.";
+   ERROR(\$error);
    return;
 }
 
 if ( !defined($Global{ldap}) )
 {
-if ( $Global{port} == 636 )
-{
- $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
-else
-{
- $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1; 
-}
+
+$error = dirConn();
 
 if ( $error == 1 )
 {
-   ERROR("Connect error:  $@");
-   return;
-}
-
-$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
-                     dn => $Global{'binddn'},
-                     version => $Global{'setVersion'},
-                   );
-  
-
-if ( $mesg->code && $mesg->code != 48  ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "search $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+  return;
 }
 
 }
@@ -4057,7 +3865,8 @@ sub print_entry {
   {
   foreach (@ref )
   {
-    ERROR("LDAP Referral: $_");
+    my $rvar = "LDAP Referral: $_";
+    ERROR(\$rvar);
   }
 
   }
@@ -4164,6 +3973,7 @@ my ( $host, $base ) = @_;
 my @base = ();
 my $ptr;
 my $match;
+my $error = 0;  # initialize error flag.
 
 if ( $Global{'nismapname'} )
 {
@@ -4176,9 +3986,15 @@ else
 {
  $match = "(|(o=*)(ou=*))";  #search only for ou entries.
 }
-my $error = 0;  # initialize error flag.
 
-my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
+my $f = Net::LDAP::Filter->new($match) or $error = 1;
+ 
+if ( $error )
+{
+$error = "getBases subroutine Bad filter $match";
+ERROR(\$error);
+return @base;
+} 
 
 push(@base,$base);
 $ptr = 0;
@@ -4281,32 +4097,27 @@ my $y = $Global{'vert'} + 150;
 my $error;
 my $mesg;
 
-#if ( $Global{'setVersion'} != 3 )
-#{
-# $error = "LDAP version is not equal to 3.";
-# ERROR(\$error);
-# return;
-#}
+$error = 0;
 
 if ( !defined($Global{ldap} ) )
 {
-if ( $Global{port} == 636 )
-{
-$Global{ldap} = new Net::LDAPS($Global{'LDAP_SERVER'}) or die;
-}
-else
-{
-$Global{ldap} = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
-}
-$mesg = $Global{ldap}->bind( version => $Global{'setVersion'} ) or die;
 
-if ( $mesg->code  )
-{
-    $error = $mesg->code;
-    ERROR($error);
-    return if ( $mesg->code != 48 );
+$error = dirConn();
 
+if ( $error )
+{
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "rootDSE $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+  return;
 }
+
 }
 my $root = $Global{ldap}->root_dse();
 
@@ -4385,6 +4196,81 @@ foreach $attr (@Attributes)
 }
 
 } # End of subrountine rootDse
+
+
+#
+# Make the correction and bind to the directory server.
+#
+
+sub dirConn
+{
+my $error;
+$error = 0;
+
+$Global{dirConnError} = undef();
+
+ #
+ # Make the connection to the directory server
+ #
+
+
+if ( $Global{port} == 636 )
+{
+
+eval 
+{
+  require Net::LDAPS;
+};
+if ($@)
+{
+$msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
+return -1;
+}
+
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+if ( $error )
+{
+$Global{dirConnError} = "LDAPS connection error to $Global{'LDAP_SERVER'}.";
+return 1;
+}
+
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+if ( $error )
+{
+$Global{dirConnError} = "LDAP connection error to $Global{'LDAP_SERVER'}.";
+return 1;
+}
+
+}
+
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
+                       dn => "$Global{'binddn'}", 
+                       version => $Global{'setVersion'},
+                       );
+   
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+#  $errstr = $mesg->code;
+#  ERROR($errstr);
+  return $mesg->code;
+}
+
+
+return 0;
+
+} # End of subroutine dirConn
+
 
 #
 # Determine new mainWindow position.
@@ -4508,11 +4394,11 @@ To be used this file must have user read permission.
 There are 5 commands that can be used with this file;
 hand, attribute, server, limit, and port.
 
-mwwidth -> numeric value:  Default 600 main window width in
-                           pixels, user may need to adjust this.
+ mwwidth -> numeric value:  Default 600 main window width in
+                            pixels, user may need to adjust this.
 
-mwheight -> numeric value: Default is 430 main window height in
-                           pixels, user may need to adjust this.
+ mwheight -> numeric value: Default is 430 main window height in
+                            pixels, user may need to adjust this.
 
  hand -> values: left or right.  Defines where the 
                  attribute label box will be place.
@@ -4629,7 +4515,7 @@ initializes quickly.
 
 -------------------------------------------------------------------
 
-=head1 Directory Search Menu Bar
+=head1 Tklkup Menu Bar
 
 At the top of the GUI is the main menu bar.  It has 3 drop down
 menus; "Directory OPS", "Set Bind Credentials", and 
@@ -4638,7 +4524,7 @@ menus; "Directory OPS", "Set Bind Credentials", and
 The I<DIRECTORY OPS> button will activate a drop down menu that
 has 2 menu selections; 
 
-The I<Explore ROOT DSE> menu will attempt to obtain the
+The I<EXPLORE ROOT DSE> menu will attempt to obtain the
 root dse entry for the selected directory server.  If the root
 dse entry is obtained a separate window will be displayed that 
 will display the information obtained from the root dse entry.
@@ -4701,10 +4587,10 @@ change to a new directory server.
 
 -------------------------------------------------------------------
 
-=head1 Directory Search GUI
+=head1 Tklkup GUI
 
-I<Exit> button.  Just below the main menu bar is the "Exit"
-button.  When a mouse click is done on the "Exit" button 
+I<EXIT THE APPLICATION> button.  Just below the main menu bar is 
+the "Exit" button.  When a mouse click is done on the "Exit" button 
 the program will terminate.
 
 The I<LDAP VERSION> "RadioButton" diamond will select the
@@ -4753,6 +4639,11 @@ wishes to use in the directory search.  When selected the
 SEARCH BASE text box will display the directory search base 
 that is selected.  
 
+The I<Process Messages> text window is where process messages
+will be displayed.  The messages are indicators of what is
+happening during the excution of the program.  By selecting 
+a line of text and moving the cursor up or down, the user
+can scroll thru the messages.
 
 The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
@@ -4794,15 +4685,16 @@ If the I<Filter> attribute is selected this is where the
 I<COMPLETE> filter is entered, the program will not modify this
 string in any way.
 
-I<SEARCH> button.  At the bottom of the GUI is the "Search"
-button.  When a mouse click is done on the "Search" button 
-the program will execute a ldap search.
+I<SEARCH THE DIRECTORY> button.  At the bottom of the GUI is 
+the "Search" button.  When a mouse click is done on the 
+"SEARCH THE DIRECTORY" button the program will execute a ldap search
+of the directory.
 
 -------------------------------------------------------------------
 
 =head1 Display Search Results
 
-When the SEARCH DIRECTORY button is pressed the Search Results 
+When the SEARCH THE DIRECTORY button is pressed the Search Results 
 window will be displayed.
 
 At the top of the GUI is the "Close Display Search Result Window" 
@@ -5072,18 +4964,18 @@ This function is used to lookup schema information from a LDAP
 directory server.  The directory server to be searched is 
 selected from the Directory Search window.
 
-=head2 Directory Schema Search Window Operation
+=head2 Directory Schema Display Window Operation
 
 When the Explore Directory Schema button is pressed in the
-Directory Search window, the Directory Schema Search window 
+Directory Search window, the Directory Schema Display window 
 will be displayed on your computer.  The graphical user 
 interface, GUI, has several sections to it.  
 
-At the top of the GUI is the "Close Schema Search Window" button.  
+At the top of the GUI is the "Exit Schema Display" button.  
 When a mouse click is done on the "Close Schema Search Window" 
 button the schema window will be destroyed.  
 
-The Directory Schema Search window can be destroyed by 
+The Directory Schema Display window can be destroyed by 
 enabling the proper window manager destroy function.
 
 When the Write Data To File RadioButton is selected the 
