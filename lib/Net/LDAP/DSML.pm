@@ -1,5 +1,8 @@
-
 package Net::LDAP::DSML;
+
+#
+# $Id: DSML.pm,v 1.14 2002/05/29 02:47:37 charden Exp $
+# 
 
 use strict;
 use vars qw(@ISA);
@@ -669,4 +672,197 @@ sub AUTOLOAD {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+NET::LDAP::DSML -- A DSML Writer for Net::LDAP
+
+=head1 SYNOPSIS
+
+ For a directory entry;
+
+ use Net::LDAP;
+ use Net::LDAP::DSML;
+ use IO::File;
+
+
+ my $server = "localhost";
+ my $file = "testdsml.xml";
+ my $ldap = Net::LDAP->new($server);
+ 
+ $ldap->bind();
+
+
+ #
+ # For file i/o
+ #
+ my $file = "testdsml.xml";
+
+ my $io = IO::File->new($file,"w") or die ("failed to open $file as filehandle.$!\n");
+
+ my $dsml = Net::LDAP::DSML->new(output => $io, pretty_print => 1 )
+      or die ("DSML object creation problem using an output file.\n");
+ #      OR
+ #
+ # For file i/o
+ #
+
+ open (IO,">$file") or die("failed to open $file.$!");
+
+ my $dsml = Net::LDAP::DSML->new(output => *IO, pretty_print => 1)
+     or die ("DSML object creation problem using an output file.\n");
+
+ #      OR
+ #
+ # For array usage.
+ # Pass a reference to an array.
+ #
+
+ my @data = ();
+ $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1) 
+     or die ("DSML object cration problem using an output array.\n");
+
+
+  my $mesg = $ldap->search(
+                           base     => 'o=airius.com',
+                           scope    => 'sub',
+                           filter   => 'ou=accounting',
+                           callback => sub {
+					 my ($mesg,$entry) =@_;
+					 $dsml->write_entry($entry) 
+                                          if (ref $entry eq 'Net::LDAP::Entry');
+				       }
+                            );  
+
+ die ("search failed with ",$mesg->code(),"\n") if $mesg->code();
+
+ For directory schema;
+
+ A file or array can be used for output, in the following example
+ only an array will be used.
+
+ my $schema = $ldap->schema();
+ my @data = ();
+ my $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1 )
+      or die ("DSML object creation problem using an output array.\n");
+ 
+ $dsml->write_schema($schema);
+
+ print "Finished printing DSML\n";
+
+=head1 DESCRIPTION
+
+Directory Service Markup Language (DSML) is the XML standard for
+representing directory service information in XML.
+
+At the moment this module only writes DSML entry and schema entities. 
+Reading DSML entities is a future project.
+
+Eventually this module will be a full level 2 consumer and producer
+enabling you to give you full DSML conformance.  Currently this 
+module has the ability to be a level 2 producer.  The user must 
+understand the his/her directory server will determine the 
+consumer and producer level they can achieve.  
+
+To determine conformance, it is useful to divide DSML documents into 
+four types:
+
+  1.Documents containing no directory schema nor any references to 
+    an external schema. 
+  2.Documents containing no directory schema but containing at 
+    least one reference to an external schema. 
+  3.Documents containing only a directory schema. 
+  4.Documents containing both a directory schema and entries. 
+
+A producer of DSML must be able to produce documents of type 1.
+A producer of DSML may, in addition, be able to produce documents of 
+types 2 thru 4.
+
+A producer that can produce documents of type 1 is said to be a level 
+1 producer. A producer than can produce documents of all four types is 
+said to be a level 2 producer.
+
+=head1 CALLBACKS
+
+The module uses callbacks to improve performance (at least the appearance
+of improving performance ;) and to reduce the amount of memory required to
+parse large DSML files. Every time a single entry or schema is processed
+we pass the Net::LDAP object (either an Entry or Schema object) to the
+callback routine.
+
+=head1 CONSTRUCTOR 
+
+new ()
+Creates a new Net::LDAP::DSML object.  There are 3 options
+to this method.
+
+B<Example>
+
+  my $dsml = Net::LDAP::DSML->new();  
+  Prints xml data to standard out.
+
+  my $dsml = Net::LDAP::DSML->new(output => \@array);  
+  my $dsml = Net::LDAP::DSML->new(output => *FILE);  
+  Prints xml data to a file or array.
+
+  my $dsml = Net::LDAP::DSML->new(output => \@array, pretty_print => 1);  
+  my $dsml = Net::LDAP::DSML->new(output => *FILE, pretty_print => 1);  
+  Prints xml data to a file or array in pretty print style.
+
+
+OUTPUT is a referrence to either a file handle that has already
+been opened or to an array.
+
+PRETTY_PRINT is an option to print a new line at the end of
+each element sequence.  It makes the reading of the XML output
+easier for a human.
+
+
+=head1 METHODS
+
+=over 4
+
+=item write_entry( ENTRY )
+
+Entry is a Net::LDAP::Entry object. The write method will parse
+the LDAP data in the Entry object and put it into DSML XML
+format.
+
+B<Example>
+
+  my $entry = $mesg->entry();
+  $dsml->write_entry($entry);
+
+=item write_schema( SCHEMA )
+
+Schema is a Net::LDAP::Schema object. The write_schema method will 
+parse the LDAP data in the Schema object and put it into DSML XML
+format.
+
+B<Example>
+
+  my $schema = $ldap->schema();
+  $dsml->write_schema($schema);
+
+=back 4
+
+=head1 AUTHOR
+
+Graham Barr   gbarr@pobox.com
+
+=head1 SEE ALSO
+
+L<Net::LDAP>,
+L<XML::Parser>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2002 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=cut
+
 
