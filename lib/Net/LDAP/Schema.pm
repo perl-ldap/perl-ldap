@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.9902";
+$VERSION = "0.9902_03";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -18,8 +18,7 @@ sub new {
   my $type = ref($self) || $self;
   my $schema = bless {}, $type;
 
-  return $schema unless @_;
-  return $schema->parse( shift ) ? $schema : undef;
+  @_ ? $schema->parse(@_) : $schema;
 }
 
 sub _error {
@@ -33,8 +32,8 @@ sub parse {
   my $schema = shift;
   my $arg = shift;
 
-  unless ($arg) {
-    $schema->{error} = "Bad argument";
+  unless (defined($arg)) {
+    $schema->_error('Bad argument');
     return undef;
   }
 
@@ -47,13 +46,13 @@ sub parse {
     }
     elsif (UNIVERSAL::isa($arg, 'Net::LDAP::Search')) {
       unless ($entry = $arg->entry) {
-	$schema->{error} = 'Bad Argument';
-	return $schema;
+	$schema->_error('Bad Argument');
+	return undef;
       }
     }
     else {
-      $schema->{error} = 'Bad Argument';
-      return $schema;
+      $schema->_error('Bad Argument');
+      return undef;
     }
   }
   elsif( -f $arg ) {
@@ -61,13 +60,13 @@ sub parse {
     my $ldif = Net::LDAP::LDIF->new( $arg, "r" );
     $entry = $ldif->read();
     unless( $entry ) {
-      $schema->{error} = "Cannot parse LDIF from file [$arg]";
-      return $schema;
+      $schema->_error("Cannot parse LDIF from file [$arg]");
+      return undef;
     }
   }
   else {
-    $schema->{error} = "Can't load schema from [$arg]: $!";
-    return $schema;
+    $schema->_error("Can't load schema from [$arg]: $!");
+    return undef;
   }
 
   eval {
@@ -76,8 +75,8 @@ sub parse {
   };
 
   if ($@) {
-    $schema->{error} = $@;
-    return $schema;
+    $schema->_error($@);
+    return undef;
   }
 
   return $schema;
