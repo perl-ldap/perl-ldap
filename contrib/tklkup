@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.42 2003/02/01 05:46:56 charden Exp $
+# $Id: tklkup,v 1.43 2003/02/05 04:57:57 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -1508,8 +1508,14 @@ $Global{'mainWindow'}->update;
 }
 else
 {
-$Global{'schemaWindow'}->deiconify() if Tk::Exists($Global{'schemaWindow'});
-$Global{'schemaWindow'}->raise() if Tk::Exists($Global{'schemaWindow'});
+ my $wstate = $Global{'schemaWindow'}->state();
+ if ( $wstate =~ /iconic/ || $wstate =~ /withdrawn/ )
+ {
+   $Global{'schemaWindow'}->deiconify() 
+          if Tk::Exists($Global{'schemaWindow'});
+   $Global{'schemaWindow'}->raise() 
+          if Tk::Exists($Global{'schemaWindow'});
+ }
 }
 
 sub schema_clear {
@@ -1952,16 +1958,23 @@ if ( ! Exists($Global{'histWindow'} ) )
   eval 
      { 
        $Global{'histWindow'} = MainWindow->new(); 
+       $Global{'histWindow'}->title("HIERARCHICAL OBJECTCLASS DISPLAY WINDOW");
      };
-  print "$@" if ( defined($@)); }
+  ERROR(\$@) if ( $@ ); 
+}
 else 
 {
-$Global{'histWindow'}->deiconify() if Tk::Exists($Global{'histWindow'}); 
-$Global{'histWindow'}->raise() if Tk::Exists($Global{'histWindow'}); 
+ my $wstate = $Global{'histWindow'}->state();
+ if ( $wstate =~ /iconic/ || $wstate =~ /withdrawn/ )
+ {
+ $Global{'histWindow'}->deiconify() 
+        if Tk::Exists($Global{'histWindow'}); 
+ $Global{'histWindow'}->raise() 
+        if Tk::Exists($Global{'histWindow'}); 
+ }
 }                                                                               
 
 $Global{'histWindow'}->geometry("+$x+$y"); 
-$Global{'histWindow'}->title("HIERARCHICAL OBJECTCLASS DISPLAY WINDOW");
 #
 # Create label box
 #
@@ -2218,7 +2231,7 @@ sub ldapAction {
 $Global{'ldapActionDN'} = shift;
 
 &globalPos(); 
-my $x = $Global{'horz'} + 0;
+my $x = $Global{'horz'} + 20;
 my $y = $Global{'vert'} + 30;
  
 #
@@ -2310,13 +2323,14 @@ return;
 }
 my $objects = $Global{'ldapActionDN'};
 
+&displaySearch();  # create the entry data display window.
+
 delete($Global{'ldapActionDN'});
  
 $Global{'ldapActionWindow'}->destroy() 
        if Tk::Exists($Global{'ldapActionWindow'});
 delete($Global{'ldapActionWindow'}); 
 
-&displaySearch();  # create the entry data display window.
 
 # clear the entry data display window.
 if ( $display_clear ) { &display_clear(); }
@@ -3246,11 +3260,19 @@ $list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
 $list->pack(-fill => "both", -expand => 1 );
 
 }
-#else
-#{
-#$displayWindow->deiconify() if Tk::Exists($displayWindow);
-#$displayWindow->raise() if Tk::Exists($displayWindow);
-#}
+else 
+{
+
+ $displayWindow->update;
+ my $wstate = $displayWindow->state();
+ if ( $wstate =~ /iconic/ ||  $wstate =~ /withdrawn/ )
+ {
+   $displayWindow->deiconify() 
+       if Tk::Exists($displayWindow); 
+ }
+ $displayWindow->raise() 
+     if Tk::Exists($displayWindow);
+}                                                                               
 
 
 sub display_clear {
@@ -3265,7 +3287,6 @@ $list->delete("1.0", "end");
  
 sub display_cancel{
  
-# $displayWindow->withdraw if Tk::Exists($displayWindow);
 $displayWindow->destroy if Tk::Exists($displayWindow);
  
 } # End of cancel subroutine
@@ -3586,24 +3607,26 @@ if ( ! Exists($Global{'searchHistWindow'} ) )
   eval 
      { 
        $Global{'searchHistWindow'} = MainWindow->new(); 
+       $Global{'searchHistWindow'}->title("SEARCH RESULTS");
      };
-  print "$@" if ( defined($@)); }
+  ERROR(\$@) if ( $@ ); 
+
+}
 else 
 {
-$Global{'searchHistWindow'}->deiconify() if Tk::Exists($Global{'searchHistWindow'}); 
-$Global{'searchHistWindow'}->raise() if Tk::Exists($Global{'searchHistWindow'}); 
+
+ my $wstate = $Global{'searchHistWindow'}->state();
+ if ( $wstate =~ /iconic/ ||  $wstate =~ /withdrawn/ )
+ {
+   $Global{'searchHistWindow'}->deiconify() 
+       if Tk::Exists($Global{'searchHistWindow'}); 
+ }
+ $Global{'searchHistWindow'}->raise() 
+     if Tk::Exists($Global{'searchHistWindow'});
 }                                                                               
 
 $Global{'searchHistWindow'}->geometry("+$x+$y"); 
-$Global{'searchHistWindow'}->title("SEARCH RESULTS");
-#
-# Create label box
-#
 
-if ( !Exists($Global{'label'}) )
-{
-$Global{'searchLabel'} = $Global{'searchHistWindow'}->Label()->pack;
-}
 
 #
 # Create process Exit button
@@ -3641,6 +3664,7 @@ $Global{'searchHList'} = $Global{'searchHistWindow'}
             } # End of subroutine browsecmd
 
    );  # End of Scrolled HList.
+
 
 
 sub histSearch_clear {
@@ -3829,7 +3853,7 @@ foreach my $dnvar ( @dnKeys )
 $Global{'searchHList'}->pack(-side => "right");
 };  # End of eval
 
-print "$@" if ( defined($@));
+ERROR( \$@ ) if ( $@ );
 
 
 #
