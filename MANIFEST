@@ -75,6 +75,7 @@ lib/Net/LDAP/Message.pm
 lib/Net/LDAP/Message.pod
 lib/Net/LDAP/RFC.pod
 lib/Net/LDAP/Reference.pod
+lib/Net/LDAP/RootDSE.pm
 lib/Net/LDAP/Schema.pm
 lib/Net/LDAP/Schema.pod
 lib/Net/LDAP/Search.pm

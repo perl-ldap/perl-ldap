@@ -874,33 +874,6 @@ sub schema {
     : Net::LDAP::Schema->new($mesg->entry);
 }
 
-sub supported_extension {
-  return _supported_feature( 'supportedExtension', @_ );
-}
-
-sub supported_version {
-  return _supported_feature( 'supportedLDAPVersion', @_ );
-}
-
-sub supported_control {
-  return _supported_feature( 'supportedControl', @_ );
-}
-
-sub supported_sasl_mechanism {
-  return _supported_feature( 'supportedSASLMechanisms', @_ );
-}
-
-sub _supported_feature {
-  my $attr = shift;
-  my $root = shift->root_dse( attrs => [$attr] )
-    or return undef;
-  my %ext;
-  map { $ext{$_} = 1 } $root->get_value( $attr );
-  foreach (@_) {
-    return 0 unless exists $ext{$_};
-  }
-  return 1;
-}
 
 sub root_dse {
   my $ldap = shift;
@@ -914,6 +887,9 @@ sub root_dse {
 		  supportedSASLMechanisms
 		  supportedLDAPVersion
 		)];
+  my $root = $arg{attrs} && $ldap->{net_ldap_root_dse};
+
+  return $root if $root;
 
   my $mesg = $ldap->search(
     base   => '',
@@ -922,7 +898,13 @@ sub root_dse {
     attrs  => $attrs,
   );
 
-  $mesg->entry;
+  require Net::LDAP::RootDSE;
+  $root = $mesg->entry;
+  bless $root, 'Net::LDAP::RootDSE' if $root; # Naughty, but there you go :-)
+
+  $ldap->{net_ldap_root_dse} = $root unless $arg{attrs};
+
+  return $root;
 }
 
 sub start_tls {
@@ -951,6 +933,8 @@ sub start_tls {
 
   return $mesg
     if $mesg->code;
+
+  delete $ldap->{net_ldap_root_dse};
 
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );

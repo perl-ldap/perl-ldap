@@ -492,7 +492,7 @@ If not specified, then the following attributes will be requested
 
 =back
 
-The result is an object of class L<Net::LDAP::Search>.
+The result is an object of class L<Net::LDAP::RootDSE>.
 
 B<Example>
 
@@ -912,6 +912,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.25 2003/05/07 10:54:57 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.26 2003/05/09 12:05:10 gbarr Exp $>
 
 =cut

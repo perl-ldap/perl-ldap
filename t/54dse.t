@@ -5,7 +5,7 @@ BEGIN {
   start_server(version => 3);
 }
 
-print "1..2\n";
+print "1..4\n";
 
 $ldap = client();
 ok($ldap, "client");
@@ -13,7 +13,12 @@ ok($ldap, "client");
 $dse = $ldap->root_dse;
 ok($dse, "dse");
 
-use Net::LDAP::LDIF;
-Net::LDAP::LDIF->new(qw(- w))->write_entry($dse) if $dse;
+$dse->dump if $dse and $ENV{TEST_VERBOSE};
+
+my @extn = $dse->get_value('supportedExtension');
+
+ok($dse->supported_extension(@extn), 'supported_extension');
+
+ok(!$dse->supported_extension('foobar'), 'extension foobar');
 
 
