@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.24 2003/02/21 02:31:52 charden Exp $
+# $Id: tklkup,v 2.25 2003/02/25 16:03:20 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -377,6 +377,17 @@ else
  
 } # End of subroutine toggleVersion
 
+sub saveLdif
+{
+$Global{'saveLdifck'} -> select;
+$Global{'saveXmlck'} -> deselect;
+} # End of subroutine saveLdif
+
+sub saveXml
+{
+$Global{'saveXmlck'} -> select;
+$Global{'saveLdifck'} -> deselect;
+} # End of subroutine saveXml
 
 sub initializeProgram
 {
@@ -692,14 +703,58 @@ $sbbframe = $hlframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
       -labelside => "acrosstop")
       ->pack( -side => "top", -anchor => "e");
 
+
+#
+# Create the Attributes and Save to frame
+#
+
+$ltframe = $tpframe ->Frame() 
+          ->pack( -side => "left", -fill => "both");
+
 #
 # Create the Attributes frame
 #
 
-$aframe = $tpframe ->LabFrame(-label => "FILTER\nATTRIBUTES",
+$aframe = $ltframe ->LabFrame(-label => "FILTER\nATTRIBUTES",
           -labelside => "acrosstop",
           -relief => "raised") 
-          ->pack( -side => "left", -fill => "both");
+          ->pack( -side => "top", -fill => "both");
+
+
+#
+# Create the Save to frame
+#
+
+$fmtframe = $ltframe ->LabFrame( -label => "SAVE FORMAT",
+          -labelside => "acrosstop",
+          -relief => "raised") 
+          ->pack( -side => "top", -fill => "both");
+
+#
+# Create a ldif Checkbutton that will set up  a ldif variable
+# 
+#
+ 
+$Global{saveLdifck} = $fmtframe -> Checkbutton(
+                       -text => "LDIF", -command => \&saveLdif,
+                       -variable =>  \$Global{ldif}, -onvalue => 1,
+                       -offvalue => 0, -font => $Global{'Font'} )
+                       -> pack(-side => "bottom", -anchor => "w" );
+
+$Global{saveLdifck}->select();
+
+#
+# Create a ldif Checkbutton that will set up  a ldif variable
+# 
+#
+ 
+$Global{saveXmlck} = $fmtframe -> Checkbutton(
+                       -text => "XML", -command => \&saveXml,
+                       -variable =>  \$Global{xml}, -onvalue => 1,
+                       -offvalue => 0, -font => $Global{'Font'} )
+                       -> pack(-side => "left", -anchor => "w" );
+
+$Global{saveXmlck} -> deselect;
 
 $btframe = $tpframe ->Frame(-borderwidth => 2,
            -relief => "raised") 
@@ -838,10 +893,10 @@ $Global{actionDisplay} = $btframe->Button( -text => "DISPLAY",
 #
 # Create save to ldif button
 #
-$Global{actionLdif} = $btframe->Button(-text => "SAVE TO\nLDIF", 
+$Global{actionLdif} = $btframe->Button(-text => "SAVE TO", 
            -command => \&ldapActionSaveToLdif,
            -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           -> pack(-side => "top", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionLdif}));
  
 #
@@ -850,7 +905,7 @@ $Global{actionLdif} = $btframe->Button(-text => "SAVE TO\nLDIF",
 $Global{actionRename} = $btframe->Button( -text => "RENAME ", 
            -command => \&getRenameData, 
            -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
            if ( !Exists($Global{actionRename}));
  
 #
@@ -859,7 +914,7 @@ $Global{actionRename} = $btframe->Button( -text => "RENAME ",
 $Global{actionEdit} = $btframe->Button(-text => " EDIT  ", 
            -command => \&ldapActionEdit,
            -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           -> pack(-side => "top", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionEdit}));
  
  
@@ -870,7 +925,7 @@ $Global{actionDelete} = $btframe->Button(-text => "DELETE ",
            -command => \&questionAction,
            -font => $Global{'Font'}, -borderwidth => 3,
            -activeforeground => 'red')
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
            if ( !Exists($Global{actionDelete}));
  
 #
@@ -879,31 +934,29 @@ $Global{actionDelete} = $btframe->Button(-text => "DELETE ",
 $Global{actionCancel} = $btframe->Button(-text => "CANCEL ", 
            -command => \&ldapActionCancel,
            -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           -> pack(-side => "top", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionCancel}));
 
-$bmlframe = $bmframe ->LabFrame(-label => "LDIF FILE NAME",
-           -labelside => "acrosstop") 
-           ->pack(-side => "bottom", -fill => "x");
-
+ 
 #
 # Create save all to ldif button
 #
-$Global{actionLdifAll} = $bmlframe->Button( -text => "SAVE ALL TO LDIF", 
+$Global{actionLdifAll} = $btframe->Button( -text => "SAVE ALL\nTO", 
            -command => \&ldapActionMultiSaveToLdif, 
            -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "left", -anchor => "w", -padx => 5, -pady => 2 ) 
+           -> pack(-side => "left", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionLdifAll}));
 
+$bmlframe = $bmframe ->LabFrame(-label => "File Name",
+           -labelside => "acrosstop")
+           ->pack(-side => "bottom", -fill => "x");
 #
 # Create Text Entry list box.
 #
 
 $bmlframe->Entry(-textvariable => \$Global{'ldifFile'}, 
-           -width => 45 ) 
+           -width => 40 ) 
            -> pack(-side => "left", -anchor => "w", -fill => 'x');
- 
- 
 $splashList->insert("0", "Creating cascading search base menus.")
         if ( $Global{splash} );
 $splash->update()
@@ -1290,13 +1343,11 @@ $ldifframe->Entry(-textvariable => \$Global{'createLdifFile'},
 # Create Create Ldif Entry button
 #
 $Global{createLdifEntry} = $ldifframe->Button( 
-           -text => "CREATE ENTRY FROM LDIF FILE", 
+           -text => "CREATE/MODIFY ENTRY FROM LDIF FILE", 
            -command => \&ldapActionCreateLdifEntry, 
            -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
            if ( !Exists($Global{createLdifEntry}));
- 
-
 
 } # End of subroutine initializeP5
 
@@ -3720,7 +3771,7 @@ while ($do_it == 1 )
 # Destroy the dn history list if it exists.
 #
 $Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
-$Global{nb}->raise('Search');
+$Global{nb}->raise('SEARCH');
 
 } # End of ldapActionDelete subroutine
 
@@ -3791,7 +3842,7 @@ if ( $error == 1 )
           else 
           {
 
-          #print Dumper($entry),"\n\n";
+        #  print Dumper($entry),"\n\n";
 
           $op = $$entry{changetype};
 
@@ -3890,10 +3941,33 @@ if ( $mesg->count )
   {
     @entry = $mesg->all_entries;
  
+       if ( $Global{ldif} )
+       {
        $ldif = Net::LDAP::LDIF->new( "$Global{ldifFile}", "w", 
                onerror => 'undef' );
        $ldif->write(@entry, -encode => "base64");
        $ldif->done();
+       }
+       elsif ( $Global{xml} )
+       {
+       open(FXML, ">$Global{'ldifFile'}");  
+       my $dsml = Net::LDAP::DSML->new(output => *FXML, pretty_print => 1);
+       $dsml->write_entry(@entry);
+       $dsml->end_dsml;        
+       close(FXML);
+
+       }
+       else 
+       {
+       print "saveldif ",$Global{ldif}, "\n";
+       print "saveXml ",$Global{xml}, "\n";
+
+       $msgbox->insert("0", "Neither LDIF or XML variable is defined.")
+          if ( defined( $msgbox) );
+       $msgbox->update()
+          if ( defined( $msgbox) );
+
+       }
      
       @entry = undef;
   }
@@ -3915,7 +3989,7 @@ else
         if ( defined( $msgbox) );
 }
 
-} # End of ldapActionSaveToLdif subroutine
+} # End of ldapActionMultiSaveToLdif subroutine
 
 
 
@@ -3991,10 +4065,33 @@ if ( $mesg->count )
      my $edn = $entry->dn;
      if ( $DNs[1] eq $edn )
      {
+       if ( $Global{ldif} )
+       {
        $ldif = Net::LDAP::LDIF->new( "$Global{ldifFile}", "w", 
                onerror => 'undef' );
        $ldif->write($entry, -encode => "base64");
        $ldif->done();
+       }
+       elsif ( $Global{xml} )
+       {
+       open(FXML, ">$Global{'ldifFile'}");  
+       my $dsml = Net::LDAP::DSML->new(output => *FXML, pretty_print => 1);
+       $dsml->write_entry($entry);
+       $dsml->end_dsml;        
+       close(FXML);
+
+       }
+       else 
+       {
+       print "saveldif ",$Global{ldif}, "\n";
+       print "saveXml ",$Global{xml}, "\n";
+
+       $msgbox->insert("0", "Neither LDIF or XML variable is defined.")
+          if ( defined( $msgbox) );
+       $msgbox->update()
+          if ( defined( $msgbox) );
+
+       }
 
      }
      else 
@@ -4728,7 +4825,7 @@ it.
 
 The SSL connection has been tested on Solaris, RedHat 7.3, and
 Mandrake 6.5 Linux.  The SSL connection from a Microsoft Windows 
-system has not been tested.
+system is not available at this time.
 
 There are 2 files associated with the tklkup program in this 
 tar file; dot.tklkup, and tklkup.
@@ -5045,6 +5142,12 @@ window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
+The I<SAVE FORMAT> frame contains to check boxes.  
+If checkbox XML is select, the SAVE TO and SAVE ALL TO
+buttons will save the select data in XML format. 
+If checkbox LDIF is select, the SAVE TO and SAVE ALL TO
+buttons will save the select data in LDIF format. 
+
 Just under the I<SELECT BASE> button is the hierarchial text 
 box where the DN results of the directory search will be displayed.
 If there were valid results returned from the search a list of DN 
@@ -5075,8 +5178,10 @@ corresponding entry data in it.  It is from this window that the
 user can change directory data.  This window is discribed in 
 detail later in this document.
 
-I<SAVE TO LDIF> - Will cause the entry that is selected to be written
-to the file specified in the LDIF FILE NAME text box.
+I<SAVE TO> - Will cause the entry that is selected to be written
+to the file specified in the FILE NAME text box.  The data 
+format of this file will be whatever is selected in the 
+SAVE FORMAT frame.
 
 I<CANCEL> - Will cancel the action request for the select DN.
 
@@ -5112,12 +5217,14 @@ will be created.  Just to the side of the I<SET FILTER CONDITION>
 button is a text box that displays the filter condition
 that is selected.
 
-=head1 SAVE ALL TO LDIF BUTTON
+=head1 SAVE ALL TO BUTTON
 
-At the bottom of the SEARCH RESULTS panel is the SAVE ALL TO LDIF 
+At the bottom of the SEARCH RESULTS panel is the SAVE ALL TO 
 button, pressing this button will cause the previous search to be 
 re-executed and all of the search results will be written to the 
-file specified in the LDIF FILE NAME text box.
+file specified in the FILE NAME text box.  The data 
+format of this file will be whatever is selected in the 
+SAVE FORMAT frame.
 
 -------------------------------------------------------------------
 
