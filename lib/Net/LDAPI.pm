@@ -26,17 +26,21 @@ Net::LDAPI - use LDAP over a UNIX domain socket
 
  use Net::LDAPI;
 
- $ldaps = new Net::LDAPI('/var/lib/ldapi');
+ $ldapi = new Net::LDAPI('/var/lib/ldapi');
+
+ # alternate way
+ use Net::LDAP;
+
+ $ldapi = new Net::LDAP('ldapi://');
 
 =head1 DESCRIPTION
 
-Communicate using the LDAP protocol to a directory server using a
-UNIX domain socket.
+Communicate using the LDAP protocol to a directory server using a UNIX
+domain socket. This mechanism is non-standard, UNIX-specific and not
+widely supported.
 
-This class is a subclass of Net::LDAP so all the normal Net::LDAP
-methods can be used with a Net::LDAPI object; see the documentation
-for Net::LDAP to find out how to query a directory server using the
-LDAP protocol.
+All the normal C<Net::LDAP> methods can be used with a C<Net::LDAPI>
+object; see L<Net::LDAP> for details.
 
 =head1 CONSTRUCTOR
 
@@ -44,9 +48,9 @@ LDAP protocol.
 
 =item new ( [SOCKPATH] )
 
-Create a new connection. SOCKPATH can optionally be specified, to specify
-the location of the UNIX domain socket to connect to. By default, the
-domain socket path is '/var/lib/ldapi'. This is OpenLDAP-specific.
+Create a new connection. SOCKPATH can optionally be specified, to
+specify the location of the UNIX domain socket to connect to. See
+L<Net::LDAP/new> for details.
 
 =back
 

@@ -62,7 +62,7 @@ Creates a new B<Net::LDAP> object and opens a connection to the named host.
 
 C<HOST> may be a host name or an IP number. TCP port may be specified
 after the host name followed by a colon (such as localhost:10389). The
-default TCP port is 389.
+default TCP port for LDAP is 389.
 
 You can also specify a URI, such as 'ldaps://127.0.0.1:666' or
 'ldapi://%2fvar%2flib%2fldap_sock'. Note that '%2f's in the LDAPI
@@ -140,15 +140,23 @@ that was called.
 
 =item version
 
-Set the protocol version being used (default is LDAPv2). This is
-useful if you want to avoid sending a bind operation and therefore
-have to use LDAPv3.
+Set the protocol version being used (default is LDAPv3). This is
+useful if you want to talk to an old server and therefore have to use
+LDAPv2.
 
 =back
 
 Example
 
   $ldap = Net::LDAP->new('remote.host', async => 1);
+
+LDAPS connections have some extra valid options, see the
+L<start_tls|start_tls> method for details. Note the default value for
+'sslversion' for LDAPS is 'sslv2/3', and the default port for LDAPS
+is 636.
+
+For LDAPI connections, HOST is actually the location of a UNIX domain
+socket to connect to. The default location is '/var/lib/ldapi'.
 
 =back
 
@@ -726,10 +734,14 @@ Returns an error code defined in L<Net::LDAP::Constant>.
 
 =item start_tls ( [ OPTIONS ] )
 
-Calling this method will convert the connection to using Transport
-Layer Security (TLS), which potentially provides an encrypted
-connection. This is I<only> possible if the connection is using
-LDAPv3. OPTIONS is a number of key-value pairs which describe how to
+Calling this method will convert the existing connection to using
+Transport Layer Security (TLS), which provides an encrypted
+connection. This is I<only> possible if the connection uses LDAPv3,
+and requires that the server advertizes support for
+LDAP_EXTENSION_START_TLS. Use
+L<Net::LDAP::RootDSE/supported_extension> to check this.
+
+OPTIONS is a number of key-value pairs which describe how to
 configure the security of the connection:
 
 =over 4
@@ -931,6 +943,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.29 2003/05/09 18:19:54 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.30 2003/05/22 09:24:23 chrisridd Exp $>
 
 =cut
