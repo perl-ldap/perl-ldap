@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.14 2001/08/26 23:58:56 charden Exp $
+# $Id: tklkup,v 1.15 2001/08/27 03:11:33 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,15 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.15  2001/08/27 03:11:33  charden
+# Change code to retrieve schema information when Explore Schema
+# button is pressed. The Retrieve Schema button can still be used
+# to retrieve schema data.
+# Added code to detect objectclass string length and used this to set
+# Hierarchial objectclass display window size.
+#
 # Revision 1.14  2001/08/26 23:58:56  charden
+#
 # Added setFilter subroutine.
 # Added Set Filter Condition menu button.
 # Added code to allow setting of 4 different search filter combinations;
@@ -176,6 +184,7 @@ $Global{'sclear'} = 0;
 $Global{'limit'}  = 30;
 $Global{'port'}   = 389;
 $Global{'platform'} = ($^O eq 'MSWin32') ? $^O : 'unix' ;
+$Global{'max'} = 0;
 $Global{'infoFilter'} = "equal";
 
 my $sbbframe;
@@ -1418,6 +1427,8 @@ $schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
 
 $schema_list->pack( -side => "bottom" );
 
+&schema;
+
 }
 else
 {
@@ -1577,6 +1588,20 @@ $ra_atts = [];
 #
 @$ra_atts = $schemaHash{'schema'}->objectclasses(); 
 $schemaHash{'ocs'} = $ra_atts;
+
+#
+# Calculate the text length of each objectclass string.
+#
+foreach (@$ra_atts) { $Global{'max'} = length($_) 
+        if length($_) > $Global{'max'} }
+
+#
+# Add 6 to the max objectclass string size,
+# got to allow for graphics information.
+#
+
+$Global{'max'} += 6;
+
 #
 # Display the objectclasses
 #
@@ -1587,8 +1612,6 @@ if ( $selectAll || $selectObj )
     if ( defined($schemaHash{'ocs'}) );
 }
 
-#&Hierarchial($schemaHash{'ocs'}, \%obj, \%tree, \$schemaHash{'schema'}) 
-#    if ( defined($schemaHash{'ocs'}) );
 
 #
 # Get the schema matchingrules
@@ -1903,7 +1926,7 @@ $Global{'list'} = $Global{'histWindow'}->Scrolled('ROText',
 $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList', 
             -font       => $Global{'Font'},
             -scrollbars => 'se',
-            -width      => 50, 
+            -width      => $Global{'max'}, 
             -height     => 20,
             -itemtype   => 'text',
             -separator  => '/',
