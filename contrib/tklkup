@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.23 2001/12/29 22:53:47 charden Exp $
+# $Id: tklkup,v 1.24 2002/01/03 02:53:53 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,13 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.24  2002/01/03 02:53:53  charden
+# Corrected schema parse and display code to comprehend that a multi-valued
+# oid number could be returned from name2oid method. Now use the
+# is_attribute, is_objectclass, ...,  methods to determine oid number.
+#
 # Revision 1.23  2001/12/29 22:53:47  charden
+#
 # Added code to allow the schema information to be stored in a file as
 # DSML XML data.  User can now select to store the data as text or XML.
 #
@@ -1256,6 +1262,7 @@ sub print_loop()
 my $list = shift;
 my $ocs = shift;
 my $Title = shift;
+my $method = shift;
 
 foreach ( @$ocs)
 {
@@ -1264,7 +1271,8 @@ foreach ( @$ocs)
    #
    # Get and display the oid number of the objectclass.
    #
-   my $oid = $schemaHash{'schema'}->name2oid( "$_" );
+   my $oid = $schemaHash{'schema'}->$method( "$_" );
+#   my $oid = $schemaHash{'schema'}->name2oid( "$_" );
    
    #
    # Get the various other items associated with
@@ -1656,7 +1664,7 @@ $schemaHash{'atts'} = $ra_atts;
  
 if ( $selectAll || $selectAtt  )
 {
-&print_loop($schema_list, $schemaHash{'atts'}, "attributeType") 
+&print_loop($schema_list, $schemaHash{'atts'}, "attributeType", "is_attribute") 
   if ( defined($schemaHash{'atts'}) );
 }
 
@@ -1686,7 +1694,7 @@ $Global{'max'} += 6;
  
 if ( $selectAll || $selectObj )
 {
-&print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses") 
+&print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses", "is_objectclass") 
     if ( defined($schemaHash{'ocs'}) );
 }
 
@@ -1704,7 +1712,7 @@ $schemaHash{'mrs'} = $ra_atts;
  
 if ( $selectAll || $selectMatch )
 {
-&print_loop($schema_list, $schemaHash{'mrs'}, "matchingRules" ) 
+&print_loop($schema_list, $schemaHash{'mrs'}, "matchingRules", "is_matchingrule" ) 
     if ( defined($schemaHash{'mrs'}) );
 }
 
@@ -1721,7 +1729,7 @@ $schemaHash{'mru'} = $ra_atts;
  
 if ( $selectAll || $selectMru )
 {
-&print_loop($schema_list, $schemaHash{'mru'}, "matchingRuleUse" ) 
+&print_loop($schema_list, $schemaHash{'mru'}, "matchingRuleUse", "is_matchinruleuse" ) 
     if ( defined($schemaHash{'mru'}) );
 }
 
@@ -1738,7 +1746,7 @@ $schemaHash{'lsyn'} = $ra_atts;
  
 if ( $selectAll || $selectSyn )
 {
-&print_loop($schema_list, $schemaHash{'lsyn'}, "ldapSyntax" ) 
+&print_loop($schema_list, $schemaHash{'lsyn'}, "ldapSyntax", "is_syntax" ) 
     if ( defined($schemaHash{'lsyn'}) );
 }
 
@@ -1755,7 +1763,7 @@ $schemaHash{'nfm'} = $ra_atts;
  
 if ( $selectAll || $selectNf )
 {
-&print_loop($schema_list, $schemaHash{'nfm'}, "nameForms" ) 
+&print_loop($schema_list, $schemaHash{'nfm'}, "nameForms", "is_nameform" ) 
     if ( defined($schemaHash{'nfm'}) );
 }
 
@@ -1772,7 +1780,7 @@ $schemaHash{'dits'} = $ra_atts;
  
 if ( $selectAll || $selectDsr )
 {
-&print_loop($schema_list, $schemaHash{'dits'}, "ditstructurerules" ) 
+&print_loop($schema_list, $schemaHash{'dits'}, "ditstructurerules", "is_ditstructurerule" ) 
     if ( defined($schemaHash{'dits'}) );
 }
 
@@ -1789,7 +1797,7 @@ $schemaHash{'ditc'} = $ra_atts;
  
 if ( $selectAll || $selectDcr )
 {
-&print_loop($schema_list, $schemaHash{'ditc'}, "ditcontentrules" ) 
+&print_loop($schema_list, $schemaHash{'ditc'}, "ditcontentrules", "is_ditcontentrule" ) 
     if ( defined($schemaHash{'ditc'}) );
 }
 
