@@ -40,6 +40,9 @@ sub decode {
 
   my $resp = $sasl->client_step($bind->{serverSaslCreds});
 
+  $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error"), return
+    unless defined $resp;
+
   $self->encode(
     bindRequest => {
     version => $ldap->version,
