@@ -440,6 +440,21 @@ on search operations are not defined in this extension.
 
 
 
+=head2 RFC-2849 The LDAP Data Interchange Format (LDIF) - Technical
+Specification
+
+http://www.ietf.org/rfc/rfc2849.txt
+
+This document describes a file format suitable for describing
+directory information or modifications made to directory
+information. The file format, known as LDIF, for LDAP Data
+Interchange Format, is typically used to import and export
+directory information between LDAP-based directory servers, or
+to describe a set of changes which are to be applied to a
+directory.
+
+
+
 =head1 Current Internet Drafts
 
 
@@ -509,19 +524,6 @@ specifies   a  method  for  discovering  the  location   of  the
 container  object  which  holds these  change records,  so  that
 clients  and servers  have a  common rendezvous  point for  this
 information.
-
-
-
-=head2 draft-good-ldap-ldif -- The LDAP Data Interchange Format (LDIF) - Technical
-Specification
-
-This document describes a file format suitable for describing
-directory information or modifications made to directory
-information. The file format, known as LDIF, for LDAP Data
-Interchange Format, is typically used to import and export
-directory information between LDAP-based directory servers, or
-to describe a set of changes which are to be applied to a
-directory.
 
 
 
@@ -1287,7 +1289,7 @@ published as an RFC but used to identify LDAPv3bis work items.
 
 =for html <hr>
 
-I<$Id: RFC.pod,v 1.4 2001/06/14 20:12:06 gbarr Exp $>
+I<$Id: RFC.pod,v 1.5 2001/10/24 14:08:54 chrisridd Exp $>
 
 =cut
 
