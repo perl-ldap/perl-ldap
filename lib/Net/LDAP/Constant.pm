@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Carp;
 
@@ -15,7 +15,8 @@ sub import {
   my $callpkg = caller(0);
   _find(@_);
   my $oops;
-  foreach my $sym (@_) {
+  my $all = grep /:all/, @_;
+  foreach my $sym ($all ? keys %const : @_) {
     if (my $sub = $const{$sym}) {
       *{$callpkg . "::$sym"} = $sub;
     }
@@ -30,11 +31,12 @@ sub import {
 sub _find {
   if (my @need = grep { ! $const{$_} } @_) {
     my %need; @need{@need} = ();
+    my $all = exists $need{':all'};
     seek(DATA,0,0);
     local $/=''; # paragraph mode
     local $_;
     while(<DATA>) {
-      next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/ and exists $need{$1};
+      next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/ and ($all or exists $need{$1});
       my ($name, $value) = ($1,$2);
       delete $need{$name};
       $const{$name} = sub () { $value };
@@ -500,6 +502,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Constant.pm,v 1.8 2003/05/20 14:58:49 chrisridd Exp $>
+I<$Id: Constant.pm,v 1.9 2003/06/02 15:13:10 gbarr Exp $>
 
 =cut
