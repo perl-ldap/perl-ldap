@@ -1,4 +1,4 @@
-# $Id: VLV.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $
+# $Id: VLV.pm,v 1.6 2003/05/07 11:57:57 chrisridd Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.02";
+$VERSION = "0.03";
 
 use Net::LDAP::ASN qw(VirtualListViewRequest);
 use strict;
@@ -386,10 +386,10 @@ L<Net::LDAP::Control::VLVResponse>
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>
+E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
@@ -399,5 +399,5 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: VLV.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: VLV.pm,v 1.6 2003/05/07 11:57:57 chrisridd Exp $>
 
