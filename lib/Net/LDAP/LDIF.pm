@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.09";
+$VERSION = "0.10";
 
 my %mode = qw(w > r < a >>);
 
@@ -60,6 +60,7 @@ sub new {
     file => "$file",
     opened_fh => $opened_fh,
     eof => 0,
+    write_count => ($mode eq 'a' and tell($fh) > 0) ? 1 : 0,
   };
 
   bless $self, $pkg;
@@ -356,7 +357,7 @@ sub write_entry {
       # Skip entry if there is nothing to write
       next if $type eq 'modify' and !@changes;
 
-      print "\n" if tell($self->{'fh'});
+      print "\n" if $self->{write_count}++;
       _write_dn($entry->dn,$self->{'encode'},$wrap);
 
       print "changetype: $type\n";
@@ -394,9 +395,9 @@ sub write_entry {
     }
 
     else {
-       print "\n" if tell($self->{'fh'});
-       _write_dn($entry->dn,$self->{'encode'},$wrap);
-       _write_attrs($entry,$wrap,$lower);
+      print "\n" if $self->{write_count}++;
+      _write_dn($entry->dn,$self->{'encode'},$wrap);
+      _write_attrs($entry,$wrap,$lower);
     }
   }
 
