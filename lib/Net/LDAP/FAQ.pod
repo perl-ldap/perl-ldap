@@ -879,7 +879,9 @@ http://www.dsml.org/
 eMailman LDAP information
 http://www.emailman.com/ldap/
 
-LDAPS, also known as LDAPGURU
+LDAPS, also known as LDAPGURU.
+I<This web has a nasty habit of resizing the browser
+to cover the WHOLE screen.>
 http://www.ldaps.com
 
 Jeff Hodges's Kings Mountain LDAP 
