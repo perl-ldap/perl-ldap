@@ -78,7 +78,8 @@ sub _normalize {
   $normal =~ s/&/&amp;/g;
   $normal =~ s/</&lt;/g;
   $normal =~ s/>/&gt;/g;
-  $normal =~ s/["']/&quot/g; 
+  $normal =~ s/\"/&quot;/g;
+  $normal =~ s/\'/&apos;/g;
  
   return $normal;
 }
