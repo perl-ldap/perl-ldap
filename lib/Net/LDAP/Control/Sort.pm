@@ -1,11 +1,14 @@
-# $Id: Sort.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $
+# $Id: Sort.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Control::Sort;
 
+use vars qw(@ISA $VERSION);
+
 @ISA = qw(Net::LDAP::Control);
+$VERSION = "0.01";
 
 use Net::LDAP::ASN qw(SortRequest);
 use strict;
@@ -84,7 +87,7 @@ sub order {
 
     my @order = (@_ == 1) ? split(/\s+/, $_[0]) : @_;
 
-    delete $self->{value};
+    delete $self->{'value'};
     delete $self->{order};
     delete $self->{error};
 
@@ -193,6 +196,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Sort.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: Sort.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $>
 
 =cut

@@ -4,7 +4,10 @@
 
 package Net::LDAP::Control::VLVResponse;
 
+use vars qw(@ISA $VERSION);
+
 @ISA = qw(Net::LDAP::Control);
+$VERSION = "0.01";
 
 use Net::LDAP::ASN qw(VirtualListViewResponse);
 use strict;
@@ -32,22 +35,6 @@ sub init {
   }
 
   $self;
-}
-
-sub value {
-  my $self = shift;
-
-  if (@_) {
-    unless ($self->{asn} = $VirtualListViewResponse->decode($_[0])) {
-      delete $self->{value};
-      return undef;
-    }
-    $self->{value} = shift;
-  }
-
-  exists $self->{value}
-    ? $self->{value}
-    : $self->{value} = $VirtualListViewResponse->encode($self->{asn});
 }
 
 
@@ -85,6 +72,22 @@ sub context {
     return $self->{asn}{context} = shift;
   }
   $self->{asn}{context};
+}
+
+sub value {
+  my $self = shift;
+
+  if (@_) {
+    unless ($self->{asn} = $VirtualListViewResponse->decode($_[0])) {
+      delete $self->{value};
+      return undef;
+    }
+    $self->{value} = shift;
+  }
+
+  exists $self->{value}
+    ? $self->{value}
+    : $self->{value} = $VirtualListViewResponse->encode($self->{asn});
 }
 
 1;

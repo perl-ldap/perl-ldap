@@ -1,4 +1,4 @@
-# $Id: Control.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $
+# $Id: Control.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -6,8 +6,9 @@
 package Net::LDAP::Control;
 
 use Net::LDAP::Constant qw(/^LDAP_CONTROL/);
+use vars qw($VERSION);
 
-$VERSION = "0.02";
+$VERSION = "0.03";
 
 my %Pkg2Type = (
 
@@ -60,9 +61,6 @@ sub new {
   bless(\%args, $pkg)->init;
 }
 
-sub valid { ! exists shift->{error} }
-sub error { shift->{error} }
-sub init  { shift }
 
 sub from_asn {
   my $self = shift;
@@ -77,16 +75,19 @@ sub from_asn {
   bless($asn, $class)->init;
 }
 
-sub type     { shift->{type} }
-sub critical { shift->{critical} || 0 }
-sub value    { shift->{value} || undef }
-
 sub to_asn {
   my $self = shift;
   $self->value; # Ensure value is there
   $self->{critical} = 0 unless exists $self->{critical};
   $self;
 }
+
+sub type     { shift->{type} }
+sub critical { shift->{critical} || 0 }
+sub value    { shift->{value} || undef }
+sub valid { ! exists shift->{error} }
+sub error { shift->{error} }
+sub init  { shift }
 
 1;
 
@@ -186,6 +187,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Control.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: Control.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $>
 
 =cut

@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.17";
+$VERSION = "0.18";
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -115,15 +115,6 @@ sub debug {
 
 sub socket {
   $_[0]->{net_ldap_socket};
-}
-
-# what version are we talking?
-sub version {
-  my $ldap = shift;
-
-  @_
-    ? ($ldap->{net_ldap_version},$ldap->{net_ldap_version} = shift)[0]
-    : $ldap->{net_ldap_version};
 }
 
 
@@ -405,7 +396,7 @@ sub delete {
 sub moddn {
   my $ldap = shift;
   my $arg  = &_dn_options;
-  my $del  = $arg->{deleteoldrdn} || $arg->{delete} || 0;
+  my $del  = $arg->{deleteoldrdn} || $arg->{'delete'} || 0;
   my $newsup = $arg->{newsuperior};
 
   my $mesg = Net::LDAP::ModDN->new($ldap,$arg);
@@ -413,7 +404,7 @@ sub moddn {
   exists $arg->{dn}
     or return $mesg->set_error(LDAP_PARAM_ERROR,"No DN specified");
 
-  my $new  = $arg->{newrdn} || $arg->{new}
+  my $new  = $arg->{newrdn} || $arg->{'new'}
     or return $mesg->set_error(LDAP_PARAM_ERROR,"No NewRDN specified");
 
   my $dn;
@@ -658,6 +649,15 @@ sub root_dse {
   }
 
   return $ldap->{net_ldap_rootdse};
+}
+
+# what version are we talking?
+sub version {
+  my $ldap = shift;
+
+  @_
+    ? ($ldap->{net_ldap_version},$ldap->{net_ldap_version} = shift)[0]
+    : $ldap->{net_ldap_version};
 }
 
 1;

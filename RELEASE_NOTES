@@ -1,4 +1,29 @@
-perl-ldap 0.16 April xx 2000
+perl-ldap 0.18 May 22 2000
+============================
+
+* Now passes -wc with 5.004, 5.005_03 and 5.6.0
+* Bundle now correctly references Convert::ASN1 instead of
+  the non-existant Convert::ASN
+* Net::LDAP::Filter will now catch the case of unmatched
+  ()'s and return an error
+* as_struct, which was broken in the changeover to Convert::ASN1,
+  now works again.
+
+ KNOWN PROBLEMS
+ --------------
+
+ Test t/02filter.t fails with perl 5.6.0 compiled with threads enabled
+ This is due to a bug in 5.6.0 when compiled with threads, see
+ http://bugs.perl.org/perlbug.cgi?req=tidmids&tidmids=20000409.003&range=32323&format=h
+
+perl-ldap 0.17 May 12 2000
+============================
+
+* Change to use asn_read instead of asn_resc. This seems to have
+  fixed the known problem with 0.16
+* Various bug fixes, see ChangeLog
+
+perl-ldap 0.16 April 27 2000
 ============================
 
 * This is the first release which uses Convert::ASN1 instead of

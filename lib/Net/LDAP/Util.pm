@@ -23,13 +23,14 @@ the L<Net::LDAP|Net::LDAP> modules.
 
 =cut
 
+use vars qw($VERSION);
 require Exporter;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(
   ldap_error_name
   ldap_error_text
 );
-$VERSION = "0.02";
+$VERSION = "0.03";
 
 =item ldap_error_name ( NUM )
 
@@ -108,7 +109,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.1 2000/05/03 12:29:18 gbarr Exp $>
+I<$Id: Util.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $>
 
 =cut
 

@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.04";
+$VERSION = "0.05";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into 
@@ -116,26 +116,6 @@ sub syntaxes {
 }
 
 
-#
-# Get the syntax of an attribute
-#
-sub syntax
-{
-  my $self = shift;
-  my $attr = shift;
-
-  my $oid = $self->is_attribute( $attr );
-  return undef unless $oid;
-
-  my $syntax = $self->{oid}->{$oid}->{syntax};
-  unless( $syntax ) {
-    my @sup = @{$self->{oid}->{$oid}->{sup}};
-    $syntax = $self->syntax( $sup[0] );
-  }
-
-  return $syntax;
-}
-
 sub superclass
 {
    my $self = shift;
@@ -192,18 +172,6 @@ sub _must_or_may
   my @res = keys %res;
 
   return wantarray() ? @res : \@res;
-}
-
-#
-# Given an OID or name (or alias), return the canonical name
-#
-sub name
-{
-  my $self = shift;
-  my $arg = shift;
-  my $oid = $self->name2oid( $arg );
-  return undef unless $oid;
-  return $self->oid2name( $oid );
 }
 
 
@@ -655,5 +623,37 @@ sub _fixup_entry
   return 1;		# Entry OK
 }
 
+
+#
+# Get the syntax of an attribute
+#
+sub syntax
+{
+  my $self = shift;
+  my $attr = shift;
+
+  my $oid = $self->is_attribute( $attr );
+  return undef unless $oid;
+
+  my $syntax = $self->{oid}->{$oid}->{syntax};
+  unless( $syntax ) {
+    my @sup = @{$self->{oid}->{$oid}->{sup}};
+    $syntax = $self->syntax( $sup[0] );
+  }
+
+  return $syntax;
+}
+
+#
+# Given an OID or name (or alias), return the canonical name
+#
+sub name
+{
+  my $self = shift;
+  my $arg = shift;
+  my $oid = $self->name2oid( $arg );
+  return undef unless $oid;
+  return $self->oid2name( $oid );
+}
 
 1;

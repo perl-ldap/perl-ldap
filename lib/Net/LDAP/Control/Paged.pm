@@ -1,11 +1,14 @@
-# $Id: Paged.pm,v 1.1 2000/05/03 12:29:18 gbarr Exp $
+# $Id: Paged.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Control::Paged;
 
+use vars qw(@ISA $VERSION);
+
 @ISA = qw(Net::LDAP::Control);
+$VERSION = "0.01";
 
 use Net::LDAP::ASN qw(realSearchControlValue);
 use strict;
@@ -23,14 +26,6 @@ sub init {
   }
 
   $self;
-}
-
-sub value {
-  my $self = shift;
-
-  exists $self->{value}
-    ? $self->{value}
-    : $self->{value} = $realSearchControlValue->encode($self->{asn});
 }
 
 sub cookie {
@@ -51,6 +46,14 @@ sub size {
     return $self->{asn}{size} = shift || 0;
   }
   $self->{asn}{size};
+}
+
+sub value {
+  my $self = shift;
+
+  exists $self->{value}
+    ? $self->{value}
+    : $self->{value} = $realSearchControlValue->encode($self->{asn});
 }
 
 1;

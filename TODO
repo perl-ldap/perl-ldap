@@ -1,10 +1,7 @@
-Net::LDAP::Simulate
-  If Net::LDAP dumped a log of all packets in a binary form then
-  we could simulate a connection. This means a session can be re-run
-  without being connected to the server. Could be useful with debug
-
-Net::LDAP::Schema
-  Decide on final implementation
+proxy server
+  Write a proxy server that can dump PDU's from the real server to
+  a file. Then later play these back. This would allow benchmarking
+  to produce more reliable figures.
 
 Net::LDAP::LDIF
   Still need to add support for moddn
@@ -17,8 +14,6 @@ command line utilities
   ldapmodrdn
   ldapdelete
   ldapadd
-
-complete documentation
 
 more tests
 

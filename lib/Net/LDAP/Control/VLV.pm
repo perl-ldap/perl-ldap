@@ -1,11 +1,14 @@
-# $Id: VLV.pm,v 1.1 2000/05/03 12:29:22 gbarr Exp $
+# $Id: VLV.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Control::VLV;
 
+use vars qw(@ISA $VERSION);
+
 @ISA = qw(Net::LDAP::Control);
+$VERSION = "0.01";
 
 use Net::LDAP::ASN qw(VirtualListViewRequest);
 use strict;
@@ -38,22 +41,6 @@ sub init {
   $self;
 }
 
-sub value {
-  my $self = shift;
-
-  if (@_) {
-    unless ($self->{asn} = $VirtualListViewRequest->decode($_[0])) {
-      delete $self->{value};
-      return undef;
-    }
-    $self->{value} = shift;
-  }
-
-  exists $self->{value}
-    ? $self->{value}
-    : $self->{value} = $VirtualListViewRequest->encode($self->{asn});
-}
-
 sub before {
   my $self = shift;
   if (@_) {
@@ -70,19 +57,6 @@ sub after  {
     return $self->{asn}{afterCount} = shift;
   }
   $self->{asn}{afterCount};
-}
-
-sub offset {
-  my $self = shift;
-  if (@_) {
-    delete $self->{value};
-    if (exists $self->{asn}{assertionValue}) {
-      delete $self->{asn}{assertionValue};
-      $self->{asn}{byoffset} = { contentCount => 0 };
-    }
-    return $self->{asn}{byoffset}{offset} = shift;
-  }
-  exists $self->{asn}{byoffset} and $self->{asn}{byoffset}{offset};
 }
 
 sub content {
@@ -133,6 +107,35 @@ sub response {
   delete $asn->{assertionValue};
 
   1;  
+}
+
+sub offset {
+  my $self = shift;
+  if (@_) {
+    delete $self->{value};
+    if (exists $self->{asn}{assertionValue}) {
+      delete $self->{asn}{assertionValue};
+      $self->{asn}{byoffset} = { contentCount => 0 };
+    }
+    return $self->{asn}{byoffset}{offset} = shift;
+  }
+  exists $self->{asn}{byoffset} and $self->{asn}{byoffset}{offset};
+}
+
+sub value {
+  my $self = shift;
+
+  if (@_) {
+    unless ($self->{asn} = $VirtualListViewRequest->decode($_[0])) {
+      delete $self->{value};
+      return undef;
+    }
+    $self->{value} = shift;
+  }
+
+  exists $self->{value}
+    ? $self->{value}
+    : $self->{value} = $VirtualListViewRequest->encode($self->{asn});
 }
 
 

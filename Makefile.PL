@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.1 2000/05/03 12:28:25 gbarr Exp $
+# $Id: Makefile.PL,v 1.2 2000/05/22 20:59:50 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -78,8 +78,8 @@ my @ppd;
 
 if ($] >= 5.00503) {
   @ppd = (
-    AUTHOR    => 'Graham Barr <gbarr@pobox.com>',
-    ABSTRACT  => 'LDAP Client library'
+    AUTHOR       => $AUTHOR,
+    ABSTRACT     => $ABSTRACT,
   );
 }
 
@@ -88,8 +88,6 @@ WriteMakefile(
   NAME         => $DISTNAME,
   EXE_FILES    => $opt_s ? [ values %PL_FILES ] : [],
   PL_FILES     => \%PL_FILES,
-  AUTHOR       => $AUTHOR,
-  ABSTRACT     => $ABSTRACT,
   clean        => {FILES => 'temp'},
   @ppd,
 );

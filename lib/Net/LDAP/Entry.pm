@@ -6,6 +6,9 @@ package Net::LDAP::Entry;
 
 use strict;
 use Net::LDAP::ASN qw(LDAPEntry);
+use vars qw($VERSION);
+
+$VERSION = "0.10";
 
 sub new {
   my $self = shift;
@@ -36,10 +39,6 @@ sub decode {
 }
 
 
-sub asn {
-  shift->{asn}
-}
-
 
 sub encode {
   $LDAPEntry->encode( shift->{asn} );
@@ -57,12 +56,6 @@ sub carp {
   goto &Carp::carp;
 }
 
-
-sub attributes {
-  my $self = shift;
-  carp("attributes called with arguments") if @_;
-  map { $_->{type} } @{$self->{asn}{attributes}};
-}
 
 
 sub get_attribute {
@@ -92,10 +85,6 @@ sub changetype {
   $self->{'changetype'} = shift;
 }
 
-
-sub changes {
-  @{shift->{'changes'}}
-}
 
 
 sub add {
@@ -242,6 +231,20 @@ sub dump {
     }
     print "\n";
   }
+}
+
+sub attributes {
+  my $self = shift;
+  carp("attributes called with arguments") if @_;
+  map { $_->{type} } @{$self->{asn}{attributes}};
+}
+
+sub asn {
+  shift->{asn}
+}
+
+sub changes {
+  @{shift->{'changes'}}
 }
 
 1;

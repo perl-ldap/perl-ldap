@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.03";
+$VERSION = "0.05";
 
 
 sub first_entry { # compat
@@ -75,8 +75,8 @@ sub entry {
   my $ldap = $self->parent;
 
   # There could be multiple response to a search request
-  # but only the last will set {code}
-  until (exists $self->{code} || (@{$entries} > $index)) {
+  # but only the last will set {resultCode}
+  until (exists $self->{resultCode} || (@{$entries} > $index)) {
     return
       unless $ldap->_recvresp($self->mesg_id) == LDAP_SUCCESS;
   }
@@ -90,14 +90,6 @@ sub entry {
 }
 
 sub all_entries { goto &entries } # compat
-
-sub entries {
-  my $self = shift;
-
-  $self->sync unless exists $self->{code};
-
-  @{$self->{entries} || []}
-}
 
 sub count {
   my $self = shift;
@@ -120,7 +112,7 @@ sub sorted {
   my $self = shift;
   my @at;
 
-  $self->sync unless exists $self->{code};
+  $self->sync unless exists $self->{resultCode};
 
   return unless exists $self->{entries} && ref($self->{entries});
 
@@ -151,7 +143,7 @@ sub sorted {
 sub references {
   my $self = shift;
 
-  $self->sync unless exists $self->{Code};
+  $self->sync unless exists $self->{resultCode};
 
   return unless exists $self->{'Reference'} && ref($self->{'Reference'});
 
@@ -162,6 +154,14 @@ sub as_struct {
   my $self = shift;
   my %result = map { ( $_->dn, ($_->{'attrs'} || $_->_build_attrs) ) } entries($self);
   return \%result;
+}
+
+sub entries {
+  my $self = shift;
+
+  $self->sync unless exists $self->{resultCode};
+
+  @{$self->{entries} || []}
 }
 
 package Net::LDAP::Reference;

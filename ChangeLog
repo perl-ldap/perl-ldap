@@ -1,3 +1,22 @@
+Change 529 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- result code element changed name to resultCode during
+	  change-over to Convert::ASN1
+
+Change 527 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.18
+
+Change 526 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Now passes -wc with 5.004, 5.005_03 and 5.6.0
+
+Change 525 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Bundle::Net::LDAP
+	- Change Convert::ASN to Convert::ASN1
+
 Change 522 on 2000/05/19 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::Filter
