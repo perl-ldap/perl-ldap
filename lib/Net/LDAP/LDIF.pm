@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.14_02";
+$VERSION = "0.14_03";
 
 my %mode = qw(w > r < a >>);
 
@@ -408,14 +408,20 @@ sub _write_dn {
 sub write {
   my $self = shift;
 
-  $self->{change} = 0;
-  $self->write_entry(@_);
+  $self->_write_entry(0, @_);
 }
 
 sub write_entry {
   my $self = shift;
+
+  $self->_write_entry($self->{change}, @_);
+}
+
+# internal helper: write entry in different format depending on 1st arg
+sub _write_entry {
+  my $self = shift;
+  my $change = shift;
   my $entry;
-  my $change = $self->{change};
   my $wrap = int($self->{'wrap'});
   my $lower = $self->{'lowercase'};
   my $sort = $self->{'sort'};
@@ -525,8 +531,7 @@ sub read_cmd {
 sub write_cmd {
   my $self = shift;
 
-  $self->{change} = 1;
-  $self->write_entry(@_);
+  $self->_write_entry(1, @_);
 }
 
 sub done {
