@@ -1,4 +1,4 @@
-# $Id: VLV.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $
+# $Id: VLV.pm,v 1.4 2001/06/11 16:20:32 gbarr Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(VirtualListViewRequest);
 use strict;
@@ -29,7 +29,7 @@ sub init {
     $asn->{beforeCount} = $self->{before} || 0;
     $asn->{afterCount}  = $self->{after} || 0;
     if (exists $self->{assert}) {
-      $asn->{assertionValue} = $self->{assert};
+      $asn->{byValue} = $self->{assert};
     }
     else {
       $asn->{byoffset} = {
@@ -64,8 +64,8 @@ sub content {
   my $self = shift;
   if (@_) {
     delete $self->{value};
-    if (exists $self->{asn}{assertionValue}) {
-      delete $self->{asn}{assertionValue};
+    if (exists $self->{asn}{byValue}) {
+      delete $self->{asn}{byValue};
       $self->{asn}{byoffset} = { offset => 0 };
     }
     return $self->{asn}{byoffset}{contentCount} = shift;
@@ -80,10 +80,10 @@ sub assert {
   if (@_) {
     delete $self->{value};
     delete $self->{asn}{byoffset};
-    return $self->{asn}{assertionValue} = shift;
+    return $self->{asn}{byValue} = shift;
   }
-  exists $self->{asn}{assertionValue}
-    ? $self->{asn}{assertionValue}
+  exists $self->{asn}{byValue}
+    ? $self->{asn}{byValue}
     : undef;
 }
 
@@ -109,7 +109,7 @@ sub response {
     offset => $resp->target,
     contentCount => $resp->content
   };
-  delete $asn->{assertionValue};
+  delete $asn->{byValue};
 
   1;  
 }
@@ -118,8 +118,8 @@ sub offset {
   my $self = shift;
   if (@_) {
     delete $self->{value};
-    if (exists $self->{asn}{assertionValue}) {
-      delete $self->{asn}{assertionValue};
+    if (exists $self->{asn}{byValue}) {
+      delete $self->{asn}{byValue};
       $self->{asn}{byoffset} = { contentCount => 0 };
     }
     return $self->{asn}{byoffset}{offset} = shift;
@@ -159,14 +159,14 @@ sub scroll {
     $asn->{beforeCount} = 0;
     $offset = $byoffset->{offset} = 1;
   }
-  elsif ($byoffset->{content} and $asn->{afterCount}+$offset >$byoffset->{content}) {
-    if ($offset > $byoffset->{content}) {
-      $offset = $byoffset->{offset} = $byoffset->{content};
+  elsif ($byoffset->{contentCount} and $asn->{afterCount}+$offset >$byoffset->{contentCount}) {
+    if ($offset > $byoffset->{contentCount}) {
+      $offset = $byoffset->{offset} = $byoffset->{contentCount};
       $asn->{beforeCount} += $asn->{afterCount};
       $asn->{afterCount} = 0;
     }
     else {
-      my $tmp = $byoffset->{content} - $offset;
+      my $tmp = $byoffset->{contentCount} - $offset;
       $asn->{beforeCount} += $tmp;
       $asn->{afterCount}  -= $tmp;
       $byoffset->{offset} = $offset;
@@ -399,5 +399,5 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: VLV.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: VLV.pm,v 1.4 2001/06/11 16:20:32 gbarr Exp $>
 

@@ -1,4 +1,4 @@
-# $Id: ASN.pm,v 1.4 2001/04/10 16:30:27 gbarr Exp $
+# $Id: ASN.pm,v 1.5 2001/06/11 16:20:32 gbarr Exp $
 
 package Net::LDAP::ASN;
 
@@ -292,8 +292,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	   beforeCount    INTEGER , --(0 .. maxInt),
 	   afterCount     INTEGER , --(0 .. maxInt),
 	   CHOICE {
-	       byIndex [0] SEQUENCE {
-	       index           INTEGER , --(0 .. maxInt),
+	       byoffset [0] SEQUENCE {
+	       offset          INTEGER , --(0 .. maxInt),
 	       contentCount    INTEGER } --(0 .. maxInt) }
 	       byValue [1] AssertionValue }
 	       -- byValue [1] greaterThanOrEqual assertionValue }
