@@ -238,7 +238,7 @@ sub _read_one_cmd {
     my $modattr;
     my $lastattr;
     if($changetype eq "modify") {
-      (my $tmp = shift @ldif) =~ s/^(add|delete|replace):\s*(\w+)//
+      (my $tmp = shift @ldif) =~ s/^(add|delete|replace):\s*([-;\w]+)//
 	or return; # Bad LDIF
       $lastattr = $modattr = $2;
       $modify  = $1;
@@ -256,8 +256,11 @@ sub _read_one_cmd {
 	last;
       }
 
-      $line =~ s/^(\w+):\s*//;
-      $attr = $1;      
+	  $line =~ s/^([-;\w]+):\s*// and $attr = $1;
+	  if ($line =~ s/^:\s*//) {
+	    require MIME::Base64;
+	    $line = MIME::Base64::decode($line);
+	  }
 
       if(defined($modattr)) {
         warn "bad LDIF" unless $attr eq $modattr;
