@@ -12,7 +12,7 @@
 # module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id$
+# $Id: schema,v 1.8 2000/06/22 02:26:54 clif Released $
 #
 # Purpose: This program is designed to retrieve schema data from a LDAP
 #          directory and display on the graphical user interface
@@ -20,23 +20,258 @@
 #
 #
 # Revisions:
-# $Log$
+# $Log: schema,v $
+# Revision 1.8  2000/06/22 02:26:54  clif
+# Added code for schema dump operation.  This involves a
+# RadioButton, file name text box, and code in the search
+# subroutine to do a schema dump operation.
+# Condensed the search subroutine to use a common print_loop
+# subroutine to print out the items associated with the
+# attributes, matchingrules and objectclasses.
+# Updated the pod documentation to reflect the addition of the
+# schema dump functions.
+#
+# Revision 1.7  2000/06/18 02:51:18  clif
+# Removed commented out code.
+#
+# Revision 1.6  2000/06/18 02:36:23  clif
+# Removed old parse routine.
+# Added use of items and item methods to get and display data.
+# Changed the wording and look/feel of pod documentation.
+#
+# Revision 1.5  2000/06/08 01:13:55  clif
+# Added pod I command to make .tklkup italic.
+#
+# Revision 1.4  2000/06/08 01:07:17  clif
+# Correct wording in the pod documentation.
+#
+# Revision 1.3  2000/05/29 00:44:00  clif
+# Changed pod documentation that discribed how the schema data
+# is stored in a temp file, this information is no longer
+# valid for Net::LDAP.
+#
+# Revision 1.2  2000/05/29 00:39:27  clif
+# Changed code to use the new format of the schema methods.
+# Added README.schema file as a internal pod document.
+# Removed leading dashes form Net::LDAP options.  These dashes had been
+# depricated.
+#
+# Revision 1.1  2000/05/28 18:55:34  clif
+# Initial revision
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# Version 5
-#
-#
-#
+
+=head1 NAME 
+
+schema -  A script to do LDAP directory schema lookups.
+
+=head1 SYNOPSIS
+
+
+This script is used to lookup schema information from a LDAP 
+directory server.  It is GUI based with a button for 
+selecting directory servers.
+
+This script has been tested on Solaris and RedHat 6.0 Linux, 
+but should work with any system that has PERL and the required 
+modules installed in it.
+
+There are 2 files associated with the schema program in 
+this tar file; dot.tklkup, and schema.
+
+About the files.
+
+=over 4
+
+=item dot.tklkup 
+
+dot.tklkup - This is the initialization file that should be put 
+into each users home directory as I<.tklkup>.  
+
+This file will have to be setup properly before the user 
+can expect the schema script to work properly.  The odds of this
+initialization file being setup correctly for anyone is ZERO.
+However the script can be run with this file to get a feel 
+for how the script will look.
+
+It allows the user to customize how schema will look for them.
+If the .tklkup files does not exist in a users home
+directory the program has a set of built-in defaults
+that it will use.
+
+To be used this file must  have user read permission.
+
+There are 4 commands that can be used with this file;
+hand, attribute, server, and base.
+ 
+ hand -> values: left or right.  Defines where the 
+                 attribute label box will be place.
+
+ attribute -> attribute is not used by schema.
+
+ server -> name of the directory server that you wish
+           to conduct the data search. One server per line.
+
+ base -> base is not used by schema.
+
+-------------------------------------------------------------------
+
+=item schema
+
+schema - PERL executable file.  
+
+You may need to change the first line of the PERL schema script 
+to point to your file pathname of perl.
+
+When executed schema will display a window on your
+computer.  The graphical user interface, GUI, has 
+several sections to it.  
+
+Exit button.  At the top of the GUI is the "Exit"
+button.  When a mouse click is done on the "Exit" button 
+the program will terminate.
+
+The SELECT DIRECTORY SERVER button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the directory server the
+user wishes to use.  When selected the "RadioButton" diamond
+will turn red in color.  This menu is a designed to be a 
+"I<tear off>" menu, selecting the "---------------" line will 
+cause the pull down menu to become a separate window that 
+is still somewhat controlled by the GUI.  The 
+DIRECTORY SERVER text box will display the directory name 
+that is selected.  If the GUI is icon-ed or exited, the tear 
+off window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+
+When the Write Data To File RadioButton is selected the 
+LDAP Schema data will be written to the file listed 
+in the text box below the RadioButton text.  Once the data 
+has been written to the file a message will be written to the
+DIRECTORY SCHEMA DATA text box stating that the data has been
+written to a file and will list the file name. Upon 
+completion of the schema dump operation the RadioButton and 
+text in the file name text box will be reset.
+
+The Clear Data button will clear out the text that 
+appears in the Directory Schema Data text box.
+
+The Directory Schema Data text box is where the results of the
+directory search will be displayed.  With the cursor
+in the Directory Data text box you have access to additional
+functions when you depress the mouse "action" button.
+When the "action" mouse button is depressed a small text box
+with 4 additional functions will be displayed inside the 
+Directory Data text box.  These 4 functions are;
+
+ File -> This function exits the program.  You can not edit
+         the Directory Data text box because it is created 
+         as a read only text box.
+
+ Edit -> This function gives the user 3 additional functions;
+         Copy -> I do not know what this function does.
+         Select All -> Highlights/Selects all of the text in
+         the Directory Data text box.
+         Unselect All -> Unselects all of the text in 
+         the Directory Data text box.
+         Select/Unselect are used in-conjunction with the 
+         Copy function.
+
+ Search -> This function gives the user 4 additional
+         functions.
+         Find, Find Next, Find Previous -> These functions
+         find text in the Directory Data text box.
+         Replace -> This function allows you to replace the
+         text that is selected.  However this is just 
+         a fake replacement as you can not edit the 
+         Directory Data text box because it is created 
+         as a read only text box.
+
+ View -> This function gives the user 3 additional 
+         functions.
+         Goto Line ->  When selected will prompt the
+         user for a line number, the line number being
+         the line number the user wishes to see.
+         What Line ->  When selected will tell the user
+         what line number the cursor is on.
+         Wrap ->  When selected will prompt the user
+         to choose how to do line wrapping in the 
+         Directory Data text box.
+  
+
+Associated with the Directory Data text box is the "RadioButton"
+that determines how often the data in the directory text
+box is cleared.  If the "RadioButton" is selected, colored
+red, the directory data text box will be cleared out before
+each directory query.  If the "RadioButton" is not selected
+the directory data text box will NOT be cleared out until 
+the Clear Data button in clicked or the CLEAR DIRECTORY DATA
+ON EACH QUERY "RadioButton" is selected.
+
+-------------------------------------------------------------------
+
+=item REQUIREMENTS.
+
+To use this program you will need the following.
+
+
+At least PERL 5.004 version.  You can get a stable version of PERL
+from the following URl;
+   http://cpan.org/src/index.html
+
+Perl Tk800.015 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Tk/
+
+Perl LDAP module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Net/
+
+Depending on the modules loaded in your PERL system, you may need to
+load the following 2 PERL modules.
+
+Perl Convert-Berr module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Convert/
+
+Perl Digest-MD5 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/MD5/
+
+Bundled inside each PERL module is instructions on how to install the 
+module into your PERL system.
+
+-------------------------------------------------------------------
+
+=item INSTALLING THE SCRIPT.
+
+Install the schema script anywhere you wish, I suggest 
+/usr/local/bin/schema.
+
+Install the dot.tklkup file in each users home directory
+as .tklkup.
+
+-------------------------------------------------------------------
+
+=back
+
+Since the script is in PERL, feel free to modify it if it does not 
+meet your needs.  This is one of the main reasons I did it in PERL.
+If you make an addition to the code that you feel other individuals
+could use let me know about it.  I may incorporate your code
+into my code.
+
+=head1 AUTHOR
+
+Clif Harden <charde@utdallas.edu>
+If you find any errors in the code please let me know at 
+charden@utdallas.edu.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999-2000 Clif Harden. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=cut
 
 use Net::LDAP qw(:all);
 use Net::LDAP::Filter;
@@ -50,12 +285,16 @@ use Tk::ErrorDialog;
 #
 # Global variables, wish I did not have to use them
 # but Tk forces me to.
+# Future project to resolve.
+#
 #
 
 my $adata = "";
 my $uid = "";
 my $info = "";
 my $slist;
+my $sfile = 0;
+my $fdata = "";
 
 #--------------------------------------------------------
 # Handle the command line parameter(s)
@@ -113,6 +352,7 @@ my $rbcn;
 my $rbsn;
 my $rbmail;
 my $rbclear;
+my $rbfile;
 my $mainWindow;
 my $lframe;
 my $sframe;
@@ -221,11 +461,11 @@ $mainWindow->title("Directory Schema Search");
 #
 
 $mainWindow->Button(-text => "Exit", -command => 
-      sub{ exit; }  )-> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
+      sub{ exit; }  )-> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
 
 $sframe = $mainWindow->LabFrame(-label => "DIRECTORY SERVER",
       -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
 
 $slist = $sframe ->Listbox( -height => 1  );
 
@@ -238,13 +478,14 @@ $slist->insert("end", $LDAP_SERVER);
 #
 
 $bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "groove")->pack(
-      -fill => "both", -side => "bottom", -padx => 5, -pady => 5);
+      -fill => "both", -side => "bottom", -padx => 2, -pady => 2);
 
 #
 # Create Search Directory button
 #
 
-$bframe -> Button(-text => "Retrieve Directory Schema", -command =>  \&search ) -> pack( -fill => "both");
+$bframe -> Button(-text => "Retrieve Directory Schema", 
+        -command =>  \&search ) -> pack( -fill => "both");
 
 #
 # Create directory server selection button
@@ -280,13 +521,29 @@ foreach ( @server )
 
 }
 
+
+$rbfilelabel = $mainWindow->LabFrame(-label => "SCHEMA DUMP TO FILE",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -anchor => "w", -padx => 2, -pady => 2);
+
+$rbfile = $rbfilelabel -> Checkbutton(-text => "Write schema data to file, enter file name in text box below this line.",
+      -variable =>  \$sfile, -onvalue => 1, -offvalue => 0 )
+      -> pack(-anchor => w );
+#
+# Create Text Entry list box.
+#
+
+$rbfilelabel->Entry(-textvariable => \$fdata, -width => 25 ) 
+      -> pack(-fill => 'x');
+
+
 #
 # Create list frame.
 #
 
 $lframe = $mainWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
       -labelside => "acrosstop")
-      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5,
+      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2,
       -expand => 1);
 
 #
@@ -294,7 +551,7 @@ $lframe = $mainWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
 # to clear the List box before each directory query.
 #
 
-$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
+$rbclear = $lframe -> Checkbutton(-text => "Clear directory data on each query.",
       -variable =>  \$clear, -onvalue => 1, -offvalue => 0 )
       -> pack(-anchor => sw );
 
@@ -394,6 +651,56 @@ $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 } # End of MAIN_PROCESS subroutine
 
 
+
+
+sub print_loop()
+{
+my $list = shift;
+my $ocs = shift;
+my $Title = shift;
+
+foreach ( @$ocs)
+{
+   $list->insert("end", "$Title\n");
+
+   #
+   # Get and display the oid number of the objectclass.
+   #
+   my $oid = $schema->name2oid( "$_" );
+   
+   #
+   # Get the various other items associated with
+   # this attribute.
+   #
+   my @items = $schema->items( "$oid" );
+   foreach my $value ( @items )
+   {
+      next if ( $value eq 'type');
+
+      @item = $schema->item( $oid, $value );
+      $value =~ tr/a-z/A-Z/;
+      if ( defined(@item) && $item[0] == 1 )
+      {
+         $list->insert("end", "\t$value\n");
+         next;
+      }
+      if ( defined(@item) && $#item >= 0 )
+      {
+         if ( $value eq 'MAY' || $value eq 'MUST' )
+         {
+         $list->insert("end", "\t$value contain:  @item\n");
+         }
+         else
+         {
+         $list->insert("end", "\t$value:  @item\n");
+         }
+      }                                                                    
+   }
+
+}
+
+} # End of subroutine print_loop
+
 #
 #
 # Search the directory for data
@@ -426,8 +733,8 @@ my %opt = (
 # 
 
 my $ldap = new Net::LDAP($LDAP_SERVER,
-                         -timeout => 1,
-                         -debug => $opt{'d'},
+                         timeout => 1,
+                         debug => $opt{'d'},
                         ) or $error = 1;
 
 if ( $error == 1 )
@@ -436,7 +743,7 @@ if ( $error == 1 )
    return;
 }
 
-$ldap->ldapbind(-password => "", -dn => "") or $error = 1;
+$ldap->ldapbind( password => "", dn => "") or $error = 1;
 
 if ( $error == 1 )
 {
@@ -444,212 +751,64 @@ if ( $error == 1 )
    return;
 }
 
+#
+# Get the schema, assumes cn=schema.
+# This is NOT always the case.
+#
 
-( $mesg, $rs ) = $ldap->schema;  # or die $@;
+my @items;
+my @item;
 
-if ( $mesg->code ) 
+$schema = $ldap->schema();
+
+if ( $sfile )
 {
-   $errstr = $mesg->code;
-   $list->insert("end",  "Error code:  $errstr\n");
-   $errstr = ldap_error_text($errstr);
-   $list->insert("end",  "$errstr\n");
-   exit;
+  #
+  # write to file instead of text box
+  #
+  $schema->dump( $fdata );
+  $list->insert("end",  "Schema data written to file: $fdata\n");
+  $sfile = 0;
+  $fdata = "";
+  return;
 }
 
 
-$dat = $rs->dump($dt);;
+#
+# Get the attributes
+#
+ 
+@atts = $schema->attributes(); 
 
+#
+# Display the attributes
+#
+ 
+&print_loop($list, \@atts, "attributeType") if ( defined(@atts) );
 
+#
+# Get the schema objectclasses
+#
+@ocs = $schema->objectclasses(); 
 
-&parse($dt);
+#
+# Display the objectclasses
+#
+ 
+&print_loop($list, \@ocs, "objectClasses") if ( defined(@ocs) );
 
+#
+# Get the schema matchingrules
+#
+@ocs = $schema->matchingrules(); 
 
-
-
-
+#
+# Display the matchingrules
+#
+ 
+&print_loop($list, \@ocs, "matchingRules" ) if ( defined(@ocs) );
 
 } # End of search subroutine
-
-sub parse
-{
-my $dt = shift (@_);
-
-open(DATA, "<$dt");
-
-
-while ( <DATA> ) 
-{
-
-@data = ();
-@attributes = ();
-chomp();
-
-@data = split(/:/);
-
-if ( $data[0] ne 'attributeTypes' && $data[0] ne 'objectClasses' &&
-     $data[0] ne 'attributetypes' && $data[0] ne 'objectclasses' &&
-     $data[0] ne 'matchingrules' )
-{ 
-   $list->insert("end",   "$data[0]:  $data[1]\n");
-}
-elsif ( $data[0] eq 'attributeTypes' || $data[0] eq 'objectClasses' ||
-        $data[0] eq 'attributetypes' || $data[0] eq 'objectclasses' ||
-        $data[0] eq 'matchingrules' )
-{
-
-@attributes = split(/ /, $data[1]);
-
-$list->insert("end",   "\n");
-
-$element = shift(@attributes);  # Remove opening space
-$element = shift(@attributes);  # Remove opening (
-$element = pop(@attributes);    # Remove closing )
-
-$list->insert("end",   "$data[0]\n"); # Prints banner for next attribute
-$element = shift( @attributes );
-$list->insert("end",   "\toid = $element\n");     # Prints oid number.
-
-while ( @attributes ) 
-{
- $_ = shift( @attributes) ; 
-#          print "foreach = $_ \n";
-#
-# Now parse the rest of the attribute array.
-#
-  WHAT: {
-        /^NAME/ && do 
-          {
-          $list->insert("end",   "\tNAME:  ");
-          $element = shift(@attributes) ;
-          if ( $element eq '(' )
-          { 
-            # Multi-value string follows.
-            $done = 0;
-            $list->insert("end",   "\t");     # Prints tab character
-            while ( !$done )
-            {
-            $element = shift(@attributes) ;
-            if ( $element ne ')' )
-            {
-              $list->insert("end",   "$element, ");     # Prints attribute name.
-
-            }  # End of if ( $element ne ')' )
-            else
-            { 
-              $list->insert("end",   "\n");     # Prints oid number.
-              $done = 1; # Done parsering Multi-value string
-            }
-
-            }  # End of while ( !$done ) 
-          }
-          else 
-          {
-            $list->insert("end",   "$element\n");     # Prints attribute name.
-          }  # End of if ( $element ne ')' )
-
-          last WHAT; }; # End of NAME
-
-
-        /^DESC/ && do 
-          {
-          $list->insert("end",   "\tDESC:  ");
-          my $done = 1;
-	  while ( $done )
-	  {
-            $_ = shift(@attributes) ;
-            $list->insert("end",   "\t$_ ");     # Prints tab character
-#            sleep 2;
-#            print "DESC == $_";
-            if ( /^'*'$/ ) 
-	    { 
-#              print "TRUE == $_\n";
-              $done = 0; 
-	    }
-            elsif ( /'$/ ) 
-	    { 
-#              print "TRUE == $_\n";
-              $done = 0; 
-	    }
-	  }
-          $list->insert("end",   "\n");     # Prints tab character
-          last WHAT; }; # End of DESC
-
-        ( /^EQUALITY/ || /^SUBSTR/ || /^SYNTAX/ ||
-          /^ORDERING/ || /^USAGE/ ) && do 
-          {
-          $list->insert("end",   "\t$_:   ");     # Prints attribute name.
-          $element = shift(@attributes) ;
-          $list->insert("end",   "$element\n");     # Prints attribute name.
-          last WHAT; }; # End of EQUALITY
-
-        ( /^SINGLE-VALUE/ || /^NO-USER-MODIFICATION/ || 
-          /^STRUCTURAL/ || /^AUXILIARY/ ) && do 
-          {
-          $list->insert("end",   "\t$_\n");     # Prints attribute name.
-          last WHAT; }; # End of SINGLE-VALUE
-
-        ( /^MAY/ || /^SUP/ || /^MUST/ ) && do 
-          {
-          $list->insert("end",   "\t$_:  ");
-          $element = shift(@attributes) ;
-          if ( $element eq '(' )
-          { 
-            # Multi-value string follows.
-            $done = 0;
-            $list->insert("end",   "\t");     # Prints tab character
-            while ( !$done )
-            {
-            $element = shift(@attributes) ;
-            if ( $element ne ')' && $element ne '$' )
-            {
-              $list->insert("end",   "$element, ");     # Prints attribute name.
-
-            }  # End of if ( $element ne ')' )
-            elsif ( $element eq ')' )
-            { 
-              $list->insert("end",   "\n");     # Prints oid number.
-              $done = 1; # Done parsering Multi-value string
-            }
-
-            }  # End of while ( !$done ) 
-          }
-          else 
-          {
-            $list->insert("end",   "$element\n");     # Prints attribute name.
-          }  # End of if ( $element ne ')' )
-
-          last WHAT; }; # End of MAY
-
-	  #
-	  # Default for case statement
-	  #
-	  # Must test for space because netscape puts a " " before
-	  # a MAY clause in their schema.
-	  #
-
-          if ( $_ eq ' ' || $_ eq "" || $_ eq ' ' ) 
-          {
-          my $test = "";
-          }
-          else
-          { 
-          $list->insert("end", "Default: found element not in case: $_ \n");
-          }
-
-
-        }  # End of WHAT case statment
-
-
-}  # End of foreach $element ( shift @attributes )
-
-} # End of if ( $data[0] eq 'attributeTypes' || $data[0] eq 'objectClass' )
-
-} # End of while ( <> )
-
-} # End of search subroutine
-
-
-
 
 #----------------------------------------#
 # Usage() - display simple usage message #
