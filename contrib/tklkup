@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.21 2003/02/14 04:46:52 charden Exp $
+# $Id: tklkup,v 2.22 2003/02/14 05:20:59 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -191,13 +191,13 @@ $Global{'mainWindow'}->title("TKLKUP");
  
 $Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
  
-$Global{'menubar'}->cascade(-label => "~Directory OPS",
+$Global{'menubar'}->cascade(-label => "Directory ~OPS",
                   -menuitems => ops_items);
 $Global{'menubar'}->command(-label => "Set ~Bind Credentials",
                   -command => \&BIND );
 $Global{'menubar'}->command(-label => "Set DSA ~Port",
                   -command => \&PORT ); 
-$Global{'menubar'}->command(-label => "~EXIT PROGRAM",
+$Global{'menubar'}->command(-label => "E~XIT PROGRAM",
                   -command => sub{exit;} ); 
 
 #
@@ -775,13 +775,13 @@ foreach (@attribute)
  
  
 #
-# Create ldap delete button
+# Create ldap display button
 #
-$Global{actionDelete} = $btframe->Button(-text => "DELETE ", 
-           -command => \&questionAction,
-           -font => $Global{'Font'}, -borderwidth => 3)
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
-           if ( !Exists($Global{actionDelete}));
+$Global{actionDisplay} = $btframe->Button( -text => "DISPLAY", 
+           -command => \&ldapActionDisplay, 
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
+           if ( !Exists($Global{actionDisplay}));
  
  
 #
@@ -792,16 +792,6 @@ $Global{actionLdif} = $btframe->Button(-text => "SAVE TO\nLDIF",
            -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
            if ( !Exists($Global{actionLdif}));
- 
- 
-#
-# Create ldap display button
-#
-$Global{actionDisplay} = $btframe->Button( -text => "DISPLAY", 
-           -command => \&ldapActionDisplay, 
-           -font => $Global{'Font'}, -borderwidth => 3 )
-           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
-           if ( !Exists($Global{actionDisplay}));
  
 #
 # Create ldap rename button
@@ -820,6 +810,17 @@ $Global{actionEdit} = $btframe->Button(-text => " EDIT  ",
            -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
            if ( !Exists($Global{actionEdit}));
+ 
+ 
+#
+# Create ldap delete button
+#
+$Global{actionDelete} = $btframe->Button(-text => "DELETE ", 
+           -command => \&questionAction,
+           -font => $Global{'Font'}, -borderwidth => 3,
+           -activeforeground => 'red')
+           -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 2 ) 
+           if ( !Exists($Global{actionDelete}));
  
 #
 # Create process cancel button
