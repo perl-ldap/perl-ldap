@@ -1,11 +1,11 @@
-# Copyright (c) 2000-2001 Chris Ridd <chris.ridd@messagingdirect.com> and
+# Copyright (c) 2000-2002 Chris Ridd <chris.ridd@messagingdirect.com> and
 # Graham Barr <gbarr@pobox.com>. All rights reserved.  This program is
 # free software; you can redistribute it and/or modify it under the
 # same terms as Perl itself.
 
 package Net::LDAPS;
 @Net::LDAPS::ISA = ( 'Net::LDAP' );
-$Net::LDAPS::VERSION = "0.03";
+$Net::LDAPS::VERSION = "0.04";
 
 use strict;
 use Net::LDAP;
@@ -30,7 +30,7 @@ sub SSL_context_init_args {
   my $arg = shift;
 
   my $verify = 0;
-  my ($clientcert,$clientkey);
+  my ($clientcert,$clientkey,$passwdcb);
 
   if (exists $arg->{'verify'}) {
       my $v = lc $arg->{'verify'};
@@ -47,11 +47,16 @@ sub SSL_context_init_args {
       }
   }
 
+  if (exists $arg->{'keydecrypt'}) {
+      $passwdcb = $arg->{'keydecrypt'};
+  }
+
   (
     SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
     SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
     SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
     SSL_key_file    => $clientcert ? $clientkey : undef,
+    SSL_passwd_cb   => $passwdcb,
     SSL_use_cert    => $clientcert ? 1 : 0,
     SSL_cert_file   => $clientcert,
     SSL_verify_mode => $verify,
@@ -131,11 +136,25 @@ don't encrypt!
 
 =item clientkey
 
+=item decryptkey
+
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
 operation) then set clientcert to the user's certificate file, and
 clientkey to the user's private key file. These files must be in PEM
 format.
+
+If the private key is encrypted (highly recommended!) then set
+decryptkey to a reference to a subroutine that returns the decrypting
+key. For example:
+
+ $ldaps = new Net::LDAPS('myhost.example.com',
+                         port => '636',
+                         verify => 'require',
+                         clientcert => 'mycert.pem',
+                         clientkey => 'mykey.pem',
+                         decryptkey => sub { 'secret'; },
+                         capath => '/usr/local/cacerts/');
 
 =item capath
 
@@ -147,8 +166,8 @@ the filename containing the certificate of the CA who signed the
 server's certificate. These certificates must all be in PEM format.
 
 The directory in 'capath' must contain certificates named using the
-hash value of themselves. To generate these names, use OpenSSL like
-this in Unix:
+hash value of the certificates' subject names. To generate these
+names, use OpenSSL like this in Unix:
 
     ln -s cacert.pem `openssl x509 -hash -noout < cacert.pem`.0
 
@@ -188,22 +207,8 @@ L<IO::Socket::SSL>
 
 =head1 BUGS
 
-Several apparently bogus warnings are emitted when initializing the
-two underlying modules used by Net::LDAPS, namely IO::Socket::SSL and
-Net::SSLeay. To avoid these, don't initialize via 'use Net::LDAPS' and
-instead try initializing Net::LDAPS like this:
-
-    BEGIN {
-        # Turn off all warnings etc whilst initializing
-        # IO::Socket::SSL and Net::SSLeay.
-        local $^W = 0;
-        no strict;
-        require Net::SSLeay;
-        # The /dev/urandom is a device on Linux that returns
-        # random data.
-        Net::SSLeay::randomize('/dev/urandom');
-        require Net::LDAPS;
-    }
+You cannot have more than one LDAPS connection at any one time, due to
+restrictions in the underlying Net::SSLeay code.
 
 =head1 AUTHOR
 
@@ -211,7 +216,7 @@ Chris Ridd <chris.ridd@messagingdirect.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001, Chris Ridd and Graham Barr. All rights reserved. This
+Copyright (c) 2000-2002, Chris Ridd and Graham Barr. All rights reserved. This
 library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 

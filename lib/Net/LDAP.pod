@@ -724,11 +724,24 @@ don't encrypt!
 
 =item clientkey
 
+=item decryptkey
+
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
 operation) then set clientcert to the user's certificate file, and
 clientkey to the user's private key file. These files must be in PEM
 format.
+
+If the private key is encrypted (highly recommended!) then set
+decryptkey to a reference to a subroutine that returns the decrypting
+key. For example:
+
+ $ldap = new Net::LDAP('myhost.example.com', version => 3);
+ $ldap->start_tls(verify => 'require',
+                  clientcert => 'mycert.pem',
+                  clientkey => 'mykey.pem',
+                  decryptkey => sub { 'secret'; },
+                  capath => '/usr/local/cacerts/');
 
 =item capath
 
@@ -740,8 +753,8 @@ the filename containing the certificate of the CA who signed the
 server's certificate. These certificates must all be in PEM format.
 
 The directory in 'capath' must contain certificates named using the
-hash value of themselves. To generate these names, use OpenSSL like
-this in Unix:
+hash value of the certificates' subject names. To generate these
+names, use OpenSSL like this in Unix:
 
     ln -s cacert.pem `openssl x509 -hash -noout < cacert.pem`.0
 
@@ -852,8 +865,8 @@ http://www.pobox.com/~gbarr/perl-ldap/.
 This document is based on a document originally written by Russell Fulton
 <r.fulton@auckland.ac.nz>.
 
-Chris Ridd @isode.com for the many hours spent testing and contribution
-of the ldap* command line utilities.
+Chris Ridd <chris.ridd@messagingdirect.com> for the many hours spent
+testing and contribution of the ldap* command line utilities.
 
 =head1 AUTHOR
 
@@ -870,6 +883,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.14 2001/10/24 12:37:14 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.15 2002/05/28 11:16:05 chrisridd Exp $>
 
 =cut
