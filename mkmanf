@@ -1,8 +1,10 @@
 #!/bin/sh
 
-find . -name Entries \
-| egrep /CVS/Entries$ \
-| xargs perl -aF/ -lne 'print substr($ARGV,2,-11),$F[1] if m,^/, and $F[2] !~ /^-/ and $F[1] !~ /^\./;' -- \
-| sort -u > MANIFEST.new
+(
+  echo SIGNATURE
+  find . -name Entries \
+  | egrep /CVS/Entries$ \
+  | xargs perl -aF/ -lne 'print substr($ARGV,2,-11),$F[1] if m,^/, and $F[2] !~ /^-/ and $F[1] !~ /^\./;' --
+) | sort -u > MANIFEST.new
 
 diff -u MANIFEST MANIFEST.new && rm MANIFEST.new

@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.12 2003/06/09 12:29:41 gbarr Exp $
+# $Id: Makefile.PL,v 1.13 2003/06/09 12:47:46 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -111,6 +111,11 @@ run_mkmanf :
 	./mkmanf
 
 distdir : run_mkmanf
+
+distdir : run_cpansign
+
+run_cpansign :
+	cpansign -s
 
 EOS
 

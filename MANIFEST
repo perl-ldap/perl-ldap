@@ -6,6 +6,7 @@ Makefile.PL
 OldChanges
 README
 RELEASE_NOTES
+SIGNATURE
 TODO
 bin/ldapdelete
 bin/ldapmodrdn
@@ -85,6 +86,7 @@ lib/Net/LDAP/Util.pm
 lib/Net/LDAPI.pm
 lib/Net/LDAPS.pm
 mkmanf
+t/0-signature.t
 t/00ldif-entry.t
 t/01canon_dn.t
 t/02filter.t
