@@ -5,31 +5,17 @@
 
 package Net::LDAPS;
 @Net::LDAPS::ISA = ( 'Net::LDAP' );
-$Net::LDAPS::VERSION = "0.02";
+$Net::LDAPS::VERSION = "0.03";
 
 use strict;
 use Net::LDAP;
-use Net::LDAP::ASN qw(LDAPResponse);
-use Convert::ASN1 qw(asn_read);
 use IO::Socket::SSL;
-
-sub _options {
-    my %r;
-    while (@_) {
-	my ($k, $v) = splice(@_, 0, 2);
-	$r{$k} = $v;
-    }
-    \%r;
-}
 
 # Different OpenSSL verify modes.
 my %verify = qw(none 0 optional 1 require 3);
 
-sub new {
-  my $self = shift;
-  my $type = ref($self) || $self;
-  my $host = shift if @_ % 2;
-  my $arg  = _options(@_);
+sub _connect {
+  my ($ldap, $host, $arg) = @_;
   my $verify = 0;
   my ($clientcert,$clientkey);
   
@@ -37,47 +23,30 @@ sub new {
       my $v = lc $arg->{'verify'};
       $verify = 0 + (exists $verify{$v} ? $verify{$v} : $verify);
   }
+
   if (exists $arg->{'clientcert'}) {
       $clientcert = $arg->{'clientcert'};
       if (exists $arg->{'clientkey'}) {
 	  $clientkey = $arg->{'clientkey'};
       } else {
-	  die "Setting client public key but not client private key";
+	  require Carp;
+	  Carp::croak("Setting client public key but not client private key");
       }
   }
-  my $obj  = bless {}, $type;
 
-  my $sock = IO::Socket::SSL->new(
-				  PeerAddr => $host,
-				  PeerPort => $arg->{'port'} || '636',
-				  Proto    => 'tcp',
-				  Timeout  => defined $arg->{'timeout'}
-				  ? $arg->{'timeout'}
-				  : 120,
-				  SSL_verify_mode => $verify,
-				  SSL_cipher_list => defined $arg->{'ciphers'}
-				  ? $arg->{'ciphers'}
-				  : 'ALL',
-				  SSL_use_cert => $clientcert ? 1 : 0,
-				  SSL_cert_file => $clientcert,
-				  SSL_key_file => $clientcert
-				  ? $clientkey : undef,
-				  SSL_ca_file => exists $arg->{'cafile'}
-				  ? $arg->{'cafile'} : undef,
-				  SSL_ca_path => exists $arg->{'capath'}
-				  ? $arg->{'capath'} : undef,
-				 ) or return;
-
-  $sock->autoflush(1);
-
-  $obj->{'net_ldap_socket'}  = $sock;
-  $obj->{'net_ldap_host'}    = $host;
-  $obj->{'net_ldap_resp'}    = {};
-  $obj->{'net_ldap_debug'}   = $arg->{'debug'} || 0;
-  $obj->{'net_ldap_version'} = $arg->{'version'} || $Net::LDAP::LDAP_VERSION;
-  $obj->{'net_ldap_async'}   = $arg->{'async'} ? 1 : 0;
-
-  $obj;
+  $ldap->{'net_ldap_socket'} = IO::Socket::INET->new(
+    PeerAddr 	    => $host,
+    PeerPort 	    => $arg->{'port'} || '636',
+    Proto    	    => 'tcp',
+    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
+    SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
+    SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : undef,
+    SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : undef,
+    SSL_key_file    => $clientcert ? $clientkey : undef,
+    SSL_use_cert    => $clientcert ? 1 : 0,
+    SSL_cert_file   => $clientcert,
+    SSL_verify_mode => $verify,
+  );
 }
 
 sub cipher {
@@ -86,45 +55,6 @@ sub cipher {
 
 sub certificate {
     $_[0]->{'net_ldap_socket'}->get_peer_certificate;
-}
-
-# Override a Net::LDAP method because IO::Socket::SSL doesn't support the
-# socket methods (ie send) that Net::LDAP uses.
-
-sub _sendmesg {
-  my $ldap = shift;
-  my $mesg = shift;
-
-  my $debug;
-  if ($debug = $ldap->debug) {
-    require Convert::ASN1::Debug;
-    print STDERR "$ldap sending:\n";
-
-    Convert::ASN1::asn_hexdump(*STDERR, $mesg->pdu)
-      if $debug & 1;
-
-    Convert::ASN1::asn_dump(*STDERR, $mesg->pdu)
-      if $debug & 4;
-  }
-
-  syswrite($ldap->socket, $mesg->pdu, length($mesg->pdu))
-    or return $mesg->set_error(Net::LDAP::LDAP_LOCAL_ERROR,"$!");
-
-  # for CLDAP, here we need to recode when we were sent
-  # so that we can perform timeouts and resends
-
-  my $mid = $mesg->mesg_id;
-
-  unless ($mesg->done) { # may not have a response
-
-    $ldap->{net_ldap_mesg}->{$mid} = $mesg;
-
-    unless ($ldap->async) {
-      my $err = $ldap->sync($mid);
-      $mesg->set_error($err,$@) if $err;
-    }
-  }
-  $mesg;
 }
 
 1;

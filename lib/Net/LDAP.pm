@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= 0.23_02;
+$VERSION 	= 0.23_03;
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -96,18 +96,8 @@ sub new {
   my $arg  = &_options;
   my $obj  = bless {}, $type;
 
-  my $sock = IO::Socket::INET->new(
-               PeerAddr => $host,
-               PeerPort => $arg->{port} || '389',
-               Proto    => 'tcp',
-               Timeout  => defined $arg->{timeout}
-                             ? $arg->{timeout}
-                             : 120
-             ) or return;
+  $obj->_connect($host, $arg) or return;
 
-  $sock->autoflush(1);
-
-  $obj->{net_ldap_socket}  = $sock;
   $obj->{net_ldap_host}    = $host;
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
@@ -121,6 +111,19 @@ sub new {
   $obj->debug($arg->{debug} || 0 );
 
   $obj;
+}
+
+sub _connect {
+  my ($ldap, $host, $arg) = @_;
+
+  $ldap->{net_ldap_socket} = IO::Socket::INET->new(
+    PeerAddr => $host,
+    PeerPort => $arg->{port} || '389',
+    Proto    => 'tcp',
+    Timeout  => defined $arg->{timeout}
+		 ? $arg->{timeout}
+		 : 120
+  );
 }
 
 sub message {
@@ -603,7 +606,7 @@ sub _sendmesg {
       if $debug & 4;
   }
 
-  send($ldap->socket, $mesg->pdu, 0)
+  syswrite($ldap->socket, $mesg->pdu, length($mesg->pdu))
     or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
 
   # for CLDAP, here we need to recode when we were sent
