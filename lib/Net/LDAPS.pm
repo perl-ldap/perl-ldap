@@ -115,6 +115,11 @@ certificate, and it must be valid.) If you set verify to optional or
 require, you must also set either cafile or capath. The most secure
 option is 'require'.
 
+=item sslversion
+
+This defines the version of the SSL/TLS protocol to use. Defaults to
+'sslv2/3', other possible values are 'sslv2', 'sslv3', and 'tlsv1'.
+
 =item ciphers
 
 Specify which subset of cipher suites are permissible for this
