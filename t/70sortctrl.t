@@ -34,13 +34,24 @@ use Net::LDAP::Constant qw(
 	LDAP_SUCCESS
 );
 
+unless ($EXTERNAL_TESTS) {
+  print "1..0 # Skip External tests disabled\n";
+  exit 0;
+}
+
 my($host, $base, $filter, $order) = @sortctrl{qw(host base filter order)};
 
-my $ldap = $EXTERNAL_TESTS && $host && Net::LDAP->new($host, version => 3);
+my $ldap = $host && Net::LDAP->new($host, version => 3);
+
+unless ($ldap) {
+  print "1..0 # Skip Cannot connect to host\n";
+  exit 0;
+}
+
 my $dse  = $ldap && $ldap->root_dse;
 
 unless ($dse and grep { $_ eq LDAP_CONTROL_SORTREQUEST } $dse->get_value('supportedControl')) {
-  print "1..0\n";
+  print "1..0 # Skip server does not support LDAP_CONTROL_SORTREQUEST\n";
   exit;
 }
 
