@@ -159,6 +159,12 @@ sub parse {
 
   undef $ErrStr;
 
+  # a filter is required
+  if (!defined $filter) {
+    $ErrStr = "Undefined filter";
+    return undef;
+  }
+
   # Algorithm depends on /^\(/;
   $filter =~ s/^\s*//;
 
