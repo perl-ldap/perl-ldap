@@ -246,9 +246,9 @@ of a name.
 
 =item *
 
-Escapes all RFC 2253 special characters (",", "+", """, "\", "<", ">",
-";", "#", "=", " "), slashes ("/"), and any other character where the
-ASCII code is <32 as \hexpair.
+Escapes all RFC 2253 special characters (",", "+", """, "\", "E<lt>",
+"E<gt>", ";", "#", "=", " "), slashes ("/"), and any other character
+where the ASCII code is E<lt> 32 as \hexpair.
 
 =item *
 
@@ -374,14 +374,14 @@ in the DN.
 For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
 [
   {
-    'OU' => 'Sales',
-    'CN' => 'J. Smith'
+    'OU' =E<gt> 'Sales',
+    'CN' =E<gt> 'J. Smith'
   },
   {
-    'DC' => 'example'
+    'DC' =E<gt> 'example'
   },
   {
-    'DC' => 'net'
+    'DC' =E<gt> 'net'
   }
 ]
 
@@ -392,13 +392,13 @@ values, ldap_explode_dn uses references to the actual values,
 e.g. '1.3.6.1.4.1.1466.0=#04024869,DC=example,DC=com' is exploded to:
 [
   {
-    '1.3.6.1.4.1.1466.0' => \"\004\002Hi"
+    '1.3.6.1.4.1.1466.0' =E<gt> \"\004\002Hi"
   },
   {
-    'DC' => 'example'
+    'DC' =E<gt> 'example'
   },
   {
-    'DC' => 'com'
+    'DC' =E<gt> 'com'
   }
 ];
 
@@ -408,8 +408,8 @@ It also performs the following operations on the given DN:
 
 =item *
 
-Unescape "\" followed by ",", "+", """, "\", "<", ">", ";", "#", "=",
-" ", or a hexpair and and strings beginning with "#".
+Unescape "\" followed by ",", "+", """, "\", "E<lt>", "E<gt>", ";",
+"#", "=", " ", or a hexpair and and strings beginning with "#".
 
 =item *
 
@@ -444,6 +444,8 @@ Do not change attribute type names.
 =item reverse
 
 If TRUE, the RDN sequence is reversed.
+
+=back
 
 =back
 
@@ -518,7 +520,7 @@ sub ldap_explode_dn($%) {
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
@@ -532,7 +534,7 @@ ldap_explode_dn and canonical_dn also
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.15 2002/06/03 15:26:46 gbarr Exp $>
+I<$Id: Util.pm,v 1.16 2003/05/07 11:49:26 chrisridd Exp $>
 
 =cut
 
