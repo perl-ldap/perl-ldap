@@ -1,96 +1,280 @@
-2001-01-29 21:50  gbarr
+2001-04-10 18:02  Graham Barr
+
+	* Makefile.PL:
+
+	Tweaks to dependcies of distdir
+	
+2001-04-10 17:30  Graham Barr
+
+	* htdocs/index.xml, lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Constant.pm,
+	lib/Net/LDAP/Control.pm, lib/Net/LDAP/Control/ProxyAuth.pm:
+
+	Add Net::LDAP::Control::ProxyAuth from Olivier Dubois
+	
+2001-04-10 08:00  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Add same change for dn lines to _read_one_cmd.
+	
+2001-04-09 08:39  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Allow spaces between the colon and the DN in dn lines.
+	
+2001-04-02 21:31  Graham Barr
+
+	* lib/Net/LDAP/Filter.pm, t/02filter.t:
+
+	Fix for filters that contain an escaped * [Radovan Semancik]
+	
+2001-03-31 06:04  Clif Harden
+
+	* contrib/tklkup:
+
+	Removed base and mybase options.
+	Added button and code to allow changing of server port number.
+	Added code to limit the number of search bases detected.
+	Change code that does auto base detection.
+	Added code to query rootDSE for namingContexts when a base was
+	not specified on a server line in the .tklkup file.
+	Changed layout of schema GUI.  Added code to handle additional
+	schema objects.
+	
+2001-03-31 05:58  Clif Harden
+
+	* contrib/dot.tklkup:
+
+	Remove mybase and base options.
+	Added limit and port options.
+	
+2001-03-21 16:21  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pod:
+
+	Describe the encode option in the constructor.
+	
+2001-03-21 16:20  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Add encode option in constructor. Add _write_dn to appropriately
+	format the dn line, and call it using the encode option where
+	appropriate.
+	
+	Add support for writing modrdn records from Kartik Subbarao.
+	
+2001-03-16 09:13  Chris Ridd
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Fix missing semicolon in _normalize, and normalize ' to &apos; instead
+	of &quot; as per REC-xml-19980210 section 2.4.
+	
+2001-03-12 14:01  Graham Barr
+
+	* contrib/: jpegDisplay.pl, jpegLoad.pl:
+
+	New contrib scripts from Clif Harden
+	
+2001-03-08 13:31  Graham Barr
+
+	* mkhtml, lib/Net/LDAP/RFC.pod, lib/Net/LDAP/Util.pm:
+
+	Documentation updates
+	
+2001-03-08 13:18  Graham Barr
+
+	* lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	Escape leading and trailing spaces in canonical_dn instead of
+	placing the value in "'s.
+	Added a description of what canonical_dn does in the POD
+	
+2001-03-07 15:20  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Fix minor doc typo (-nout -> -noout)
+	
+2001-03-07 15:13  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Fixed typo 'methoc' -> 'method' spotted by David Corcoran
+	
+2001-02-14 19:43  Graham Barr
+
+	* lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	Fix to the DN parsing regex and some more tests
+	
+2001-02-13 13:44  Graham Barr
+
+	* t/01canon_dn.t:
+
+	Made t/01canon_dn.t expain why a test failes
+	Added more tests to 01canon_dn.t, provided by John Berthels
+	
+2001-02-13 13:19  Graham Barr
+
+	* lib/Net/LDAP/Util.pm:
+
+	Allow ; as a RDN separator in canonical_dn
+	
+2001-02-13 11:22  Graham Barr
+
+	* lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	Add canonical_dn function to erturn a DN in a canonical form.
+	
+2001-02-12 14:29  Graham Barr
+
+	* mkmanf:
+
+	Skip CVS files
+	
+2001-02-12 14:22  Graham Barr
+
+	* htdocs/index.xml:
+
+	XML source for docs index
+	
+2001-02-12 14:17  Graham Barr
+
+	* lib/Net/: LDAP.pm, LDAP.pod, LDAP/Schema.pm, LDAP/Schema.pod:
+
+	Make schema retrieval and parsing more standards compliant
+	[Original patch from Clif Harden]
+	
+2001-02-12 09:27  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Support - in attribute names and correctly read base64 encoded
+	attribute in _read_one_cmd. [Patch supplied by Kartik Subbarao]
+	
+2001-01-31 11:47  Graham Barr
+
+	* mkhtml, mkindex, mkmanf:
+
+	Useful scripts for development
+	
+2001-01-31 11:45  Graham Barr
+
+	* lib/Net/LDAP/Schema.pm:
+
+	Fix _must_or_may to not croak on undefined value
+	(patch provided by Dave Bailey)
+	
+2001-01-31 11:44  Graham Barr
+
+	* lib/Net/LDAP/Bind.pm:
+
+	Use the server SASL credentials for the SASL challenge
+	(patch provided by Simon Wilkinson)
+	
+2001-01-29 22:32  Graham Barr
+
+	* OldChanges:
+
+	Move perforce changelog aside and now generate with cvs2cl
+	
+2001-01-29 21:50  Graham Barr
 
 	* contrib/: README, dot.tklkup, isMember.pl, printMembers.pl,
 	tklkup:
-	
-	Moved files back
 
-2001-01-29 21:09  gbarr
+	Moved files back
+	
+2001-01-29 21:09  Graham Barr
 
 	* fred, fred.bak, user.map:
-	
-	Change 611
 
-2001-01-19 02:09  charden
+	Change 611
+	
+2001-01-19 02:09  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
+
 	Removed URL for bostonlight.  No longer active.
 	
 	Added two URLs for Active Directory information.
-
-2000-12-14 02:35  charden
+	
+2000-12-14 02:35  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
+
 	Corrected minor miss-wording on the LDAPS url warning.
-
-2000-12-14 02:27  charden
+	
+2000-12-14 02:27  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
+
 	Added comment about URL LDAPS having a nasty habit of resizing the
 	user's browser to cover the whole screen.
-
-2000-12-07 03:36  charden
+	
+2000-12-07 03:36  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
-	Added URL for LDAPGURU.  Added URL for eMailman.
 
-2000-10-27 02:40  charden
+	Added URL for LDAPGURU.
+	Added URL for eMailman.
+	
+2000-10-27 02:40  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
+
 	Made spelling corrections and fixed a -> code mis-placement.
-
-2000-10-22 05:31  charden
+	
+2000-10-22 05:31  Clif Harden
 
 	* lib/Net/LDAP/FAQ.pod:
-	
+
 	Added section "What is the difference between a LDAP server and a
 	relational database".
-
-2000-08-03 18:10  gbarr
+	
+2000-08-03 18:10  Graham Barr
 
 	* contrib/: checkauth.pl, examples, isMember.readme,
 	printMembers.readme, schema, schema.README, tklkup.README:
-	
-	Change 560
 
-2000-07-30 22:03  gbarr
+	Change 560
+	
+2000-07-30 22:03  Graham Barr
 
 	* contrib/schema, contrib/schema.README, contrib/schema.tklkup,
 	contrib/tklkup.README, contrib/tklkup.tklkup, t/01url.t:
-	
-	Change 553
 
-2000-05-03 13:28  gbarr
+	Change 553
+	
+2000-05-03 13:28  Graham Barr
 
 	* contrib/checkauth.pl, contrib/examples, contrib/isMember.readme,
 	contrib/printMembers.readme, contrib/schema, contrib/schema.README,
 	contrib/schema.tklkup, contrib/tklkup.README,
 	contrib/tklkup.tklkup, t/01url.t:
-	
+
 	import
+	
+2000-05-03 13:28  Graham Barr
 
-2000-05-03 13:28  gbarr
-
-	* MANIFEST, Makefile.PL, README, RELEASE_NOTES, TODO,
-	bin/ldapdelete.PL, bin/ldapmodrdn.PL, bin/ldapsearch.PL,
-	contrib/checkauth.pl, contrib/examples, contrib/isMember.pl,
-	contrib/isMember.readme, contrib/printMembers.pl,
-	contrib/printMembers.readme, contrib/schema, contrib/schema.README,
-	contrib/schema.tklkup, contrib/tklkup, contrib/tklkup.README,
-	contrib/tklkup.tklkup, data/00-cmp2.ldif, data/00-in.ldif,
-	data/50-cmp.ldif, data/50-in.ldif, data/51-in.ldif,
-	data/51a-cmp.ldif, data/51b-cmp.ldif, data/51c-cmp.ldif,
-	data/51d-cmp.ldif, data/52-cmp.ldif, data/52-in.ldif,
-	data/52-mod.ldif, data/schema.in, data/slapd-conf.in,
-	data/slapd.at.conf, data/slapd.oc.conf, lib/Authen/SASL.pm,
-	lib/Authen/SASL.pod, lib/Authen/SASL/CRAM_MD5.pm,
-	lib/Bundle/Net/LDAP.pm, lib/LWP/Protocol/ldap.pm, lib/Net/LDAP.pm,
-	lib/Net/LDAP.pod, lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Bind.pm,
+	* Makefile.PL, README, RELEASE_NOTES, TODO, bin/ldapdelete.PL,
+	bin/ldapmodrdn.PL, bin/ldapsearch.PL, contrib/checkauth.pl,
+	contrib/examples, contrib/isMember.pl, contrib/isMember.readme,
+	contrib/printMembers.pl, contrib/printMembers.readme,
+	contrib/schema, contrib/schema.README, contrib/schema.tklkup,
+	contrib/tklkup, contrib/tklkup.README, contrib/tklkup.tklkup,
+	data/00-cmp2.ldif, data/00-in.ldif, data/50-cmp.ldif,
+	data/50-in.ldif, data/51-in.ldif, data/51a-cmp.ldif,
+	data/51b-cmp.ldif, data/51c-cmp.ldif, data/51d-cmp.ldif,
+	data/52-cmp.ldif, data/52-in.ldif, data/52-mod.ldif,
+	data/schema.in, data/slapd-conf.in, data/slapd.at.conf,
+	data/slapd.oc.conf, lib/Authen/SASL.pm, lib/Authen/SASL.pod,
+	lib/Authen/SASL/CRAM_MD5.pm, lib/Bundle/Net/LDAP.pm,
+	lib/LWP/Protocol/ldap.pm, lib/Net/LDAP.pm, lib/Net/LDAP.pod,
+	lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Bind.pm,
 	lib/Net/LDAP/Constant.pm, lib/Net/LDAP/Constant.pod,
 	lib/Net/LDAP/Control.pm, lib/Net/LDAP/Entry.pm,
 	lib/Net/LDAP/Entry.pod, lib/Net/LDAP/Examples.pod,
@@ -106,6 +290,6 @@
 	lib/Net/LDAP/Control/VLV.pm, lib/Net/LDAP/Control/VLVResponse.pm,
 	t/00ldif-entry.t, t/01url.t, t/02filter.t, t/50populate.t,
 	t/51search.t, t/52modify.t, t/53schema.t, t/common.pl:
-	
-	Initial revision
 
+	Initial revision
+	
