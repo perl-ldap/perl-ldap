@@ -1,4 +1,4 @@
-# Copyright (c) 1998-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1998-2002 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -7,10 +7,10 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.12";
+$VERSION = "0.99";
 
 #
-# Get schema from the server (or read from LDIF) and parse it into 
+# Get schema from the server (or read from LDIF) and parse it into
 # data structure
 #
 sub new {
@@ -37,7 +37,7 @@ sub parse {
     $schema->{error} = "Bad argument";
     return undef;
   }
-  
+
   %$schema = ();
 
   my $entry;
@@ -69,7 +69,7 @@ sub parse {
     $schema->{error} = "Can't load schema from [$arg]: $!";
     return undef;
   }
-  
+
   eval {
     local $SIG{__DIE__} = sub {};
     _parse_schema( $schema, $entry );
@@ -109,271 +109,93 @@ sub merge {
   # parameters describing what to do in the event of a clash.
 }
 
-#
-# The names of all the attributes.
-# Or all atts in (one or more) objectclass(es). 
-#
-sub attributes {
-  my $self = shift;
-  my @oc = @_;
-  my %res;
 
-  if( @oc ) {
-    @res{ $self->must( @oc ) } = ();
-    @res{ $self->may( @oc ) } = ();
-  }
-  else {
-    @res{ @{ $self->{at} } } = () if $self->{at};
-  }
-
-  return wantarray ? (keys %res) : [keys %res];
-}
-
-# The names of all the object classes
-
-sub objectclasses {
-  my $self = shift;
-  my $res = $self->{oc};
-  return wantarray ? @$res : $res;
-}
-
-# Return all syntaxes
-
-sub syntaxes {
-  my $self = shift;
-  my $res = $self->{syn};
-  return wantarray ? @$res : $res;
-}
-
-
-# The names of all the matchingrules
-
-sub matchingrules {
-  my $self = shift;
-  my $res = $self->{mr};
-  return wantarray ? @$res : $res;
-}
-
-# The names of all the matchingruleuse
-
-sub matchingruleuse {
-  my $self = shift;
-  my $res = $self->{mru};
-  return wantarray ? @$res : $res;
-}
-
-# The names of all the ditstructurerules
-
-sub ditstructurerules {
-  my $self = shift;
-  my $res = $self->{dts};
-  return wantarray ? @$res : $res;
-}
-
-# The names of all the ditcontentrules
-
-sub ditcontentrules {
-  my $self = shift;
-  my $res = $self->{dtc};
-  return wantarray ? @$res : $res;
-}
-
-# The names of all the nameforms
-
-sub nameforms {
-  my $self = shift;
-  my $res = $self->{nfm};
-  return wantarray ? @$res : $res;
-}
+sub all_attributes		{ values %{shift->{at}}  }
+sub all_objectclasses		{ values %{shift->{oc}}  }
+sub all_syntaxes		{ values %{shift->{syn}} }
+sub all_matchingrules		{ values %{shift->{mr}}  }
+sub all_matchingruleuses	{ values %{shift->{mru}} }
+sub all_ditstructurerules	{ values %{shift->{dts}} }
+sub all_ditcontentrules		{ values %{shift->{dtc}} }
+sub all_nameforms		{ values %{shift->{nfm}} }
 
 sub superclass {
-   my $self = shift;
-   my $oc = shift;
-
-   my $oid = $self->is_objectclass( $oc );
-   return scalar _error($self, "Not an objectClass") unless $oid;
-
-   my $res = $self->{oid}->{$oid}->{sup};
-   return scalar _error($self, "No superclass") unless $res;
-   return wantarray ? @$res : $res;
-}
-
-sub must {
   my $self = shift;
-  $self->_must_or_may( "must", @_ );
+  my $oc = shift;
+
+  my $elem = $self->objectclass( $oc )
+    or return scalar _error($self, "Not an objectClass");
+
+  return @{$elem->{sup} || []};
 }
 
-sub may {
-  my $self = shift;
-  $self->_must_or_may( "may", @_ );
-}
+sub must { _must_or_may(@_,'must') }
+sub may  { _must_or_may(@_,'may')  }
 
 #
-# Return must or may attributes for this OC. [As array or array ref]
-# return empty array/undef on error
+# Return must or may attributes for this OC.
 #
 sub _must_or_may {
   my $self = shift;
-  my $must_or_may = shift;
+  my $must_or_may = pop;
   my @oc = @_ or return;
-  
+
   #
   # If called with an entry, get the OC names and continue
   #
-  if( UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
+  if ( UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
     my $entry = $oc[0];
     @oc = $entry->get_value( "objectclass" )
       or return;
   }
 
-  my %res;		# Use hash to get uniqueness
+  my %res;
+  my %done;
 
-  foreach my $oc ( @oc ) {
-    my $oid = $self->is_objectclass( $oc );
-    if( $oid ) {
-      my $res = $self->{oid}->{$oid}->{$must_or_may} or next;
-      @res{ @$res } = (); 	# Add in, getting uniqueness
-    }
+  while (@oc) {
+    my $oc = shift @oc;
+
+    $done{lc $oc}++ and next;
+
+    my $elem = $self->objectclass( $oc ) or next;
+    my $res  = $elem->{$must_or_may} or next;
+    @res{ @$res } = (); 	# Add in, getting uniqueness
+    my $sup = $elem->{sup} or next;
+    push @oc, @$sup;
   }
 
-  return wantarray ? (keys %res) : [ keys %res ];
+  my %unique = map { ($_,$_) } $self->attribute(keys %res);
+  values %unique;
 }
 
+#
+# Given name or oid, return element or undef if not of appropriate type
+#
 
-#
-# Return the value of an item, e.g. 'desc'. If item is array ref and we
-# are called from array context, return an array, else scalar
-#
-sub item {
+sub _get {
   my $self = shift;
-  my $arg = shift;
-  my $item_name = shift;	# May be undef. If so all are returned
+  my $type = $self->{ pop(@_) };
+  my $oid  = $self->{oid};
 
-  my @oid = $self->name2oid( $arg );
-  return _error($self, @oid ? "Non-unique name" : "Unknown name")
-    unless @oid == 1;
+  my @elem = grep $_, map {
+    my $elem = $type->{lc $_};
 
-  my $item_ref = $self->{oid}->{$oid[0]} or return _error($self, "Unknown OID");
+    ($elem or ($elem = $oid->{$_} and $elem->{type} eq $type))
+      ? $elem
+      : undef;
+  } @_;
 
-  my $value = defined($item_name) ? $item_ref->{lc $item_name} : $item_ref
-    or return _error($self, "No such property");
-  delete $self->{error};
-
-  if( ref $value eq "ARRAY" && wantarray ) {
-    return @$value;
-  }
-  else {
-    return $value;
-  }
+  wantarray ? @elem : $elem[0];
 }
 
-#
-# Return a list of items for a particular name or oid
-#
-# BUG:Dumps internal representation rather than real info. E.g. shows
-# the alias/name distinction we create and the 'type' field.
-#
-sub items {
-  my $self = shift;
-  my $arg = shift;
-
-  my @oid = $self->name2oid( $arg );
-  return _error($self, @oid ? "Non-unique name" : "Unknown name")
-    unless @oid == 1;
-
-  my $item_ref = $self->{oid}->{$oid[0]} or return _error($self, "Unknown OID");
-  delete $self->{error};
-
-  return wantarray ? (keys %$item_ref) : [keys %$item_ref];
-}
-
-#
-# Given a name, alias or oid, return oid or undef. Undef if not known.
-#
-sub name2oid {
-  my $self = shift;
-  my $name = lc shift;
-  return _error($self, "Bad name") unless defined($name) && length($name);
-  return $name if exists $self->{oid}->{$name};	# Already an oid
-  my $oid = $self->{name}->{$name} || $self->{aliases}->{$name}
-    or return _error($self, "Unknown name");
-  return (wantarray && ref $oid) ? @$oid : $oid;
-}
-
-#
-# Given an an OID (not a name) return the canonical name. Undef if not
-# an OID
-#
-sub oid2name {
-  my $self = shift;
-  my $oid = shift;
-  return _error($self, "Bad OID") unless $oid;
-  return _error($self, "Unknown OID") unless $self->{oid}->{$oid};
-  delete $self->{error};
-  return $self->{oid}->{$oid}->{name};
-}
-
-#
-# Given name or oid, return oid or undef if not of appropriate type
-#
-sub is_attribute {
-  my $self = shift;
-  return $self->_is_type( "at", @_ );
-}
-
-sub is_objectclass {
-  my $self = shift;
-  return $self->_is_type( "oc", @_ );
-}
-
-sub is_syntax {
-  my $self = shift;
-  return $self->_is_type( "syn", @_ );
-}
-
-sub is_matchingrule {
-  my $self = shift;
-  return $self->_is_type( "mr", @_ );
-}
-
-sub is_matchingruleuse {
-  my $self = shift;
-  return $self->_is_type( "mru", @_ );
-}
-
-sub is_ditstructurerule {
-  my $self = shift;
-  return $self->_is_type( "dts", @_ );
-}
-
-sub is_ditcontentrule {
-  my $self = shift;
-  return $self->_is_type( "dtc", @_ );
-}
-
-sub is_nameform {
-  my $self = shift;
-  return $self->_is_type( "nfm", @_ );
-}
-
-# --------------------------------------------------
-# Internal functions
-# --------------------------------------------------
-
-#
-# Given a type and a name_or_oid, return true (the oid) if the name_or_oid
-# is of the appropriate type. Else return undef.
-#
-sub _is_type {
-  my ($self, $type, $name) = @_;
-
-  foreach my $oid ($self->name2oid( $name )) {
-    my $hash = $self->{oid}->{$oid} or next;
-    return $oid if $hash->{type} eq $type;
-  }
-
-  undef;
-}
+sub attribute		{ _get(@_,'at')  }
+sub objectclass		{ _get(@_,'oc')  }
+sub syntax		{ _get(@_,'syn') }
+sub matchingrule	{ _get(@_,'mr')  }
+sub matchingruleuse	{ _get(@_,'mru') }
+sub ditstructurerule	{ _get(@_,'dts') }
+sub ditcontentrule	{ _get(@_,'dtc') }
+sub nameform		{ _get(@_,'nfm') }
 
 
 #
@@ -399,22 +221,17 @@ sub _is_type {
 #			... etc per oid details
 #
 # These next items are optimisations, to avoid always searching the OID
-# lists. Could be removed in theory.
+# lists. Could be removed in theory. Each is a hash ref mapping
+# lowercase names to the hash stored in the oid struucture
 #
-# ->{at}  = [ list of canonical names of attributes ]
-# ->{oc}  = [ list of can. names of objectclasses ]
-# ->{syn} = [ list of can. names of syntaxes (we make names from descripts) ]
-# ->{mr}  = [ list of can. names of matchingrules ]
-# ->{mru} = [ list of can. names of matchingruleuse ]
-# ->{dts} = [ list of can. names of ditstructurerules ]
-# ->{dtc} = [ list of can. names of ditcontentrules ]
-# ->{nfm} = [ list of can. names of nameForms ]
-#
-# This is used to optimise name => oid lookups (to avoid searching).
-# This could be removed or made into a cache to reduce memory usage.
-# The names include any aliases.
-#
-# ->{name}->{ $lower_case_name } = $oid
+# ->{at}
+# ->{oc}
+# ->{syn}
+# ->{mr}
+# ->{mru}
+# ->{dts}
+# ->{dtc}
+# ->{nfm}
 #
 
 #
@@ -439,15 +256,16 @@ my %listops = map { ($_,1) } qw(must may sup);
 #
 # Map schema attribute names to internal names
 #
-my %type2attr = ( at	=> "attributetypes",
-		  oc	=> "objectclasses",
-		  syn	=> "ldapsyntaxes",
-		  mr	=> "matchingrules",
-		  mru	=> "matchingruleuse",
-		  dts	=> "ditstructurerules",
-		  dtc	=> "ditcontentrules",
-		  nfm	=> "nameforms",
-		  );
+my %type2attr = qw(
+	at	attributetypes
+	oc	objectclasses
+	syn	ldapsyntaxes
+	mr	matchingrules
+	mru	matchingruleuse
+	dts	ditstructurerules
+	dtc	ditcontentrules
+	nfm	nameforms
+);
 
 #
 # Return ref to hash containing schema data - undef on failure
@@ -456,15 +274,15 @@ my %type2attr = ( at	=> "attributetypes",
 sub _parse_schema {
   my $schema = shift;
   my $entry = shift;
-  
+
   return undef unless defined($entry);
 
   keys %type2attr; # reset iterator
   while(my($type,$attr) = each %type2attr) {
     my $vals = $entry->get_value($attr, asref => 1);
 
-    my @names;
-    $schema->{$type} = \@names;		# Save reference to list of names
+    my %names;
+    $schema->{$type} = \%names;		# Save reference to hash of names => element
 
     next unless $vals;			# Just leave empty ref if nothing
 
@@ -495,7 +313,7 @@ sub _parse_schema {
                       |
                        '((?:[^']+|'[^\s)])*)'
                       )\s*/xcg;
-      die "Cannot parse [$val] ",substr($val,pos($val)) unless @tokens and pos($val) == length($val);
+      die "Cannot parse [$val] [",substr($val,pos($val)),"]" unless @tokens and pos($val) == length($val);
 
       # remove () from start/end
       shift @tokens if $tokens[0]  eq '(';
@@ -520,7 +338,7 @@ sub _parse_schema {
 	      push @arr,$tmp unless $tmp eq '$';
 
               # Drop of end of list ?
-	      die "Cannot parse [$val]" unless @tokens;
+	      die "Cannot parse [$val] {$tag}" unless @tokens;
 	    }
 	  }
 
@@ -529,50 +347,42 @@ sub _parse_schema {
 	    if exists $listops{$tag} and !ref $schema_entry{$tag};
 	}
         else {
-          die "Cannot parse [$val]";
+          die "Cannot parse [$val] {$tag}";
         }
       }
 
       #
       # Extract the maximum length of a syntax
       #
-      if ( exists $schema_entry{syntax}) {
-	$schema_entry{syntax} =~ s/{(\d+)}//
-	  and $schema_entry{max_length} = $1;
-      }
+      $schema_entry{max_length} = $1
+	if exists $schema_entry{syntax} and $schema_entry{syntax} =~ s/{(\d+)}//;
 
       #
       # Force a name if we don't have one
       #
-      if (!exists $schema_entry{name}) {
-	$schema_entry{name} = $schema_entry{oid};
-      }
+      $schema_entry{name} = $schema_entry{oid}
+	unless exists $schema_entry{name};
 
       #
       # If we have multiple names, make the name be the first and demote the rest to aliases
       #
-      $schema_entry{name} = shift @{$schema_entry{aliases} = $schema_entry{name}}
-	if ref $schema_entry{name};
+      if (ref $schema_entry{name}) {
+	my $aliases;
+	$schema_entry{name} = shift @{$aliases = $schema_entry{name}};
+	$schema_entry{aliases} = $aliases if @$aliases;
+      }
 
       #
-      # In the schema we store:
-      #
-      # 1 - The schema entry referenced by OID
-      # 2 - a list of canonical names of each type
-      # 3 - a (lower-cased) canonical name -> OID map
-      # 4 - a (lower-cased) alias -> OID map
+      # Store the elements by OID
       #
       $schema->{oid}->{$oid} = \%schema_entry;
-      my $uc_name = uc $schema_entry{name};
-      push @names, $uc_name;
-      foreach my $name ( @{$schema_entry{aliases}}, $uc_name ) {
-        if (exists $schema->{name}{lc $name}) {
-	  $schema->{name}{lc $name} = [ $schema->{name}{lc $name} ] unless ref $schema->{name}{lc $name};
-	  push @{$schema->{name}{lc $name}}, $oid;
-        }
-        else {
-	  $schema->{name}{lc $name} = $oid;
-	}
+
+      #
+      # We also index elements by name within each type
+      #
+      foreach my $name ( @{$schema_entry{aliases}}, $schema_entry{name} ) {
+	my $lc_name = lc $name;
+	$names{lc $name} =  \%schema_entry;
       }
     }
   }
@@ -587,31 +397,22 @@ sub _parse_schema {
 #
 # Get the syntax of an attribute
 #
-sub syntax {
+sub attribute_syntax {
   my $self = shift;
   my $attr = shift;
+  my $syntax;
 
-  my $oid = $self->is_attribute( $attr ) or return undef;
+  while ($attr) {
+    my $elem = $self->attribute( $attr ) or return undef;
 
-  my $syntax = $self->{oid}->{$oid}->{syntax};
-  unless( $syntax ) {
-    my @sup = @{$self->{oid}->{$oid}->{sup}};
-    $syntax = $self->syntax( $sup[0] );
+    $syntax = $elem->{syntax} and return $self->syntax($syntax);
+
+    $attr = ${$elem->{sup} || []}[0];
   }
 
-  return $syntax;
+  return undef
 }
 
-#
-# Given an OID or name (or alias), return the canonical name
-#
-sub name {
-  my $self = shift;
-  my $arg = shift;
-  my @oid = $self->name2oid( $arg );
-  return undef unless @oid == 1;
-  return $self->oid2name( $oid[0] );
-}
 
 sub error {
   $_[0]->{error};
