@@ -157,13 +157,12 @@ the preceding sentence, LDAP is I<NOT> hardware or software.
 It is a protocol that defines how a client and server will
 communicate with one another.
 
-The Lightweight Directory Access Protocol is defined in a 
-series of Requests For Comments, better known as RFC(s).
-The RFCs can be found on the Internet.  A very good
-source for all of the LDAP RFCs can be found in the
-OpenLDAP, http://www.OpenLDAP.org/ , software bundle that can 
-be downloaded free of charge from the Internet.  Some of the 
-more important RFC numbers are RFC 1777 for LDAPv2 and RFC 2251 
+The Lightweight Directory Access Protocol is defined in a series of
+Requests For Comments, better known as RFCs. The RFCs can be found on
+the Internet at http://www.ietf.org/ (the master repository) and many
+other places. There's a link to all the LDAP-related RFCs at
+Perl-LDAP's web site, http://perl-ldap.sourceforge.net/rfc.html. Some
+of the more important RFC numbers are RFC 1777 for LDAPv2 and RFC 2251
 for LDAPv3.
 
 =head2 What is a LDAP Directory.
@@ -307,7 +306,7 @@ More information on this topic can be found on the following URLs;
 
  http://www.openldap.org/faq/data/cache/378.html
 
- http://www.messagingdirect.com/publications/IC-6055.html
+ http://www.isode.com/whitepapers/ic-6055.html
 
 =head2 What is the difference between a ldap reference and a ldap referral?
 
@@ -998,8 +997,8 @@ The code required will look similar to the following code snippet.
 =head2 How do I add an ACI/ACL entry to a directory server with
 Perl-LDAP.
 
-The following code snippet works with a Netscape directory server and 
-should work with any other LDAP directory server.  You will need the
+ACIs and ACLs are proprietary features in LDAP. The following code
+snippet works with a Netscape directory server. You will need the
 specify the correct DN (-DN-) and correct attribute(s) (-nom attr-).
 
   my $aci = '(target="ldap:///-DN-")(targetattr="-nom attr-")(version 3.0;
@@ -1007,7 +1006,7 @@ specify the correct DN (-DN-) and correct attribute(s) (-nom attr-).
 
   $ldap->modify($dn_modif, add => {'aci' => $aci });
 
-=head2 How do I avoid file type and data type miss-matching when loading
+=head2 How do I avoid file type and data type mis-matching when loading
 data from a Win32 system.
 
 When loading a binary attribute with data read from a file on a Win32
@@ -1078,7 +1077,7 @@ replace the placeholders.
 
   print ldap_error_name($result->code);
 
-=head2 How can I simiulate server failover.
+=head2 How can I simulate server failover.
 
 Perl-LDAP does not do server failover, however there are several
 programming options for getting around this situation.
@@ -1184,10 +1183,10 @@ http://www.openldap.org/
 CriticalPath
 http://www.cp.net/
 
-Innosoft                                  
+Innosoft
 http://www.innosoft.com
 
-Isode                                  
+Isode (was MessagingDirect)
 http://www.isode.com/
 
 Netscape Directory Developers Area
@@ -1221,7 +1220,7 @@ http://directoryworks.com/
 ActiveX LDAP Client
 http://www.polonia-online.com/ldap/
 
-=head2 BOOK(s)
+=head2 BOOKS
 
 Developing LDAP and ADSI Clients for Microsoft(R) Exchange.
 By Sven B. Schreiber.  ISBN:  0201657775
@@ -1249,12 +1248,13 @@ Understanding and Deploying Ldap Directory Services.
 By Tim Howes, Mark Smith, Gordon Good, Timothy A. Howe
 ISBN:  1578700701
 
-=head1 AUTHOR(s)
+=head1 AUTHORS
 
 Any good FAQ is made up of many authors, everyone that contributes
 information to the perl-ldap mail list is a potential author.
 
-An attempt to maintain this FAQ is being done by Clif Harden 
+An attempt to maintain this FAQ is being done by Chris Ridd
+ <chrisridd@mac.com>. It was previously updated by Clif Harden 
  <charden@pobox.com>.
 
 The original author of this FAQ was Graham Barr <gbarr@pobox.com>
