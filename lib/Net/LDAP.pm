@@ -791,6 +791,26 @@ sub start_tls {
     : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
 }
 
+sub cipher {
+    my $ldap = shift;
+    if ($ldap->socket->isa('IO::Socket::SSL')) {
+	return $ldap->socket->get_cipher;
+    } else {
+	require Carp;
+	Carp::croak("Requires an SSL or TLS connection");
+    }
+}
+
+sub certificate {
+    my $ldap = shift;
+    if ($ldap->socket->isa('IO::Socket::SSL')) {
+	return $ldap->socket->get_peer_certificate;
+    } else {
+	require Carp;
+	Carp::croak("Requires an SSL or TLS connection");
+    }
+}
+
 # what version are we talking?
 sub version {
   my $ldap = shift;
