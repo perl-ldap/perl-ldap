@@ -252,7 +252,7 @@ sub canonical_dn {
 		  "(?:[^\\"]+|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*"
 		)
 		\s*
-		(?:([,+])\s*(?=\S)|$)
+		(?:([;,+])\s*(?=\S)|$)
 		)\s*/gcx)
   {
     my($type,$val,$sep) = ($1,$2,$3);
@@ -297,7 +297,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.5 2001/02/13 11:22:59 gbarr Exp $>
+I<$Id: Util.pm,v 1.6 2001/02/13 13:19:46 gbarr Exp $>
 
 =cut
 
