@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.19";
+$VERSION = "0.20";
 
 sub new {
   my $self = shift;
@@ -265,7 +265,7 @@ sub dump {
 
   my $asn = $self->{asn};
   print "-" x 72,"\n";
-  print "dn:",$asn->{objectName},"\n\n";
+  print "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
 
   my($attr,$val);
   my $l = 0;
