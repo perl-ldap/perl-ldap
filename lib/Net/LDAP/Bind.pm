@@ -1,4 +1,4 @@
-# Copyright (c) 1998-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1998-2003 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -38,10 +38,8 @@ sub decode {
 
   $self->{mesgid} = Net::LDAP::Message->NewMesgID(); # Get a new message ID
 
-  my $resp = $sasl->client_step($bind->{serverSaslCreds});
-
-  $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error"), return
-    unless defined $resp;
+  my ($resp) = $sasl->client_step($bind->{serverSaslCreds})
+    or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error"), return;
 
   $self->encode(
     bindRequest => {
