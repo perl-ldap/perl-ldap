@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.7 2001/06/15 02:48:46 charden Exp $
+# $Id: tklkup,v 1.8 2001/06/16 03:57:24 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,6 +21,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.8  2001/06/16 03:57:24  charden
+# Made attribute jpegPhoto detection case insenitive.
+# Corrected error in window creation in subroutine ERROR.
+# Changed the way general error messages are submitted to subroutine
+# ERROR.
+#
 # Revision 1.7  2001/06/15 02:48:46  charden
 # Added many enhancements.
 # Added the ability to display jpegPhoto attributes when they are encountered
@@ -273,7 +279,7 @@ TYPE: {
                      last TYPE; };
 
                      my $error =  "Parsing configuration file found an undefined type:  $_";
-                     ERROR($error);
+                     ERROR(\$error);
 
     } # End of case TYPE
 
@@ -954,13 +960,13 @@ return if ($errcode == 48 ); # Anonymous bind error, not really an error.
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
 
-if ( ref($errcode) == SCALAR )
+if ( ref($errcode) )
 { 
-my $errmsg = ldap_error_text($errcode);
+$errmsg = $$errcode;
 }
 else
 {
-$errmsg = $errcode;
+$errmsg = ldap_error_text($errcode);
 }
 
 my @errmsg = split(/\n/,$errmsg);
@@ -968,22 +974,25 @@ my @errmsg = split(/\n/,$errmsg);
 #
 # Create Main Error Window
 #
+if ( ! Exists($Global{'errorWindow'} ) )
+{ 
+$Global{'errorWindow'} = MainWindow->new;
  
-$errorWindow = MainWindow->new;
+$Global{'errorWindow'}->title("ERROR MESSAGES");
  
-$errorWindow->title("ERROR MESSAGES");
- 
-$errorWindow->geometry("+$x+$y");
+$Global{'errorWindow'}->geometry("+$x+$y");
 #
 # Create process dismiss button
 #
-$errorWindow->Button( -text => "DISMISS", -command => \&dismiss, 
+$Global{'errorWindow'}->Button( -text => "DISMISS", -command => \&dismiss, 
            -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
  
-$errlist = $errorWindow ->Listbox( -width => 70, -height => 10  );
+$errlist = $Global{'errorWindow'} ->Scrolled(Listbox, -scrollbars => 'se',
+                                  -width => 70, -height => 10  );
 
 $errlist->pack(-fill => "both", -expand => 1 );
+}
 
 $errlist->insert("end", "Error Code: $errcode");
 $errlist->insert("end", "");
@@ -992,11 +1001,14 @@ foreach my $msg ( @errmsg )
 {
 $errlist->insert("end", $msg);
 }
+
 sub dismiss{ 
  
-$errorWindow->destroy() if Tk::Exists($errorWindow);
+$Global{'errorWindow'}->destroy() if Tk::Exists($Global{'errorWindow'});
+$errlist = undef();
  
 } # End of dismiss subroutine
+
 } # End of ERROR subroutine
 
 
@@ -1650,7 +1662,7 @@ if ( !defined($ocs) || !defined($tree) ||
    # No schema data available
    #
    my $error = "LDAP Schema data is not available.";
-   ERROR($error);
+   ERROR(\$error);
    return;
 }
 
@@ -2208,7 +2220,7 @@ sub print_entry {
     my $attr = $entry->get_value($_, asref => 1);
     next unless $attr;
 
-    if ( /^jpegPhoto/ )
+    if ( /^jpegPhoto/i )
     {
       #
       # Display jpegPhoto in separate window if Tk::JPEG is used.
@@ -2282,7 +2294,8 @@ close(TMP);
 
 if ( !-e "$jpegFile" )
 {
-ERROR( "Could not create temporary jpeg file $jpegFile");
+my $str = "Could not create temporary jpeg file $jpegFile";
+ERROR( \$str );
 return;
 }
 
@@ -2333,7 +2346,7 @@ my $ldap = new Net::LDAP( $host,
 if ( $error == 1 )
 {
    my $error = "getBases LDAP connect error.";
-   ERROR($error);
+   ERROR(\$error);
    return @base;
 }
 
@@ -2349,7 +2362,7 @@ $mesg = $ldap->bind( password => "$Global{'bindpw'}",
 if ( $error == 1 )
 {
    my $error = "getBases LDAP bind error.";
-   ERROR($error);
+   ERROR(\$error);
    return @base;
 }
 
@@ -2401,7 +2414,7 @@ $mesg = $ldap->search(
 if ( $error == 1 )
 {
    my $error = "getBases LDAP search error.";
-   ERROR($error);
+   ERROR(\$error);
    return @new_base;
 }
 
@@ -2465,7 +2478,7 @@ my $error;
 if ( $Global{'setVersion'} != 1 )
 {
 $error = "LDAP version is not equal to 3.";
-ERROR($error);
+ERROR(\$error);
 return;
 }
 
@@ -2480,7 +2493,7 @@ my @Attributes = ( qw( namingContexts supportedLDAPVersion
 if ( !defined($root) )
 {
    my $error =  "Root DSE entry could not be obtained.";
-   ERROR($error);
+   ERROR(\$error);
 }
 
 #
