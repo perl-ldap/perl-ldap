@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION = 0.19_01;
+$VERSION = 0.20;
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 

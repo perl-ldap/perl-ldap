@@ -5,7 +5,7 @@ BEGIN {
 }
 
 
-print "1..8\n";
+print "1..9\n";
 
 use Net::LDAP::LDIF;
 
@@ -57,11 +57,11 @@ print "ok 6\n";
 
 $r = $e->get('name', alloptions => 1);
 print "not " unless $r and  join("*", sort keys %$r) eq "*;en-us";
-print "ok 6\n";
-
-print "not " unless $r and $r->{''} and @{$r->{''}} == 1 and $r->{''}[0] eq 'Graham Barr';
 print "ok 7\n";
 
-print "not " unless $r and $r->{';en-us'} and @{$r->{';en-us'}} == 1 and $r->{';en-us'}[0] eq 'Bob';
+print "not " unless $r and $r->{''} and @{$r->{''}} == 1 and $r->{''}[0] eq 'Graham Barr';
 print "ok 8\n";
+
+print "not " unless $r and $r->{';en-us'} and @{$r->{';en-us'}} == 1 and $r->{';en-us'}[0] eq 'Bob';
+print "ok 9\n";
 

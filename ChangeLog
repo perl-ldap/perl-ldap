@@ -1,3 +1,16 @@
+Change 560 on 2000/08/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.20
+
+Change 559 on 2000/08/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Update ldapsearch.PL to use _scope (new in URI-1.08)
+
+Change 554 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	contrib/
+	- Link contrib/ to SourceForge directory
+
 Change 553 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
 
 	More doc updates

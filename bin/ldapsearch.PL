@@ -28,10 +28,10 @@ print OUT <<'!NO!SUBS!';
 #
 # c.ridd@isode.com
 #
-# $Id: ldapsearch.PL,v 1.2 2000/07/30 21:03:50 gbarr Exp $
+# $Id: ldapsearch.PL,v 1.3 2000/08/03 17:10:26 gbarr Exp $
 #
 # $Log: ldapsearch.PL,v $
-# Revision 1.2  2000/07/30 21:03:50  gbarr
+# Revision 1.3  2000/08/03 17:10:26  gbarr
 # *** empty log message ***
 #
 # Revision 1.3  1999/01/11 08:33:34  cjr
@@ -207,10 +207,7 @@ while (@urls) {
     $searchargs{base} = $opt_b if $opt_b;
     $searchargs{base} = $url->dn if $url->dn;
     $searchargs{scope} = $opt_s if $opt_s;
-# Version of URI::ldap in URI-1.07 will always return a scope
-# waiting for next release so we can use ->_scope which will
-# return undef when there is no scope specified in the URL
-#    $searchargs{scope} = $url->scope if $url->scope;
+    $searchargs{scope} = $url->_scope if defined $url->_scope;
     $searchargs{scope} = $scopes{$searchargs{scope}} if $searchargs{scope};
     $searchargs{deref} = $derefs{$opt_a} if $opt_a;
     $searchargs{sizelimit} = $opt_z if $opt_z;

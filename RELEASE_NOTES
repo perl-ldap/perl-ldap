@@ -1,3 +1,15 @@
+perl-ldap 0.20 August 3 2000
+============================
+
+* Added INSTALL and CREDITS files
+* Net::LDAP::Entry ->get and ->attributes methods now support options
+* Added Net::LDAP::DSML from Mark Wilcox
+* Added Net::LDAPS from Chris Ridd
+* Many documentation updates
+* Several fixes to ::Control::* classes, they should now work as intended.
+* Net::LDAP::Entry->get now always returns a scalar result as documented.
+* bin/ldapsearch now requires URI-1.08
+
 perl-ldap 0.19 June 8 2000
 ============================
 

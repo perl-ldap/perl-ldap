@@ -428,54 +428,110 @@ B<Example>
 
 =item search ( OPTIONS )
 
-The search method will return an object of class L<Net::LDAP::Search|Net::LDAP::Search>.
+Request that a search be performed.  This can be used to read attributes
+from a single entry, from entries immediately below a particular entry,
+or a whole subtree of entries.
+
+The result is an object of class L<Net::LDAP::Search|Net::LDAP::Search>.
 
 =over 4
 
 =item base
 
-The base DN to start the search.
+The DN that is the base object entry relative to which the search is
+to be performed.
 
 =item scope
 
-The scope for the search. This can be one of B<base>, B<one> or B<sub> or
-it can be the numeric value for each of these 0,1,2 respectively. The default
-is B<sub>.
+By default the search is performed on the whole tree below
+the specified base object. This may be chaned by specifying a C<scope>
+parameter with one of the following values.
+
+=over 4
+
+=item base
+
+Search only the base object.
+
+=item one
+
+Search the entries immediately below the base object.
+
+=item sub
+
+Search the whole tree below the base object. This is the default.
+
+=back
 
 =item deref
 
-What to do when a reference is found. This value can be one of B<never>,
-B<search>, B<find> or B<always>. Or it can be the numeric value for each
-of these. The default is B<find>.
+By default aliases are
+dereferenced to locate the base object for the search, but not when
+searching subordinates of the base object. This may be changed by
+specifying a C<deref> parameter with one of the following values.
+
+=over 4
+
+=item never
+
+Do not dereference aliases in searching
+or in locating the base object of the search.
+
+=item search
+
+Dereference aliases in subordinates of the base object in searching,
+but not in locating the base object of the search.
+
+=item find
+
+Dereference aliases in locating the base object of the search, but not
+when searching subordinates of the base object. This is the default.
+
+=item always
+
+Dereference aliases both in searching and in locating the base object
+of the search.
+
+=back
 
 =item sizelimit
 
-Set the size limit for the response. zero means no limit. The default is
-no limit.
+A sizelimit that restricts the maximum number of entries to be returned
+as a result of the search. A value of 0, and the default, means that
+no restriction is requested.  Servers may enforce a maximum number of
+entries to return.
 
 =item timelimit
 
-Set the time limit for the response. zero means no limit. The default is
-no limit.
+A timelimit that restricts the maximum time (in seconds) allowed for
+a search. A value of 0, and the default, means that no timelimit will
+be requested.
 
 =item typesonly
 
-If I<true> then only the attribute type will be returned. Default is I<false>.
+An indicator as to whether search results should contain both attribute
+types and values, or just attribute types.  Setting this parameter to
+a I<true> value causes only attribute types (no values) to be returned.
+Setting this field to a I<false> causes both attribute types and values
+to be returned. The default is to return both attribute types and values.
 
 =item filter
 
-The filter to use for the search. This may be a string or a <Net::LDAP::Filter>
-object.
+A filter that defines the conditions an entry in the directory must meet
+in order for it to be returned by the search. This may be a string or a
+L<Net::LDAP::Filter|Net::LDAP::Filter> object. See L<Net::LDAP::Filter|Net::LDAP::Filter> for a defintion of
+the filter format.
 
 =item attrs
 
-A reference to a list of attributes to be returned from the
-server. If not specified, then the server will return the
-attributes that are specified as accessible by default given
-your bind credentials.
+A reference to a list of attributes to be returned for each entry that
+matches the search filter.
 
-Certain additional attributes such as "createtimestamp" and
-other operational attributes may also be available for the asking:
+If not specified, then the server will return the attributes that are
+specified as accessible by default given your bind credentials.
+
+Certain additional attributes such as "createtimestamp" and other
+operational attributes may also be available for the asking:
 
   $ldap->search( ... , attrs => ['createtimestamp'] , ... );
 
@@ -638,6 +694,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.4 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.5 2000/08/03 17:10:26 gbarr Exp $>
 
 =cut

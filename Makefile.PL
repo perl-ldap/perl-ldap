@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.4 2000/07/30 21:03:50 gbarr Exp $
+# $Id: Makefile.PL,v 1.5 2000/08/03 17:10:26 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -50,7 +50,7 @@ sub check_module {
 
 print "\nChecking for OPTIONAL modules\n\n";
 
-check_module('URI',1.02) && check_module('URI::ldap',1.10) or print <<"EDQ","\n";
+check_module('URI',1.08) && check_module('URI::ldap',1.10) or print <<"EDQ","\n";
 The URI::ldap module is needed ONLY IF you want to parse LDAP URLs
 EDQ
 
