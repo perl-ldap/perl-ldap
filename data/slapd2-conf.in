@@ -1,9 +1,9 @@
 #
 # master slapd config -- for testing
 #
-include ./data/core.schema
-include ./data/cosine.schema
-include ./data/inetorgperson.schema
+include $SCHEMA_DIR/core.schema
+include $SCHEMA_DIR/cosine.schema
+include $SCHEMA_DIR/inetorgperson.schema
 schemacheck	off
 pidfile     $TESTDB/slapd.pid
 argsfile    $TESTDB/slapd.args
@@ -12,7 +12,7 @@ argsfile    $TESTDB/slapd.args
 # ldbm database definitions
 #######################################################################
 
-database	ldbm
+database	$SLAPD_DB
 suffix		"$BASEDN"
 directory	$TESTDB
 rootdn		"$MANAGERDN"
@@ -20,8 +20,11 @@ rootpw		$PASSWD
 
 TLSCertificateFile ./data/cert.pem
 TLSCertificateKeyFile ./data/key.pem
+
+password-hash   {CLEARTEXT}
 #sasl-host localhost
 #sasl-realm testing
 #sasl-secprops passcred
 #sasl-secprops noanonymous
 sasl-secprops none
+sasl-regexp "uid=(.*),cn=.*,cn=auth" "cn=$1,o=University of Michigan,c=US"

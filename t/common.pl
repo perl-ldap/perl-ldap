@@ -12,6 +12,8 @@ BEGIN {
   # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
   $TEMPDIR  = "./temp";
+  $SCHEMA_DIR ||= "./data";
+  $SLAPD_DB ||= 'ldbm';
 
   $TESTDB   = "$TEMPDIR/test-db";
   $CONF     = "$TEMPDIR/conf";
@@ -72,7 +74,7 @@ sub start_server {
     open(CONFI,"<$CONF_IN") or die "$!";
     open(CONFO,">$CONF") or die "$!";
     while(<CONFI>) {
-      s/\$(\w+)/${$1}/g;
+      s/\$([A-Z]\w*)/${$1}/g;
       s/^TLS/#TLS/ unless $SSL_PORT;
       s/^(sasl.*)/#\1/ unless $SASL;
       print CONFO;
