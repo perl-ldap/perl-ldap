@@ -188,7 +188,7 @@ while (@urls) {
     $searchargs{base} = $opt_b if $opt_b;
     $searchargs{base} = $url->dn if $url->dn;
     $searchargs{scope} = $opt_s if $opt_s;
-    $searchargs{scope} = $url->_scope if defined $url->_scope;
+    $searchargs{scope} = $url->_scope if $url->_scope;
     $searchargs{deref} = $derefs{$opt_a} if $opt_a;
     $searchargs{sizelimit} = $opt_z if $opt_z;
     $searchargs{timelimit} = $opt_l if $opt_l;
