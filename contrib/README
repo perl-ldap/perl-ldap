@@ -9,6 +9,7 @@ The files in this directory are
   dot.tklkup	  Control file for schema and tklkup
   printMembers.pl Print all members of a group
   isMember.pl     Determine if a given user is a member of a given group
+  ldifsort.pl	  Sorts an LDIF file by the specified key attribute. 
 
 Each file contains a POD with its full description and author contacts.
 e.g.
