@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.39 2003/01/25 05:00:26 charden Exp $
+# $Id: tklkup,v 1.40 2003/01/25 05:17:24 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -4317,6 +4317,7 @@ if ( !defined($root) )
 {
    my $error =  "Root DSE entry could not be obtained.";
    ERROR(\$error);
+   return;
 }
 
 #
