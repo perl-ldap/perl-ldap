@@ -1137,9 +1137,6 @@ http://www.cp.net/
 Innosoft                                  
 http://www.innosoft.com
 
-IPlanet - Netscape and SUN Alliance
-http://www.iplanet.com/
-
 MessagingDirect                                  
 http://www.messagingdirect.com/
 
@@ -1152,8 +1149,14 @@ http://www.nexor.com/info/directory.htm/
 Novell's LDAPzone
 http://ldapzone.com/
 
+Octet String
+http://www.octetstring.com/
+
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
+
+Sun One, formerly IPlanet.
+http://wwws.sun.com/software/
 
 Eine deutsche LDAP Website 
 A german LDAP Website
@@ -1179,6 +1182,9 @@ By Mark Wilcox.  ISBN:  1861002211
 LDAP : Programming Directory-Enabled Applications With 
 Lightweight Directory Access Protocol. 
 By Tim Howes, Mark Smith.  ISBN:  1578700000
+
+LDAP Programming; Directory Management and Integration in Perl.
+By Clayton Donley.  ISBN:  1884777910
 
 LDAP Programming with Java. 
 By Rob Weltman, Tony Dahbura.  ISBN:  0201657589
