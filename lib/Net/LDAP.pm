@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= "0.25_01";
+$VERSION 	= "0.25_50";
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -105,6 +105,7 @@ sub new {
 
   return undef unless $obj->{net_ldap_socket};
 
+  $obj->{net_ldap_host}    = $host;
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
   $obj->{net_ldap_async}   = $arg->{async} ? 1 : 0;
