@@ -233,7 +233,7 @@ sub bind {
 
     my $sasl = $passwd;
     # Tell the SASL object our user identifier
-    $sasl->user("dn: $dn");
+    $sasl->user("dn: $dn") unless $sasl->user;
 
     $passwd = {
       mechanism   => $sasl->name,
