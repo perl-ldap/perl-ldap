@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.26 2003/03/01 22:23:36 charden Exp $
+# $Id: tklkup,v 2.27 2003/03/11 02:52:36 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -1646,6 +1646,7 @@ if ( $error == 1 )
 {
    $error = "Bad filter $match.";
    ERROR(\$error);
+   $Global{mainWindow} -> Unbusy;  # window is busy
    return;
 }
 
@@ -1665,6 +1666,7 @@ if ( $error == 1 )
   {
   ERROR($error);
   }
+  $Global{mainWindow} -> Unbusy;  # window is busy
   return;
 }
 
