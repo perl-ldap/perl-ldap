@@ -27,7 +27,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.31";
+$VERSION 	= "0.31_01";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -135,6 +135,7 @@ sub connect_ldap {
   $ldap->{net_ldap_socket} = IO::Socket::INET->new(
     PeerAddr   => $host,
     PeerPort   => $arg->{port} || '389',
+    LocalAddr  => $arg->{localaddr} || undef,
     Proto      => 'tcp',
     MultiHomed => $arg->{multihomed},
     Timeout    => defined $arg->{timeout}
@@ -156,6 +157,7 @@ sub connect_ldaps {
   $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $arg->{'port'} || '636',
+    LocalAddr       => $arg->{localaddr} || undef,
     Proto    	    => 'tcp',
     Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
     _SSL_context_init_args($arg)

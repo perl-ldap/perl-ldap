@@ -94,6 +94,11 @@ Timeout passed to L<IO::Socket> when connecting the remote server.
 Will be passed to L<IO::Socket> as the C<MultiHomed> parameter
 when connecting to the remote server
 
+=item localaddr =E<gt> HOST
+
+Will be passed to L<IO::Socket> as the C<LocalAddr> parameter, which
+sets the client's IP address (as opposed to the server's IP address.)
+
 =item debug =E<gt> N
 
 Set the debug level. See the L<debug|debug> method for details.
