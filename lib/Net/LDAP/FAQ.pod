@@ -988,7 +988,7 @@ whatever is relevant to your setup.
   local $/ = undef;
   my $jpeg = <$filename>;
 
-  my $ldap = new Net::LDAP(...);
+  my $ldap = Net::LDAP->new(...);
   my $res = $ldap->bind(...);
      $res = $ldap->modify(...,
                    add => [ 'jpegPhoto' => [ $jpeg ] ]);
@@ -1014,7 +1014,7 @@ whatever is relevant to your setup.
           local $/ = undef;
           my $jpeg = <$filename>;
 
-          my $ldap = new Net::LDAP(...);
+          my $ldap = Net::LDAP->new(...);
           my $res = $ldap->bind(...);
           $res = $ldap->modify(...,
                           add => [ 'jpegPhoto' => [ $jpeg ] ]);
@@ -1113,7 +1113,7 @@ replace the placeholders.
   $ADS_RIGHT_EXCH_MAIL_SEND_AS |
   $ADS_RIGHT_EXCH_MODIFY_USER_ATT;
 
-  $exch = new Net::LDAP('server', debug =>0) || die $@;
+  $exch = Net::LDAP->new('server', debug =>0) || die $@;
 
   $exch->bind( 'cn=admin_user,cn=nt_domain,cn=admin', version =>3,
   password=>'password');
