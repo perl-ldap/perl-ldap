@@ -6,14 +6,18 @@ Net::LDAP::LDIF - LDIF reading and writing
 
   use Net::LDAP::LDIF;
 
-  $ldif = Net::LDAP::LDIF->new( "file.ldif", "r" );
-  while( $entry = $ldif->read() ) {
-	  # Do things with $entry
+  $ldif = Net::LDAP::LDIF->new( "file.ldif", "r", onerror => 'undef' );
+  while( not $ldif->eof() ) {
+     $entry = $ldif->read_entry();
+     if ( $ldif->error() ) {
+        print "Error msg: ",$ldif->error(),"\n";
+        print "Error lines:\n",$ldif->error_lines(),"\n";
+     }
+     else {
+        # do stuff
+     }
   }
   $ldif->done();
-
-  $ldif = Net::LDAP::LDIF->new( $fh, "r" );
-  @entries = $ldif->read();
 
 =head1 DESCRIPTION
 
@@ -39,14 +43,37 @@ MODE defaults to "r" for read. You may specify "w" to for write+truncate or
 
 OPTIONS is a list of key-value pairs. Valid options are:
 
-=over 8
+=over 4
 
 =item encode
 
-some values in LDIF cannot be written verbatim and have to be encoded
+Some values in LDIF cannot be written verbatim and have to be encoded
 in some way. This option lets you specify how. Valid encoding options
 are 'none' (the default), 'canonical' (see
 L<Net::LDAP::Util/canonical_dn>), or 'base64'.
+
+=back
+
+=item onerror
+
+If set then Net::LDAP::LDIF will check all responses for errors on all methods.
+If an error is detected then the specified action will be taken. Valid values
+and their actions are.
+
+=over 4
+
+=item die
+
+Net::LDAP::LDIF will croak with an appropriate message.
+
+=item warn
+
+Net::LDAP::LDIF will warn with an appropriate message.
+
+=item undef
+
+Net::LDAP::LDIF will warn with an appropriate message if C<-w> is in effect.
+The method that was called will return C<undef>
 
 =back
 
@@ -56,32 +83,43 @@ L<Net::LDAP::Util/canonical_dn>), or 'base64'.
 
 =over 4
 
-=item read
+=item read_entry
 
-=over 4
+Read one entry from the file and return it as a Net::LDAP::Entry object.
 
-In a similar fashion to the perl <$fh> operator, read will read one entry or
-the entire file depending on whether it is called in a scalar or array context.
+=item eof  
 
-=back
+Returns true when the end of the file is reached.
 
-=item read_cmd
+=item write_entry ( ENTRIES )
 
-=item write ( ENTRIES )
 
-=item write_cmd ( ENTRIES )
 
 =item done
-
-=over 4
 
 This method signals that the LDIF object is no longer needed. If a file was
 opened automatically when the object was created it will be closed. This
 method is called automatically via DESTROY when the object goes out of scope.
 
-  $ldif->done();
+=item error
 
-=back
+Returns error message if error was found.
+
+=item error_lines
+
+Returns lines that resulted in error.
+
+=item current_entry
+
+Returns the current Net::LDAP::Entry object.
+
+=item current_lines
+
+Returns the lines that generated the current Net::LDAP::Entry object.
+
+=item next_lines
+
+Returns the lines that will generate the next Net::LDAP::Entry object.
 
 =back
 
@@ -99,7 +137,5 @@ free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =for html <hr>
-
-I<$Id: LDIF.pod,v 1.3 2001/03/21 16:21:18 chrisridd Exp $>
 
 =cut
