@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 1.1 2001/10/22 13:34:43 gbarr Exp $
+# $Id: ldifdiff.pl,v 1.2 2002/11/03 01:47:45 kartik_subbarao Exp $
 
 =head1 NAME
 
@@ -60,7 +60,7 @@ getopts("a:c:k:", \%args);
 
 my $keyattr = $args{k};
 my @sourceattrs = split(/,/, $args{a});
-my %ciscmp = (objectclass => 1, manager => 1, owner => 1);
+my %ciscmp = (objectclass => 1, manager => 1, owner => 1, uniquemember => 1);
 foreach (split(/,/, $args{c})) { $ciscmp{$_} = 1 }
 
 
@@ -80,8 +80,8 @@ my $ldifout = Net::LDAP::LDIF->new('-', 'w');
 $ldifout->{change} = 1;
 $ldifout->{wrap} = 78;
 
-
 diff($source, $target);
+exit;
 
 
 # Gets the relative distinguished name (RDN) attribute
@@ -182,21 +182,12 @@ sub diff
     }
 }
 
-sub grepval
-{
-	my ($val, $vals, $ciscmp) = @_;
-
-	return $ciscmp ? grep(/^\Q$val\E$/i, @$vals) 
-				   : grep(/^\Q$val\E$/, @$vals);
-}
-
-
 # Generate LDIF to update $target with information in $source.
 # Optionally restrict the set of attributes to consider.
 sub updateFromEntry
 {
 	my ($source, $target, @attrs) = @_;
-	my (%modhash, $attr, $val, $ldifstr);
+	my ($attr, $val, $ldifstr);
 
 	my %sharedattrs = (objectclass => 1);
 
@@ -214,40 +205,44 @@ sub updateFromEntry
 	foreach $attr (@attrs) {
 		my $lcattr = lc $attr;
 		next if $lcattr eq 'dn'; # Can't handle modrdn here
-		if (!$source->exists($attr) && !$sharedattrs{$lcattr}) {
-			# Source doesn't have this attribute, delete it from the target
-			# if necessary.
-			$target->delete($attr) if $target->exists($attr);
+
+		# Build lists of unique values in the source and target, to
+		# speed up comparisons.
+		my @sourcevals = $source->get_value($attr);
+		my @targetvals = $target->get_value($attr);
+		my (%sourceuniqvals, %targetuniqvals);
+		if ($ciscmp{$lcattr}) {
+			@sourceuniqvals{map { lc($_) } @sourcevals} = ();
+			@targetuniqvals{map { lc($_) } @targetvals} = ();
 		}
 		else {
-			my $replaceattr;
-			my @sourcevals = $source->get_value($attr);
-			my @targetvals = $target->get_value($attr);
+			@sourceuniqvals{@sourcevals} = ();
+			@targetuniqvals{@targetvals} = ();
+		}
+		foreach my $val (keys %sourceuniqvals) {
+			if (exists $targetuniqvals{$val}) {
+				delete $sourceuniqvals{$val};
+				delete $targetuniqvals{$val};
+			}
+		}
 
+		# Move on if there are no differences
+		next unless keys(%sourceuniqvals) || keys(%targetuniqvals);
+
+		# Make changes as appropriate
+		if ($sharedattrs{$lcattr}) {
 			# For 'shared' attributes (e.g. objectclass) where $source may not 
-			# be a sole authoritative source, we issue issue 'delete' and 
-			# 'add' modifications instead of a single 'replace'.
-			foreach $val (@targetvals) {
-				next if $val eq ''; # Skip attributes with empty values
-				if (!grepval($val, \@sourcevals, $ciscmp{$lcattr} ? 1 : 0)) {
-					if ($sharedattrs{$lcattr}) { 
-						$target->delete($attr => [$val]);
-					}
-					else { $replaceattr = 1 }
-				}
-			}
-			foreach $val (@sourcevals) {
-				next if $val eq ''; # Skip attributes with empty values
-				if (!grepval($val, \@targetvals, $ciscmp{$lcattr} ? 1 : 0)) {
-					if ($sharedattrs{$lcattr}) { 
-						$target->add($attr => $val);
-					}
-					else { $replaceattr = 1 }
-				}
-			}
-			# source is authoritative for this attribute, issue a replace.
-			$target->replace($attr => [ @sourcevals ])
-				if !$sharedattrs{$lcattr} && $replaceattr;
+			# be a sole authoritative source, we issue separate delete and 
+			# add modifications instead of a single replace.
+			$target->delete($attr => [ keys(%targetuniqvals) ])
+				if keys(%targetuniqvals);
+			$target->add($attr => [ keys(%sourceuniqvals) ])
+				if keys(%sourceuniqvals);
+		}
+		else {
+			# Issue a replace or delete as needed
+			if (@sourcevals) { $target->replace($attr => [ @sourcevals ]) }
+			else { $target->delete($attr) }
 		}
 	}
 
