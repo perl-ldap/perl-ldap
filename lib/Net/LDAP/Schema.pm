@@ -1,4 +1,4 @@
-# Copyright (c) 1998-2002 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1998-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.9901";
+$VERSION = "0.9902";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -158,8 +158,9 @@ sub _must_or_may {
     $done{lc $oc}++ and next;
 
     my $elem = $self->objectclass( $oc ) or next;
-    my $res  = $elem->{$must_or_may} or next;
+    if (my $res  = $elem->{$must_or_may}) {
     @res{ @$res } = (); 	# Add in, getting uniqueness
+    }
     my $sup = $elem->{sup} or next;
     push @oc, @$sup;
   }
