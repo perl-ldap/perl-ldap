@@ -57,15 +57,16 @@ my $testno = 0;
 my $refdn;
 while(my($op,$dn) = splice(@tests,0,2)) {
 
-  if ($op eq 'ref') {
-    $refdn=$dn;
-    next;
-  }
-
   my $canon = canonical_dn($dn);
   my $failed = 0;
 
-  if ($op eq 'bad') {
+  if ($op eq 'ref') {
+    $refdn=$dn;
+    if ($failed = !defined $canon) {
+      print "'$dn' should have parsed\n";
+    }
+  }
+  elsif ($op eq 'bad') {
     if ($failed = defined $canon) {
       print "'$dn' should not have parsed\n";
     }
