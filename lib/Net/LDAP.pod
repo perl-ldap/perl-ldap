@@ -520,6 +520,8 @@ which the search for schema information will be conducted.  If
 no DN is supplied the base object entry will be determined from
 the rootDSE entry.
 
+=back
+
 B<Example>
 
  my $schema = $ldap->schema();
@@ -802,8 +804,6 @@ certificate, do this:
 
     print "Subject DN: " . $ldaps->certificate->subject_name . "\n";
 
-=back
-
 =item version
 
 Returns the version of the LDAP protocol that is being used.
@@ -913,6 +913,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.22 2003/05/06 16:58:22 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.23 2003/05/06 21:20:24 gbarr Exp $>
 
 =cut
