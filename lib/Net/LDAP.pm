@@ -20,6 +20,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_LOCAL_ERROR
 			   LDAP_PARAM_ERROR
 			   LDAP_INAPPROPRIATE_AUTH
+			   LDAP_SERVER_DOWN
 			);
 
 $VERSION 	= "0.2701";
@@ -625,7 +626,9 @@ sub _sendmesg {
       if $debug & 4;
   }
 
-  syswrite($ldap->socket, $mesg->pdu, length($mesg->pdu))
+  my $socket = $ldap->socket or return LDAP_SERVER_DOWN;
+
+  syswrite($socket, $mesg->pdu, length($mesg->pdu))
     or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
 
   # for CLDAP, here we need to recode when we were sent
@@ -652,14 +655,14 @@ sub _sendmesg {
 sub _recvresp {
   my $ldap = shift;
   my $what = shift;
-  my $sock = $ldap->socket;
+  my $sock = $ldap->socket or return LDAP_SERVER_DOWN;
   my $sel = IO::Select->new($sock);
   my $ready;
 
   for( $ready = 1 ; $ready ; $ready = $sel->can_read(0)) {
     my $pdu;
     asn_read($sock, $pdu)
-      or return LDAP_OPERATIONS_ERROR;
+      or return _drop_conn($self, LDAP_OPERATIONS_ERROR, "Communications Error");
 
     my $debug;
     if ($debug = $ldap->debug) {
@@ -695,6 +698,20 @@ sub _recvresp {
 
   return LDAP_SUCCESS;
 }
+
+sub _drop_conn {
+  my ($self, $err, $etxt) = @_;
+
+  delete $self->{net_ldap_socket};
+  if (my $msgs = delete $self->{net_ldap_mesg}) {
+    foreach my $mesg (values %$msgs) {
+      $mesg->set_error($err, $etxt);
+    }
+  }
+
+  $err;
+}
+
 
 sub _forgetmesg {
   my $ldap = shift;
