@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 3.5 2004/10/22 16:52:08 subbarao Exp $
+# $Id: ldifdiff.pl,v 3.6 2004/11/10 19:13:39 subbarao Exp $
 
 =head1 NAME
 
@@ -118,7 +118,15 @@ sub cmpEntries
     if ($keyattr =~ /^dn$/i) { 
 		return lc(canonical_dn($a->dn)) cmp lc(canonical_dn($b->dn))
 	}
-    else { return $a->get_value($keyattr) cmp $b->get_value($keyattr) }
+    else { 
+		my $aval = $a->get_value($keyattr);
+		my $bval = $b->get_value($keyattr);
+		if ($ciscmp{$keyattr}) {
+			$aval = lc($aval);
+			$bval = lc($bval);
+		}
+		return $aval cmp $bval;
+	}
 }
 
 
