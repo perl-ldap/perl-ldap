@@ -42,6 +42,9 @@ sub new {
     }
   }
 
+  # Default the encoding of DNs to 'none' unless the user specifies
+  $opt{'encode'} = 'none' unless exists $opt{'encode'};
+  
   my $self = {
     changetype => "modify",
     modify => 'add',
@@ -155,6 +158,27 @@ sub _write_attrs {
   }
 }
 
+sub _write_dn {
+  my($dn,$encode,$wrap) = @_;
+  if ($dn =~ /^[ :<]|[\x00-\x1f\x7f-\xff]/) {
+    if ($encode =~ /canonical/i) {
+      require Net::LDAP::Util;
+      $dn = Net::LDAP::Util::canonical_dn($dn);
+      # Canonicalizer won't fix leading spaces, colons or less-thans, which
+      # are special in LDIF, so we fix those up here.
+      $dn =~ s/^([ :<])/\\$1/;
+    } elsif ($encode =~ /base64/i) {
+      require MIME::Base64;
+      $dn = "dn:: " . MIME::Base64::encode($dn,"");
+    } else {
+      $dn = "dn: $dn";
+    }
+  } else {
+    $dn = "dn: $dn";
+  }
+  print _wrap($dn,$wrap), "\n";
+}
+
 sub write {
   my $self = shift;
   my $entry;
@@ -167,17 +191,7 @@ sub write {
   my $fh = $self->{'fh'};
   foreach $entry (@_) {
     print "\n" if tell($self->{'fh'});
-    my $dn = $entry->dn;
-
-    if ($dn =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
-      require MIME::Base64;
-      $dn = "dn:: " . MIME::Base64::encode($dn,"");
-    }
-    else {
-      $dn = "dn: " . $dn;
-    }
-
-    print _wrap($dn,$wrap),"\n";
+    _write_dn($entry->dn,$self->{'encode'},$wrap);
     _write_attrs($entry,$wrap);
   }
 
@@ -291,22 +305,30 @@ sub write_cmd {
   my $saver = SelectSaver->new($self->{'fh'});
   
   foreach $entry (grep { defined } @_) {
-    my @changes = $entry->changes or next;
+    my @changes = $entry->changes;
     my $type = $entry->changetype;
 
     # Skip entry if there is nothing to write
     next if $type eq 'modify' and !@changes;
 
-    my $dn = "dn: " . $entry->dn;
-
     print "\n" if tell($self->{'fh'});
-    print _wrap($dn,$wrap),"\n","changetype: ",$type,"\n";
+
+    _write_dn($entry->dn,$self->{'encode'},$wrap);
+
+    print "changetype: $type\n";
 
     if ($type eq 'delete') {
       next;
     }
     elsif ($type eq 'add') {
       _write_attrs($entry,$wrap);
+      next;
+    }
+    elsif ($type eq 'modrdn') {
+      print _write_attr('newrdn',$entry->get_value('newrdn'),$wrap);
+      print 'deleteoldrdn: ',$entry->get_value('deleteoldrdn'),"\n";
+      my $ns = $entry->get_value('newsuperior');
+      print _write_attr('newsuperior',$ns,$wrap) if defined $ns;
       next;
     }
 
