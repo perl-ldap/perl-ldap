@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15_04";
+$VERSION = "0.15_05";
 
 my %mode = qw(w > r < a >>);
 
@@ -424,6 +424,16 @@ sub write_entry {
   $self->_write_entry($self->{change}, @_);
 }
 
+sub write_version {
+  my $self = shift;
+  my $res = 1;
+  
+  $res &&= print "version: $self->{'version'}\n"
+    if ($self->{'version'} && !$self->{version_written}++);
+  
+  return $res;	    
+}
+
 # internal helper: write entry in different format depending on 1st arg
 sub _write_entry {
   my $self = shift;
@@ -456,13 +466,8 @@ sub _write_entry {
       # Skip entry if there is nothing to write
       next if $type eq 'modify' and !@changes;
 
-      if ($self->{write_count}++) {
-	$res &&= print "\n";
-      }
-      else {
-        $res &&= print "version: $self->{'version'}\n\n"
-          if ($self->{'version'});
-      }
+      $res &&= write_version()  if (!$self->{write_count}++);
+      $res &&= print "\n";
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
 
       $res &&= print "changetype: $type\n";
@@ -502,13 +507,8 @@ sub _write_entry {
     }
 
     else {
-      if ($self->{write_count}++) {
-	$res &&= print "\n";
-      }
-      else {
-        $res &&= print "version: $self->{'version'}\n\n"
-          if ($self->{'version'});
-      }
+      $res &&= write_version()  if (!$self->{write_count}++);
+      $res &&= print "\n";
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
       $res &&= _write_attrs($entry,$wrap,$lower,$sort);
     }
@@ -553,6 +553,12 @@ sub done {
      delete $self->{fh};
   }
   $res;
+}
+
+sub handle {
+  my $self = shift;
+
+  return $self->{$fh};
 }
 
 my %onerror = (

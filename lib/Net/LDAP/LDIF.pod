@@ -141,6 +141,14 @@ Returns I<true> when the end of the file is reached.
 
 Write the entries to the LDIF file.
 
+=item write_version ( )
+
+If the object's version is defined, this method allows to explicitely
+write the version before an entry is written.
+
+If  not called explicitely, it gets called automatically when writing
+the first entry.
+
 =item version ( [ VERSION ] )
 
 If called without arguments it returns the version of the LDIF file
@@ -148,6 +156,11 @@ or undef if no version has been set.
 If called with an argument it sets the LDIF version to VERSION.
 
 According to RFC 2849 currently the only legal value for VERSION is I<1>.
+
+=item handle ( )
+
+Returns the file handle the C<Net::LDAP::LDIF> object reads fromi
+or writes to.
 
 =item done ( )
 
