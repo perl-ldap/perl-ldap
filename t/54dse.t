@@ -8,10 +8,10 @@ BEGIN {
 print "1..2\n";
 
 $ldap = client();
-print "ok 1\n";
+ok($ldap, "client");
 
-$dse = $ldap->root_dse or print "not ";
-print "ok 2\n";
+$dse = $ldap->root_dse;
+ok($dse, "dse");
 
 use Net::LDAP::LDIF;
 Net::LDAP::LDIF->new(qw(- w))->write_entry($dse) if $dse;

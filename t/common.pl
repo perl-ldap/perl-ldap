@@ -88,7 +88,7 @@ sub start_server {
     open(STDOUT,">&STDERR");
     close(STDIN);
 
-    exec(@LDAPD);
+    exec(@LDAPD) or die "cannot exec @LDAPD";
   }
 
   sleep 2; # wait for server to start
@@ -128,24 +128,18 @@ sub client {
 }
 
 sub compare_ldif {
-  my($test,$test_num,$mesg) = splice(@_,0,3);
+  my($test,$mesg) = splice(@_,0,2);
 
-  if ($mesg->code) {
-    print $mesg->error,"\n";
-    print "not ok ",$test_num++,"\n";
-    print "not ok ",$test_num++,"\n";
-    print "not ok ",$test_num++,"\n";
-    return 3;
+  unless (ok(!$mesg->code, $mesg->error)) {
+    skip(2, $mesg->error);
+    return;
   }
-  print "ok ",$test_num++,"\n";
 
   my $ldif = Net::LDAP::LDIF->new("$TEMPDIR/${test}-out.ldif","w", lowercase => 1);
-  unless ($ldif) {
-    print "not ok",$test_num++,"\n";
-    print "not ok",$test_num++,"\n";
-    return 3;
+  unless (ok($ldif, "Read ${test}-out.ldif")) {
+    skip(1,"Read error");
+    return;
   }
-  print "ok ",$test_num++,"\n";
 
   foreach $entry (@_) {
     foreach $attr ($entry->attributes) {
@@ -156,9 +150,7 @@ sub compare_ldif {
 
   $ldif->done; # close the file;
 
-  compare("$TEMPDIR/${test}-out.ldif","data/${test}-cmp.ldif") && print "not ";
-  print "ok ",$test_num++,"\n";
-  3;
+  ok(!compare("$TEMPDIR/${test}-out.ldif","data/${test}-cmp.ldif"), "data/${test}-cmp.ldif");
 }
 
 require File::Compare;
@@ -188,5 +180,41 @@ sub ldif_populate {
   }
   $ok;
 }
+
+my $number = 0;
+sub ok {
+	my ($condition, $name) = @_;
+
+	my $message = $condition ? "ok " : "not ok ";
+	$message .= ++$number;
+	$message .= " # $name" if defined $name;
+	print $message, "\n";
+	return $condition;
+}
+
+sub is {
+	my ($got, $expected, $name) = @_;
+
+	for ($got, $expected) {
+		$_ = 'undef' unless defined $_;
+	}
+
+	unless (ok($got eq $expected, $name)) {
+		warn "Got: '$got'\nExpected: '$expected'\n" . join(' ', caller) . "\n";
+	}
+}
+
+sub skip {
+	my ($reason, $num) = @_;
+	$reason ||= '';
+	$number ||= 1;
+
+	for (1 .. $num) {
+		$number++;
+		print "ok $number # skip $reason\n";
+	}
+}
+
+1;
 
 1;

@@ -20,4 +20,8 @@ rootpw		$PASSWD
 
 TLSCertificateFile ./data/cert.pem
 TLSCertificateKeyFile ./data/key.pem
-
+#sasl-host localhost
+#sasl-realm testing
+#sasl-secprops passcred
+#sasl-secprops noanonymous
+sasl-secprops none

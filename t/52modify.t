@@ -8,23 +8,20 @@ BEGIN {
 print "1..7\n";
 
 $ldap = client();
-print "ok 1\n";
+ok($ldap, "client");
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
 
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
-print "ok 2\n";
+ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
 
-print "not " unless ldif_populate($ldap, "data/52-in.ldif");
-print "ok 3\n";
+ok(ldif_populate($ldap, "data/52-in.ldif"), "data/52-in.ldif");
 
 # load modify LDIF
-print "not " unless ldif_populate($ldap, "data/52-mod.ldif", 'modify');
-print "ok 4\n";
+ok(ldif_populate($ldap, "data/52-mod.ldif", 'modify'), "data/52-mod.ldif");
 
 # now search the database
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 
-compare_ldif("52",5,$mesg,$mesg->sorted);
+compare_ldif("52",$mesg,$mesg->sorted);
 

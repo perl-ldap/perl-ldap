@@ -8,40 +8,33 @@ BEGIN {
 print "1..15\n";
 
 $ldap = client();
-print "ok 1\n";
+ok($ldap, "client");
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD, version => 3);
 
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
-print "ok 2\n";
+ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
 
-print "not " unless ldif_populate($ldap, "data/50-in.ldif");
-print "ok 3\n";
+ok(ldif_populate($ldap, "data/50-in.ldif"), "data/50-in.ldif");
 
 $mesg = $ldap->start_tls;
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
-print "ok 4\n";
+ok(!$mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->start_tls;
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " unless $mesg->code;
-print "ok 5\n";
+ok($mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
-print "ok 6\n";
+ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
 
-compare_ldif("50",7,$mesg,$mesg->sorted);
+compare_ldif("50",$mesg,$mesg->sorted);
 
-$ldap = client(ssl => 1) or print "not ";
-print "ok 10\n";
+$ldap = client(ssl => 1);
+ok($ldap, "ssl client");
 
 $mesg = $ldap->start_tls;
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " unless $mesg->code;
-print "ok 11\n";
+ok($mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
-print "# ",$mesg->code,": ",$mesg->error,"\nnot " if $mesg->code;
-print "ok 12\n";
+ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
 
-compare_ldif("50",13,$mesg,$mesg->sorted);
+compare_ldif("50",$mesg,$mesg->sorted);
 
