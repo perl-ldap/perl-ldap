@@ -15,6 +15,8 @@ contrib/dot.tklkup
 contrib/isMember.pl
 contrib/jpegDisplay.pl
 contrib/jpegLoad.pl
+contrib/ldapmodify.pl
+contrib/ldifdiff.pl
 contrib/ldifsort.pl
 contrib/printMembers.pl
 contrib/tklkup
@@ -71,6 +73,7 @@ install-nomake
 lib/Authen/SASL.pm
 lib/Authen/SASL.pod
 lib/Authen/SASL/CRAM_MD5.pm
+lib/Authen/SASL/EXTERNAL.pm
 lib/Bundle/Net/LDAP.pm
 lib/LWP/Protocol/ldap.pm
 lib/Net/LDAP.pm
