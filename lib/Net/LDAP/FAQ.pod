@@ -32,6 +32,13 @@ authors/id/GBARR directory. Alternatively you can download
 the latest version from 
  http://www.cpan.org/search?dist=perl-ldap
 
+B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
+Microsoft Windows systems sometimes have a problem storing the module
+with the correct name, it will replace the *.tar.gz with *_tar.tar.
+To correct the problem, rename the *_tar.tar to *_tar.gz, then ungzip
+the file.  At this point you can execute the tar command to expand 
+the tar file.
+
 =head2 Is there a web page for perl-ldap ?
 
 Yes there is at http://perl-ldap.sourceforge.net/
@@ -87,6 +94,13 @@ one continuous line.  Example;
 
  http://download.sourceforge.net/perl-ldap/perl-ldap-0.20.tar.gz
 
+B<WARNING:>  The perl-ldap module is stored on sourceforge as a *.gz file.
+Microsoft Windows systems sometimes have a problem storing the module
+with the correct name, it will replace the *.tar.gz with *_tar.tar.
+To correct the problem, rename the *_tar.tar to *_tar.gz, then ungzip
+the file.  At this point you can execute the tar command to expand 
+the tar file.
+
 CVS;
 
 You can download latest version of perl-ldap from SourceForge by 
@@ -105,6 +119,13 @@ home page on sourceforge that points to the latest released
 version of perl-ldap.  Due to the fact that humans must
 update the web page to point to a new release it sometimes does
 not get updated as quickly as it should.
+
+B<WARNING:>  The perl-ldap module is stored on sourceforge as a *.gz file.
+Microsoft Windows systems sometimes have a problem storing the module
+with the correct name, it will replace the *.tar.gz with *_tar.tar.
+To correct the problem, rename the *_tar.tar to *_tar.gz, then ungzip
+the file.  At this point you can execute the tar command to expand 
+the tar file.
 
 =head2 What is CVS.
 
@@ -285,6 +306,16 @@ More information on this topic can be found on the following URLs;
 
  http://www.messagingdirect.com/publications/IC-6055.html
 
+=head2 What is the difference between a ldap reference and a ldap referral?
+
+A referral is returned when the B<entire> operation must be resent to
+another server.
+
+A continuation reference is returned when B<part> of the operation must be
+resent to another server.
+
+See RFC 2251 section 4.5.3 for more details.
+
 =head1 PERL-LDAP INSTALLATION
 
 =head2 How do I install perl-ldap ?
@@ -415,11 +446,22 @@ from the server, including the result code.
 
 So, for example, to determine the result of the bind operation.
 
-  $mesg = $ldap->bind( $dn, password => $passwd);
+  $mesg = $ldap->bind( $dn, password => $passwd );
   
   if ( $mesg->code ) {
     # Handle error codes here
   }
+
+=head2 How can I set the ldap version of a connection to my ldap server?
+
+This is done by adding the version option when binding to the ldap
+server.
+
+For example;
+
+  $mesg = $ldap->bind( $dn, password => $passwd, version => 3 );
+
+Valid version numbers are 2 and 3.
 
 =head2 I did a search on my directory using the 'search' method. Where did
 the results go ?
@@ -934,6 +976,9 @@ By Tim Howes, Mark Smith.  ISBN:  1578700000
 
 LDAP Programming with Java. 
 By Rob Weltman, Tony Dahbura.  ISBN:  0201657589
+
+Solaris and LDAP Naming Services.
+By Tom Bialaski, Michael Haines. ISBN:  0-13-030678-9
 
 Understanding and Deploying Ldap Directory Services.
 By Tim Howes, Mark Smith, Gordon Good, Timothy A. Howe
