@@ -23,6 +23,8 @@ Net::LDAP::Entry - An LDAP entry object
 
  $entry = Net::LDAP::Entry->new;
 
+ $entry->dn($dn);
+
  $entry->add (
    attr1 => 'value1',
    attr2 => [ qw(value1 value2) ]
