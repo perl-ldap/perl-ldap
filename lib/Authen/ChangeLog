@@ -1,0 +1,18 @@
+2000-05-09 17:09  Graham Barr <gbarr@pobox.com>
+
+	* SASL.pod:
+	
+	512
+
+2000-05-03 13:28  Graham Barr <gbarr@pobox.com>
+
+	* SASL.pm, SASL.pod:
+	
+	Initial revision
+
+2000-05-03 13:28  Graham Barr <gbarr@pobox.com>
+
+	* SASL.pm, SASL.pod:
+	
+	import
+

@@ -1,0 +1,18 @@
+2000-08-16 12:07  Graham Barr <gbarr@pobox.com>
+
+	* ldap.pm:
+	
+	Change 568
+
+2000-05-03 13:28  Graham Barr <gbarr@pobox.com>
+
+	* ldap.pm:
+	
+	Initial revision
+
+2000-05-03 13:28  Graham Barr <gbarr@pobox.com>
+
+	* ldap.pm:
+	
+	import
+

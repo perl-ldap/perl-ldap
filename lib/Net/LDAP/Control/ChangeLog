@@ -1,0 +1,36 @@
+2000-09-12 10:17  Graham Barr <gbarr@pobox.com>
+
+	* Sort.pm, SortResult.pm:
+	
+	Change 597
+
+2000-07-30 22:03  Graham Barr <gbarr@pobox.com>
+
+	* Paged.pm, Sort.pm, SortResult.pm, VLV.pm, VLVResponse.pm:
+	
+	Change 553
+
+2000-05-22 21:59  Graham Barr <gbarr@pobox.com>
+
+	* Paged.pm, Sort.pm, VLV.pm, VLVResponse.pm:
+	
+	529
+
+2000-05-09 17:09  Graham Barr <gbarr@pobox.com>
+
+	* Sort.pm, SortResult.pm:
+	
+	512
+
+2000-05-03 13:29  Graham Barr <gbarr@pobox.com>
+
+	* Paged.pm, Sort.pm, SortResult.pm, VLV.pm, VLVResponse.pm:
+	
+	Initial revision
+
+2000-05-03 13:29  Graham Barr <gbarr@pobox.com>
+
+	* Paged.pm, Sort.pm, SortResult.pm, VLV.pm, VLVResponse.pm:
+	
+	import
+
