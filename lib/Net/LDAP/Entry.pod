@@ -22,7 +22,7 @@ Net::LDAP::Entry - An LDAP entry object
   use Net::LDAP::Entry;
   
   $entry = Net::LDAP::Entry->new;
-  
+
   $entry->add(
     attr1 => 'value1',
     attr2 => [qw(value1 value2)]
@@ -34,8 +34,10 @@ Net::LDAP::Entry - An LDAP entry object
     attr1 => 'newvalue'
     attr2 => [qw(new values)]
   );
-  
+
   $entry->update( $ldap ); # update directory server
+
+  $entry2 = $entry->clone; # copies entry
 
 =head1 DESCRIPTION
 
@@ -51,13 +53,17 @@ command is sent to the directory server to add, modify or replace an
 entry. Entries for this purpose can also be created by reading an
 LDIF file with the L<Net::LDAP::LDIF> module.
 
-=head1 CONSTRUCTOR
+=head1 CONSTRUCTORS
 
 =over 4
 
 =item new
 
 Create a new entry object with the changetype set to C<'add'>
+
+=item clone
+
+Returns a copy of the B<Net::LDAP::Entry> object.
 
 =back
 
@@ -295,6 +301,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.9 2002/06/18 12:39:12 gbarr Exp $>
+I<$Id: Entry.pod,v 1.10 2003/02/22 18:26:39 kartik_subbarao Exp $>
 
 =cut

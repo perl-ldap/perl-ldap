@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.17";
+$VERSION = "0.18";
 
 sub new {
   my $self = shift;
@@ -18,6 +18,18 @@ sub new {
   my $entry = bless { 'changetype' => 'add', changes => [] }, $type;
 
   $entry;
+}
+
+sub clone {
+  my $self  = shift;
+  my $clone = $self->new();
+
+  $clone->dn($self->dn());
+  foreach ($self->attributes()) {
+    $clone->add($_ => [$self->get_value($_)]);
+  }
+
+  $clone;
 }
 
 # Build attrs cache, created when needed
