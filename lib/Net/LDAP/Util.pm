@@ -37,8 +37,9 @@ require Exporter;
   ldap_error_name
   ldap_error_text
   ldap_error_desc
+  canonical_dn
 );
-$VERSION = "0.04";
+$VERSION = "0.05";
 
 =item ldap_error_name ( NUM )
 
@@ -221,6 +222,67 @@ sub ldap_error_desc {
   $err2desc[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
 }
 
+
+
+=item canonical_dn ( DN )
+
+Returns the given DN in a cononical form. Returns undef if DN is
+not a valid Distinguished Name
+
+=cut
+
+
+sub canonical_dn {
+  my $dn = shift;
+  $dn = $dn->dn if ref($dn);
+  
+  my (@dn, @rdn);
+  while (
+	 $dn =~ /\G(?:
+		\s*
+		([a-zA-Z][-a-zA-Z0-9]*|(?:[Oo][Ii][Dd]\.)?\d+(?:\.\d+)*)
+		\s*
+		=
+		\s*
+		(
+		  (?:[^\\",=+<>\#;]|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*(?<=\S)
+		  |
+		  \#(?:[0-9a-fA-F]{2})+
+		  |
+		  "(?:[^\\"]+|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*"
+		)
+		\s*
+		(?:([,+])\s*(?=\S)|$)
+		)\s*/gcx)
+  {
+    my($type,$val,$sep) = ($1,$2,$3);
+
+    $type =~ s/^oid\.(\d+(\.\d+)*)$/$1/i;
+
+    if ($val !~ /^#/) {
+      $val =~ s/^"(.*)"$/$1/;
+      $val =~ s/\\([\\",=+<>#;]|[0-9a-fA-F]{2})
+	       /length($1)==1 ? $1 : chr(hex($1))
+	       /xeg;
+      $val =~ s/([\\",=+<>#;])/\\$1/g;
+      $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
+
+      $val = qq{"$val"} if $val =~ /^\s+|\s\s|\s+$/;
+    }
+
+    push @rdn, "\U$type\E=$val";
+
+    unless (defined $sep and $sep eq '+') {
+      push @dn, join("+", sort @rdn);
+      @rdn = ();
+    }
+  }
+
+  (length($dn) != pos($dn))
+    ? undef
+    : join(",",@dn);
+}
+
 =back
 
 =head1 AUTHOR
@@ -235,7 +297,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.4 2000/09/12 09:17:09 gbarr Exp $>
+I<$Id: Util.pm,v 1.5 2001/02/13 11:22:59 gbarr Exp $>
 
 =cut
 
