@@ -13,7 +13,7 @@ Net::LDAP::Entry - An LDAP entry object
   for($i = 0 ; $i < $max ; $i++) {
     my $entry = $mesg->entry($i);
     foreach my $attr ($entry->attributes) {
-      print join("\n ",$attr, $entry->get($attr)),"\n";
+      print join("\n ",$attr, $entry->get_value($attr)),"\n";
     }
   }
 
@@ -65,6 +65,8 @@ Create a new entry object with the changetype set to C<'add'>
 
 =over 4
 
+
+
 =item add ( ATTR => VALUE [, ATTR2 => VALUE2 ... ] )
 
 Add one or more new attributes to the entry. Each value
@@ -80,50 +82,7 @@ B<NOTE>: these changes are local to the client and will not
 appear on the directory server until the C<update> method
 is called.
 
-=item replace ( ATTR => VALUE [, ATTR2 => VALUE2 ... ] )
 
-Similar to add, except that the values given will replace
-any values that already exist for the given attributes.
-
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-=item delete ( [ ATTR [, ATTR2 ... ]] )
-
-Delete the given attributes from the entry. If no attributes
-are passed then the next call to update will cause the entry
-to be deleted from the server.
-
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-=item dn ( [ DN ] )
-
-Set or get the DN for the entry. With no arguments C<dn> will return
-the current DN. If an argument is given then it will change the DN
-for the entry and return the previous value.
-
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-=item update ( [ CLIENT ] )
-
-Update the directory server with any changes that have been made
-locally. This means any calls that have been made to add, replace
-or delete since the last call to changetype or update was made.
-
-CLIENT should be a C<Net::LDAP> object where the update
-should be sent to.
-
-CLIENT is only optional is the B<Net::LDAP::Entry> object was created
-by a search on a directory server. In which case, if omitted, the
-update will be sent back to the same server.
-
-The result will be an object of type L<Net::LDAP::Message|Net::LDAP::Message> as returned
-by the add, modify or delete method called on CLIENT.
 
 =item attributes ( [ OPTIONS ] )
 
@@ -145,37 +104,7 @@ the return list would be C<( 'name', 'jpeg' )>.
 
 =back
 
-=item get ( ATTR [, OPTIONS ] )
 
-Get the values for the attribute ATTR. The result will be a reference
-to an array, if that attribute exists. If the attribute does not exist
-the C<undef> will be returned.
-
-OPTIONS is a list of name/value pairs, valid options are :-
-
-=over 4
-
-=item alloptions
-
-If TRUE then the result will be a hash reference. The keys of the hash
-will be the options and the hash value will be the values for those attributes.
-For example if an entry had
-
-  name: Graham Barr
-  name;en-us: Bob
-
-Then a get for attribute "name" with alloptions set would return 
-
-  {
-    ''       => [ 'Graham Barr' ],
-    ';en-us' => [ 'Bob' ]
-  }
-
-=back
-
-B<NOTE>: In the interest of performance the array references returned by C<get>
-are references to structures held inside the entry object. These values
-should B<not> be modified directly.
 
 =item changetype ( [ TYPE ] )
 
@@ -205,6 +134,106 @@ entry on the directory server.
 
 =back
 
+
+
+=item delete ( [ ATTR [, ATTR2 ... ]] )
+
+Delete the given attributes from the entry. If no attributes
+are passed then the next call to update will cause the entry
+to be deleted from the server.
+
+B<NOTE>: these changes are local to the client and will not
+appear on the directory server until the C<update> method
+is called.
+
+
+
+=item dn ( [ DN ] )
+
+Set or get the DN for the entry. With no arguments C<dn> will return
+the current DN. If an argument is given then it will change the DN
+for the entry and return the previous value.
+
+B<NOTE>: these changes are local to the client and will not
+appear on the directory server until the C<update> method
+is called.
+
+
+
+=item exists ( ATTR )
+
+Returns TRUE if the entry has an attribute called ATTR.
+
+
+
+=item get_value ( ATTR [, OPTIONS ] )
+
+Get the values for the attribute ATTR. In a list context returns all
+values for the given attribute, or the empty list if the attribute does
+not exist. In a scalar context returns the first value for the attribute
+or undef if the attribute does not exist.
+
+The return value may be changed by OPTIONS, which is a list of name => value
+pairs, valid options are :-
+
+=over 4
+
+=item alloptions
+
+If TRUE then the result will be a hash reference. The keys of the hash
+will be the options and the hash value will be the values for those attributes.
+For example if an entry had
+
+  name: Graham Barr
+  name;en-us: Bob
+
+Then a get for attribute "name" with alloptions set would return 
+
+  {
+    ''       => [ 'Graham Barr' ],
+    ';en-us' => [ 'Bob' ]
+  }
+
+=item asref
+
+If TRUE then the result will be a reference to an array containing all the
+values for the attribute, or undef if the attribute does not exist.
+
+=back
+
+B<NOTE>: In the interest of performance the array references returned by C<get_value>
+are references to structures held inside the entry object. These values and
+thier contents should B<NOT> be modified directly.
+
+
+
+=item replace ( ATTR => VALUE [, ATTR2 => VALUE2 ... ] )
+
+Similar to add, except that the values given will replace
+any values that already exist for the given attributes.
+
+B<NOTE>: these changes are local to the client and will not
+appear on the directory server until the C<update> method
+is called.
+
+
+
+=item update ( [ CLIENT ] )
+
+Update the directory server with any changes that have been made
+locally. This means any calls that have been made to add, replace
+or delete since the last call to changetype or update was made.
+
+CLIENT should be a C<Net::LDAP> object where the update
+should be sent to.
+
+CLIENT is only optional is the B<Net::LDAP::Entry> object was created
+by a search on a directory server. In which case, if omitted, the
+update will be sent back to the same server.
+
+The result will be an object of type L<Net::LDAP::Message|Net::LDAP::Message> as returned
+by the add, modify or delete method called on CLIENT.
+
 =back
 
 =head1 SEE ALSO
@@ -227,6 +256,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: Entry.pod,v 1.4 2000/08/16 11:07:34 gbarr Exp $>
 
 =cut

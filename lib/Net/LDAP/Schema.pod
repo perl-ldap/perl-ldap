@@ -34,21 +34,6 @@ may be supplied.
 
 =over 4
 
-=item parse
-
-Takes a single argument which can be any of, A message objected returned from
-an LDAP search, a Net::LDAP::Entry object or the name of a file containing
-an LDIF form of the schema.
-
-If the argument is a message result from a search, Net::LDAP::Schema will parse
-the schema from the first entry returned.
-
-Returns true on success and C<undef> on error.
-
-=item error
-
-Returns the last error encountered.
-
 =item attributes
 
 With no arguments, returns a list of the names all attributes in the schema.
@@ -62,93 +47,6 @@ returns a list of the attributes which may (or must) be present in the OC.
 
 Return value is an array or array reference depending on calling context, or
 empty list on error.
-
-=item objectclasses
-
-Returns a list of the names of all objectclasses in the schema.
-
-  @ocs = $schema->objectclasses();
-
-Return value is an array or array reference depending on calling context.
-
-=item superclass
-
-Given an argument which is the name or oid of a known objectclass, returns
-the list of names of the immediate superclasses.
-
-=item syntaxes
-
-Returns a list of the names of all objectclasses in the schema. (The name of
-a syntax is not well defined. It may be an OID or abbreviated description).
-
-  @syns = $schema->syntaxes();
-
-Return value is an array or array reference depending on calling context.
-
-=item syntax
-
-Given an argument which is the name or oid of a known attribute, returns the
-name of the attribute's syntax (or the syntax of the attributes superior
-if the syntax is inherited).
-
-  $name_syntax = $schema->syntax( "commonName" );
-
-=item items
-
-Given an argument which is the name or oid of a known object class or 
-attribute, returns the items available for this attribute or object class.
-The returned item name may have an undefined value.
-
-  @items = $schema->items( $oid );
-
-Return value is an array or array reference depending on calling context.
-
-=item item
-
-Given two arguments, first of which is the name or oid of a known
-object class or attribute and second of which is the name of the
-item, returns the item's data value.  The item's value may be 
-undefined.
-
-  @item = $schema->item( $oid, "desc" );
-
-Return value is an array or a value depending on calling context.
-
-=item must
-
-Given an argument which is the name or oid of a known object class, returns
-the name of the attributes which are mandatory in the class
-
-  @must = $schema->must( $oc );
-
-Return value is an array or array reference depending on calling context.
-
-=item may
-
-Given an argument which is the name or oid of a known object class, returns
-the name of the attributes which are optional in the class.
-
-  @may = $schema->may( $oc );
-
-Return value is an array or array reference depending on calling context.
-
-=item name2oid
-
-Given the name of a schema item (object class, attribute or syntax) returns
-the assoicated OID or undef if it is not recognised.
-
-=item is_objectclass, is_attribute, is_syntax
-
-Given the name or oid of a schema item (object class, attribute or syntax
-respectively) returns the assoicated OID or undef if the name or oid is not of
-the appropriate type.
-
-  # Is foo a known OC?
-  $oid = $schema->is_objectclass( "foo" );
-  # No? Bale out.
-  die( "Not an objectclass" ) unless $oid;
-  # Yes...so we can do this
-  @must = $schema->must( $oid );
 
 =item dump
 
@@ -165,6 +63,116 @@ information is dumped to standard out.
 
 If no schema data is returned from directory server, the method
 will return undefined.  Otherwise a value of 1 is always returned.
+
+=item error
+
+Returns the last error encountered.
+
+=item is_objectclass, is_attribute, is_syntax, is_matchingrule
+
+Given the name or oid of a schema item (object class, attribute, 
+syntax or matchingrule respectively) returns the assoicated OID 
+or undef if the name or oid is not of the appropriate type.
+
+  # Is foo a known OC?
+  $oid = $schema->is_objectclass( "foo" );
+  # No? Bale out.
+  die( "Not an objectclass" ) unless $oid;
+  # Yes...so we can do this
+  @must = $schema->must( $oid );
+
+=item item
+
+Given two arguments, first of which is the name or oid of a known
+object class or attribute and second of which is the name of the
+item, returns the item's data value.  The item's value may be 
+undefined.
+
+  @item = $schema->item( $oid, "desc" );
+
+Return value is an array or a value depending on calling context.
+
+=item items
+
+Given an argument which is the name or oid of a known object class or 
+attribute, returns the items available for this attribute or object class.
+The returned item name may have an undefined value.
+
+  @items = $schema->items( $oid );
+
+Return value is an array or array reference depending on calling context.
+
+=item matchingrules
+
+Returns a list of the names of all matchingrules in the schema.
+
+  @mrs = $schema->matchingrules();
+
+Return value is an array or array reference depending on calling context.
+
+=item may
+
+Given an argument which is the name or oid of a known object class, returns
+the name of the attributes which are optional in the class.
+
+  @may = $schema->may( $oc );
+
+Return value is an array or array reference depending on calling context.
+
+=item must
+
+Given an argument which is the name or oid of a known object class, returns
+the name of the attributes which are mandatory in the class
+
+  @must = $schema->must( $oc );
+
+Return value is an array or array reference depending on calling context.
+
+=item name2oid
+
+Given the name of a schema item (object class, attribute or syntax) returns
+the assoicated OID or undef if it is not recognised.
+
+=item objectclasses
+
+Returns a list of the names of all objectclasses in the schema.
+
+  @ocs = $schema->objectclasses();
+
+Return value is an array or array reference depending on calling context.
+
+=item parse
+
+Takes a single argument which can be any of, A message objected returned from
+an LDAP search, a Net::LDAP::Entry object or the name of a file containing
+an LDIF form of the schema.
+
+If the argument is a message result from a search, Net::LDAP::Schema will parse
+the schema from the first entry returned.
+
+Returns true on success and C<undef> on error.
+
+=item superclass
+
+Given an argument which is the name or oid of a known objectclass, returns
+the list of names of the immediate superclasses.
+
+=item syntax
+
+Given an argument which is the name or oid of a known attribute, returns the
+name of the attribute's syntax (or the syntax of the attributes superior
+if the syntax is inherited).
+
+  $name_syntax = $schema->syntax( "commonName" );
+
+=item syntaxes
+
+Returns a list of the names of all objectclasses in the schema. (The name of
+a syntax is not well defined. It may be an OID or abbreviated description).
+
+  @syns = $schema->syntaxes();
+
+Return value is an array or array reference depending on calling context.
 
 =back
 
@@ -189,6 +197,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.5 2000/06/20 22:41:50 gbarr Exp $>
+I<$Id: Schema.pod,v 1.6 2000/08/16 11:07:34 gbarr Exp $>
 
 =cut

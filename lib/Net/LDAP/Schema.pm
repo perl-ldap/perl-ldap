@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.05";
+$VERSION = "0.08";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into 
@@ -150,6 +150,14 @@ sub syntaxes {
 }
 
 
+# The names of all the matchingrules
+
+sub matchingrules {
+  my $self = shift;
+  my $res = $self->{mr};
+  return wantarray ? @$res : $res;
+}
+
 sub superclass {
    my $self = shift;
    my $oc = shift;
@@ -186,7 +194,7 @@ sub _must_or_may {
   #
   if( UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
     my $entry = $oc[0];
-    @oc = $entry->get( "objectclass" );
+    @oc = $entry->get_value( "objectclass" );
   }
 
   return unless @oc;
@@ -287,6 +295,11 @@ sub is_syntax {
   return $self->_is_type( "syn", @_ );
 }
 
+sub is_matchingrule {
+  my $self = shift;
+  return $self->_is_type( "mr", @_ );
+}
+
 # --------------------------------------------------
 # Internal functions
 # --------------------------------------------------
@@ -332,9 +345,10 @@ sub _is_type {
 # These next items are optimisations, to avoid always searching the OID
 # lists. Could be removed in theory.
 #
-# ->{at} = [ list of canonical names of attributes ]
-# ->{oc} = [ list of can. names of objectclasses ]
+# ->{at}  = [ list of canonical names of attributes ]
+# ->{oc}  = [ list of can. names of objectclasses ]
 # ->{syn} = [ list of can. names of syntaxes (we make names from descripts) ]
+# ->{mr}  = [ list of can. names of matchingrules ]
 #
 # This is used to optimise name => oid lookups (to avoid searching).
 # This could be removed or made into a cache to reduce memory usage.
@@ -344,7 +358,7 @@ sub _is_type {
 #
 
 #
-# These items have no following arguuments
+# These items have no following arguments
 #
 my %flags = map { ($_,1) } qw(
 			      single-value
@@ -354,134 +368,36 @@ my %flags = map { ($_,1) } qw(
 			      abstract
 			      structural
 			      auxiliary
-			      );
-
-sub _parse_item {
-  my( $item_name, $item_value );
-
-  #
-  # Items are all of the form:
-  # 1 - "ITEM-NAME"				(if item-name is in flags)
-  # 2 - "ITEM" VALUE
-  # 3 - "ITEM" ( VALUES )
-  #
-  # Depending exactly on what we are parsing, the BNF in RFC2252 says that
-  # we could have any character from "the UTF-8 [9] transformation of a
-  # character from ISO10646"
-  #
-  # Now, shouldn't that include space and quote (which are our delimiters)?
-  # And it seems that exchange server is happy to miss out white space, so
-  # we work to that. Also try and be forgiving on quoting (i.e. not require it)
-  #
-  $item_name = _get_one_word( $_[0] );
-  return unless defined $item_name;
-  $item_name = lc $item_name;
-
-  #
-  # Catch flags here
-  #
-  if ( exists $flags{$item_name} ) {
-    return ($item_name, 1);
-  }
-
-  #
-  # Now a bracketed list or one word. No nested brackets.
-  # Values optionally seperated by '$'.
-  #
-  if ( $_[0] =~ s/^\s*\(// ) {   	# Strip bracket as well as detecting
-    $item_value = [];
-    my $one_val;
-    until ( $_[0] =~ s/^\s*\)// ) {       	# Until we hit end bracket
-      $one_val = _get_one_word( $_[0] ) or die "Cannot parse value [$_[0]]";
-      push @$item_value, $one_val unless $one_val eq '$';  # Drop dollars
-    }
-  }
-  else {
-    #
-    # Single value
-    #
-    $item_value = _get_one_word( $_[0] );
-  }
-
-  return( $item_name, $item_value );
-}
+			     );
 
 #
-# 'Word' rules.
+# These items can have lists arguments
+# (name can too, but we treat it special)
 #
-# - leading commas and w/s are discarded
-# - We need to allow a 'word' to be enclosed in single or double quotes.
-# - Such quotes may be used to embed w/s in the word
-# (mixed quotes are unlikely to work)
-# - Such quotes are stripped from the return value
-# - A word ends in whitespace or close bracket
-# [Note: RFC does not require this but MS Exchange does]
-# - an open or close parens is left in the value and dealt with by the caller
-# (yuck)
-#
-# Note: escaped quotes, escaped w/s and mixed quotes aren't supported.
-# Life is hard enough.
-#
-sub _get_one_word {
-  return "$+" if $_[0] =~ s/^[\s,]*(?:([^"'\s()]+)|"([^"]*)"|'([^']*)')\s*//;
-  die "Failed to parse token from value [$_[0]]" unless $_[0] =~ s/^[\s,]*$//;
-  return;
-}
-
+my %listops = map { ($_,1) } qw(must may sup);
 
 #
-# Given one value of an attribute of type objectclasses, ldapsyntaxes
-# or attributetypes - break it into a 'schema entry'
+# Map schema attribute names to internal names
 #
-sub _parse_value {
-  my $value = shift;
-  my $schema_entry;
-  my $oid;
-  
-  $value =~ s/^\s*\(\s*//;		# Be forgiving about leading bracket
-  
-  #
-  # Netscape doesn't always use numeric OIDs. Bad Netscape.
-  #
-  $oid = _get_one_word( $value );
-  return undef unless defined $oid;
-
-  $schema_entry->{oid} = lc $oid;
-
-  while( $value ) {
-    my ( $item_name, $item_value ) = _parse_item( $value );
-    $value =~ s/^\s*\)\s*//;	# Eat trailing bracket if it is there
-    unless( $item_name ) {
-      warn( "Failed to parse item [$value]" );
-      next;
-    }
-    $schema_entry->{$item_name} = $item_value;
-  }
-
-  return $schema_entry;
-}
-
+my %type2attr = ( at	=> "attributetypes",
+		  oc	=> "objectclasses",
+		  syn	=> "ldapsyntaxes",
+		  mr	=> "matchingrules",
+		  );
 
 #
 # Return ref to hash containing schema data - undef on failure
 #
+
 sub _parse_schema {
   my $schema = shift;
   my $entry = shift;
   
   return undef unless defined($entry);
 
-  #
-  # Map schema attribute names to internal names
-  #
-  my %type2attr = ( at	=> "attributetypes",
-		    oc	=> "objectclasses",
-		    syn	=> "ldapsyntaxes",
-		    );
-  foreach my $type ( qw( syn at oc ) ) {
-    my $attr = $type2attr{$type};
-
-    my $vals = $entry->get($attr);
+  keys %type2attr; # reset iterator
+  while(my($type,$attr) = each %type2attr) {
+    my $vals = $entry->get_value($attr, asref => 1);
 
     my @names;
     $schema->{$type} = \@names;		# Save reference to list of names
@@ -494,21 +410,82 @@ sub _parse_schema {
       # name and a 'schema_entry' which is a hash ref containing the items
       # present in the value.
       #
-      my $schema_entry = _parse_value( $val );
-      unless( $schema_entry ) {
-	die "Unable to parse value [$val]";
-	next;
+      my %schema_entry = ( type => $type, aliases => [] );
+
+      my @tokens;
+      push @tokens, $+
+        while $val =~ /(?:^|\G)\s*(?:
+                       ([()])
+                      |
+                       ([^"'\s()]+)
+                      |
+                       "([^"]*)"
+                      |
+                       '([^']*)'
+                      )\s*/xcg;
+      die "Cannot parse [$val]" unless @tokens and pos($val) == length($val);
+
+      # remove () from start/end
+      shift @tokens if $tokens[0]  eq '(';
+      pop   @tokens if $tokens[-1] eq ')';
+
+      # The first token is the OID
+      my $oid = $schema_entry{oid} = shift @tokens;
+
+      while(@tokens) {
+	my $tag = lc shift @tokens;
+
+	if (exists $flags{$tag}) {
+	  $schema_entry{$tag} = 1;
+	}
+	elsif (@tokens) {
+	  if (($schema_entry{$tag} = shift @tokens) eq '(') {
+	    my @arr;
+	    $schema_entry{$tag} = \@arr;
+	    while(1) {
+	      my $tmp = shift @tokens;
+	      last if $tmp eq ')';
+	      push @arr,$tmp unless $tmp eq '$';
+
+              # Drop of end of list ?
+	      die "Cannot parse [$val]" unless @tokens;
+	    }
+	  }
+
+          # Ensure items that can be lists are stored as array refs
+	  $schema_entry{$tag} = [ $schema_entry{$tag} ]
+	    if exists $listops{$tag} and !ref $schema_entry{$tag};
+	}
+        else {
+          die "Cannot parse [$val]";
+        }
       }
-      my $oid = $schema_entry->{oid};
 
       #
-      # We digest the raw parsed schema - throw away if we cannot fix it up
+      # Extract the maximum length of a syntax
       #
-      unless( _fixup_entry( $schema_entry, $type ) ) {
-	warn( "Something wrong with schema entry - can't fixup [$val]" );
-	next;
+      if ( exists $schema_entry{syntax}) {
+	$schema_entry{syntax} =~ s/{(\d+)}//;
+	$schema_entry{max_length} = $1 || 0;
       }
-      $schema_entry->{type} = $type;			# Remember type
+
+      #
+      # Force a name if we don't have one
+      #
+      if (!exists $schema_entry{name}) {
+        if (exists $schema_entry{desc}) {
+	  ($schema_entry{name} = $schema_entry{desc}) =~ s/\s+//g
+        }
+        else {
+	  $schema_entry{name} = "$type:$schema_entry{oid}"
+        }
+      }
+
+      #
+      # If we have multiple names, make the name be the first and demote the rest to aliases
+      #
+      $schema_entry{name} = shift @{$schema_entry{aliases} = $schema_entry{name}}
+	if ref $schema_entry{name};
 
       #
       # In the schema we store:
@@ -518,90 +495,21 @@ sub _parse_schema {
       # 3 - a (lower-cased) canonical name -> OID map
       # 4 - a (lower-cased) alias -> OID map
       #
-      $schema->{oid}->{$oid} = $schema_entry;
-      my $uc_name = $schema_entry->{name};
+      $schema->{oid}->{$oid} = \%schema_entry;
+      my $uc_name = uc $schema_entry{name};
       push @names, $uc_name;
       $schema->{name}->{lc $uc_name} = $oid;
-      foreach my $alias ( @{$schema_entry->{aliases}} ) {
+      foreach my $alias ( @{$schema_entry{aliases}} ) {
 	$schema->{aliases}->{lc $alias} = $oid;
       }
     }
   }
-
-  #
-  # Add in bare syntax entry for any syntaxes which are used but
-  # not defined in the returned schema.
-  # XXX - todo
-  #
-#  _fixup_schema( $schema );
 
   $schema->{entry} = $entry;
   return $schema;
 }
 
 
-#
-# Process schema entry - return undef if it is not good
-#
-sub _fixup_entry {
-  my $schema_entry = shift;
-  my $type = shift;
-
-  #
-  # Store some items as array refs always, for simpler code
-  # Note - 'name' is made scalar later in this function
-  #
-  foreach my $item_type ( qw( name must may sup ) ) {
-    my $item = $schema_entry->{$item_type};
-    if( $item && !ref $item ) {
-      $schema_entry->{$item_type} = [ $item ];
-    }
-  }
-
-  #
-  # We also do some type-specific transformations. This is ugly...should
-  # this be object-based code? Seems overkill.
-  #
-  my $name;
-  if( $type eq "syn" ) {
-    #
-    # For syntaxes, we munge the desc to a name
-    #
-    if( exists $schema_entry->{desc} ) {
-      $name = $schema_entry->{desc};
-      $name =~ s/ +//g;
-      $schema_entry->{name} = [ $name ];
-    }
-  }
-  elsif( $type eq "at" ) {
-    #
-    # Extract the maximum length info if present.
-    #
-    my $syntax = $schema_entry->{syntax};
-    if( $syntax ) {
-      my $length;
-      ( $syntax, $length ) = split( /[{}]/, $syntax );
-      $length ||= 0;		# Length of zero = not specified
-      $schema_entry->{max_length} = $length;
-      $schema_entry->{syntax} = $syntax;      
-    }
-  }
-
-  #
-  # Force a name if we don't have one
-  #
-  unless( exists $schema_entry->{name} ) {
-    $schema_entry->{name} = [ "$type:$schema_entry->{oid}" ];
-  }
-  #
-  # Now make 'name' be the first listed name, demote the others to aliases
-  #
-  $name = shift @{$schema_entry->{name}};
-  $schema_entry->{aliases} = $schema_entry->{name};  	# Aliases are array
-  $schema_entry->{name} = $name;			# Name is scalar
-
-  return 1;		# Entry OK
-}
 
 
 #

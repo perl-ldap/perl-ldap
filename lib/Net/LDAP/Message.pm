@@ -1,16 +1,16 @@
-# $Id: Message.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $
+# $Id: Message.pm,v 1.3 2000/08/16 11:07:34 gbarr Exp $
 # Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Message;
 
-use Net::LDAP::Constant qw(LDAP_SUCCESS);
+use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_COMPARE_TRUE LDAP_COMPARE_FALSE);
 use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.03";
+$VERSION = "1.04";
 
 my $MsgID = 0;
 
@@ -182,6 +182,7 @@ sub pdu      {  shift->{pdu}      }
 sub callback {  shift->{callback} }
 sub parent   {  shift->{parent}   }
 sub mesg_id  {  shift->{mesgid}   }
+sub is_error {  shift->code       }
 
 ##
 ##
@@ -195,6 +196,12 @@ sub mesg_id  {  shift->{mesgid}   }
 @Net::LDAP::Compare::ISA = qw(Net::LDAP::Message);
 @Net::LDAP::Unbind::ISA  = qw(Net::LDAP::Message::Dummy);
 @Net::LDAP::Abandon::ISA = qw(Net::LDAP::Message::Dummy);
+
+sub Net::LDAP::Compare::is_error {
+  my $mesg = shift;
+  my $code = $mesg->code;
+  $code != LDAP_COMPARE_FALSE and $code != LDAP_COMPARE_TRUE
+}
 
 {
   package Net::LDAP::Message::Dummy;

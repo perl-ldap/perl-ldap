@@ -10,7 +10,7 @@ use strict;
 use Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.05";
+$VERSION = "0.06";
 
 sub new {
   my $pkg = shift;
@@ -138,7 +138,7 @@ sub _print_entry {
       print $fh "<dsml:attr name=\"",_normalize($attr),"\">\n";
     }
     
-    my @values = $entry->get($attr);
+    my @values = $entry->get_value($attr);
     
     for my $value (@values) {
        if ($isOC) {

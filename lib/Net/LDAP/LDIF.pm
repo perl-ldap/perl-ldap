@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.04";
+$VERSION = "0.05";
 
 my %mode = qw(w > r < a >>);
 
@@ -150,7 +150,7 @@ sub _write_attrs {
   my($entry,$wrap) = @_;
   my $attr;
   foreach $attr ($entry->attributes) {
-    my $val = $entry->get($attr);
+    my $val = $entry->get_value($attr, asref => 1);
     _write_attr($attr,$val,$wrap);
   }
 }

@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.05";
+$VERSION = "0.06";
 
 
 sub first_entry { # compat
@@ -122,7 +122,7 @@ sub sorted {
     my $attr = shift;
 
     @at = map {
-      my $x = $_->get($attr);
+      my $x = $_->get_value($attr, asref => 1);
       $x ? lc(join("\001",@$x)) : "";
     } @{$self->{entries}};
   }

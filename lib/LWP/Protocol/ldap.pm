@@ -107,7 +107,7 @@ sub request {
       $content .= "<TR><TH COLSPAN=2>" . $entry->dn . "</TH></TR>\n";
 
       foreach $attr ($entry->attributes) {
-        my $vals = $entry->get($attr);
+        my $vals = $entry->get_value($attr, asref => 1);
         my $val;
 
         $content .= "<TR><TD align=right valign=top";

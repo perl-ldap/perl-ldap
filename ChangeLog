@@ -1,3 +1,39 @@
+Change 568 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- Added parsing for matchingRules
+
+Change 567 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP, Net::LDAP::Entry
+	- Fix syntax typo's
+
+Change 566 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- added ->get_value() and depricated ->get()
+
+Change 565 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Message
+	- Added is_error for use by the onerror code in Net::LDAP
+
+Change 564 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- added `onerror' option to ->new
+
+Change 563 on 2000/08/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Create all message objects via ->message. This will allow sub-classes
+	  to also sub-class the message objects.
+
+Change 562 on 2000/08/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- Improved performance
+
 Change 560 on 2000/08/03 by <gbarr@pobox.com> (Graham Barr)
 
 	Release 0.20

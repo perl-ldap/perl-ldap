@@ -86,6 +86,35 @@ bits of this value are :-
 
 Perform all operations asynchronously if passed a I<true> value.
 
+=item onerror
+
+If set then Net::LDAP will check all responses for errors on all methods
+if the object is in synchronous mode. If an error is detected then the
+specified action will be taken. Valid values and their actions are.
+
+=over 4
+
+=item die
+
+Net::LDAP will croak with an appropriate message.
+
+=item warn
+
+Net::LDAP will warn with an appropriate message.
+
+=item undef
+
+Net::LDAP will warn with an appropriate message if C<-w> is in effect.
+The method that was called will return C<undef>
+
+=item CODEREF
+
+The given coderef will be called in a scalar context with a single argument, the result
+message. The value returned will be the return value for the method
+that was called.
+
+=back
+
 =back
 
 Example
@@ -694,6 +723,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.5 2000/08/03 17:10:26 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.6 2000/08/16 11:07:33 gbarr Exp $>
 
 =cut

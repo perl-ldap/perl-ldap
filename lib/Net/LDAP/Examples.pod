@@ -165,7 +165,7 @@ B<What is not covered in these examples at this time:>
            foreach $attr ( sort $entr->attributes ){
 		#skip binary we can't handle
                 next if ( $attr =~ /;binary$/ );
-                print "  $attr : ",$entr->get($attr),"\n";
+                print "  $attr : ",$entr->get_value($attr),"\n";
                 }
 
 
@@ -544,7 +544,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.2 2000/06/20 22:41:50 gbarr Exp $>
+I<$Id: Examples.pod,v 1.3 2000/08/16 11:07:34 gbarr Exp $>
 
 =cut
 
