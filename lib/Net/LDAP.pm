@@ -101,7 +101,7 @@ sub new {
 
   foreach my $uri (ref($host) ? @$host : ($host)) {
     my $scheme = $arg->{scheme} || 'ldap';
-    (my $h = $uri) =~ s/^(\w+):// and $scheme = $1;
+    (my $h = $uri) =~ s,^(\w+)://,, and $scheme = $1;
     my $meth = $obj->can("connect_$scheme") or next;
     $h =~ s,^//([^/]*).*,$1,; # Extract host
     $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
