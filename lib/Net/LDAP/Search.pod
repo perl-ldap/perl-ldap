@@ -72,11 +72,17 @@ list of L<Net::LDAP::Reference> objects.
 
 Return a list L<Net::LDAP:Entry> objects, sorted by their DNs.
 
+The sorting is done on the client side using Perl's alphanumerical
+sort operator C<cmp>.
+
 =item sorted ( ATTR, ... )
 
 Return a list of L<Net::LDAP::Entry> objects, sorted by the specified
 attributes. The attributes are compared in the order specified, each
 only being compared if all the prior attributes compare equal.
+
+The sorting is done on the client side using Perl's alphanumerical
+sort operator C<cmp>.
 
 =item shift_entry ( )
 
