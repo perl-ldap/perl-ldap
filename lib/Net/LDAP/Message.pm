@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.7 2003/05/20 14:56:04 chrisridd Exp $
+# $Id: Message.pm,v 1.8 2003/06/06 22:47:14 gbarr Exp $
 # Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -10,7 +10,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.06";
+$VERSION = "1.07";
 
 my $MsgID = 0;
 
@@ -23,7 +23,7 @@ sub NewMesgID {
 sub new {
   my $self   = shift;
   my $type   = ref($self) || $self;
-  my $parent = shift;
+  my $parent = shift->inner;
   my $arg    = shift;
 
   $self = bless {
@@ -206,7 +206,7 @@ sub control {
 
 sub pdu      {  shift->{pdu}      }
 sub callback {  shift->{callback} }
-sub parent   {  shift->{parent}   }
+sub parent   {  shift->{parent}->outer   }
 sub mesg_id  {  shift->{mesgid}   }
 sub is_error {  shift->code       }
 

@@ -7,6 +7,7 @@ package Net::LDAP;
 use strict;
 use IO::Socket;
 use IO::Select;
+use Tie::Hash;
 use vars qw($VERSION $LDAP_VERSION @ISA);
 use Convert::ASN1 qw(asn_read);
 use Net::LDAP::Message;
@@ -23,10 +24,11 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_SERVER_DOWN
 			   LDAP_USER_CANCELED
 			   LDAP_EXTENSION_START_TLS
+			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.28";
-@ISA     	= qw(Net::LDAP::Extra);
+$VERSION 	= "0.28_01";
+@ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
 # Net::LDAP::Extra will only exist is someone use's the module. But we need
@@ -124,7 +126,7 @@ sub new {
 
   $obj->debug($arg->{debug} || 0 );
 
-  $obj;
+  $obj->outer;
 }
 
 sub connect_ldap {
@@ -802,7 +804,9 @@ sub _recvresp {
 sub _drop_conn {
   my ($self, $err, $etxt) = @_;
 
-  delete $self->{net_ldap_socket};
+  my $sock = delete $self->{net_ldap_socket};
+  close($sock) if $sock;
+
   if (my $msgs = delete $self->{net_ldap_mesg}) {
     foreach my $mesg (values %$msgs) {
       $mesg->set_error($err, $etxt);
@@ -964,6 +968,30 @@ sub version {
   @_
     ? ($ldap->{net_ldap_version},$ldap->{net_ldap_version} = shift)[0]
     : $ldap->{net_ldap_version};
+}
+
+sub outer {
+  my $self = shift;
+  return $self if tied(%$self);
+  my %outer;
+  tie %outer, ref($self), $self;
+  ++$self->{net_ldap_refcnt};
+  bless \%outer, ref($self);
+}
+
+sub inner {
+  tied(%{$_[0]}) || $_[0];
+}
+
+sub TIEHASH {
+  $_[1];
+}
+
+sub DESTROY {
+  my $ldap = shift;
+  my $inner = tied(%$ldap) or return;
+  _drop_conn($inner, LDAP_UNAVAILABLE, "Implicit disconnect")
+    unless --$inner->{net_ldap_refcnt};
 }
 
 1;
