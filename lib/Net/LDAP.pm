@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= 0.23_01;
+$VERSION 	= 0.23_02;
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -157,9 +157,13 @@ sub unbind {
 
   my $mesg = $ldap->message('Net::LDAP::Unbind' => $arg);
 
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
   $mesg->encode(
     unbindRequest => 1,
-    controls      => $arg->{control}
+    controls      => $control,
   ) or return _error($ldap, $mesg,LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -195,7 +199,9 @@ sub bind {
     if exists $arg->{version};
 
   my $dn      = delete $arg->{dn} || '';
-  my $control = delete $arg->{control};
+  my $control = delete $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my %stash = (
     name    => ref($dn) ? $dn->dn : $dn,
@@ -218,9 +224,9 @@ sub bind {
     unless $auth_type;
 
   if ($auth_type eq 'sasl') {
-#    if ($version < 3) {
-#      # FIXME: Need V3 for SASL
-#    }
+
+    return _error($ldap, $mesg, LDAP_PARAM_ERROR, "SASL requires LDAPv3")
+      if $ldap->{version} < 3;
 
     my $sasl = $passwd;
     # Tell the SASL object our user identifier
@@ -257,6 +263,10 @@ sub search {
 
   my $mesg = $ldap->message('Net::LDAP::Search' => $arg);
 
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
   my $base = $arg->{base} || '';
   my $filter;
 
@@ -291,7 +301,7 @@ sub search {
 
   $mesg->encode(
     searchRequest => \%stash,
-    controls => $arg->{control}
+    controls      => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -303,6 +313,10 @@ sub add {
   my $arg  = &_dn_options;
 
   my $mesg = $ldap->message('Net::LDAP::Add' => $arg);
+
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $entry = $arg->{dn}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
@@ -316,7 +330,7 @@ sub add {
 
   $mesg->encode(
     addRequest => $entry->asn,
-    controls   => $arg->{control}
+    controls   => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -331,7 +345,11 @@ sub modify {
 
   my $mesg = $ldap->message('Net::LDAP::Modify' => $arg);
 
-  exists $arg->{dn}
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
+  my $dn = $arg->{dn}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
 
   my @ops;
@@ -406,14 +424,12 @@ sub modify {
     }
   }
 
-  my $dn;
-
   $mesg->encode(
     modifyRequest => {
-      object => ref($dn = $arg->{dn}) ? $dn->dn : $dn,
+      object       => ref($dn) ? $dn->dn : $dn,
       modification => \@ops
     },
-    controls => $arg->{control}
+    controls => $control
   )
     or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
@@ -425,11 +441,17 @@ sub delete {
   my $arg  = &_dn_options;
 
   my $mesg = $ldap->message('Net::LDAP::Delete' => $arg);
-  my $dn;
+
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
+  my $dn = $arg->{dn}
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
 
   $mesg->encode(
-    delRequest => ref($dn = $arg->{dn}) ? $dn->dn : $dn,
-    controls   => $arg->{control}
+    delRequest => ref($dn) ? $dn->dn : $dn,
+    controls   => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -443,22 +465,24 @@ sub moddn {
 
   my $mesg = $ldap->message('Net::LDAP::ModDN' => $arg);
 
-  exists $arg->{dn}
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
+  my $dn = $arg->{dn}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
 
   my $new  = $arg->{newrdn} || $arg->{'new'}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No NewRDN specified");
 
-  my $dn;
-
   $mesg->encode(
     modDNRequest => {
-      entry        => ref($dn = $arg->{dn}) ? $dn->dn : $dn,
+      entry        => ref($dn) ? $dn->dn : $dn,
       newrdn       => ref($new) ? $new->dn : $new,
       deleteoldrdn => $del,
       newSuperior  => ref($newsup) ? $newsup->dn : $newsup,
     },
-    controls => $arg->{control}
+    controls => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -472,6 +496,10 @@ sub compare {
   my $arg   = &_dn_options;
 
   my $mesg = $ldap->message('Net::LDAP::Compare' => $arg);
+
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $dn = $arg->{dn}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
@@ -497,7 +525,7 @@ sub compare {
 	assertionValue => $value
       }
     },
-    controls => $arg->{control}
+    controls => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -512,9 +540,13 @@ sub abandon {
 
   my $mesg = $ldap->message('Net::LDAP::Abandon' => $arg);
 
+  my $control = $arg->{control}
+    and $ldap->{version} < 3
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+
   $mesg->encode(
     abandonRequest => ref($id) ? $id->mesg_id : $id,
-    controls       => $arg->{control}
+    controls       => $control
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
 
   $ldap->_sendmesg($mesg);
@@ -523,18 +555,17 @@ sub abandon {
 sub extension {
   my $ldap = shift;
   my $arg  = &_options;
-  my $oid  = $arg->{name};
-
-  return if ($ldap->version < 3);
 
   require Net::LDAP::Extension;
-
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
+
+  return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "ExtendedRequest requires LDAPv3")
+    if $ldap->{version} < 3;
 
   $mesg->encode(
     extendedRequest => {
-      requestName  => $oid,
-      requestValue => (exists $arg->{value} ? $arg->{value} : undef)
+      requestName  => $arg->{name},
+      requestValue => $arg->{value}
     },
     controls => $arg->{control}
   ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR,"$@");
@@ -543,10 +574,10 @@ sub extension {
 }
 
 sub sync {
-  my $ldap = shift;
-  my $mid  = shift;
+  my $ldap  = shift;
+  my $mid   = shift;
   my $table = $ldap->{net_ldap_mesg};
-  my $err = LDAP_SUCCESS;
+  my $err   = LDAP_SUCCESS;
 
   $mid = $mid->mesg_id if ref($mid);
   while (defined($mid) ? exists $table->{$mid} : %$table) {
