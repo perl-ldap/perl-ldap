@@ -430,7 +430,7 @@ sub modify {
 	    operation => $opcode,
 	    modification => {
 	      type => $attr,
-	      vals => $val
+	      vals => ref($val) ? $val : [$val]
 	    }
 	  };
 	}
