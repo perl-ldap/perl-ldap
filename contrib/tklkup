@@ -12,16 +12,23 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.21 2001/12/17 01:35:45 charden Exp $
+# $Id: tklkup,v 1.22 2001/12/29 01:50:27 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
-#          created by this program.
+#          created by this program.  This program can edit the data
+#          retrieved from the directory.
 #
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.22  2001/12/29 01:50:27  charden
+# Added code to allow editing of a entry's attributes.
+# This makes this software a full featured LDAP directory interface.
+# Added pod documentation about new windows and features.
+#
 # Revision 1.21  2001/12/17 01:35:45  charden
+#
 # Added fail safe code to the DELETE entry operation.  This forces the
 # user to confirm the delete entry request.
 # Added pod documentation for the DELETE fail safe window.
@@ -2318,6 +2325,7 @@ $list->insert("end", "\n");
 sub ldapActionEdit
 {
 my $dataArray;
+my $editArray;
 my $blank = "   ";
 my $data;
 my $dn;
@@ -2326,6 +2334,11 @@ my $lb;
 my $info;
 my @infoKeys;
 my @DNs = ();
+my @tmp1 = ();
+#my $index;
+my $indexCount;
+my $text;
+
 if ( !$Global{'ldapActionDN'} )
 {
 delete($Global{'ldapActionDN'});
@@ -2343,12 +2356,12 @@ $Global{'ldapActionWindow'}->destroy()
        if Tk::Exists($Global{'ldapActionWindow'});
 delete($Global{'ldapActionWindow'}); 
 
-return if Tk::Exists($editWindow);
+return if Tk::Exists($Global{'editWindow'});
 
 &displayEdit();
 
 # clear the entry data display window.
-if ( $edit_clear ) { &edit_clear(); }
+
 #
 # Format and display the data associcated with the dn 
 # passed to this subroutine.
@@ -2358,13 +2371,35 @@ if ( $edit_clear ) { &edit_clear(); }
 $dataArray = $Global{'searchResults'};
 $data = $$dataArray{$DNs[1]}; # get data associated with this dn
 $dn = $$data[0];     # get DN
+my $tmpdn = $dn;     # save DN
+$Global{'entryDN'} = $dn;     # save DN
 $max = $$data[1];    # get max size of atttributes
 $info = $$data[2];   # get data hash address.
-@infoKeys = sort(keys(%$info));  # get a list of all attributes.
+@tmp1 = sort(keys(%$info));  # get a list of all attributes.
+
+foreach my $attrKey ( @tmp1 )
+{
+ #
+ # User can not edit these attributes, remove from the list of 
+ # attributes to display.
+ #
+ if ( $attrKey =~ /createTimeStamp/i || $attrKey =~ /modifyTimeStamp/i ||
+      $attrKey =~ /creatorsName/i || $attrKey =~ /modifiersName/i )
+ {
+    next;
+ }
+
+ push( @infoKeys, $attrKey );  # get a list of all attributes.
+
+}
+
 #
 # create attribute label 
 #
-$lb = $elist->Label(-text => "DN:", 
+$text = sprintf "%${max}s",'DN';
+
+$lb = $elist->Label(-text => $text, 
+                    -font => $Global{'Font'},
                     -relief => 'groove',
                     -anchor => 'e',
                     -width => ($max+2) );
@@ -2374,72 +2409,44 @@ $elist->windowCreate("end", -window => $lb );
 # create data entry window
 #
 $lb = $elist->Entry(-width => 85,
-                   -textvariable => \$dn);
+                   -textvariable => \$tmpdn);
 $elist->windowCreate("end", -window => $lb );
 
 $elist->insert("end", "\n"); # position to the next row.
+
 #
 # For each attribute display it's data
 # 
 foreach my $var (@infoKeys)
 {
 
- if ( $var =~ /^jpegPhoto/i )
- {
-   #
-   # Display jpegPhoto in separate window if Tk::JPEG is used.
-   #
-   my $Value = decode_base64($$info{$var});
-   displayPhoto($Value, $dn ) if ( $Global{'jpeg'}) ;  
-   $dstring = "JpegPhoto binary data is not being displayed.\n";
-   #
-   # create attribute label 
-   #
-   $lb = $elist->Label(-text => "$var:", 
-                       -relief => 'groove',
-                       -anchor => 'e',
-                       -width => ($max+2) );
-
-   $elist->windowCreate("end", -window => $lb );
-   #
-   # create data entry window
-   #
-   $lb = $elist->Entry(-width => 85,
-                     -textvariable => \$dstring);
-   $elist->windowCreate("end", -window => $lb );
-
-   $elist->insert("end", "\n"); # position to the next row.
-   next;
- }
+$text = sprintf "%${max}s",$var;
 
  my $values = $$info{$var}; # get attribute data array.
- foreach my $Value ( @$values)
- {
-  #
-  # create attribute label 
-  #
-  $lb = $elist->Label(-text => "$var:", 
-                      -relief => 'groove',
-                      -anchor => 'e',
-                      -width => ($max+2) );
 
-  $elist->windowCreate("end", -window => $lb );
+ foreach my $Value ( @$values )
+ {
+
+  if ( $var =~ /;binary$/ ) { next; } # We do not do binary data, yet.
+
+  #
+  # create attribute action button 
+  #
+  $ab = $elist->Button(-text => $text, 
+                      -font => $Global{'Font'},
+                      -borderwidth => 3,
+                      -relief => 'raised' );
+
+  $elist->windowCreate("end", -window => $ab );
 
   #
   # Format data and print data into Entry Box
   # 
-  if ( $var =~ /;binary$/ )
-  {
-   $encoded = encode_base64($Value);
-   $lb = $elist->Entry(-width => 85,
-                       -textvariable => \$encoded);
-  }
-  else
-  {
-   $lb = $elist->Entry(-width => 85,
-                       -textvariable => \$Value);
-  }
+  $lb = $elist->Listbox(-width => 85, -height => 1 );
   $elist->windowCreate("end", -window => $lb ); 
+  $lb->insert('end', $Value );
+
+  $ab->configure( -command => [ \&changeAttribute, \$ab, \$lb, \$Value, \$var ] );
 
   # position to the next row. 
   $elist->insert("end", "\n");
@@ -2454,6 +2461,322 @@ $elist->windowCreate("end", -window => $lb );
 $elist->insert("end", "\n");
 
 }
+
+
+sub changeAttribute
+{
+my ( $ab, $lb, $Value, $attr  ) = @_;
+
+#
+# Create change attribute Window
+#
+if (!Exists($Global{'changeWindow'}) )
+{
+my $x = $Global{'horz'} + 75;
+my $y = $Global{'vert'} + 75;
+my $acframe;
+my $alframe;
+my $attribute;
+$Global{'tmpADD'} = {};
+$Global{'tmpDELETE'} = {};
+$Global{'tmpREPLACE'} = {};
+
+$Global{'changeWindow'} = MainWindow->new;
+ 
+$Global{'changeWindow'}->title("ATTRIBUTE MODIFICATION WINDOW");
+ 
+$Global{'changeWindow'}->geometry("+$x+$y");
+ 
+#
+# Create process Cancel button
+#
+ 
+$Global{'changeWindow'}->Button(-text => "CANCEL ATTRIBUTE EDIT",
+      -command => \&change_cancel,
+      -font => $Global{'Font'}, -borderwidth => 5 )
+      -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+#
+# Create frame for clear buttons.
+#
+ 
+ 
+$acframe = $Global{'changeWindow'}->Frame()
+      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
+ 
+#
+# Create Clear Data
+#
+ 
+$acframe -> Button(-text => "     ACCEPT DATA CHANGE     ",
+      -command =>  \&makeChanges,
+#      -command =>  [ \&makeChanges,\$ADD,\$DELETE,\$REPLACE ],
+      -font => $Global{'Font'},
+      -borderwidth => 3 )
+      ->pack( -fill => 'both' );
+ 
+ 
+#
+# Create list frame.
+#
+ 
+$outerframe = $Global{'changeWindow'}->Frame()
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
+      -expand => 1);
+ 
+#
+# Create data frame.
+#
+ 
+$alframe = $outerframe->LabFrame(-label => "ATTRIBUTE DATA",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
+      -expand => 1);
+ 
+
+#
+# Create a Text Box that will actually contain the
+# returned directory data.
+#
+ 
+$attrlist = $alframe ->Text( -width => 80, -height => 1, 
+      -wrap => 'none',
+      -font => $Global{'Font'}  );
+ 
+$attrlist->pack(-fill => "both", -expand => 1 );
+$attrlist->insert('end', $$Value); 
+
+if ( $Global{'add_new_attribute'} )
+{
+#
+# Create data frame.
+#
+ 
+$Global{'newAttributeFrame'} = $outerframe->LabFrame(
+      -label => "NEW ATTRBUTE NAME",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
+      -expand => 1);
+ 
+#
+# Create a Text Box that will actually contain the
+# returned directory data.
+#
+ 
+ 
+$Global{'newAttribute'} = $Global{'newAttributeFrame'}->Text( 
+      -width => 80, -height => 1, 
+      -wrap => 'none',
+      -font => $Global{'Font'}  );
+ 
+$Global{'newAttribute'}->pack(-fill => "both", -expand => 1 );
+ 
+$Global{'newAttributeReady'} = 1 ;
+
+}
+
+
+# 
+##
+## Create process add new attribute button
+##
+# 
+#$Global{'changeWindow'}->Button(-text => "ADD\nATTRIBUTE",
+#      -command => [\&add_attribute, $attr, $Value, \$outerframe],
+#      -font => $Global{'Font'}, -borderwidth => 5 )
+#      -> pack(-side => $Global{'hand'},
+#      -padx => 2, -pady => 2 ) ;
+
+ 
+#
+# Create process Add button
+#
+ 
+$Global{'changeWindow'}->Button(-text => "ADD",
+      -command => [\&add_data, $attr, $Value, \$attrlist],
+      -font => $Global{'Font'}, -borderwidth => 5 )
+      -> pack(-side => $Global{'hand'},
+      -padx => 2, -pady => 2 ) ;
+
+ 
+if ( !defined($Global{'add_new_attribute'}) )
+{
+#
+# Create process Delete button
+#
+ 
+$Global{'changeWindow'}->Button(-text => "DELETE",
+      -command => [\&delete_data, $attr, $Value],
+      -font => $Global{'Font'}, -borderwidth => 5 )
+      -> pack(-side => $Global{'hand'},
+      -padx => 2, -pady => 2 ) ;
+
+ 
+#
+# Create process Replace button
+#
+ 
+$Global{'changeWindow'}->Button(-text => "REPLACE",
+      -command => [\&replace_data, $attr, $Value,\$attrlist],
+      -font => $Global{'Font'}, -borderwidth => 5 )
+      -> pack(-side => $Global{'hand'},
+      -padx => 2, -pady => 2 ) ;
+
+#
+# Create a multi value Checkbutton that will determine how multi-valued
+# attributes are handled.  The schema can tell you but version 2
+# ldap servers can not deliver schema data.
+#
+ 
+$Global{'changeWindow'} -> Checkbutton(
+      -text => "SET MULTI-VALUED ATTRIBUTE",
+      -variable =>  \$Global{'multi'}, -onvalue => 1,
+      -offvalue => 0, -font => $Global{'Font'} )
+      -> pack(-side => "left", -anchor => "center" );
+
+}
+
+}
+else { return; }
+ 
+sub delete_data {
+my ( $attr, $Value ) = @_;
+#
+# 
+#
+$Global{'tmpDELETE'}{$$attr} = $$Value;
+ 
+} # End of delete_data subroutine
+ 
+ 
+sub replace_data {
+my ( $attr, $Value, $tbox ) = @_;
+#
+# Replace this attributes value.
+# But what if this is a multi-valued attribute.  
+#
+if ( $Global{'multi'} )
+{
+#
+# User says it is a multi-valued attribute.
+#
+# First I add the new data then delete the old data.
+#
+$Global{'tmpDELETE'}{$$attr} = $$Value;
+$Global{'tmpADD'}{$$attr} = $$tbox->get('1.0','1.end');
+
+# print '|',$Global{'tmpREPLACE'}{$$attr},"|\n"; 
+}
+else
+{
+$Global{'tmpREPLACE'}{$$attr} = $$tbox->get('1.0','1.end');
+# print '||',$Global{'tmpREPLACE'}{$$attr},"||\n"; 
+
+}
+ 
+} # End of replace_data subroutine
+ 
+ 
+sub add_data {
+my ( $attr, $Value, $tbox ) = @_;
+my $newAttribute;
+if ( $Global{'newAttributeReady'} )
+{ 
+#
+# add new attribute and it's value
+#
+$newAttribute = $Global{'newAttribute'}->get('1.0','1.end');
+#print $newAttribute, "\n";
+
+$Global{'tmpADD'}{$newAttribute} = $$tbox->get('1.0','1.end');
+
+}
+else
+{
+#
+# add new value to attribute
+#
+$Global{'tmpADD'}{$$attr} = $$tbox->get('1.0','1.end');
+
+}
+ 
+} # End of add_data subroutine
+ 
+sub makeChanges {
+
+my $tmp = $Global{'tmpADD'};
+my @Keys = sort(keys(%$tmp));
+
+if ( @Keys ) 
+{
+foreach my $var ( @Keys)
+{
+$Global{'add'}{$var} = $Global{'tmpADD'}{$var};
+# print $var, " == ", $Global{'tmpADD'}{$var},"\n";
+}
+
+$Global{tmpADD} = {};
+
+$Global{'newAttribute'}->destroy 
+       if Tk::Exists($Global{'newAttribute'});
+$Global{'newAttributeFrame'}->destroy 
+       if Tk::Exists($Global{'newAttributeFrame'});
+delete( $Global{'newAttributeReady'} ) 
+       if ( defined($Global{'newAttributeReady'} ));
+delete( $Global{'newAttribute'}) 
+       if ( defined($Global{'newAttribute'} ));
+delete( $Global{'newAttributeFrame'}) 
+       if ( defined($Global{'newAttributeFrame'} ));
+
+}
+
+$tmp = $Global{'tmpDELETE'};
+
+@Keys = sort(keys(%$tmp));
+
+if ( @Keys ) 
+{
+foreach my $var ( @Keys)
+{
+$Global{'delete'}{$var} = $Global{'tmpDELETE'}{$var};
+# print $Global{'tmpDELETE'}{$var},"\n";
+
+}
+
+$Global{tmpDELETE} = {};
+
+}
+
+
+$tmp = $Global{'tmpREPLACE'};
+@Keys = sort(keys(%$tmp));
+
+if ( @Keys ) 
+{
+foreach my $var ( @Keys)
+{
+$Global{'replace'}{$var} = $Global{'tmpREPLACE'}{$var};
+# print $Global{'tmpREPLACE'}{$var},"\n";
+}
+
+$Global{tmpREPLACE} = {};
+}
+
+$Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
+
+} # End of clear subroutine
+ 
+sub change_cancel{
+ 
+$Global{tmpADD} = {};
+$Global{tmpDELETE} = {};
+$Global{tmpREPLACE} = {};
+$Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
+ 
+} # End of cancel subroutine                                                    
+
+
+
+} # End of subroutine changeAttribute
 
 #
 # Do LDAP entry delete.
@@ -2857,20 +3180,20 @@ my $y = $Global{'vert'} + 75;
 #
 # Create Main Window
 #
-if (!Exists($editWindow) )
+if (!Exists($Global{'editWindow'}) )
 {
 
-$editWindow = MainWindow->new;
+$Global{'editWindow'} = MainWindow->new;
 
-$editWindow->title("DIRECTORY EDIT DISPLAY");
+$Global{'editWindow'}->title("ENTRY EDIT DISPLAY");
 
-$editWindow->geometry("+$x+$y");
+$Global{'editWindow'}->geometry("+$x+$y");
 
 #
 # Create process Exit button
 #
 
-$editWindow->Button(-text => "CLOSE DIRECTORY EDIT DISPLAY WINDOW", 
+$Global{'editWindow'}->Button(-text => "CANCEL ENTRY EDIT", 
                     -command => \&edit_cancel, 
                     -font => $Global{'Font'}, -borderwidth => 5 )
                     -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
@@ -2880,15 +3203,15 @@ $editWindow->Button(-text => "CLOSE DIRECTORY EDIT DISPLAY WINDOW",
 #
 
 
-$ecframe = $editWindow->Frame()
+$ecframe = $Global{'editWindow'}->Frame()
       ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
 
 #
 # Create Clear Data
 #
 
-$ecframe -> Button(-text => "     CLEAR DATA     ", 
-     -command =>  \&edit_clear, -font => $Global{'Font'},
+$ecframe -> Button(-text => "     CHANGE DATA     ", 
+     -command =>  \&changeEntry, -font => $Global{'Font'},
      -borderwidth => 3 ) 
      ->pack( -fill => 'both' );
 
@@ -2896,64 +3219,196 @@ $ecframe -> Button(-text => "     CLEAR DATA     ",
 # Create list frame.
 #
 
-$elframe = $editWindow->LabFrame(-label => "DIRECTORY DATA",
+$elframe = $Global{'editWindow'}->LabFrame(-label => "ENTRY DATA",
       -labelside => "acrosstop" )
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
       -expand => 1);
-
-#
-# Create a Clear Data Radiobutton that will execute subroutine clear
-# to clear the List box before each directory query.
-#
-
-$erbclear = $elframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
-      -variable =>  \$edit_clear, -onvalue => 1, -offvalue => 0, 
-      -font => $Global{'Font'} )
-      -> pack(-anchor => 'sw' );
-
-$erbclear->select();
 
 #
 # Create a ROText Box that will actually contain the 
 # returned directory data.
 #
 
-$elist = $elframe ->Scrolled('ROText', -scrollbars => 'se',
+$elist = $elframe ->Scrolled('Text', -scrollbars => 'se',
         -width => 80, -height => 20, -wrap => 'none', 
         -font => $Global{'Font'}  );
 
 $elist->pack(-fill => "both", -expand => 1 );
 
+ 
+#
+# Create process add new attribute button
+#
+ 
+$elframe->Button(-text => "ADD\nATTRIBUTE",
+      -command => \&add_new_attribute,
+      -font => $Global{'Font'}, -borderwidth => 5 )
+      -> pack(-side => $Global{'hand'},
+      -padx => 2, -pady => 2 ) ;
+
+
+
 }
-#else
-#{
-#$editWindow->deiconify() if Tk::Exists($editWindow);
-#$editWindow->raise() if Tk::Exists($editWindow);
-#}
 
-
-sub edit_clear {
-
-#
-# Clear out text in List Box
-#
-
-$elist->delete("1.0", "end");
-
-} # End of clear subroutine
- 
 sub edit_cancel{
- 
-# $editWindow->withdraw if Tk::Exists($editWindow);
-$editWindow->destroy if Tk::Exists($editWindow);
+
+delete($Global{'add'}); 
+delete($Global{'delete'}); 
+delete($Global{'replace'}); 
+$Global{'editWindow'}->destroy if Tk::Exists($Global{'editWindow'});
  
 } # End of cancel subroutine
 
 } # End of subroutine displayEdit
 
+#
+# Add new attribute to entry that is being edited.
+#
+sub add_new_attribute
+{
+$Global{'add_new_attribute'} = 1;
+changeAttribute( 1,1,1,1);
+delete($Global{'add_new_attribute'});
+} # End of subroutine add_new_attribute
+
+#
+# Execute any LDAP add, delete, or replace changes.
+#
+sub changeEntry {
+my $errstr;
+my $mesg;
+my $error = 0;  # initialize error flag.
+ 
+my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                        ) or $error = 1;
+ 
+if ( $error == 1 )
+{
+   $errstr = "Connect error:  $@\n";
+   ERROR($errstr);
+   return;
+}
+ 
+$mesg = $ldap->bind( password => $Global{'bindpw'},
+                     dn => $Global{'binddn'},
+                     version => $Global{'setVersion'},
+                   ) or $error = 1;
+
+if ( $mesg->code )
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+}
+ 
+if ( $error == 1 )
+{
+   $errstr = "Bind error:  $@\n";
+   ERROR($errstr);
+   return;
+}
+
+#
+# Execute any LDAP add changes.
+#
+if ( defined($Global{'add'}) )
+{
+
+$mesg = $ldap->modify( $Global{'entryDN'}, add => $Global{'add'})
+        or $error = 1;
+ 
+ 
+if ( $error == 1 )
+{
+   $errstr = "Add modify error:  $@\n";
+   ERROR($errstr);
+   return;
+}
+ 
+if ( $mesg->code )
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+   return;
+}
+
+delete( $Global{'add'} );
+
+}
+
+#
+# Execute any delete changes.
+#
+if ( defined($Global{'delete'}) )
+{
+$mesg = $ldap->modify( $Global{'entryDN'}, delete => $Global{'delete'})
+        or $error = 1;
+ 
+ 
+if ( $error == 1 )
+{
+   $errstr = "Delete modify error:  $@\n";
+   ERROR($errstr);
+   return;
+}
+ 
+if ( $mesg->code )
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+   return;
+}
+delete( $Global{'delete'} );
+
+}
 
 
+#
+# Execute any replace changes.
+#
+if ( defined($Global{'replace'}) )
+{
+$mesg = $ldap->modify( $Global{'entryDN'}, replace => $Global{'replace'})
+        or $error = 1;
+ 
+ 
+if ( $error == 1 )
+{
+   $errstr = "Replace modify error:  $@\n";
+   ERROR($errstr);
+   return;
+}
+ 
+if ( $mesg->code )
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+   return;
+}
+delete( $Global{'replace'} );
 
+}
+
+#
+# Clean up data and close windows, forces another search to
+# get valid new data.
+#
+delete($Global{'index'}) if ( defined($Global{'index'}));
+
+delete($Global{'tmpADD'}) if ( defined($Global{'tmpADD'}));
+delete($Global{'tmpDELETE'}) if ( defined($Global{'tmpDELETE'}));
+delete($Global{'tmpREPLACE'}) if ( defined($Global{'tmpREPLACE'}));
+
+delete($Global{'add'}) if ( defined($Global{'add'}));
+delete($Global{'delete'}) if ( defined($Global{'delete'}));
+delete($Global{'replace'}) if ( defined($Global{'replace'}));
+
+$Global{'editWindow'}->destroy if Tk::Exists($Global{'editWindow'});
+$Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
+$Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
+
+} # End of changeEntry subroutine
  
 
 sub displayDnList
@@ -3302,37 +3757,7 @@ sub print_entry {
     $$information{$_} = $attr;  # record ldap data
 
     next;
-
-    if(ref($attr)) {
-      foreach $a (@$attr) {
-      #
-      # Format data and print data into List Box
-      # 
-        if ( /;binary$/ )
-        {
-        $encoded = encode_base64($a);
-        $$information{$_} = $encoded;  # record ldap data
-        }
-        else
-        {
-        $$information{$_} = $a;  # record ldap data
-        }                                                                       
-      }
-    }
-    else {
-      #
-      # Format data and print data into List Box
-      #
-        if ( /;binary$/ )
-        {
-         $encoded = encode_base64($attr);
-         $$information{$_} = $encoded;  # record ldap data
-        }
-        else
-        {
-        $$information{$_} = $attr;  # record ldap data
-        } 
-    }
+    
   }
  }
 push(@$data, $dn);   # dn of entry
@@ -3676,12 +4101,12 @@ __END__
 
 =head1 NAME
 
-tklkup -  A script to do LDAP directory lookups and displaying directory schema information.
+tklkup -  A script to do LDAP directory lookups, edits, and displaying directory schema information.
 
 =head1 SYNOPSIS
 
 
-This script is used to lookup information from a LDAP 
+This script is used to lookup and edit information from a LDAP 
 directory server.  It is GUI based with several buttons for 
 selecting directory servers, search bases, attributes and
 for enabling the Directory Schema Search window.
@@ -4000,8 +4425,10 @@ DN.
 I<DELETE> - Will cause the selected DN to be deleted from the
 directory.
 
-I<EDIT> - Will cause a window with the corresponding data in it.
-I<This function currently will not modify data but will show data.>
+I<EDIT> - Will cause a Entry Edit Display window with the 
+corresponding entry data in it.  It is from this window that the 
+user can change directory data.  This window is discribed in 
+detail later in this document.
 
 I<CANCEL> - Will cancel the action request for the select DN.
 
@@ -4011,7 +4438,7 @@ I<CANCEL> - Will cancel the action request for the select DN.
  
 I<DIRECTORY SEARCH DISPLAY> is the window where data for the 
 selected DN is displayed. Data is displayed in the read only
-Directory Data text box.Associated with the Directory Data 
+Directory Data text box.  Associated with the Directory Data 
 text box is the "RadioButton" that determines how often the
 data in the directory text box is cleared.  If the "CheckButton" 
 is selected, colored red, the directory data text box will be 
@@ -4109,15 +4536,109 @@ Unselecting the check box will cause the entry data to not be deleted.
 
 -------------------------------------------------------------------
 
-=head1 DIRECTORY EDIT DISPLAY WINDOW.
+=head1 ENTRY EDIT DISPLAY Window.
 
-When this fucntion is installed and working properly this is
-where the user will modify an entry's data.
-
-Currently this function is I<NOT> working.  However it will
-display the data for the currently selected DN.
-
+It is from this window that the user can modify an entry's data.
 There can only be one of these windows active at a time.
+Attributes that contain I<binary> information can I<NOT> be modified
+with this program.
+
+At the top of the window is the I<CANCEL ENTRY EDIT> button.  Pressing
+this button will cancel all pending data changes for this entry. It
+will also cause the window to be destroyed.
+
+At the bottom of the window is the I<CHANGE DATA> button.  Pressing
+this button will cause all of the pending data changes to take
+place.
+
+Just above the I<CHANGE DATA> button is the I<ADD ATTRIBUTE> button.
+Pressing this button gives the user the option of entering a new
+attribute name and value so that this information can be put into
+the entry.
+
+In the middle of the window is the I<ENTRY DATA> box.  In this box
+is the all of the entry's current attributes along with their data.
+
+Each line in the box is broken up into two parts; the attribute button and
+the attribute data list box. There is one attribute and data pair per
+line.  Multi-valued attributes have one line per attribute value.
+
+The first line in the I<ENTRY DATA> box will be the DN of the entry. 
+This line can not be edited.
+
+To edit an attribute, press the button that has the attributes name on
+it.  This will cause a I<ATTRIBUTE MODIFICATION> window to be displayed.
+This window is discribed in detail later in this documentation.
+
+When the user has finished making changes, press the I<CHANGE DATA> button.
+This will start the process of making the change(s) in the LDAP 
+directory.  If any errors occur a error window will appear.  After the
+error window is dismissed the I<ENTRY EDIT DISPLAY> window will still 
+be active.  The user can at this point do what ever it takes to correct
+the problem.
+
+If no errors occur the I<ENTRY EDIT DISPLAY> window and the 
+I<SEARCH RESULTS> windows will be destroyed.  This is due to the fact
+that the data in both windows is no longer valid.  The user must 
+research the LDAP directory to get the new updated information.
+
+
+-------------------------------------------------------------------
+
+=head1 ATTRIBUTE MODIFICATION Window.
+
+It is from this window that the user can modify an attribute's data.
+There can only be one of these windows active at a time.
+
+At the top of the window is the I<CANCEL ATTRIBUTE EDIT> button.  Pressing
+this button will cancel all pending data changes for this attribute. It
+will also cause the window to be destroyed.
+
+At the bottom of the window is the I<ACCEPT DATA CHANGE> button.  Pressing
+this button will cause all of the current data changes to be put into
+the pending data change queue.
+
+In the middle of the window is the attribute data text box.  It is in
+this text box that the user will find the current data for the attribute
+the user selected.  Depending on the operation the user wants to do the 
+user can change the data or leave the data as is.
+
+Below the attribute data text box are three buttons, ADD, DELETE, and
+REPLACE.  To the right of the REPLACE button is a check button that
+controls operations on multi-valued attributes during REPLACE operations.
+
+
+=head2 ADD operations.
+
+If the user wishs to add a new value to an attribute; the user should
+enter the new data in the attribute data text box and then press
+the I<ADD> button.
+
+=head2 DELETE operations.
+
+If the user wishs to delete the value from an attribute; the user should
+not bother the data in the attribute data text box and should press
+the I<DELETE> button.
+
+=head2 REPLACE operations.
+
+The attribute replace operation is a little tricky depending whether the
+attribute is single or multi valued.
+
+If the user knows that the attribute is multi-valued and wants to preserve
+the other attribute values the user should press the check button to the
+right of the I<REPLACE> button.  Doing this will control how the add and
+delete operations are staged.  The user should then enter the new data in
+the attribute data text box and press the I<REPLACE> button.
+
+If the user wishs to replace all of the values for an attribute; 
+the user should enter the new data in the attribute data text box and 
+press the I<REPLACE> button.
+
+
+When the user done with the changes the user should press the 
+I<ACCEPT DATA CHANGES> button.  This will move the data changes onto
+the pending data change queue and close the window. 
 
 -------------------------------------------------------------------
 
