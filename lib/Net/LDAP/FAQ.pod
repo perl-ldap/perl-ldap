@@ -11,6 +11,9 @@ Net::LDAP::FAQ - Frequently Asked Questions about Net::LDAP
 This document serves to answer the most frequently asked questions on both the
 perl-ldap Mailing List and those sent to Graham Barr.
 
+The latest version of this FAQ can be found at 
+ http://perl-ldap.sourceforge.net/FAQ.html
+
 =head1 GENERAL
 
 =head2 What is perl-ldap ?
@@ -577,6 +580,142 @@ Values for the scope parameter are as follows.
  sub   Search the whole tree below the base object.
        This is the default.                                         
 
+=head1 GETTING SEARCH RESULTS
+
+There are two ways of retrieving the results of a requested
+LDAP search; inline and by using a callback subroutine.
+
+=head2 USING THE INLINE APPROACH
+
+Using the inline approach involves requesting the data and
+then waiting for all of the data to be returned before the
+user starts processing the data.
+
+Example: 
+
+ use Net::LDAP;
+
+ $ldap = Net::LDAP->new('ldap.acme.com') or die "$@";
+ $mesg = $ldap->search(
+                       base   => "o=acme.com",
+                       scope  => 'sub',
+                       filter => "sn=smith",
+                      );
+  #
+  # At this point the user can get the returned data as an array
+  # or as a stack.
+  # In this example we will use an array
+
+  # How many entries were returned from the search
+  my $max = $mesg->count; 
+
+  for( my $index = 0 ; $index < $max ; $index++) 
+  {
+    my $entry = $mesg->entry($index);
+    my $dn = $entry->dn; # Obtain DN of this entry
+
+    @attrs = $entry->attributes; # Obtain attributes for this entry.
+    foreach my $var (@attrs)
+    {
+     #get a list of values for a given attribute
+     $attr = $entry->get_value( $var, asref => 1 );
+     if ( defined($attr) )         
+     {          
+         foreach my $value ( @$attr )          
+         {           
+          print "$var: $value\n";  # Print each value for the attribute.
+         }         
+     }                                                                       
+    }
+  }
+
+As you can see the example is straight forward, but there is one
+drawback to this approach.  You must wait until all entries for the
+request search to be returned before you can process the data.  If
+there several thousand entries that match the search filter this 
+could take quite a long time period.
+
+=head2 USING THE CALLBACK SUBROUTINE APPROACH
+
+Using the callback approach involves requesting the data be sent
+to a callback subroutine as each entry arrives at the client.
+
+A callback is just a subroutine that is passed two parameters when
+it is called, the mesg and entry objects.
+
+Example: 
+
+ use Net::LDAP;
+
+ $ldap = Net::LDAP->new('ldap.acme.com') or die "$@";
+ $mesg = $ldap->search(
+                       base   => "o=acme.com",
+                       scope  => 'sub',
+                       filter => "sn=smith",
+                       callback => \&callback,
+                      );
+ #
+ # At this point the user needs to check the status of the
+ # ldap search.
+ # 
+
+ if ( $mesg->code )
+ {
+    $errstr = $mesg->code;
+    print "Error code:  $errstr\n";
+    $errstr = ldap_error_text($errstr);
+    print "$errstr\n";
+ } 
+
+
+ sub callback
+ {
+ my ( $mesg, $entry) = @_;
+
+   #
+   # First you must check to see if something was returned.
+   # Last execution of callback subroutine will have no
+   # defined entry and mesg object
+   #
+   if ( !defined($entry) )
+   {
+     print "No records found matching filter $match.\n"
+     if ($mesg->count == 0) ; # if mesg is not defined nothing will print.
+     return;
+   }
+
+   my $dn = $entry->dn; # Obtain DN of this entry
+ 
+   @attrs = $entry->attributes; # Obtain attributes for this entry.
+   foreach my $var (@attrs)
+   {
+    #get a list of values for a given attribute
+    $attr = $entry->get_value( $var, asref => 1 );
+    if ( defined($attr) )         
+    {          
+      foreach my $value ( @$attr )          
+      {           
+        print "$var: $value\n";  # Print each value for the attribute.
+      }         
+    }                                                                       
+   }
+   #
+   # For large search requests the following 2 lines of code
+   # may be very important, they will reduce the amount of memory 
+   # used by the search results.
+   #
+   # If the user is not worried about memory useage then the 2 lines
+   # of code can be omitted.
+   #
+   $mesg->pop_entry;
+ 
+ }  # End of callback subroutine
+
+As you can see the example is straight forward and it does not waste
+time waiting for all of the entries to be returned.  However if the
+pop_entry method is not used the callback approach can allocate a 
+lot of memory to the search request.
+
 =head1 USING NET::LDAPS
 
 =head2 Using a potentially encrypted (SSL) network connection, how do I connect to my server?
@@ -798,14 +937,14 @@ in LDAPv2. (A nice incompatibility between LDAPv2 and LDAPv3.)
 
 =head2 How can I delete a referral from an LDAP tree.
 
-Since this is a proprietrary feature, you will have to check your
+Since this is a proprietary feature, you will have to check your
 server's documentation. You might find that you need to use a control. If
 there is a control called something like managedsait, that's the one you
 should probably use.  For proper operation you will need the oid number
 for managedsait; 2.16.840.1.113730.3.4.2 and do not specify a value for
 type.
 
-The code required will look similiar to the following code snippet.
+The code required will look similar to the following code snippet.
 
   $mesg =  $ldap->delete("ref=\"ldap://acme/c=us,o=bricks\",o=clay",
                   control => {type => "2.16.840.1.113730.3.4.2"} ); 
