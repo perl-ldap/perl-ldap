@@ -1,4 +1,4 @@
-# Copyright (c) 2003 Chris Ridd <chris.ridd@isode.com> and
+# Copyright (c) 2003-2004 Chris Ridd <chris.ridd@isode.com> and
 # Graham Barr <gbarr@pobox.com>. All rights reserved.  This program is
 # free software; you can redistribute it and/or modify it under the
 # same terms as Perl itself.
@@ -93,6 +93,8 @@ Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003, Chris Ridd and Graham Barr. All rights reserved. This
+Copyright (c) 2003-2004, Chris Ridd and Graham Barr. All rights reserved. This
 library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+=cut

@@ -1,4 +1,3 @@
-# $Id: ASN.pm,v 1.6 2003/04/07 15:05:12 gbarr Exp $
 
 package Net::LDAP::ASN;
 

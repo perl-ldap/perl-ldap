@@ -1,5 +1,4 @@
-# $Id: ProxyAuth.pm,v 1.3 2003/05/07 11:53:26 chrisridd Exp $
-# Copyright (c) 2001 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 2001-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -122,13 +121,9 @@ mailing list E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 Graham Barr. All rights reserved. This program is
+Copyright (c) 2001-2004 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
-
-=for html <hr>
-
-I<$Id: ProxyAuth.pm,v 1.3 2003/05/07 11:53:26 chrisridd Exp $>
 
 =cut
 

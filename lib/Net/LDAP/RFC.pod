@@ -1287,9 +1287,5 @@ Layer Security" [RFC 2830]. This document is not intended to be
 published as an RFC but used to identify LDAPv3bis work items.
 
 
-=for html <hr>
-
-I<$Id: RFC.pod,v 1.5 2001/10/24 14:08:54 chrisridd Exp $>
-
 =cut
 

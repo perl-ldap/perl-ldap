@@ -1,4 +1,4 @@
-# Copyright (c) 1998-2003 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1998-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -496,12 +496,8 @@ E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1998-2003 Graham Barr. All rights reserved. This program is
+Copyright (c) 1998-2004 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
-
-=for html <hr>
-
-I<$Id: Constant.pm,v 1.9 2003/06/02 15:13:10 gbarr Exp $>
 
 =cut

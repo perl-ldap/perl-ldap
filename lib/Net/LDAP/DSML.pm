@@ -1,8 +1,8 @@
-package Net::LDAP::DSML;
+# Copyright (c) 2002-2004 Graham Barr. All rights reserved. This program is
+# free software; you can redistribute it and/or modify it under the same
+# terms as Perl itself.
 
-#
-# $Id: DSML.pm,v 1.19 2003/05/07 10:53:42 chrisridd Exp $
-# 
+package Net::LDAP::DSML;
 
 use strict;
 use vars qw(@ISA $VERSION);
@@ -879,7 +879,7 @@ L<XML::SAX::Base>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 Graham Barr. All rights reserved. This program is
+Copyright (c) 2002-2004 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 

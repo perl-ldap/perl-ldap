@@ -489,9 +489,5 @@ Russell Biggs E<lt>rgb@ticnet.comE<gt>
 
 All rights to this document are hereby relinquished to Graham Barr.
 
-=for html <hr>
-
-I<$Id: Examples.pod,v 1.8 2003/08/05 14:09:52 chrisridd Exp $>
-
 =cut
 

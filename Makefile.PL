@@ -1,5 +1,4 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.13 2003/06/09 12:47:46 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;

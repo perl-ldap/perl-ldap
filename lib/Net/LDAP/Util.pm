@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2002 Graham Barr <gbarr@pobox.com> and
+# Copyright (c) 1999-2004 Graham Barr <gbarr@pobox.com> and
 # Norbert Klasen <norbert.klasen@daasi.de> All Rights Reserved.
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
@@ -604,17 +604,13 @@ Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2002 Graham Barr. All rights reserved. This program is
+Copyright (c) 1999-2004 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 ldap_explode_dn and canonical_dn also
 
 (c) 2002 Norbert Klasen, norbert.klasen@daasi.de, All Rights Reserved.
-
-=for html <hr>
-
-I<$Id: Util.pm,v 1.19 2004/01/20 07:12:24 chrisridd Exp $>
 
 =cut
 

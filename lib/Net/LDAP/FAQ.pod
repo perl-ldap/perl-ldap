@@ -1347,10 +1347,7 @@ perl-ldap mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2000 Graham Barr. All rights reserved. This document is
+Copyright (c) 1999-2004 Graham Barr. All rights reserved. This document is
 distributed, and may be redistributed, under the same terms as Perl itself.
 
-=for html <hr>
-
 =cut
-

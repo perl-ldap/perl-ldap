@@ -920,12 +920,8 @@ Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2003 Graham Barr. All rights reserved. This program is
+Copyright (c) 1997-2004 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
-
-=for html <hr>
-
-I<$Id: LDAP.pod,v 1.36 2004/01/20 07:10:13 chrisridd Exp $>
 
 =cut

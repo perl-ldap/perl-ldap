@@ -39,9 +39,5 @@ This bundle all modules that Net::LDAP depends on.
 
 Graham Barr
 
-=for html <hr>
-
-I<$Id: LDAP.pm,v 1.3 2000/06/29 06:07:52 gbarr Exp $>
-
 =cut
 
