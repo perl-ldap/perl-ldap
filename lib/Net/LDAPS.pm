@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2002 Chris Ridd <chris.ridd@messagingdirect.com> and
+# Copyright (c) 2000-2003 Chris Ridd <chris.ridd@isode.com> and
 # Graham Barr <gbarr@pobox.com>. All rights reserved.  This program is
 # free software; you can redistribute it and/or modify it under the
 # same terms as Perl itself.
@@ -95,7 +95,8 @@ LDAP protocol.
 Note that the use of LDAPS is not recommended, because it is not
 described by any IETF documents. Instead, you should consider using
 LDAPv3 with the TLS extension defined in RFC 2830. This will give you
-the same functionality as LDAPS, but using recognized standards. See
+the same functionality as LDAPS, but using recognized standards.
+Unfortunately servers may support LDAPS but not the TLS extension. See
 L<Net::LDAP/start_tls>.
 
 =head1 CONSTRUCTOR
@@ -141,8 +142,8 @@ don't encrypt!
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
 operation) then set clientcert to the user's certificate file, and
-clientkey to the user's private key file. These files must be in PEM
-format.
+clientkey to the user's private key file. These files B<must> be in
+PEM format.
 
 If the private key is encrypted (highly recommended!) then set
 keydecrypt to a reference to a subroutine that returns the decrypting
@@ -163,7 +164,7 @@ key. For example:
 When verifying the server's certificate, either set capath to the
 pathname of the directory containing CA certificates, or set cafile to
 the filename containing the certificate of the CA who signed the
-server's certificate. These certificates must all be in PEM format.
+server's certificate. These certificates B<must> all be in PEM format.
 
 The directory in 'capath' must contain certificates named using the
 hash value of the certificates' subject names. To generate these
@@ -212,11 +213,11 @@ restrictions in the underlying Net::SSLeay code.
 
 =head1 AUTHOR
 
-Chris Ridd <chris.ridd@messagingdirect.com>
+Chris Ridd E<lt>chris.ridd@isode.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2002, Chris Ridd and Graham Barr. All rights reserved. This
+Copyright (c) 2000-2003, Chris Ridd and Graham Barr. All rights reserved. This
 library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
