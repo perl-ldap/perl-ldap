@@ -101,7 +101,7 @@ sets the client's IP address (as opposed to the server's IP address.)
 
 =item debug =E<gt> N
 
-Set the debug level. See the L<debug|debug> method for details.
+Set the debug level. See the L<debug|/debug> method for details.
 
 =item async =E<gt> 1
 
@@ -147,7 +147,7 @@ Example
   $ldap = Net::LDAP->new( 'remote.host', async => 1 );
 
 LDAPS connections have some extra valid options, see the
-L<start_tls|start_tls> method for details. Note the default value for
+L<start_tls|/start_tls> method for details. Note the default value for
 'sslversion' for LDAPS is 'sslv2/3', and the default port for LDAPS
 is 636.
 
