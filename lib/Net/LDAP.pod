@@ -754,6 +754,7 @@ If not specified, then the following attributes will be requested
   namingContexts
   altServer
   supportedExtension
+  supportedFeatures
   supportedControl
   supportedSASLMechanisms
   supportedLDAPVersion
@@ -920,6 +921,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.35 2003/11/10 18:31:04 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.36 2004/01/20 07:10:13 chrisridd Exp $>
 
 =cut
