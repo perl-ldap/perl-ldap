@@ -36,7 +36,9 @@ sub new {
     else {
       require Symbol;
       $fh = Symbol::gensym();
-      my $open = ($mode{$mode} || "<") . $file;
+      my $open = $file =~ /^\| | \|$/x
+	? $file
+	: (($mode{$mode} || "<") . $file);
       open($fh,$open) or return;
       $opened_fh = 1;
     }

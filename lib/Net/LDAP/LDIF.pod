@@ -36,7 +36,8 @@ account the possibility of memory use when loading an LDIF file in one go.
 =item new ( [ FILE [, MODE [,OPTIONS ]]] )
 
 FILE may be the name of a file or an already open filehandle. If a filename
-is passed in then it will be opened with the mode specified.
+is passed in then it will be opened with the mode specified. If FILE begins
+or ends with a C<|> then FILE will be passed directly to C<open>
 
 MODE defaults to "r" for read. You may specify "w" to for write+truncate or
 "a" for write+append.
