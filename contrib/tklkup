@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.16 2001/09/05 02:57:57 charden Exp $
+# $Id: tklkup,v 1.17 2001/09/07 01:13:31 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,11 +21,9 @@
 #
 # Revisions:
 # $Log: tklkup,v $
-# Revision 1.16  2001/09/05 02:57:57  charden
-# Made major modifications to the way the code operates.  When searchs
-# are done the DN of the returned entry(s) is displayed in a semi-hierarchial
-# list.  Selecting a DN will result in another window being displayed
-# that has the data for the selected DN.
+# Revision 1.17  2001/09/07 01:13:31  charden
+# Added attributes subschemaSubentry and supportedSASLMechanisms to the
+# root_dse display list.
 #
 # Revision 1.15  2001/08/27 03:11:33  charden
 #
@@ -2874,8 +2872,8 @@ my $ldap = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
 $ldap->bind( version => $version ) or die;
 my $root = $ldap->root_dse();
 
-my @Attributes = ( qw(namingContexts supportedLDAPVersion 
-                    supportedControl supportedExtension altServer) );
+my @Attributes = ( qw(subschemaSubentry namingContexts supportedLDAPVersion 
+                    supportedControl supportedExtension altServer supportedSASLMechanisms) );
 
 if ( !defined($root) )
 {
