@@ -5,64 +5,13 @@
 
 package Net::LDAPS;
 @Net::LDAPS::ISA = ( 'Net::LDAP' );
-$Net::LDAPS::VERSION = "0.04";
+$Net::LDAPS::VERSION = "0.05";
 
 use strict;
 use Net::LDAP;
-use IO::Socket::SSL;
 
-# Different OpenSSL verify modes.
-my %verify = qw(none 0 optional 1 require 3);
-
-sub _connect {
-  my ($ldap, $host, $arg) = @_;
-
-  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
-    PeerAddr 	    => $host,
-    PeerPort 	    => $arg->{'port'} || '636',
-    Proto    	    => 'tcp',
-    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
-    SSL_context_init_args($arg)
-  );
-}
-
-sub SSL_context_init_args {
-  my $arg = shift;
-
-  my $verify = 0;
-  my ($clientcert,$clientkey,$passwdcb);
-
-  if (exists $arg->{'verify'}) {
-      my $v = lc $arg->{'verify'};
-      $verify = 0 + (exists $verify{$v} ? $verify{$v} : $verify);
-  }
-
-  if (exists $arg->{'clientcert'}) {
-      $clientcert = $arg->{'clientcert'};
-      if (exists $arg->{'clientkey'}) {
-	  $clientkey = $arg->{'clientkey'};
-      } else {
-	  require Carp;
-	  Carp::croak("Setting client public key but not client private key");
-      }
-  }
-
-  if (exists $arg->{'keydecrypt'}) {
-      $passwdcb = $arg->{'keydecrypt'};
-  }
-
-  (
-    SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
-    SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
-    SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
-    SSL_key_file    => $clientcert ? $clientkey : undef,
-    SSL_passwd_cb   => $passwdcb,
-    SSL_use_cert    => $clientcert ? 1 : 0,
-    SSL_cert_file   => $clientcert,
-    SSL_verify_mode => $verify,
-    SSL_version     => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
-                       'sslv2/3',
-  );
+sub new {
+  shift->SUPER::new(@_, scheme => 'ldaps');
 }
 
 1;

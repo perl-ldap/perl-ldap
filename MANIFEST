@@ -52,7 +52,6 @@ lib/Net/LDAP.pod
 lib/Net/LDAP/ASN.pm
 lib/Net/LDAP/Bind.pm
 lib/Net/LDAP/Constant.pm
-lib/Net/LDAP/Constant.pod
 lib/Net/LDAP/Control.pm
 lib/Net/LDAP/Control/Paged.pm
 lib/Net/LDAP/Control/ProxyAuth.pm
@@ -94,6 +93,8 @@ t/52modify.t
 t/53schema.t
 t/54dse.t
 t/55ssl.t
+t/56ipc.t
+t/57url.t
 t/70sortctrl.t
 t/common.pl
 test.cfg

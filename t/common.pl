@@ -9,7 +9,7 @@ BEGIN {
   # If your host cannot be contacted as localhost, change this
   $HOST     ||= '127.0.0.1';
 
-  # Where to but temporary files while testing
+  # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
   $TEMPDIR  = "./temp";
 
@@ -21,6 +21,7 @@ BEGIN {
   $JAJDN    = "cn=James A Jones 1, ou=Alumni Association, ou=People, o=University of Michigan, c=US";
   $BABSDN   = "cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US";
   $PORT     = 9009;
+  @URL      = ();
 
   my @server_opts;
   ($SERVER_TYPE,@server_opts) = split(/\+/, $SERVER_TYPE || 'none');
@@ -32,10 +33,13 @@ BEGIN {
   }
   elsif ($SERVER_TYPE eq 'openldap2') {
     $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts;
+    ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g if grep { $_ eq 'ipc' } @server_opts;
+    $SASL = 1 if grep { $_ eq 'sasl' } @server_opts;
     $CONF_IN	  = "./data/slapd2-conf.in";
-    my $url = "ldap://${HOST}:$PORT/";
-    $url .= " ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;
-    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-h',$url,qw(-d 1));
+    push @URL, "ldap://${HOST}:$PORT/";
+    push @URL, "ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;
+    push @URL, "ldapi://$IPC_SOCK/" if $IPC_SOCK;
+    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-h', "@URL",qw(-d 1));
     $LDAP_VERSION = 3;
   }
 
@@ -56,9 +60,10 @@ sub start_server {
 
   unless ($LDAP_VERSION >= $arg{version}
 	and $LDAPD[0] and -x $LDAPD[0]
-	and (!$arg{ssl} or $SSL_PORT))
+	and (!$arg{ssl} or $SSL_PORT)
+	and (!$arg{ipc} or $IPC_SOCK))
   {
-    print "1..0\n";
+    print "1..0 # Skip No server\n";
     exit;
   }
 
@@ -69,6 +74,7 @@ sub start_server {
     while(<CONFI>) {
       s/\$(\w+)/${$1}/g;
       s/^TLS/#TLS/ unless $SSL_PORT;
+      s/^(sasl.*)/#\1/ unless $SASL;
       print CONFO;
     }
     close(CONFI);
@@ -78,6 +84,8 @@ sub start_server {
   rmtree($TESTDB) if ( -d $TESTDB );
   mkdir($TESTDB,0777);
   die "$TESTDB is not a directory" unless -d $TESTDB;
+
+  warn "@LDAPD" if $ENV{TEST_VERBOSE};
 
   my $log = $TEMPDIR . "/" . basename($0,'.t');
 
@@ -115,6 +123,20 @@ sub client {
     require Net::LDAPS;
     until($ldap = Net::LDAPS->new($HOST, port => $SSL_PORT, version => 3)) {
       die "ldaps://$HOST:$SSL_PORT/ $@" if ++$count > 10;
+      sleep 1;
+    }
+  }
+  elsif ($arg{ipc}) {
+    require Net::LDAPI;
+    until($ldap = Net::LDAPI->new($IPC_SOCK)) {
+      die "ldapi://$IPC_SOCK/ $@" if ++$count > 10;
+      sleep 1;
+    }
+  }
+  elsif ($arg{url}) {
+    print "Trying $arg{url}\n";
+    until($ldap = Net::LDAP->new($arg{url})) {
+      die "$arg{url} $@" if ++$count > 10;
       sleep 1;
     }
   }
@@ -214,7 +236,5 @@ sub skip {
 		print "ok $number # skip $reason\n";
 	}
 }
-
-1;
 
 1;

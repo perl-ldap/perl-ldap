@@ -5,21 +5,13 @@
 
 package Net::LDAPI;
 @Net::LDAPI::ISA = ( 'Net::LDAP' );
-$Net::LDAPI::VERSION = "0.01";
+$Net::LDAPI::VERSION = "0.02";
 
 use strict;
 use Net::LDAP;
-use IO::Socket::UNIX;
 
-sub _connect {
-  my ($ldap, $sockpath) = @_;
-
-  $sockpath = "/var/lib/ldapi" unless defined($sockpath);
-
-  $ldap->{'net_ldap_socket'} = IO::Socket::UNIX->new(
-    Type            => &SOCK_STREAM,
-    Peer            => $sockpath
-  );
+sub new {
+  shift->SUPER::new(@_, scheme => 'ldapi');
 }
 
 1;
@@ -78,5 +70,3 @@ rights reserved. This library is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.
 
 =cut
-
-

@@ -25,7 +25,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_EXTENSION_START_TLS
 			);
 
-$VERSION 	= "0.2701";
+$VERSION 	= "0.2702";
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -99,9 +99,14 @@ sub new {
   my $arg  = &_options;
   my $obj  = bless {}, $type;
 
-  foreach my $h (ref($host) ? @$host : ($host)) {
-    if ($obj->_connect($h, $arg)) {
-      $obj->{net_ldap_host} = $h;
+  foreach my $uri (ref($host) ? @$host : ($host)) {
+    my $scheme = $arg->{scheme} || 'ldap';
+    (my $h = $uri) =~ s/^(\w+):// and $scheme = $1;
+    my $meth = $obj->can("connect_$scheme") or next;
+    $h =~ s,^//([^/]*).*,$1,; # Extract host
+    $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
+    if (&$meth($obj, $h, $arg)) {
+      $obj->{net_ldap_uri} = $uri;
       last;
     }
   }
@@ -122,7 +127,7 @@ sub new {
   $obj;
 }
 
-sub _connect {
+sub connect_ldap {
   my ($ldap, $host, $arg) = @_;
 
   $ldap->{net_ldap_socket} = IO::Socket::INET->new(
@@ -133,7 +138,86 @@ sub _connect {
     Timeout    => defined $arg->{timeout}
 		 ? $arg->{timeout}
 		 : 120
+  ) or return undef;
+  
+  $ldap->{net_ldap_host} = $host;
+}
+
+
+# Different OpenSSL verify modes.
+my %ssl_verify = qw(none 0 optional 1 require 3);
+
+sub connect_ldaps {
+  my ($ldap, $host, $arg) = @_;
+  require IO::Socket::SSL;
+
+  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
+    PeerAddr 	    => $host,
+    PeerPort 	    => $arg->{'port'} || '636',
+    Proto    	    => 'tcp',
+    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
+    _SSL_context_init_args($arg)
+  ) or return undef;
+
+  $ldap->{net_ldap_host} = $host;
+}
+
+sub _SSL_context_init_args {
+  my $arg = shift;
+
+  my $verify = 0;
+  my ($clientcert,$clientkey,$passwdcb);
+
+  if (exists $arg->{'verify'}) {
+      my $v = lc $arg->{'verify'};
+      $verify = 0 + (exists $ssl_verify{$v} ? $ssl_verify{$v} : $verify);
+  }
+
+  if (exists $arg->{'clientcert'}) {
+      $clientcert = $arg->{'clientcert'};
+      if (exists $arg->{'clientkey'}) {
+	  $clientkey = $arg->{'clientkey'};
+      } else {
+	  require Carp;
+	  Carp::croak("Setting client public key but not client private key");
+      }
+  }
+
+  if (exists $arg->{'keydecrypt'}) {
+      $passwdcb = $arg->{'keydecrypt'};
+  }
+
+  (
+    SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
+    SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
+    SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
+    SSL_key_file    => $clientcert ? $clientkey : undef,
+    SSL_passwd_cb   => $passwdcb,
+    SSL_use_cert    => $clientcert ? 1 : 0,
+    SSL_cert_file   => $clientcert,
+    SSL_verify_mode => $verify,
+    SSL_version     => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
+                       'sslv2/3',
   );
+}
+
+sub connect_ldapi {
+  my ($ldap, $peer, $arg) = @_;
+
+  $peer = $ENV{LDAPI_SOCK} || "/var/lib/ldapi"
+    unless length $peer;
+
+  require IO::Socket::UNIX;
+
+  $ldap->{net_ldap_socket} = IO::Socket::UNIX->new(
+    Peer => $peer,
+    Timeout  => defined $arg->{timeout}
+		 ? $arg->{timeout}
+		 : 120
+  ) or return undef;
+
+  $ldap->{net_ldap_host} = 'localhost';
+  $ldap->{net_ldap_peer} = $peer;
 }
 
 sub message {
@@ -846,6 +930,7 @@ sub start_tls {
   my $arg  = &_options;
   my $sock = $ldap->socket;
 
+  require IO::Socket::SSL;
   require Net::LDAP::Extension;
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
 
@@ -867,10 +952,9 @@ sub start_tls {
   return $mesg
     if $mesg->code;
 
-  require Net::LDAPS;
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
-  IO::Socket::SSL::context_init( { Net::LDAPS::SSL_context_init_args($arg) } );
-  IO::Socket::SSL::socketToSSL($sock, {Net::LDAPS::SSL_context_init_args($arg)})
+  IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
+  IO::Socket::SSL::socketToSSL($sock, {_SSL_context_init_args($arg)})
     ? $mesg
     : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
 }
