@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.8 2001/06/16 03:57:24 charden Exp $
+# $Id: tklkup,v 1.9 2001/07/29 18:54:12 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,6 +21,11 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.9  2001/07/29 18:54:12  charden
+# Corrected major stupid error on defining hashes Global and schemaHash.
+# Change the way that forking of tklkup takes place, will now only fork on
+# HPUX, Sun, and Linux.  It should not fork on Windows systems.
+#
 # Revision 1.8  2001/06/16 03:57:24  charden
 # Made attribute jpegPhoto detection case insenitive.
 # Corrected error in window creation in subroutine ERROR.
@@ -106,7 +111,7 @@ use Tk::Label;
 # Global variables, wish I did not have to use them
 # but Tk forces me to.
 #
-my %Global     = {};
+my %Global = ();
 
 $Global{'jpeg'}   = 1;
 eval { use Tk::JPEG; }; 
@@ -118,7 +123,7 @@ $Global{'histWindow'}   = undef();
 $Global{'portWindow'}   = undef();
 $Global{'bindWindow'}   = undef();
 
-my %schemaHash = {};
+my %schemaHash = ();
 
 &init_schemaHash;
 
@@ -166,7 +171,7 @@ my $debug  = $opt_d ? 1 : 0;
 # (That sounds nasty)
 #
 
-if ( !$debug ) {
+if ( !$debug && ( -e "/bin/sun" || -e "/bin/hpux" || -e "/boot/vmlinuz" ) ) {
 
         FORK: {
 
@@ -1113,7 +1118,7 @@ foreach ( @$ocs)
          $list->insert("end", "\t$value\n");
          next;
       }
-      if ( defined(@item) && $#item >= 0 )
+      if ( defined(@item) )
       {
          if ( $value eq 'MAY' || $value eq 'MUST' )
          {
@@ -1360,7 +1365,7 @@ $Global{'schemaWindow'} = undef();
 sub schema 
 {
 my $mesg;
-my $error;
+my $error = 0;
 
 $schemaHash{'obj'} = {};
 $schemaHash{'tree'} = {};
@@ -1839,7 +1844,7 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
                      $Global{'list'}->insert("end", "$value\n");
                      next;
                   }
-                  if ( defined(@item) && $#item >= 0 )
+                  if ( defined(@item) )
                   {
                      if ( $value eq 'MAY' || $value eq 'MUST' )
                      {
@@ -2724,6 +2729,12 @@ to point to your file pathname of perl.
 When executed tklkup will display a window on your
 computer.  The graphical user interface, GUI, has 
 several sections to it.  
+
+If tklkup is run on a HPUX, Sun, or Linux system the 
+tklkup process will fork and run in background mode.
+If tklkup is run in debug mode or on a system that is not
+listed above it will I<NOT> fork and will run in in 
+foreground mode.
 
 I<Exit> button.  At the top of the GUI is the "Exit"
 button.  When a mouse click is done on the "Exit" button 
