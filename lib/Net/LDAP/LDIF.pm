@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15_02";
+$VERSION = "0.15_03";
 
 my %mode = qw(w > r < a >>);
 
@@ -474,10 +474,10 @@ sub _write_entry {
       }
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        $res &&= print _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
+        $res &&= _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
         $res &&= print 'deleteoldrdn: ', $deleteoldrdn,"\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
+        $res &&= _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
         next;
       }
 
