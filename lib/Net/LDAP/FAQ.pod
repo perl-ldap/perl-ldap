@@ -1117,6 +1117,9 @@ http://www.dsml.org/
 eMailman LDAP information
 http://www.emailman.com/ldap/
 
+Rafael Corvalan's LDAP shell
+http://sf.net/projects/ldapsh
+
 LDAPS, also known as LDAPGURU.
 I<This web site has a nasty habit of resizing the browser
 to cover the WHOLE screen.>
