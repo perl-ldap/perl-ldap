@@ -10,6 +10,8 @@ The files in this directory are
   printMembers.pl Print all members of a group
   isMember.pl     Determine if a given user is a member of a given group
   ldifsort.pl	  Sorts an LDIF file by the specified key attribute. 
+  ldifuniq.pl	  Culls unique entries from a reference file with
+                  respect to a comparison file.
 
 Each file contains a POD with its full description and author contacts.
 e.g.
