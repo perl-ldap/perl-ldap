@@ -25,7 +25,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_EXTENSION_START_TLS
 			);
 
-$VERSION 	= "0.2702";
+$VERSION 	= "0.28";
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 

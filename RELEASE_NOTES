@@ -1,3 +1,16 @@
+perl-ldap 0.28 19 May 2003
+==========================
+
+* Net::LDAP::Entry object can now be cloned
+* New class Net::LDAP::RootDSE
+* Net::LDAP->new can now accept URLs for the host
+* Added support for ldapi:
+* Now supports Notice of disconnection
+* Net::LDAP::Constant now implements its own import function, it no
+  longer inherits from Exporter. So :all and /^LDAP_CONTROL/ etc
+  are no longer valid arguments for import. The result is that
+  Net::LDAP::Constant only defined the subs that are needed.
+
 perl-ldap 0.27 27 Jan 2003
 ==========================
 
