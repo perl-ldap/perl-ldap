@@ -142,7 +142,7 @@ sub _must_or_may {
   #
   # If called with an entry, get the OC names and continue
   #
-  if ( UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
+  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
     my $entry = $oc[0];
     @oc = $entry->get_value( "objectclass" )
       or return;
