@@ -198,9 +198,9 @@ same DN within the same directory.
 
 Example of a DN:  
 
- cn=Road Runner, ou=bird, dc=carton, dc=com
- ou=bird, dc=carton, dc=com
- dc=carton, dc=com
+ cn=Road Runner, ou=bird, dc=cartoon, dc=com
+ ou=bird, dc=cartoon, dc=com
+ dc=cartoon, dc=com
  dc=com
 
 =head2 What is a Relative Distinguished Name.
@@ -214,12 +214,12 @@ bases, or branches, of the directory.
 
 Example of a DN: 
 
- cn=Road Runner,ou=bird,dc=carton,dc=com
+ cn=Road Runner,ou=bird,dc=cartoon,dc=com
 
  RDNs of the proceeding DN: 
  RDN => cn=Road Runner
  RDN => ou=bird
- RDN => dc=carton
+ RDN => dc=cartoon
  RDN => dc=com
 
 The RDNs are delimited by a comma.
@@ -228,7 +228,7 @@ The RDNs are delimited by a comma.
 
 Example of a DN:
 
- cn=Road Runner,ou=bird,dc=carton,dc=com  
+ cn=Road Runner,ou=bird,dc=cartoon,dc=com  
 
  Naming RDN of the proceeding DN:
 
@@ -245,13 +245,13 @@ starting point of search queries.
 
 Example of a DN:
 
- cn=Road Runner,ou=bird,dc=carton,dc=com  
+ cn=Road Runner,ou=bird,dc=cartoon,dc=com  
 
 Possible search base(s) for the proceeding DN:
 
- Base => cn=Road Runner,ou=bird,dc=carton,dc=com  
- Base => ou=bird,dc=carton,dc=com  
- Base => dc=carton,dc=com  
+ Base => cn=Road Runner,ou=bird,dc=cartoon,dc=com  
+ Base => ou=bird,dc=cartoon,dc=com  
+ Base => dc=cartoon,dc=com  
  Base => dc=com  
 
 Setting the search base to the lowest possible branch of
@@ -439,6 +439,22 @@ object, e.g.
 
 The constructor will return undef if there was a problem connecting
 to the specified server. Any error message will be available in $@
+
+=head2 What is the proper format of the bind DN.
+
+The DN used to bind to a LDAP or X.550 directory is a FULLY QUALIFIED DN.
+The exact syntax of the DN will vary between LDAP or X.500 implementations.
+
+The following are valid examples.
+
+uid=clif,ou=People,dc=umich,dc=edu
+
+cn=directory manager,ou=admins,dc=umich,dc=edu
+
+In many LDAP and X.500 directory implementations the following
+would be a valid fully qualified DN of the directory manager.
+
+cn=directory manager
 
 =head2 How can I tell when the server returns an error, bind() always returns
 true ?
