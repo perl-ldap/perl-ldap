@@ -76,17 +76,20 @@ sub _read_lines {
   {
     local $/ = "";
     my $fh = $self->{'fh'};
-    my $ln = $self->{_next_lines} || scalar <$fh>;
-    unless ($ln) {
-       $self->{_next_lines} = '';
-       $self->{_current_lines} = '';
-       $self->eof(1);
-       return;
-    }
-    $ln =~ s/\n //sg;
-    $ln =~ s/^#.*\n//mg;
-    chomp($ln);
-    $self->{_current_lines} = $ln;
+    my $ln;
+    do {	# allow comments separated by blank lines
+      $ln = $self->{_next_lines} || scalar <$fh>;
+      unless ($ln) {
+         $self->{_next_lines} = '';
+         $self->{_current_lines} = '';
+         $self->eof(1);
+         return;
+      }
+      $ln =~ s/\n //sg;
+      $ln =~ s/^#.*\n//mg;
+      chomp($ln);
+      $self->{_current_lines} = $ln;
+    } until ($self->{_current_lines} || $self->eof());
     chomp(@ldif = split(/^/, $ln));
     do {
       $ln = scalar <$fh> || '';
@@ -112,8 +115,13 @@ sub _read_entry {
   $self->_clear_error();
   
   @ldif = $self->_read_lines;
-  return unless @ldif;
-  shift @ldif if @ldif && $ldif[0] !~ /\D/;
+
+  unless (@ldif) {	# empty records are errors if not at eof
+    $self->_error("illegal empty LDIF entry")  if (!$self->eof());
+    return;
+  }
+  # What does that mean ???
+  #shift @ldif if @ldif && $ldif[0] !~ /\D/;
 
   if (@ldif and $ldif[0] =~ /^version:\s+(\d+)/) {
     $self->{version} = $1;
