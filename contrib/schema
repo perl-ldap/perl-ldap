@@ -1,0 +1,665 @@
+#!/usr/bin/perl
+# !/usr/local/bin/perl
+#
+#
+# Copyright (c) 1999 Clif Harden.  All Rights Reserved
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU GENERAL PUBLIC LICENSE.
+#----------------------------------------------------------------------------
+#
+# This program was originally written by Clif Harden.
+# It is based on Graham Barr's PERL LDAP module and the PERL TK
+# module.
+# Both modules are available from the CPAN.org system.
+#
+# $Id$
+#
+# Purpose: This program is designed to retrieve schema data from a LDAP
+#          directory and display on the graphical user interface
+#          created by this program.
+#
+#
+# Revisions:
+# $Log$
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Version 5
+#
+#
+#
+
+use Net::LDAP qw(:all);
+use Net::LDAP::Filter;
+use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
+use Net::LDAP::Constant;
+use Getopt::Std;
+
+use Tk;
+use Tk::ErrorDialog;
+
+#
+# Global variables, wish I did not have to use them
+# but Tk forces me to.
+#
+
+my $adata = "";
+my $uid = "";
+my $info = "";
+my $slist;
+
+#--------------------------------------------------------
+# Handle the command line parameter(s)
+#--------------------------------------------------------
+ 
+getopts( 'hdr' );
+ 
+Usage() if ( $opt_h );
+
+my $debug  = $opt_d ? 1 : 0;
+
+#
+#
+#
+# Fork this process on start up.
+#
+#
+# If not in debug mode;
+# Fork a child process and kill the parent.
+# (That sounds nasty)
+#
+
+if ( !$debug ) {
+
+        FORK: {
+
+                if ( $pid = fork ) {
+                        # this is parent process, so die
+                        # 
+                        exit;
+                        } 
+                elsif ( defined $pid) {
+                        # this is the child process, so keep on running
+                        #
+                        &MAIN_PROCESS();                
+
+                        } # End of elsif in FORK.
+
+        } # End of FORK block.
+
+
+} # End of if.
+else {
+        #
+        # in debug mode, so do not fork but continue to run.
+        #
+        &MAIN_PROCESS();
+        } # End of else
+
+
+sub MAIN_PROCESS {
+
+my $rbuid;
+my $rbcn;
+my $rbsn;
+my $rbmail;
+my $rbclear;
+my $mainWindow;
+my $lframe;
+my $sframe;
+my $sbbframe;
+my $aframe;
+my $tframe;
+my $bframe;
+my $hand = 'left';
+my @attribute = ();
+my @server    = ();
+my @base    = ();
+
+#
+# Check for dot file, use it to configure program.
+#
+
+my $dotfile = $ENV{"HOME"} . "/.tklkup";
+
+if ( -e $dotfile && -r $dotfile )
+{
+
+open(DOT, "<$dotfile");
+
+@Input = <DOT>;
+
+foreach (@Input)
+{
+
+my @data = ();
+
+if ( /^#/ || /^\s+$/ ) { next; }
+
+chomp();
+@data = split(/:/);
+
+$data[1] =~ s/^\s*//;
+$data[1] =~ s/\s+$//;
+#$data[1] =~ s/*#*$//;
+
+$_ = $data[0];
+
+TYPE: {
+
+    /^hand/i && do {
+                     $hand = $data[1];
+                     last TYPE; };
+
+    /^attribute/i && do {
+                     push(@attribute, $data[1]);
+                     last TYPE; };
+
+    /^server/i && do {
+                     push(@server, $data[1]);
+                     last TYPE; };
+
+    /^base/i && do {
+                     push(@base, $data[1]);
+                     last TYPE; };
+
+                     print "Default found undefine type:  $_";
+
+    } # End of case TYPE
+
+}
+
+close(DOT);
+
+}
+
+#
+# Default is for left hand people!
+# Over ride the dot file if the -r command line
+# option is used.
+#
+
+if ( defined($opt_r) ) {
+
+$hand   = $opt_r ? 'right' : 'left';
+# my $hand   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
+
+}
+
+#
+# Default directory server.
+#
+if ( $#server < 1 ) { $server[0] = "ldap.umich.edu"; }
+
+$LDAP_SERVER = $server[0];
+
+#
+# Default directory search base.
+#
+
+$LDAP_SEARCH_BASE = "ou=People,o=University of Michigan,c=us";
+
+#
+# Create Main Window
+#
+
+$mainWindow = MainWindow->new;
+
+$mainWindow->title("Directory Schema Search");
+
+#
+# Create process Exit button
+#
+
+$mainWindow->Button(-text => "Exit", -command => 
+      sub{ exit; }  )-> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
+
+$sframe = $mainWindow->LabFrame(-label => "DIRECTORY SERVER",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+
+$slist = $sframe ->Listbox( -height => 1  );
+
+$slist->pack(-fill => "both", -expand => 1 );
+
+$slist->insert("end", $LDAP_SERVER);
+
+#
+# Create bottom Search Directory frame
+#
+
+$bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "groove")->pack(
+      -fill => "both", -side => "bottom", -padx => 5, -pady => 5);
+
+#
+# Create Search Directory button
+#
+
+$bframe -> Button(-text => "Retrieve Directory Schema", -command =>  \&search ) -> pack( -fill => "both");
+
+#
+# Create directory server selection button
+# This is where the user will select the directory server to
+# query.
+#
+
+
+if ( $hand eq 'left' )
+{
+$smenu = $mainWindow -> Menubutton(-indicator => 1, 
+                 -text => "SELECT\n DIRECTORY \nSERVER",
+                 -relief => "groove" )
+                 -> pack(-side => "top", -anchor => "w", -padx => 5);
+}
+else 
+{
+$smenu = $mainWindow -> Menubutton(-indicator => 1, 
+                 -text => "SELECT\n DIRECTORY \nSERVER",
+                 -relief => "groove" )
+                 -> pack(-side => "top", -anchor => "e", -padx => 5);
+}
+#
+# Change or add additional directory servers between the / marks on 
+# the following foreach loop.
+# 
+#
+
+foreach ( @server ) 
+{
+   $smenu->radiobutton( -label => $_, -variable => \$LDAP_SERVER,
+         -value => $_, -command => \&server );
+
+}
+
+#
+# Create list frame.
+#
+
+$lframe = $mainWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5,
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
+      -variable =>  \$clear, -onvalue => 1, -offvalue => 0 )
+      -> pack(-anchor => sw );
+
+$rbclear->select();
+
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 60, -height => 20, -wrap => 'none'  );
+
+$list->pack(-fill => "both", -expand => 1 );
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+if ( $hand eq 'left' )
+{
+$lframe ->Button(-text => "     Clear Data     ",
+     -command =>  \&clear ) -> pack(-anchor => sw, -padx => 5 );
+}
+else
+{
+$lframe ->Button(-text => "     Clear Data     ",
+     -command =>  \&clear ) -> pack(-anchor => se, -padx => 5 );
+}
+
+#
+# Run the Main loop looking for events.
+#
+
+MainLoop;
+
+
+
+sub clear {
+
+#
+# Clear out text in List Box
+#
+
+$list->delete("1.0", "end");
+
+} # End of clear subroutine
+
+sub AClear {
+
+#
+# Clear out text in Attribute Box
+#
+
+$adata = "";
+
+} # End of AClear subroutine
+
+sub server {
+
+#
+# Put directory server name in list box
+#
+
+$slist->insert(0 , $LDAP_SERVER);
+
+} # End of server subroutine
+
+
+sub attribute {
+
+#
+# Build a correct Filter string from the data
+# passed from the Additional Attributes
+# radiobutton selection.
+#
+
+my $tmp = "(" . $uid . "=";
+
+$info = $tmp;
+
+} # End of attribute subroutine
+
+
+sub base {
+
+#
+# Put directory server search base into the list box.
+#
+
+$sbblist->insert(0 , $LDAP_SEARCH_BASE);
+
+} # End of server subroutine
+
+
+
+} # End of MAIN_PROCESS subroutine
+
+
+#
+#
+# Search the directory for data
+#
+#
+#
+
+sub search 
+{
+
+my $error;
+my $dt = "/tmp/schema.dat.$$";
+
+if ( $clear ) { &clear(); }
+
+use Getopt::Std;
+
+my %opt = (
+  'h' => 'dirserv3',
+  'd' => 0
+);
+
+
+#
+# Parameter name array.
+#
+
+#
+# Get command line options.
+# 
+
+my $ldap = new Net::LDAP($LDAP_SERVER,
+                         -timeout => 1,
+                         -debug => $opt{'d'},
+                        ) or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Connect error:  $@\n");
+   return;
+}
+
+$ldap->ldapbind(-password => "", -dn => "") or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Bind error:  $@\n");
+   return;
+}
+
+
+( $mesg, $rs ) = $ldap->schema;  # or die $@;
+
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   $list->insert("end",  "Error code:  $errstr\n");
+   $errstr = ldap_error_text($errstr);
+   $list->insert("end",  "$errstr\n");
+   exit;
+}
+
+
+$dat = $rs->dump($dt);;
+
+
+
+&parse($dt);
+
+
+
+
+
+
+} # End of search subroutine
+
+sub parse
+{
+my $dt = shift (@_);
+
+open(DATA, "<$dt");
+
+
+while ( <DATA> ) 
+{
+
+@data = ();
+@attributes = ();
+chomp();
+
+@data = split(/:/);
+
+if ( $data[0] ne 'attributeTypes' && $data[0] ne 'objectClasses' &&
+     $data[0] ne 'attributetypes' && $data[0] ne 'objectclasses' &&
+     $data[0] ne 'matchingrules' )
+{ 
+   $list->insert("end",   "$data[0]:  $data[1]\n");
+}
+elsif ( $data[0] eq 'attributeTypes' || $data[0] eq 'objectClasses' ||
+        $data[0] eq 'attributetypes' || $data[0] eq 'objectclasses' ||
+        $data[0] eq 'matchingrules' )
+{
+
+@attributes = split(/ /, $data[1]);
+
+$list->insert("end",   "\n");
+
+$element = shift(@attributes);  # Remove opening space
+$element = shift(@attributes);  # Remove opening (
+$element = pop(@attributes);    # Remove closing )
+
+$list->insert("end",   "$data[0]\n"); # Prints banner for next attribute
+$element = shift( @attributes );
+$list->insert("end",   "\toid = $element\n");     # Prints oid number.
+
+while ( @attributes ) 
+{
+ $_ = shift( @attributes) ; 
+#          print "foreach = $_ \n";
+#
+# Now parse the rest of the attribute array.
+#
+  WHAT: {
+        /^NAME/ && do 
+          {
+          $list->insert("end",   "\tNAME:  ");
+          $element = shift(@attributes) ;
+          if ( $element eq '(' )
+          { 
+            # Multi-value string follows.
+            $done = 0;
+            $list->insert("end",   "\t");     # Prints tab character
+            while ( !$done )
+            {
+            $element = shift(@attributes) ;
+            if ( $element ne ')' )
+            {
+              $list->insert("end",   "$element, ");     # Prints attribute name.
+
+            }  # End of if ( $element ne ')' )
+            else
+            { 
+              $list->insert("end",   "\n");     # Prints oid number.
+              $done = 1; # Done parsering Multi-value string
+            }
+
+            }  # End of while ( !$done ) 
+          }
+          else 
+          {
+            $list->insert("end",   "$element\n");     # Prints attribute name.
+          }  # End of if ( $element ne ')' )
+
+          last WHAT; }; # End of NAME
+
+
+        /^DESC/ && do 
+          {
+          $list->insert("end",   "\tDESC:  ");
+          my $done = 1;
+	  while ( $done )
+	  {
+            $_ = shift(@attributes) ;
+            $list->insert("end",   "\t$_ ");     # Prints tab character
+#            sleep 2;
+#            print "DESC == $_";
+            if ( /^'*'$/ ) 
+	    { 
+#              print "TRUE == $_\n";
+              $done = 0; 
+	    }
+            elsif ( /'$/ ) 
+	    { 
+#              print "TRUE == $_\n";
+              $done = 0; 
+	    }
+	  }
+          $list->insert("end",   "\n");     # Prints tab character
+          last WHAT; }; # End of DESC
+
+        ( /^EQUALITY/ || /^SUBSTR/ || /^SYNTAX/ ||
+          /^ORDERING/ || /^USAGE/ ) && do 
+          {
+          $list->insert("end",   "\t$_:   ");     # Prints attribute name.
+          $element = shift(@attributes) ;
+          $list->insert("end",   "$element\n");     # Prints attribute name.
+          last WHAT; }; # End of EQUALITY
+
+        ( /^SINGLE-VALUE/ || /^NO-USER-MODIFICATION/ || 
+          /^STRUCTURAL/ || /^AUXILIARY/ ) && do 
+          {
+          $list->insert("end",   "\t$_\n");     # Prints attribute name.
+          last WHAT; }; # End of SINGLE-VALUE
+
+        ( /^MAY/ || /^SUP/ || /^MUST/ ) && do 
+          {
+          $list->insert("end",   "\t$_:  ");
+          $element = shift(@attributes) ;
+          if ( $element eq '(' )
+          { 
+            # Multi-value string follows.
+            $done = 0;
+            $list->insert("end",   "\t");     # Prints tab character
+            while ( !$done )
+            {
+            $element = shift(@attributes) ;
+            if ( $element ne ')' && $element ne '$' )
+            {
+              $list->insert("end",   "$element, ");     # Prints attribute name.
+
+            }  # End of if ( $element ne ')' )
+            elsif ( $element eq ')' )
+            { 
+              $list->insert("end",   "\n");     # Prints oid number.
+              $done = 1; # Done parsering Multi-value string
+            }
+
+            }  # End of while ( !$done ) 
+          }
+          else 
+          {
+            $list->insert("end",   "$element\n");     # Prints attribute name.
+          }  # End of if ( $element ne ')' )
+
+          last WHAT; }; # End of MAY
+
+	  #
+	  # Default for case statement
+	  #
+	  # Must test for space because netscape puts a " " before
+	  # a MAY clause in their schema.
+	  #
+
+          if ( $_ eq ' ' || $_ eq "" || $_ eq ' ' ) 
+          {
+          my $test = "";
+          }
+          else
+          { 
+          $list->insert("end", "Default: found element not in case: $_ \n");
+          }
+
+
+        }  # End of WHAT case statment
+
+
+}  # End of foreach $element ( shift @attributes )
+
+} # End of if ( $data[0] eq 'attributeTypes' || $data[0] eq 'objectClass' )
+
+} # End of while ( <> )
+
+} # End of search subroutine
+
+
+
+
+#----------------------------------------#
+# Usage() - display simple usage message #
+#----------------------------------------#
+sub Usage
+{
+   print( "Usage: [-h] | [-d]\n" );
+   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
+   print( "\t      Will not fork process.\n" );
+   print( "\t-h    Help.  Display this message.\n" );
+   exit( 1 );
+}
+

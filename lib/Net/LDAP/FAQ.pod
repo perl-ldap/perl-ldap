@@ -1,0 +1,285 @@
+=head1 NAME
+
+Net::LDAP::FAQ - Frequently Asked Questions about Net::LDAP
+
+=head1 SYNOPSIS
+
+ perldoc Net::LDAP::FAQ
+
+=head1 DESCRIPTION
+
+This document serves to answer the most frequently asked questions on both the
+perl-ldap Mailing List and personally to me.
+
+=head1 General
+
+=head2 What is perl-ldap ?
+
+perl-ldap is the distribution name. The perl-ldap distribution contains
+the Net::LDAP modules.
+
+=head2 Why another perl LDAP implementation ?
+
+perl-ldap's goal is to be as portable as possible. It does this by
+being implemented completely in perl. So basically anywhere that perl
+runs perl-ldap will run. This is not true for other implementations
+which require a C compiler.
+
+=head2 Where can I get it ?
+
+perl-ldap is available from CPAN. You will find it in the
+authors/id/GBARR directory. Alternatively you can download
+the latest version from http://www.cpan.org/search?dist=perl-ldap
+
+=head2 Is there a mailing list ?
+
+Yes there is at <perl-ldap@mail.med.cornell.edu>
+
+You can subscribe to this list by sending the word subscribe in the body
+of a message to <perl-ldap-request@mail.med.cornell.edu>
+
+If you want to unsubscribe, send a message with the word unsubscribe
+in the body to the same address
+
+=head2 Is the mailing list archived ?
+
+There is an archive of the perl-ldap mailing list at
+http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
+
+=head2 Is there any online documentation ?
+
+Yes. perl-ldap has a web page at http://www.pobox.com/~gbarr/perl-ldap/
+which will have the latest documentation available.
+
+=head2 Is there a public CVS repository ?
+
+No, not right now. But there may be in the future.
+
+
+=head1 Installation
+
+=head2 How do I install perl-ldap ?
+
+To install the modules that are in the perl-ldap distribution follow the
+same steps that you would for most other distributions found on CPAN, that
+is
+
+   # replace 0.13 with the version you have
+
+   gunzip perl-ldap-0.13.tar.gz
+   tar xvf perl-ldap-0.13.tar       
+   cd perl-ldap-0.13
+   
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+=head2 But I do not have make, how can I install perl-ldap ?
+
+Well as luck would have it the modules in perl-ldap do not do anything
+complex, so a simple copy is enough to install. First run
+
+  perl -V
+
+This will output information about the version of perl you have
+installed. Near the bottom you will find something like
+
+  @INC:
+    /usr/local/perl/perl5.005/lib/5.00502/sun4-solaris
+    /usr/local/perl/perl5.005/lib/5.00502
+    /usr/local/perl/perl5.005/lib/site_perl/5.005/sun4-solaris
+    /usr/local/perl/perl5.005/lib/site_perl/5.005
+    .
+
+This is a list of directories that perl searches when it is looking for
+a module. The directory you need is the site_perl directory, but without
+the syatem architecture name, in this case it is
+C</usr/local/perl/perl5.005/lib/site_perl/5.005>. The files required
+can then be installed with
+
+   # replace 0.13 with the version you have
+
+   gunzip perl-ldap-0.13.tar.gz
+   tar xvf perl-ldap-0.13.tar       
+   cd perl-ldap-0.13/lib
+
+   cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
+
+
+=head2 What other modules will I need ?
+
+perl-ldap does use other modules. Some are required, but some are
+optional (ie required to use certain features)
+
+=over 4
+
+=item Convert::ASN1
+
+This module is required for perl-ldap to work.
+
+You can obtain the latest release from
+http://search.cpan.org/search?module=Convert::ASN1
+
+=item Digest::MD5
+
+This module is optional. It also requires a C compiler when installing.
+You only need to install Digest::MD5 if you want to use the SASL
+authentication method.
+
+You can obtain the latest release from
+http://search.cpan.org/search?module=Digest::MD5
+
+=item URI::ldap
+
+This module is optional. You only need to install URI::ldap if you are
+going to need to parse ldap referrals. L<Net::LDAP|Net::LDAP> does not do this
+automatically yet, so this module is not used by perl-ldap.
+
+You can obtain the latest release from
+http://search.cpan.org/search?module=URI::ldap
+
+=back
+
+=head1 Using Net::LDAP
+
+=head2 How do I connect to my server ?
+
+The connection to the server is created when you create a new Net::LDAP
+object, e.g.
+
+  $ldap = Net::LDAP->new($server);
+
+=head2 Net::LDAP->new sometimes returns undef, why ?
+
+The constructor will return undef if there was a problem connecting
+to the specified server. Any error message will be available in $@
+
+=head2 How can I tell when the server returns an error, bind() always returns
+true ?
+
+Most methods in Net::LDAP return a L<Net::LDAP::Message|Net::LDAP::Message> object, or a sub-class
+of that. This object will hold the results from the server, including and result
+code.
+
+So, for example, to determine the result of the bind operation.
+
+  $mesg = $ldap->bind( $dn, password => $passwd);
+  
+  if ( $mesg->code ) {
+    # Handle error codes here
+  }
+
+=head2 I did a search on my directory using the 'search' method. Where did
+the results go ?
+
+Your search results are stored in a 'search object' container.
+Consider the following:
+
+ use Net::LDAP;
+
+ $ldap = Net::LDAP->new('ldap.acme.com') or die "$@";
+ $mesg = $ldap->search(
+                       base   => "o=acme.com",
+                       filter => "uid=jsmith",
+                      );
+
+$mesg is a search object container. It is a reference blessed into the
+L<Net::LDAP::Search|Net::LDAP::Search> package. By calling methods on this object
+you can obtain information about the result and also the individual entries.
+
+The first thing to check is if the search was successful. This is done with
+with the method C<$mesg->code>. This method will return the status code
+that the server returned. A success will yield a zero value, but there are
+other values, some of which could also be considered a success.
+See L<Net::LDAP::Constant|Net::LDAP::Constant>
+
+  use Net::LDAP::Util qw(ldap_error_text);
+
+  die ldap_error_text($mesg->code)
+    if $mesg->code;
+
+There are two ways in which you can access the entries. You can access
+then with an index or you can treat the container like a stack and
+shift each entry in turn. For example
+
+  # as an array
+
+  my $max = $mesg->count;  # How many entries were returned from the search
+
+  for( my $index = 0 ; $index < $max ; $index++) {
+    my $entry = $mesg->entry($index);
+    # ...
+  }
+
+  # or as a stack
+  
+  while( my $entry = $mesg->shift_entry) {
+    # ...
+  }
+
+In each case $entry is an entry object container. It is a reference blessed
+into the L<Net::LDAP::Entry|Net::LDAP::Entry> package. By calling methods on this object
+you can obtain information about the entry.
+
+For example, to obtain the DN for the entry
+
+  $dn = $entry->dn;
+
+To obtain the attributes that a given entry has
+
+  @attrs = $entry->attributes;
+
+And to get the list of values for a given attribute
+
+  $values = $entry->get( 'sn' );
+
+Notice that the assignment is to a scalar. This is because C<get> will return
+a reference to a list, even if there is only one value for that attribute,
+and C<undef> if the attribute does not exist. One thing to remember is that
+attribute names are case insensitive, so 'sn', 'Sn', 'sN' and 'SN' are all
+the same.
+
+So, if you want to print all the values for the attribute C<'ou'> then this
+is as simple as
+
+  if( my $values = $entry->get( 'ou' )) {
+    foreach (@$values) {
+      print $_,"\n";
+    }
+  }
+
+Now if you just want to print all the values for all the attributes you
+can do
+
+  foreach my $attr ($entry->attributes) {
+    foreach my $value ($entry->get($attr)) {
+      print $attr, ": ", $value, "\n";
+    }
+  }
+
+
+=head1 AUTHOR
+
+Graham Barr <gbarr@pobox.com>
+
+Please report any bugs, or post any suggestions, to the perl-ldap mailing list
+<perl-ldap@mail.med.cornell.edu>.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999-2000 Graham Barr. All rights reserved. This document is
+distributed, and may be redistributed, under the same terms as Perl itself.
+
+=for html <hr>
+
+I<$Id: FAQ.pod,v 1.1 2000/05/03 12:29:11 gbarr Exp $>
+
+=cut
+
+TODO
+
+use of callback to speed up searches
+connect via a proxy
+limiting returned attrs
+SASL auth

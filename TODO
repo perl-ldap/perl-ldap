@@ -1,0 +1,34 @@
+Net::LDAP::Simulate
+  If Net::LDAP dumped a log of all packets in a binary form then
+  we could simulate a connection. This means a session can be re-run
+  without being connected to the server. Could be useful with debug
+
+Net::LDAP::Schema
+  Decide on final implementation
+
+Net::LDAP::LDIF
+  Still need to add support for moddn
+
+Authen::SASL
+  Needs completion and documentation
+
+command line utilities
+  ldapmodify
+  ldapmodrdn
+  ldapdelete
+  ldapadd
+
+complete documentation
+
+more tests
+
+Net::LDAP::Utils
+  utility functions like explode_dn
+
+User Friendly Names
+
+CLDAP
+
+performance testing/tuning
+
+more LDAPv3 support

@@ -1,0 +1,22 @@
+perl-ldap 0.16 April xx 2000
+============================
+
+* This is the first release which uses Convert::ASN1 instead of
+  Convert::BER. This should show an increase in performance.
+* Added support for LDAPv3 controls. Controls supported are
+  - VirtualListView
+  - Sort
+  - Paged
+* HTML version of the documentation is now included in the
+  distribution
+* Added Bundle::Net::LDAP
+* Net::LDAP->schema can now be told where to search for the schema.
+
+ KNOWN PROBLEMS
+ --------------
+
+  In a pre-release of 0.16 it has been seen that a search result may
+  not contain all entries and $mesg->code will be LDAP_DECODING_ERROR.
+  This has been seen when the client is running on NT or Linux and the
+  server is an Exchange server.
+

@@ -1,0 +1,51 @@
+
+=head1 NAME
+
+Net::LDAP::RFC - List of related RFC's
+
+=head1 SYNOPSIS
+
+  none
+
+=head1 DESCRIPTION
+
+The LDAP protocol is defined in the following RFC's
+
+=over 4
+
+=item RFC-2251 - Lightweight Directory Access Protocol (v3).
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2251.txt
+
+=item RFC-2251 - Lightweight Directory Access Protocol (v3).
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2251.txt
+
+=item RFC-2252 - Attribute Syntax Definitions.
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2252.txt
+
+=item RFC-2253 - UTF-8 String Representation of Distinguished Names.
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2253.txt
+
+=item RFC-2254 - The String Representation of LDAP Search Filters.
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2254.txt
+
+=item RFC-2255 - The LDAP URL Format.
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2255.txt
+
+=item RFC-2256 - A Summary of the X.500(96) User Schema for use with LDAPv3.
+
+http://info.internet.isi.edu/in-notes/rfc/files/rfc2256.txt
+
+=back
+
+=for html <hr>
+
+I<$Id: RFC.pod,v 1.1 2000/05/03 12:29:15 gbarr Exp $>
+
+=cut
+

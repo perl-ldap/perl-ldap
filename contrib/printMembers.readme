@@ -1,0 +1,78 @@
+Well I have an update to printMembers.pl as well ;)
+
+The only difference is that it adds support for dynamic groups as well.
+
+BTW Do you think these would make logical methods in Utils or should there
+be a Net::LDAP::Groups object or should they just be left as scripts?
+
+Mark
+
+Graham Barr wrote:
+
+> Arg, and I just sent out 0.13. Ah well it will be in the next release.
+
+------------------------------------------------------------------------
+
+Here's another script I'd like to submit. This one is called
+printMembers.pl
+
+Given a name of a group (just like isMember.pl) it will print out all of
+the members of the group including members of groups who are members of
+the original group. By default it will print out the DN of the member
+entries, but you have the option of specifying an attribute on the
+command line to print instead (e.g. print out the mail attribute
+instead).
+
+Here's an example of default output:
+perl printMembers.pl -n "Accounting Managers"
+
+Members of group: cn=Accounting Managers,ou=groups,o=airius.com
+uid=scarter, ou=People, o=airius.com
+uid=tmorris, ou=People, o=airius.com
+cn=HR Managers,ou=groups,o=airius.com
+
+Members of group: cn=HR Managers,ou=groups,o=airius.com
+uid=kvaughan, ou=People, o=airius.com
+uid=cschmith, ou=People, o=airius.com
+cn=PD Managers,ou=groups,o=airius.com
+
+Members of group: cn=PD Managers,ou=groups,o=airius.com
+uid=kwinters, ou=People, o=airius.com
+uid=trigden, ou=People, o=airius.com
+
+Here's an example of the same group but instead print the cn attribute
+of each entry:
+
+Members of group: cn=Accounting Managers,ou=groups,o=airius.com
+Sam Carter
+Ted Morris
+HR Managers
+
+Members of group: cn=HR Managers,ou=groups,o=airius.com
+Kirsten Vaughan
+Chris Schmith
+PD Managers
+
+Members of group: cn=PD Managers,ou=groups,o=airius.com
+Kelly Winters
+Torrey Rigden
+
+And same group but with the mail attribute:
+
+Members of group: cn=Accounting Managers,ou=groups,o=airius.com
+scarter@airius.com
+tmorris@airius.com
+
+Members of group: cn=HR Managers,ou=groups,o=airius.com
+kvaughan@airius.com
+cschmith@airius.com
+
+Members of group: cn=PD Managers,ou=groups,o=airius.com
+kwinters@airius.com
+trigden@airius.com
+
+
+This is my favorite script. But I'm sure it can be improved. Anyway let
+me know.
+
+Mark

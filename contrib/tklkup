@@ -1,0 +1,714 @@
+#!/usr/bin/perl
+# !/usr/local/bin/perl
+#
+# Copyright (c) 1999 Clif Harden.  All Rights Reserved
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU GENERAL PUBLIC LICENSE.
+#----------------------------------------------------------------------------
+#
+# This program was originally written by Clif Harden.
+# Some of the software in the LDAP search subroutine was orginally
+# written by Graham Barr.  It is based on Graham Barr's PERL LDAP 
+# module and the PERL TK module.
+# Both modules are available from the CPAN.org system.
+#
+# $Id: tklkup,v 1.1 2000/05/03 12:28:40 gbarr Exp $
+#
+# Purpose: This program is designed to retrieve data from a LDAP
+#          directory and display on the graphical user interface
+#          created by this program.
+#
+#
+# Revisions:
+# $Log: tklkup,v $
+# Revision 1.1  2000/05/03 12:28:40  gbarr
+# Initial revision
+#
+#
+#
+#
+#
+#
+
+use Net::LDAP qw(:all);
+use Net::LDAP::Filter;
+use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
+use Net::LDAP::Constant;
+use Getopt::Std;
+
+use Tk;
+use Tk::ErrorDialog;
+
+#
+# Global variables, wish I did not have to use them
+# but Tk forces me to.
+#
+
+my $adata = "";
+my $uid = "";
+my $info = "";
+my $slist;
+
+#--------------------------------------------------------
+# Handle the command line parameter(s)
+#--------------------------------------------------------
+
+getopts( 'hdr' );
+
+Usage() if ( $opt_h );
+
+my $debug  = $opt_d ? 1 : 0;
+
+#
+#
+#
+# Fork this process on start up.
+#
+#
+# If not in debug mode;
+# Fork a child process and kill the parent.
+# (That sounds nasty)
+#
+
+if ( !$debug ) {
+
+        FORK: {
+
+                if ( $pid = fork ) {
+                        # this is parent process, so DIE
+                        # 
+                        exit;
+                        } 
+                elsif ( defined $pid) {
+                        # this is the child process, so keep on running
+                        #
+                        &MAIN_PROCESS();                
+
+                        } # End of elsif in FORK.
+
+        } # End of FORK block.
+
+
+} # End of if.
+else {
+        #
+        # in debug mode, so do not fork but continue to run.
+        #
+        &MAIN_PROCESS();
+        } # End of else
+
+
+sub MAIN_PROCESS {
+
+my $rbuid;
+my $rbcn;
+my $rbsn;
+my $rbmail;
+my $rbclear;
+my $mainWindow;
+my $lframe;
+my $sframe;
+my $sbbframe;
+my $aframe;
+my $tframe;
+my $bframe;
+my $hand = 'left';
+my @attribute = ();
+my @server    = ();
+my @base    = ();
+
+#
+# Check for dot file, use it to configure program.
+#
+
+my $dotfile = $ENV{"HOME"} . "/.tklkup";
+
+if ( -e $dotfile && -r $dotfile )
+{
+
+open(DOT, "<$dotfile");
+
+@Input = <DOT>;
+
+foreach (@Input)
+{
+
+my @data = ();
+
+if ( /^#/ || /^\s+$/ ) { next; }
+
+chomp();
+@data = split(/:/);
+
+$data[1] =~ s/^\s*//;
+$data[1] =~ s/\s+$//;
+#$data[1] =~ s/*#*$//;
+
+$_ = $data[0];
+
+TYPE: {
+
+    /^hand/i && do {
+                     $hand = $data[1];
+                     last TYPE; };
+
+    /^attribute/i && do {
+                     push(@attribute, $data[1]);
+                     last TYPE; };
+
+    /^server/i && do {
+                     push(@server, $data[1]);
+                     last TYPE; };
+
+    /^base/i && do {
+                     push(@base, $data[1]);
+                     last TYPE; };
+
+                     print "Default found undefine type:  $_";
+
+    } # End of case TYPE
+
+}
+
+close(DOT);
+
+}
+
+#
+# Default is for left hand people!
+# Over ride the dot file if the -r command line
+# option is used.
+#
+
+if ( defined($opt_r) ) {
+
+$hand   = $opt_r ? 'right' : 'left';
+# my $hand   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
+
+}
+
+#
+# Default directory server.
+#
+if ( $#server < 1 ) { $server[0] = "ldap.umich.edu"; }
+
+$LDAP_SERVER = $server[0];
+
+#
+# Default directory search base.
+#
+if ( $#base < 1 ) { $base[0] = "ou=People,o=University of Michigan,c=us"; }
+
+$LDAP_SEARCH_BASE = $base[0];
+
+#
+# Default directory search attributes.
+#
+if ( $#attribute < 1 )
+{
+
+@attribute = qw/ uid sn cn rfc822mailbox telephonenumber
+                 facsimiletelephonenumber gidnumber uidnumber/;
+}
+
+#
+# Create Main Window
+#
+
+$mainWindow = MainWindow->new;
+
+$mainWindow->title("Directory Search");
+
+#
+# Create process Exit button
+#
+
+$mainWindow->Button(-text => "Exit", -command => 
+      sub{ exit; }  )-> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
+
+$sframe = $mainWindow->LabFrame(-label => "DIRECTORY SERVER",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+
+$slist = $sframe ->Listbox( -height => 1  );
+
+$slist->pack(-fill => "both", -expand => 1 );
+
+$slist->insert("end", $LDAP_SERVER);
+
+#
+# Create search base list box.
+#
+
+$sbbframe = $mainWindow->LabFrame(-label => "DIRECTORY SEARCH BASE",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+
+$sbblist = $sbbframe ->Listbox( -height => 1  );
+
+$sbblist->pack(-fill => "both", -expand => 1 );
+
+$sbblist->insert("end", $LDAP_SEARCH_BASE);
+
+#
+# Create bottom Search Directory frame
+#
+
+$bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "groove")->pack(
+      -fill => "both", -side => "bottom", -padx => 5, -pady => 5);
+
+#
+# Create Search Directory button
+#
+
+$bframe -> Button(-text => "Search Directory", -command =>  \&search ) -> pack( -fill => "both");
+
+#
+# Create left attribute selection frame
+# This is where the user will select the attribute to be searched.
+#
+
+$aframe = $mainWindow->LabFrame(-label => "Attributes",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => $hand, -padx => 5, -pady => 5);
+
+
+#
+# Create directory server selection button
+# This is where the user will select the directory server to
+# query.
+#
+
+$smenu = $aframe -> Menubutton(-text => "SELECT\n DIRECTORY \nSERVER",
+                 -relief => "groove" )
+                 -> pack(-side => "top", -anchor => "w" );
+
+#
+# Set up the select directory server radio buttons.
+#
+
+foreach (@server)
+{
+   $smenu->radiobutton( -label => $_, -variable => \$LDAP_SERVER,
+         -value => $_, -command => \&server );
+
+}
+
+#
+# Create directory server search base.
+# This is the point from which the search operation
+# will start from.
+#
+
+$sbmenu = $aframe -> Menubutton(-text => " SELECT\n   SEARCH  \nBASE",
+                 -relief => "groove" )
+                 -> pack(-side => "top", -anchor => "w", -pady => 5 );
+
+#
+# Set up the select search base radio buttons.
+#
+
+
+foreach (@base)
+{
+   $sbmenu->radiobutton( -label => $_, -variable => \$LDAP_SEARCH_BASE,
+         -value => $_, -command => \&base );
+
+}
+
+#
+# Create additional attributes selection button
+# This is where the user will select any special attribute to
+# search on.
+#
+
+$amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
+                 -relief => "groove" )
+                 -> pack( -side => "bottom", -anchor => "w", -pady => 5);
+
+#
+# First set up the 4 main Radio buttons.
+#
+#
+# If there are other attribute after the first 4 then set them
+# up inside the select additional attributes button.
+#
+#
+if ( $#attribute > 4 )
+{
+my $sptr = 0;
+while ( $sptr <= 3 )
+{
+$_ = shift(@attribute);
+
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
+         -value => "$_" ) -> pack( -side => "bottom", -anchor => "w");
+
+if ( !$sptr ) { $rbsn->select(); } # select first attribute
+
+++$sptr;
+}
+
+} # End of if ( $#attribute > 4 )
+else
+{
+#
+# Less than 4 attributes in user create initialization
+# file, this is valid if that is what the user wants.
+#
+my $sptr = 0;
+while ( @attribute )
+{
+$_ = shift(@attribute);
+
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
+         -value => "$_" ) -> pack( -side => "bottom", -anchor => "w");
+
+if ( !$sptr ) { $rbsn->select(); } # select first attribute
+
+++$sptr;
+}
+
+}
+
+#
+# Create radio buttons in attributes selection box.
+#
+#
+
+foreach (@attribute)
+{
+
+   $amenu->radiobutton( -label => $_, -variable => \$info,
+          -value => $_);
+
+} # End of 
+
+#
+# Create Bottom Attribute frame.
+# This is where the user will enter data to be
+# searched for.
+#
+
+
+$tframe = $mainWindow->LabFrame(-label => "Attribute Data",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 5);
+
+#
+# Create Text Entry list box.
+#
+
+$tframe->Entry(-textvariable => \$adata, -width => 25 ) 
+      -> pack(-fill => 'x');
+
+#
+# Create Bottom Attribute frame.
+# This is where the user will enter attribute text data to be
+# searched for.
+#
+
+
+$cframe = $mainWindow->Frame()
+      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 5);
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+if ( $hand eq 'left' )
+{
+$cframe -> Button(-text => "Clear Attribute Data", -command =>  \&AClear )
+     -> grid("x", $cframe -> Button(-text => "     Clear Data     ", 
+     -command =>  \&clear ), -sticky => 'nsew' , -padx => 5 );
+}
+else
+{
+$cframe -> Button(-text => "     Clear Data     ", -command =>  \&clear )
+     -> grid("x", $cframe -> Button(-text => "Clear Attribute Data",
+     -command =>  \&AClear ), -sticky => 'nsew' , -padx => 5 );
+}
+
+$cframe -> gridColumnconfigure(1, -weight => 3);
+
+#
+# Create list frame.
+#
+
+$lframe = $mainWindow->LabFrame(-label => "DIRECTORY DATA",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5,
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
+      -variable =>  \$clear, -onvalue => 1, -offvalue => 0 )
+      -> pack(-anchor => sw );
+
+$rbclear->select();
+
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 40, -height => 20, -wrap => 'none'  );
+
+$list->pack(-fill => "both", -expand => 1 );
+
+#
+# Run the Main loop looking for events.
+#
+
+MainLoop;
+
+
+
+sub clear {
+
+#
+# Clear out text in List Box
+#
+
+$list->delete("1.0", "end");
+
+} # End of clear subroutine
+
+sub AClear {
+
+#
+# Clear out text in Attribute Box
+#
+
+$adata = "";
+
+} # End of AClear subroutine
+
+sub server {
+
+#
+# Put directory server name in list box
+#
+
+$slist->insert(0 , $LDAP_SERVER);
+
+} # End of server subroutine
+
+
+sub attribute {
+
+#
+# Build a correct Filter string from the data
+# passed from the Additional Attributes
+# radiobutton selection.
+#
+
+my $tmp = "(" . $uid . "=";
+
+$info = $tmp;
+
+} # End of attribute subroutine
+
+
+sub base {
+
+#
+# Put directory server search base into the list box.
+#
+
+$sbblist->insert(0 , $LDAP_SEARCH_BASE);
+
+} # End of server subroutine
+
+
+
+} # End of MAIN_PROCESS subroutine
+
+
+#
+#
+# Search the directory for data
+#
+#
+#
+
+sub search 
+{
+
+my $error;
+
+if ( $clear ) { &clear(); }
+
+my %opt = (
+  'd' => 0
+);
+
+
+#
+# Parameter to return
+#
+# Default to return everything.
+#
+#
+
+my %ph2ldap = qw(
+  * *
+  createTimeStamp createTimeStamp
+  modifyTimeStamp modifyTimeStamp
+  creatorsName creatorsName
+  modifiersName modifiersName
+ );
+
+
+#
+# Return all attributes for this record.
+#
+my @wanted = "*";
+
+#
+# Set Filter options.
+# 
+
+$match = "(" . $info . '=' . $adata . ")";
+
+$error = 0;  # initialize error flag.
+
+my $f = Net::LDAP::Filter->new($match) or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Bad filter '$match'.\n");
+   return;
+}
+
+my $ldap = new Net::LDAP($LDAP_SERVER,
+                         -timeout => 1,
+                        ) or $error = 1; 
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Connect error:  $@\n");
+   return;
+}
+
+$ldap->ldapbind(-password => "", -dn => "") or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Bind error:  $@\n");
+   return;
+}
+
+my $wanted = [ map { defined($ldap2ph{$_}) ? ($_)
+		  : defined($ph2ldap{$_}) ? ($ph2ldap{$_}) : ()} @wanted ];
+
+$mesg = $ldap->search(
+  -base   => $LDAP_SEARCH_BASE,
+  -filter => $f,
+  -attrs  => $wanted,
+  -callback => \&print_entry,
+) or $error = 1; 
+
+
+if ( $error == 1 )
+{
+   $list->insert("end", "Search error:  $@\n");
+   return;
+}
+
+
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   $list->insert("end", "Error code:  $errstr\n");
+   $errstr = ldap_error_text($errstr);
+   $list->insert("end", "$errstr\n");
+   return;
+}
+
+#
+# Get and print out the record attributes.
+#
+
+sub print_entry {
+  my($mesg,$entry) = @_;
+  if ( !defined($entry) )
+  { 
+    $list->insert("end", "No records found matching filter $match.\n") if ($mesg->count == 0) ;
+
+    return;
+  }
+  
+  #
+  # Get a list of record attributes
+  #
+  
+  my @attrs = sort $entry->attributes;
+  my $max = 0;
+  $list->insert("end", " \n");
+  $list->insert("end", "-----------------------------------------------------------------------------\n");
+
+  #
+  # Get record DN
+  #
+  
+  my $dn = $entry->dn();
+  
+  $list->insert("end", " \n");
+  $list->insert("end", "DN:  $dn\n");
+  $list->insert("end", " \n");
+
+  #
+  # Calculate each attribute`s text length.
+  # We use this to create a pretty print out in the 
+  # List Box
+  #
+  
+  foreach (@attrs) { $max = length($_) if length($_) > $max }
+
+  #
+  # Get attribute`s data
+  #
+  
+  foreach (@attrs) {
+    my $attr = $entry->get_attribute($_);
+    next unless $attr;
+    if(ref($attr)) {
+      foreach $a (@$attr) {
+      #
+      # Format data and print data into List Box
+      #
+        $dstring = sprintf "%${max}s: %s\n",$_,$a;
+        $list->insert("end",  "$dstring");
+      }
+    }
+    else {
+      #
+      # Format data and print data into List Box
+      #
+      $dstring = sprintf "%${max}s: %s\n",$_,$attr;
+      $list->insert("end",  "$dstring");
+    }
+  }
+}
+
+
+} # End of search subroutine
+
+#----------------------------------------#
+# Usage() - display simple usage message #
+#----------------------------------------#
+sub Usage
+{
+   print( "Usage: [-h] | [-d]\n" );
+   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
+   print( "\t      Will not fork process.\n" );
+   print( "\t-h    Help.  Display this message.\n" );
+   exit( 1 );
+}
+

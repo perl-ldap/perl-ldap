@@ -1,0 +1,92 @@
+=head1 NAME
+
+Net::LDAP::LDIF - LDIF reading and writing
+
+=head1 SYNOPSIS
+
+  use Net::LDAP::LDIF;
+
+  $ldif = Net::LDAP::LDIF->new( "file.ldif", "r" );
+  while( $entry = $ldif->read() ) {
+	  # Do things with $entry
+  }
+  $ldif->done();
+
+  $ldif = Net::LDAP::LDIF->new( $fh, "r" );
+  @entries = $ldif->read();
+
+=head1 DESCRIPTION
+
+B<Net::LDAP::LDIF> provides a means to convert between
+L<Net::LDAP::Entry|Net::LDAP::Entry> objects and LDAP entries represented
+in LDIF format files. Reading and writing are supported and may manipulate
+single entries or lists of entries.
+
+As when reading an entire file into memory with perl normally, take into
+account the possibility of memory use when loading an LDIF file in one go.
+
+=head1 CONSTRUCTOR
+
+=over 4
+
+=item new ( [ FILE [, MODE]] )
+
+FILE may be the name of a file or an already open filehandle. If a filename
+is passed in then it will be opened with the mode specified.
+
+MODE defaults to "r" for read. You may specify "w" to for write+truncate or
+"a" for write+append.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item read
+
+=over 4
+
+In a similar fashion to the perl <$fh> operator, read will read one entry or
+the entire file depending on whether it is called in a scalar or array context.
+
+=back
+
+=item read_cmd
+
+=item write ( ENTRIES )
+
+=item write_cmd ( ENTRIES )
+
+=item done
+
+=over 4
+
+This method signals that the LDIF object is no longer needed. If a file was
+opened automatically when the object was created it will be closed. This
+method is called automatically via DESTROY when the object goes out of scope.
+
+  $ldif->done();
+
+=back
+
+=back
+
+=head1 AUTHOR
+
+Graham Barr <gbarr@pobox.com>.
+
+Please report any bugs, or post any suggestions, to the perl-ldap mailing list
+<perl-ldap@mail.med.cornell.edu>.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=for html <hr>
+
+I<$Id: LDIF.pod,v 1.1 2000/05/03 12:29:13 gbarr Exp $>
+
+=cut

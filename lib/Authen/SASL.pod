@@ -1,0 +1,57 @@
+
+=head1 NAME
+
+Authen::SASL - SASL Authentication base class
+
+=head1 SYNOPSIS
+
+ use Authen::SASL;
+
+ $sasl = Authen::SASL->new('CRAM-MD5', password => $pass);
+
+=head1 DESCRIPTION
+
+SASL is a generic mechanism for authentication used by several
+network protocols. B<Authen::SASL> provides an implementation
+that all protocols should be able to share.
+
+There are many different encryption methods that can be used
+with SASL. These are implemented as sub-classes of B<Authen::SASL>.
+For example the package that implements the CRAM-MD5 SASL is
+called Authen::SASL::CRAM_MD5. Note that the - is eplaced with an
+_. Authen::SASL::CRAM_MD5 also inherits from B<Authen::SASL>.
+This means that the following two statements give identical results
+
+  $sasl = Authen::SASL->new('CRAM-MD5', password => $pass);
+
+  $sasl = Authen::SASL::CRAM_MD5->new(password => $pass);
+
+the difference being that the frst one will load the Authen::SASL::CRAM_MD5
+package for you when this code is run for the first time. If you use the
+second method then you must require the package yourself.
+
+=head1 METHODS
+
+=head1 SEE ALSO
+
+L<Authen::SASL::CRAM_MD5|Authen::SASL::CRAM_MD5>
+
+=head1 AUTHOR
+
+Graham Barr <gbarr@pobox.com>
+
+Please report any bugs, or post any suggestions, to the perl-ldap mailing list
+<perl-ldap@mail.med.cornell.edu>
+
+=head1 COPYRIGHT
+
+Copyright (c) 1998-2000 Graham Barr. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=for html <hr>
+
+I<$Id: SASL.pod,v 1.1 2000/05/03 12:28:58 gbarr Exp $>
+
+=cut
+
