@@ -328,10 +328,6 @@ sub bind {
       if $ldap->{net_ldap_version} < 3;
 
     my $sasl = $passwd;
-    # Tell the SASL object our user identifier
-    $sasl->callback( user => "dn: $stash{name}")
-      unless $sasl->callback('user');
-
     my $sasl_conn = $sasl->client_new("ldap",$ldap->{net_ldap_host});
 
     # Tell SASL the local and server IP addresses
