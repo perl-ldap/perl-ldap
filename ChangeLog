@@ -1,3 +1,7 @@
+2001-10-01  Chris Ridd  <chris.ridd@messagingdirect.com>
+
+	* Added sslversion to LDAPS constructor and start_tls method
+
 2001-08-25 09:08  Graham Barr
 
 	* lib/Net/LDAP.pm:
