@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.28 2002/07/19 02:44:19 charden Exp $
+# $Id: tklkup,v 1.29 2002/10/08 01:41:31 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,13 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.29  2002/10/08 01:41:31  charden
+# Change the way search base(s) are displayed.  Instead of one big list,
+# the base list has been setup as a cascading menu based on the
+# namingContext(s) of the directory server.
+#
 # Revision 1.28  2002/07/19 02:44:19  charden
+#
 # Added the calling of the DSML end_dsml function when schema XML information
 # is writen to a file.
 #
@@ -224,6 +230,7 @@ use Tk::Label;
 # but Tk forces me to.
 #
 my %Global = ();
+my %NC     = ();
 
 $Global{'jpeg'}   = 1;
 eval { use Tk::JPEG; }; 
@@ -336,7 +343,6 @@ my $bframe;
 #my $sbmenu;
 my @attribute = ();
 my @server    = ();
-
 #
 # Check for dot file, use it to configure program.
 #
@@ -470,13 +476,23 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
  
  if ( defined($server{$server[0]}) )
  {
+ # user defined base
+ my $t1 = [];
+ $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
+ ${$NC{$server{$server[0]}}}[1] = $t1;      # 
+ print "server == ", $server{$server[0]}, "\n";
+
+ push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
  @base =  getBases($Global{'LDAP_SERVER'}, $server{$server[0]});
  }
  else
  {
- my $error;
+ my $error = 0;
  my $entry;
  my $mesg;
+ # use root_dse to find the bases
+
+ @base = ();
 
  my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                            timeout => 1,
@@ -490,16 +506,16 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
     $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                          dn => "$Global{'binddn'}", 
                          version => $Global{'setVersion'},
-                       ) or $error = 1;
+                       );
    
-   if ( $mesg->code ) 
+   if ( $mesg->code && $mesg->code != 48 ) 
    {
       $errstr = $mesg->code;
       ERROR($errstr);
+      print $mesg->code,"\n";
    }
- 
-    if ( !$error  )
-    {
+   else
+   {
       $entry = $ldap->root_dse();
       if ( defined($entry) )
       {
@@ -508,19 +524,15 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
         {
          foreach my $ncbase ( @$attr )
          {
+          my $t1 = [];
+          ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
+          ${$NC{$ncbase}}[1] = $t1;      # 
+          push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
           push(@base, getBases($Global{'LDAP_SERVER'}, $ncbase));
          }
         }
-        else 
-        {
-          @base = ();
-        }
       }
     }
-    }
-    else 
-    {
-    @base = ();
     }
   $ldap->unbind if ( defined($ldap));
  }
@@ -661,17 +673,39 @@ $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
                  -> pack(-side => "left", -anchor => "w" );
 
 #
+# Create the cascade search base menus
+#
+
+@NcKeys = sort(keys(%NC));
+ 
+foreach ( @NcKeys )
+{
+  my $t1 = $NC{$_};
+  $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
+}
+                                                                                
+#
 # Set up the select search base radio buttons.
 #
 
-
-foreach (@base)
+foreach $Nc (@NcKeys)
 {
-   push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
-                     -variable => \$LDAP_SEARCH_BASE,
-                     -value => $_, -command => \&base, 
-                     -font => $Global{'Font'} ) );
+ 
+  foreach ( @{@{$NC{$Nc}}[1]} )
+  {
+     push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
+                       -variable => \$LDAP_SEARCH_BASE,
+                       -value => $_, -command => \&base, 
+                       -font => $Global{'Font'} ) );
+  }
+ 
+} 
 
+ 
+foreach my $Nclabel ( @NcKeys )
+{
+  $sbmenu->cascade(-label => "$Nclabel");
+  $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
 
 #
@@ -922,8 +956,6 @@ my $ptr;
 $Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
 $sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
 
-#if ( !$mybase )
-#{
 $ptr = 1;
 
 #
@@ -933,18 +965,19 @@ $ptr = 1;
 
 while ( @BaseButton >= 1  )
 {
-$widget = pop(@BaseButton);
-$sbmenu->menu->delete($ptr);
-++$ptr;
+  $widget = pop(@BaseButton);
+  $sbmenu->menu->delete($ptr);
+  ++$ptr;
 }
-
-@base = ();
 
 if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
-
-
-@base = getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}});
+ # user defined base
+ %NC = ();  # Delete the old stuff.
+ my $t1 = [];
+ $NC{$server{$Global{'LDAP_SERVER'}}} = [ "0" ];  # dummy load in position 0
+ ${$NC{$server{$Global{'LDAP_SERVER'}}}}[1] = $t1;      #
+ push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));             
 
 }
 else
@@ -952,6 +985,7 @@ else
  my $error;
  my $mesg;
  my $entry;
+ # use root_dse to find the bases
 
  my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                            timeout => 1,
@@ -965,16 +999,16 @@ else
     $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                          dn => "$Global{'binddn'}", 
                          version => $Global{'setVersion'},
-                       ) or $error = 1;
+                       );
 
-   if ( $mesg->code ) 
+   if ( $mesg->code && $mesg->code != 48 ) 
    {
       $errstr = $mesg->code;
       ERROR($errstr);
    }
- 
-    if ( !$error  )
-    {
+   else
+   {
+      %NC = ();  # Delete the old stuff.
       $entry = $ldap->root_dse();
       if ( defined($entry) )
       {
@@ -983,51 +1017,68 @@ else
         {
           foreach my $ncbase ( @$attr )
           {
-            push( @base, getBases($Global{'LDAP_SERVER'}, $ncbase));
+            my $t1 = [];
+            ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
+            ${$NC{$ncbase}}[1] = $t1;      #
+            push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
           }
-        }
-        else 
-        {
-          @base = ();
         }
       }
     }
     }
-    else 
-    {
-    @base = ();
-    }
+
   $ldap->unbind if ( defined($ldap));
 
 }
 
- if ( @base >= 1)
- {
- $LDAP_SEARCH_BASE = $base[0];
- }
- else
- {
- $LDAP_SEARCH_BASE = "";
- }
+#
+# Create the cascade search base menus
+#                                                                               
+@NcKeys = sort(keys(%NC));
+ 
+foreach ( @NcKeys )
+{
+   my $t1 = $NC{$_};
+   $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
+}
 
 #
 # Set up the select search base radio buttons.
 #
 
-foreach (@base)
+foreach $Nc (@NcKeys)
 {
-   push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
+ 
+foreach ( @{@{$NC{$Nc}}[1]} )
+{
+   push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
                      -variable => \$LDAP_SEARCH_BASE,
-                     -value => $_, -command => \&base, 
+                     -value => $_, -command => \&base,
                      -font => $Global{'Font'} ) );
-
+}
+ 
 }
 
-# } # End of if ( !$mybase )
+#
+# Attached the cascaded menu to it's master menu
+#
+ 
+foreach my $Nclabel ( @NcKeys )
+{
+$sbmenu->cascade(-label => "$Nclabel");
+$sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
+}
 
-$LDAP_SEARCH_BASE = $base[0];
+if ( @NcKeys)
+{
+ $LDAP_SEARCH_BASE = shift (@NcKeys);
+}
+else
+{
+ $LDAP_SEARCH_BASE = "";
+}
+
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
-
 
 $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
@@ -3800,16 +3851,9 @@ $mesg = $ldap->search(
   filter => $f,
   attrs  => $att_wanted,
   callback => \&print_entry,
-) or $error = 1; 
-
-
-if ( $error == 1 )
-{
-   $list->insert("end", "Search error:  $@\n");
-   return;
-}
+); 
    
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48 ) 
 {
    $errstr = $mesg->code;
    $list->insert("end", "Error code:  $errstr\n");
@@ -4020,19 +4064,12 @@ if ( $error == 1 )
 $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                      dn => "$Global{'binddn'}", 
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
+                   );
 
 #
 # Check for an error on bind
 #
    
-if ( $error == 1 )
-{
-   my $error = "getBases LDAP bind error.";
-   ERROR(\$error);
-   return @base;
-}
-
 if ( $mesg->code ) 
 {
   $errstr = $mesg->code;
@@ -4072,19 +4109,7 @@ $mesg = $ldap->search(
   filter => $f,
   attrs  => [ "cn" ],
   scope  => "one",
-) or $error = 1;
-
-#
-# search for deadly ldap->search call error,
-# not the same as an ldap error.
-#
-if ( $error == 1 )
-{
-   my $error = "getBases LDAP search error.";
-   ERROR(\$error);
-   return @new_base;
-}
-
+);
 
 #
 # Check for an error on search
@@ -4478,20 +4503,31 @@ as they are typed into the text box.
 At the bottom of the window is the Accept button, pressing
 this button will set the bind DN and the password.
 
-The I<SELECT BASE> button will activate a 
-drop down menu.  From the menu the user will select the 
-"RadioButton" that corresponds to the search base  the
-user wishes to use in the directory search.  When selected 
-the "RadioButton" diamond will turn red in color.  The 
-DIRECTORY SEARCH BASE text box will display the directory 
-search base that is selected.  This menu is a designed to 
-be a "I<tear off>" menu, selecting the "---------------" line 
-will cause the pull down menu to become a separate window 
-that is still somewhat controlled by the GUI.  If the GUI
-is icon-ed or exited, the tear off window will follow the
-actions of the GUI.  All other actions like moving or 
-closing just the torn off window must be done by the 
-user's window manager.
+The I<SELECT BASE> button will activate a cascading 
+drop down menu that contains the NamingContexts of the directory
+server.  This menu is a designed to be a "I<tear off>" menu, 
+selecting the "---------------" line will cause the pull down 
+menu to become a separate window that is still somewhat 
+controlled by the GUI.  If the GUI is icon-ed or exited, the 
+tear off window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window must be 
+done by the user's window manager.
+
+From the window that contains the NamingContexts the user
+can select a namingContext to display the bases assiocated with
+that naminContext.  In a non-torn off menu to select a namingContext
+simply pass the cursor over the nameingContext, a new window 
+containing the bases assiocated with that namingContext will be 
+displayed.  On a menu window that has been torn off, select the 
+namingContext by clicking on the namingContext, a new window 
+containing the bases assiocated with that namingContext will be 
+displayed.  From the bases menu the user will select the 
+"RadioButton" that corresponds to the search base the user 
+wishes to use in the directory search.  When selected the 
+"RadioButton" diamond will turn red in color.  The DIRECTORY 
+SEARCH BASE text box will display the directory search base 
+that is selected.  
+
 
 The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
