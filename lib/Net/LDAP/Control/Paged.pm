@@ -1,4 +1,4 @@
-# $Id: Paged.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $
+# $Id: Paged.pm,v 1.5 2003/05/07 11:51:34 chrisridd Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(realSearchControlValue);
 use strict;
@@ -142,14 +142,14 @@ and set a new value for the attribute if called with an argument.
 
 L<Net::LDAP>,
 L<Net::LDAP::Control>,
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2696.txt
+http://www.ietf.org/rfc/rfc2696.txt
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>
+E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
@@ -159,7 +159,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Paged.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: Paged.pm,v 1.5 2003/05/07 11:51:34 chrisridd Exp $>
 
 =cut
 
