@@ -254,6 +254,9 @@ sub bind {
 
     my $initial = $sasl_conn->client_start;
 
+    return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$@") unless
+      defined($initial);
+
     $passwd = {
       mechanism   => $sasl_conn->mechanism,
       credentials => $initial
