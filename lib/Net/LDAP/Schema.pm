@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.99";
+$VERSION = "0.9901";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -174,11 +174,12 @@ sub _must_or_may {
 
 sub _get {
   my $self = shift;
-  my $type = $self->{ pop(@_) };
+  my $type = pop(@_);
+  my $hash = $self->{$type};
   my $oid  = $self->{oid};
 
   my @elem = grep $_, map {
-    my $elem = $type->{lc $_};
+    my $elem = $hash->{lc $_};
 
     ($elem or ($elem = $oid->{$_} and $elem->{type} eq $type))
       ? $elem
