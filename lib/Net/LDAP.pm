@@ -764,9 +764,13 @@ sub root_dse {
 sub start_tls {
   my $ldap = shift;
   my $arg  = &_options;
+  my $sock = $ldap->socket;
 
   require Net::LDAP::Extension;
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
+
+  return _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, "TLS already started")
+    if $sock->isa('IO::Socket::SSL');
 
   return _error($ldap, $mesg, LDAP_PARAM_ERROR, "StartTLS requires LDAPv3")
     if $ldap->version < 3;
@@ -780,35 +784,28 @@ sub start_tls {
   $ldap->_sendmesg($mesg);
   $mesg->sync();
 
-  return _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@)
+  return $mesg
     if $mesg->code;
 
   require Net::LDAPS;
   IO::Socket::SSL::context_init( { Net::LDAPS::SSL_context_init_args($arg) } );
-  my $sock = $ldap->socket;
   (IO::Socket::SSL::socketToSSL($sock) and tie *{$sock}, 'IO::Socket::SSL', $sock)
     ? $mesg
     : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
 }
 
 sub cipher {
-    my $ldap = shift;
-    if ($ldap->socket->isa('IO::Socket::SSL')) {
-	return $ldap->socket->get_cipher;
-    } else {
-	require Carp;
-	Carp::croak("Requires an SSL or TLS connection");
-    }
+  my $ldap = shift;
+  $ldap->socket->isa('IO::Socket::SSL')
+    ? $ldap->socket->get_cipher
+    : undef;
 }
 
 sub certificate {
-    my $ldap = shift;
-    if ($ldap->socket->isa('IO::Socket::SSL')) {
-	return $ldap->socket->get_peer_certificate;
-    } else {
-	require Carp;
-	Carp::croak("Requires an SSL or TLS connection");
-    }
+  my $ldap = shift;
+  $ldap->socket->isa('IO::Socket::SSL')
+    ? $ldap->socket->get_peer_certificate
+    : undef;
 }
 
 # what version are we talking?

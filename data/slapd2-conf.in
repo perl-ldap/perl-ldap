@@ -17,3 +17,7 @@ suffix		"$BASEDN"
 directory	$TESTDB
 rootdn		"$MANAGERDN"
 rootpw		$PASSWD
+
+TLSCertificateFile ./data/cert.pem
+TLSCertificateKeyFile ./data/key.pem
+

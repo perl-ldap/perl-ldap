@@ -58,13 +58,6 @@ sub SSL_context_init_args {
   );
 }
 
-# Override this Net::LDAP method because using it doesn't make any sense
-# with LDAPS.
-sub start_tls {
-    require Carp;
-    Carp::croak("StartTLS doesn't make sense with LDAPS");
-}
-
 1;
 
 __END__

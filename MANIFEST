@@ -30,9 +30,11 @@ data/51d-cmp.ldif
 data/52-cmp.ldif
 data/52-in.ldif
 data/52-mod.ldif
+data/cert.pem
 data/core.schema
 data/cosine.schema
 data/inetorgperson.schema
+data/key.pem
 data/schema.in
 data/slapd-conf.in
 data/slapd.at.conf
@@ -115,6 +117,8 @@ t/50populate.t
 t/51search.t
 t/52modify.t
 t/53schema.t
+t/54dse.t
+t/55ssl.t
 t/70sortctrl.t
 t/common.pl
 test.cfg

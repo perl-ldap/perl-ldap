@@ -22,7 +22,8 @@ BEGIN {
   $BABSDN   = "cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US";
   $PORT     = 9009;
 
-  $SERVER_TYPE ||= 'none';
+  my @server_opts;
+  ($SERVER_TYPE,@server_opts) = split(/\+/, $SERVER_TYPE || 'none');
 
   if ($SERVER_TYPE eq 'openldap1') {
     $CONF_IN	  = "./data/slapd-conf.in";
@@ -30,8 +31,11 @@ BEGIN {
     $LDAP_VERSION = 2;
   }
   elsif ($SERVER_TYPE eq 'openldap2') {
+    $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts;
     $CONF_IN	  = "./data/slapd2-conf.in";
-    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-h',"ldap://${HOST}:$PORT/",qw(-d 1));
+    my $url = "ldap://${HOST}:$PORT/";
+    $url .= " ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;
+    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-h',$url,qw(-d 1));
     $LDAP_VERSION = 3;
   }
 
@@ -48,9 +52,12 @@ use File::Basename qw(basename);
 my $pid;
 
 sub start_server {
-  my $version_needed = shift || 2;
+  my %arg = (version => 2, @_);
 
-  unless ($LDAP_VERSION >= $version_needed and $LDAPD[0] and -x $LDAPD[0]) {
+  unless ($LDAP_VERSION >= $arg{version}
+	and $LDAPD[0] and -x $LDAPD[0]
+	and (!$arg{ssl} or $SSL_PORT))
+  {
     print "1..0\n";
     exit;
   }
@@ -61,6 +68,7 @@ sub start_server {
     open(CONFO,">$CONF") or die "$!";
     while(<CONFI>) {
       s/\$(\w+)/${$1}/g;
+      s/^TLS/#TLS/ unless $SSL_PORT;
       print CONFO;
     }
     close(CONFI);
@@ -99,12 +107,22 @@ END {
 }
 
 sub client {
+  my %arg = @_;
   my $ldap;
   my $count;
   local $^W = 0;
-  until($ldap = Net::LDAP->new($HOST, port => $PORT)) {
-    die "ldap://$HOST:$PORT/ $@" if ++$count > 10;
-    sleep 1;
+  if ($arg{ssl}) {
+    require Net::LDAPS;
+    until($ldap = Net::LDAPS->new($HOST, port => $SSL_PORT, version => 3)) {
+      die "ldaps://$HOST:$SSL_PORT/ $@" if ++$count > 10;
+      sleep 1;
+    }
+  }
+  else {
+    until($ldap = Net::LDAP->new($HOST, port => $PORT)) {
+      die "ldap://$HOST:$PORT/ $@" if ++$count > 10;
+      sleep 1;
+    }
   }
   $ldap;
 }
