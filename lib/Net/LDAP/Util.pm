@@ -226,7 +226,7 @@ sub ldap_error_desc {
 
 =item canonical_dn ( DN )
 
-Returns the given DN in a cononical form. Returns undef if DN is
+Returns the given DN in a canonical form. Returns undef if DN is
 not a valid Distinguished Name
 
 It performs the following operations on the given DN
@@ -239,20 +239,18 @@ Lowercases values that are # followed by hex.
 
 =item *
 
-Removes the leading OID. caracters if the type is an
-OID instead of a name.
-
-=item *
-
 Uppercases type names.
 
 =item *
 
-Backslashifies RFC 2253-magic characters.
+Removes the leading OID. characters if the type is an OID instead
+of a name.
 
 =item *
 
-Backslash and hex encodes 0x00-0x1f and 0x7f-0xff characters.
+Escapes all RFC 2253 special characters, and any other character
+where the ASCII code is <32 or >= 127, with a backslash and a two
+digit hex code.
 
 =item *
 
@@ -260,13 +258,13 @@ Converts all leading and trailing spaces in values to be \20.
 
 =item *
 
-If an RDN contains multiple parts, the parts are re-ordered so that the
-attribute names are in alphabetical order.
+If an RDN contains multiple parts, the parts are re-ordered so that
+the attribute names are in alphabetical order.
 
 =back
 
 B<Note> values that are hex encoded (ie start with a #) are not
-decoded. So  SN=Barr is not treated the same as SN=#42617272
+decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
 
 =cut
 
@@ -336,7 +334,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.8 2001/03/08 13:18:52 gbarr Exp $>
+I<$Id: Util.pm,v 1.9 2001/03/08 13:31:45 gbarr Exp $>
 
 =cut
 

@@ -13,43 +13,123 @@ The LDAP protocol is defined in the following RFC's
 
 =over 4
 
-=item RFC-2251 - Lightweight Directory Access Protocol (v3).
+=item RFC-2247 - Using Domains in LDAP/X.500 Distinguished Names
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2251.txt
+ http://www.ietf.org/rfc/rfc2247.txt
 
-=item RFC-2251 - Lightweight Directory Access Protocol (v3).
+=item RFC-2251 - Lightweight Directory Access Protocol (v3)
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2251.txt
+ http://www.ietf.org/rfc/rfc2251.txt
 
-=item RFC-2252 - Attribute Syntax Definitions.
+=item RFC-2252 - Lightweight Directory Access Protocol (v3): Attribute Syntax Definitions
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2252.txt
+ http://www.ietf.org/rfc/rfc2252.txt
 
-=item RFC-2253 - UTF-8 String Representation of Distinguished Names.
+=item RFC-2253 - Lightweight Directory Access Protocol (v3): UTF-8 String Representation of Distinguished Names
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2253.txt
+ http://www.ietf.org/rfc/rfc2253.txt
 
-=item RFC-2254 - The String Representation of LDAP Search Filters.
+=item RFC-2254 - The String Representation of LDAP Search Filters
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2254.txt
+ http://www.ietf.org/rfc/rfc2254.txt
 
-=item RFC-2255 - The LDAP URL Format.
+=item RFC-2255 - The LDAP URL Format
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2255.txt
+ http://www.ietf.org/rfc/rfc2255.txt
 
-=item RFC-2256 - A Summary of the X.500(96) User Schema for use with LDAPv3.
+=item RFC-2256 - A Summary of the X.500(96) User Schema for use with LDAPv3
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2256.txt
+ http://www.ietf.org/rfc/rfc2256.txt
+
+=item RFC-2307 - An Approach for Using LDAP as a Network Information Service
+
+ http://www.ietf.org/rfc/rfc2307.txt
+
+=item RFC-2559 - Internet X.509 Public Key Infrastructure Operational Protocols - LDAPv2
+
+ http://www.ietf.org/rfc/rfc2559.txt
+
+=item RFC-2587 - Internet X.509 Public Key Infrastructure LDAPv2 Schema
+
+ http://www.ietf.org/rfc/rfc2587.txt
+
+=item RFC-2589 - Lightweight Directory Access Protocol (v3): Extensions for Dynamic Directory Services
+
+ http://www.ietf.org/rfc/rfc2589.txt
+
+=item RFC-2596 - Use of Language Codes in LDAP
+
+ http://www.ietf.org/rfc/rfc2596.txt
+
+=item RFC-2649 - An LDAP Control and Schema for Holding Operation Signatures
+
+ http://www.ietf.org/rfc/rfc2649.txt
+
+=item RFC-2657 - LDAPv2 Client vs. the Index Mesh
+
+ http://www.ietf.org/rfc/rfc2657.txt
 
 =item RFC-2696 - LDAP Control Extension for Simple Paged Results Manipulation
 
-http://info.internet.isi.edu/in-notes/rfc/files/rfc2696.txt
+ http://www.ietf.org/rfc/rfc2696.txt
+
+=item RFC-2713 - Schema for Representing Java(tm) Objects in an LDAP Directory
+
+ http://www.ietf.org/rfc/rfc2713.txt
+
+=item RFC-2714 - Schema for Representing CORBA Object References in an LDAP Directory
+
+ http://www.ietf.org/rfc/rfc2714.txt
+
+=item RFC-2739 - Calendar Attributes for vCard and LDAP
+
+ http://www.ietf.org/rfc/rfc2739.txt
+
+=item RFC-2798 - Definition of the inetOrgPerson LDAP Object Class
+
+ http://www.ietf.org/rfc/rfc2798.txt
+
+=item RFC-2820 - Access Control Requirements for LDAP
+
+ http://www.ietf.org/rfc/rfc2820.txt
+
+=item RFC-2829 - Authentication Methods for LDAP
+
+ http://www.ietf.org/rfc/rfc2829.txt
+
+=item RFC-2830 - Lightweight Directory Access Protocol (v3): Extension for Transport Layer Security
+
+ http://www.ietf.org/rfc/rfc2830.txt
+
+=item RFC-2849 - The LDAP Data Interchange Format (LDIF) - Technical Specification
+
+ http://www.ietf.org/rfc/rfc2849.txt
+
+=item RFC-2891 - LDAP Control Extension for Server Side Sorting of Search Results
+
+ http://www.ietf.org/rfc/rfc2891.txt
+
+=item RFC-2926 - Conversion of LDAP Schemas to and from SLP Templates
+
+ http://www.ietf.org/rfc/rfc2926.txt
+
+=item RFC-2927 - MIME Directory Profile for LDAP Schema
+
+ http://www.ietf.org/rfc/rfc2927.txt
+
+=item RFC-3045 - Storing Vendor Information in the LDAP root DSE
+
+ http://www.ietf.org/rfc/rfc3045.txt
+
+=item RFC-3062 - LDAP Password Modify Extended Operation
+
+ http://www.ietf.org/rfc/rfc3062.txt
 
 =back
 
 =for html <hr>
 
-I<$Id: RFC.pod,v 1.2 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: RFC.pod,v 1.3 2001/03/08 13:31:45 gbarr Exp $>
 
 =cut
 

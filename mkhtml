@@ -15,7 +15,7 @@ do
   echo $x...
   dir=$(dirname $x)
   file=$(basename $(basename $x .pod) .pm)
-  up=$(dirname $x | sed 's,[a-zA-Z0-9_]\+,..,g')
+  up=$(dirname $x | perl -pe 's,[^/]+,..,g')
   test -d htdocs/$dir || mkdir -p htdocs/$dir
   case $file
   in 
