@@ -583,7 +583,7 @@ sub extension {
     if $ldap->{net_ldap_version} < 3;
 
   $mesg->encode(
-    extendedRequest => {
+    extendedReq => {
       requestName  => $arg->{name},
       requestValue => $arg->{value}
     },
