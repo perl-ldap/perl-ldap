@@ -7,7 +7,7 @@ package Net::LDAP::Filter;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -100,7 +100,7 @@ sub _encode {
   if ($op eq ':=') {
 
     # attr must be in the form type:dn:1.2.3.4
-    unless ($attr =~ /^([-;\d\w]*)(:dn)?(:([.\d]+))?/) {
+    unless ($attr =~ /^([-;\d\w]*)(:dn)?(:(\w+|[.\d]+))?$/) {
       $ErrStr = "Bad attribute $attr";
       return undef;
     }
