@@ -813,7 +813,7 @@ callback routine.
 Creates a new Net::LDAP::DSML object.  There are 2 options
 to this method.
 
-OUTPUT is a referrence to either a file handle that has already
+OUTPUT is a reference to either a file handle that has already
 been opened or to an array.
 
 PRETTY_PRINT is an option to print a new line at the end of
