@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.21";
+$VERSION = "0.21_01";
 
 sub new {
   my $self = shift;
@@ -262,10 +262,12 @@ sub update {
 
 sub dump {
   my $self = shift;
+  no strict 'refs'; # select may return a GLOB name
+  my $fh = @_ ? shift : select;
 
   my $asn = $self->{asn};
-  print "-" x 72,"\n";
-  print "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
+  print $fh "-" x 72,"\n";
+  print $fh "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
 
   my($attr,$val);
   my $l = 0;
@@ -278,14 +280,14 @@ sub dump {
 
   foreach $attr (@{$asn->{attributes}}) {
     $val = $attr->{vals};
-    printf "%${l}s: ", $attr->{type};
+    printf $fh "%${l}s: ", $attr->{type};
     my($i,$v);
     $i = 0;
     foreach $v (@$val) {
-      print $spc if $i++;
-      print $v;
+      print $fh $spc if $i++;
+      print $fh $v;
     }
-    print "\n";
+    print $fh "\n";
   }
 }
 

@@ -185,6 +185,18 @@ Set the DN for the entry, and return the previous value.
 B<NOTE>: these changes are local to the client and will not appear on
 the directory server until the C<update> method is called.
 
+=item dump ( [ FILEHANDLE ] )
+
+Dump the entry to the given filehandle. 
+
+This method is intended for debugging purposes and does not
+treat binary attributes specially.
+
+See L<Net::LDAP::LDIF> on how to generate LDIF output.
+
+If C<FILEHANDLE> is omitted C<STDOUT> is used by default.
+
+
 =item exists ( ATTR )
 
 Returns C<TRUE> if the entry has an attribute called C<ATTR>.
