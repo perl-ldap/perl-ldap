@@ -1192,6 +1192,9 @@ By Clayton Donley.  ISBN:  1884777910
 LDAP Programming with Java. 
 By Rob Weltman, Tony Dahbura.  ISBN:  0201657589
 
+Managing Enterprise Active Directory Services. 
+By Robbie Allen, Richard Puckett.  ISBN:  0672321254
+
 Solaris and LDAP Naming Services.
 By Tom Bialaski, Michael Haines. ISBN:  0-13-030678-9
 
