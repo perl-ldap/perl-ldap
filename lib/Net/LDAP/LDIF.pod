@@ -87,10 +87,16 @@ C<Net::LDAP::LDIF> will warn with an appropriate message.
 C<Net::LDAP::LDIF> will warn with an appropriate message if C<-w> is
 in effect.  The method that was called will return C<undef>.
 
+=back
+
 =item change =E<gt> 1
 
 Write entry changes to the LDIF file instead of the entries itself.
 I.e. write LDAP operations acting on the entries to the file instead of the entries contents.
+
+=item lowercase =E<gt> 1
+
+Convert attribute names to lowercase when writing.
 
 =item version =E<gt> '1'
 
@@ -100,13 +106,13 @@ According to RFC 2849 currently the only legal value for this option is I<1>.
 
 The default is I<undef> meaning no version information is written to the LDIF file.
 
-=back
+=item wrap =E<gt> 78
+
+Number of columns where output line wrapping shall occur.
+
+Default is 78. Setting it to 40 or lower inhibits wrapping.
 
 =back
-
-=item change =E<gt> 1
-
-Write out LDIF change records instead of plain entries.
 
 =back
 

@@ -3,9 +3,12 @@
 #
 # c.ridd@isode.com
 #
-# $Id: ldapsearch,v 1.1 2003/06/09 12:29:42 gbarr Exp $
+# $Id: ldapsearch,v 1.2 2004/01/20 07:07:38 chrisridd Exp $
 #
 # $Log: ldapsearch,v $
+# Revision 1.2  2004/01/20 07:07:38  chrisridd
+# Fixes from Peter Marschall
+#
 # Revision 1.1  2003/06/09 12:29:42  gbarr
 # Depend in MakeMaker to fixup the #! line of installed scripts
 #
@@ -137,7 +140,7 @@ $initial->extensions(%exts);
 
 my @urls = ($initial->as_string);
 
-my $ldif = Net::LDAP::LDIF->new if $opt_L;
+my $ldif = Net::LDAP::LDIF->new('-', 'w')  if $opt_L;
 my $first_record = 1;
 
 while (@urls) {
@@ -186,7 +189,6 @@ while (@urls) {
     $searchargs{base} = $url->dn if $url->dn;
     $searchargs{scope} = $opt_s if $opt_s;
     $searchargs{scope} = $url->_scope if defined $url->_scope;
-    $searchargs{scope} = $scopes{$searchargs{scope}} if $searchargs{scope};
     $searchargs{deref} = $derefs{$opt_a} if $opt_a;
     $searchargs{sizelimit} = $opt_z if $opt_z;
     $searchargs{timelimit} = $opt_l if $opt_l;
