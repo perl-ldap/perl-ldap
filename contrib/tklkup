@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.24 2002/01/03 02:53:53 charden Exp $
+# $Id: tklkup,v 1.25 2002/05/25 05:05:55 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.25  2002/05/25 05:05:55  charden
+# Change schema code to comprehend the new Schema.pm file.
+# Added code to determine new x and y position when the main window moves.
+#
 # Revision 1.24  2002/01/03 02:53:53  charden
+#
 # Corrected schema parse and display code to comprehend that a multi-valued
 # oid number could be returned from name2oid method. Now use the
 # is_attribute, is_objectclass, ...,  methods to determine oid number.
@@ -208,6 +213,9 @@ $Global{'jpeg'}   = 1;
 eval { use Tk::JPEG; }; 
 $Global{'jpeg'}   = 0 if ( $@ );
 
+#
+# Window roots
+#
 $Global{'mainWindow'}   = undef();
 $Global{'schemaWindow'} = undef();
 $Global{'histWindow'}   = undef();
@@ -1054,6 +1062,8 @@ sub BIND {
  
 $dn_data = "";
 $pw_data = "";
+&globalPos();
+
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
  
@@ -1194,6 +1204,7 @@ $errlist = undef();
 sub PORT {
  
 $port_data = $Global{'port'};
+&globalPos();
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
  
@@ -1262,46 +1273,76 @@ sub print_loop()
 my $list = shift;
 my $ocs = shift;
 my $Title = shift;
-my $method = shift;
+#my $method = shift;
 
-foreach ( @$ocs)
+my $asize;
+my $ahash;
+my $var;
+
+foreach $ahash ( @$ocs)
 {
    $list->insert("end", "$Title\n");
 
    #
-   # Get and display the oid number of the objectclass.
+   # Get and display the data for this object
    #
-   my $oid = $schemaHash{'schema'}->$method( "$_" );
-#   my $oid = $schemaHash{'schema'}->name2oid( "$_" );
-   
+
+   my @hkeys = keys(%$ahash);
+ 
+   foreach $var (@hkeys)
+   {
+   # Step thru the hash keys
+  
+   next if ( $var =~ /type/);  # do not care about type
+
+   $alArray =  $$ahash{$var};
+ 
+   if ( ref($alArray) eq 'ARRAY' )
+   {
+   # it is a n array pointer so there is probably a list.
+ 
+   my $asize = @$alArray;  # get the size of the list.
+   #
+   # if the array has size then print the array
+   # else ignore the array.
+   #
+   if ( $asize  )
+   {
+   # Okay, there is something in the array. 
+
+   $list->insert("end", "\t$var: ");
+
+   foreach $a ( @$alArray )
+   {
+   $list->insert("end", "$a ");
+   }
+   $list->insert("end", "\n");
+   }
+   }
+   else
+   {
+   # There is not an array
+   if ( $alArray ==  1)
+   { 
+   # it is just information attribute for the object
+   $list->insert("end", "\t$var\n");
+   }
+   else
+   {
+   $list->insert("end", "\t$var:  $alArray\n");
+   }
+   }
+ 
+}                                                                               
+
+
    #
    # Get the various other items associated with
    # this attribute.
    #
-   my @items = $schemaHash{'schema'}->items( "$oid" );
-   foreach my $value ( @items )
-   {
-      next if ( $value eq 'type');
+#      next if ( $value eq 'type');
 
-      @item = $schemaHash{'schema'}->item( $oid, $value );
-      $value =~ tr/a-z/A-Z/;
-      if ( @item && $item[0] eq '1' )
-      {
-         $list->insert("end", "\t$value\n");
-         next;
-      }
-      if ( defined(@item) )
-      {
-         if ( $value eq 'MAY' || $value eq 'MUST' )
-         {
-         $list->insert("end", "\t$value contain:  @item\n");
-         }
-         else
-         {
-         $list->insert("end", "\t$value:  @item\n");
-         }
-      }                                                                    
-   }
+#      $value =~ tr/a-z/A-Z/;
 
 }
 
@@ -1327,6 +1368,7 @@ my $aframe;
 my $tframe;
 my $sbframe;
 #my $sslist;
+&globalPos();
 my $x = $Global{'horz'} + 100;
 my $y = $Global{'vert'} + 100;
 #
@@ -1654,7 +1696,7 @@ $ra_atts = [];
 #
 # Get the attributes
 #
-@$ra_atts = $schemaHash{'schema'}->attributes(); 
+@$ra_atts = $schemaHash{'schema'}->all_attributes(); 
 $schemaHash{'atts'} = $ra_atts; 
 
 
@@ -1664,7 +1706,7 @@ $schemaHash{'atts'} = $ra_atts;
  
 if ( $selectAll || $selectAtt  )
 {
-&print_loop($schema_list, $schemaHash{'atts'}, "attributeType", "is_attribute") 
+&print_loop($schema_list, $schemaHash{'atts'}, "attributeType") 
   if ( defined($schemaHash{'atts'}) );
 }
 
@@ -1672,14 +1714,18 @@ $ra_atts = [];
 #
 # Get the schema objectclasses
 #
-@$ra_atts = $schemaHash{'schema'}->objectclasses(); 
+@$ra_atts = $schemaHash{'schema'}->all_objectclasses(); 
 $schemaHash{'ocs'} = $ra_atts;
 
 #
 # Calculate the text length of each objectclass string.
 #
-foreach (@$ra_atts) { $Global{'max'} = length($_) 
-        if length($_) > $Global{'max'} }
+foreach my $var (@$ra_atts) 
+{ 
+$Global{'max'} = length($$var{'name'}) 
+        if length($$var{'name'}) > $Global{'max'} 
+
+}
 
 #
 # Add 6 to the max objectclass string size,
@@ -1694,7 +1740,7 @@ $Global{'max'} += 6;
  
 if ( $selectAll || $selectObj )
 {
-&print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses", "is_objectclass") 
+&print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses") 
     if ( defined($schemaHash{'ocs'}) );
 }
 
@@ -1703,7 +1749,7 @@ if ( $selectAll || $selectObj )
 # Get the schema matchingrules
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->matchingrules(); 
+@$ra_atts = $schemaHash{'schema'}->all_matchingrules(); 
 $schemaHash{'mrs'} = $ra_atts;
 
 #
@@ -1712,7 +1758,7 @@ $schemaHash{'mrs'} = $ra_atts;
  
 if ( $selectAll || $selectMatch )
 {
-&print_loop($schema_list, $schemaHash{'mrs'}, "matchingRules", "is_matchingrule" ) 
+&print_loop($schema_list, $schemaHash{'mrs'}, "matchingRules" ) 
     if ( defined($schemaHash{'mrs'}) );
 }
 
@@ -1720,7 +1766,7 @@ if ( $selectAll || $selectMatch )
 # Get the schema matchingruleuse
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->matchingruleuse(); 
+@$ra_atts = $schemaHash{'schema'}->all_matchingruleuses(); 
 $schemaHash{'mru'} = $ra_atts;
 
 #
@@ -1729,7 +1775,7 @@ $schemaHash{'mru'} = $ra_atts;
  
 if ( $selectAll || $selectMru )
 {
-&print_loop($schema_list, $schemaHash{'mru'}, "matchingRuleUse", "is_matchinruleuse" ) 
+&print_loop($schema_list, $schemaHash{'mru'}, "matchingRuleUse" ) 
     if ( defined($schemaHash{'mru'}) );
 }
 
@@ -1737,7 +1783,7 @@ if ( $selectAll || $selectMru )
 # Get the schema ldapsyntaxes
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->syntaxes(); 
+@$ra_atts = $schemaHash{'schema'}->all_syntaxes(); 
 $schemaHash{'lsyn'} = $ra_atts;
 
 #
@@ -1746,7 +1792,7 @@ $schemaHash{'lsyn'} = $ra_atts;
  
 if ( $selectAll || $selectSyn )
 {
-&print_loop($schema_list, $schemaHash{'lsyn'}, "ldapSyntax", "is_syntax" ) 
+&print_loop($schema_list, $schemaHash{'lsyn'}, "ldapSyntax" ) 
     if ( defined($schemaHash{'lsyn'}) );
 }
 
@@ -1754,7 +1800,7 @@ if ( $selectAll || $selectSyn )
 # Get the schema nameForms
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->nameforms(); 
+@$ra_atts = $schemaHash{'schema'}->all_nameforms(); 
 $schemaHash{'nfm'} = $ra_atts;
 
 #
@@ -1763,7 +1809,7 @@ $schemaHash{'nfm'} = $ra_atts;
  
 if ( $selectAll || $selectNf )
 {
-&print_loop($schema_list, $schemaHash{'nfm'}, "nameForms", "is_nameform" ) 
+&print_loop($schema_list, $schemaHash{'nfm'}, "nameForms" ) 
     if ( defined($schemaHash{'nfm'}) );
 }
 
@@ -1771,7 +1817,7 @@ if ( $selectAll || $selectNf )
 # Get the schema ditstructurerules
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->ditstructurerules(); 
+@$ra_atts = $schemaHash{'schema'}->all_ditstructurerules(); 
 $schemaHash{'dits'} = $ra_atts;
 
 #
@@ -1780,7 +1826,7 @@ $schemaHash{'dits'} = $ra_atts;
  
 if ( $selectAll || $selectDsr )
 {
-&print_loop($schema_list, $schemaHash{'dits'}, "ditstructurerules", "is_ditstructurerule" ) 
+&print_loop($schema_list, $schemaHash{'dits'}, "ditstructurerules" ) 
     if ( defined($schemaHash{'dits'}) );
 }
 
@@ -1788,7 +1834,7 @@ if ( $selectAll || $selectDsr )
 # Get the schema ditcontentrules
 #
 $ra_atts = [];
-@$ra_atts = $schemaHash{'schema'}->ditcontentrules(); 
+@$ra_atts = $schemaHash{'schema'}->all_ditcontentrules(); 
 $schemaHash{'ditc'} = $ra_atts;
 
 #
@@ -1797,7 +1843,7 @@ $schemaHash{'ditc'} = $ra_atts;
  
 if ( $selectAll || $selectDcr )
 {
-&print_loop($schema_list, $schemaHash{'ditc'}, "ditcontentrules", "is_ditcontentrule" ) 
+&print_loop($schema_list, $schemaHash{'ditc'}, "ditcontentrules" ) 
     if ( defined($schemaHash{'ditc'}) );
 }
 
@@ -1846,6 +1892,7 @@ sub init_schemaHash
 
 sub Hierarchial 
 {
+&globalPos();
 my $x = $Global{'horz'};
 my $y = $Global{'vert'}  + 200 ;
 my $ocs = $schemaHash{'ocs'};
@@ -1877,23 +1924,30 @@ if ( !defined($ocs) || !defined($tree) ||
 #
 # Get the schema objectClasses
 #
-foreach ( @$ocs)
+foreach my $aobj ( @$ocs)
 {
    #
    # Get the oid number of the objectclass.
    #
    my $oid;
    undef($oid);
-
-   $oid = $schema->name2oid( "$_" ); 
+#   print "$aobj\n";
+   $oid = $$aobj{'oid'}; 
    next if ( !defined($oid) );
- 
-   @sup = $schema->item( $oid, 'sup' ); # objectclass superior
-   @name = $schema->item( $oid, 'name' ); # objectclass name
+#   print "oid; $oid\n";
+#   print "sup ",$$aobj{'sup'},"\n"; 
+#   print "name ",$$aobj{'name'},"\n"; 
+    @sup = $$aobj{'sup'}[0];
+    @name = $$aobj{'name'};
+#    print "sup : @sup\n";
+#   @sup = $schema->item( $oid, 'sup' ); # objectclass superior
+#   @name = $schema->item( $oid, 'name' ); # objectclass name
 
    $$obj{"$name[0]"} = [ "$oid", "$sup[0]" ]; # store data
 
 }
+
+#return;
 
 #
 # get objectclass hash keys.
@@ -2029,36 +2083,66 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
 
             foreach my $var (@objectclasses)
             {
-            $oid = $$obj{$var}->[0];
-
+               $oid = $$obj{$var}->[0];
                #
                # Get the various other items associated with
-               # this attribute.
+               # this objectclass.
                #
-               my @items = $schema->items( "$oid" );
-               foreach my $value ( @items )
-               {
-                  next if ( $value eq 'type');
+               my $ahash = $schema->objectclass( "$var" );
 
-                  @item = $schema->item( $oid, $value );
-                  $value =~ tr/a-z/A-Z/;
-                  if ( @item && $item[0] eq '1' )
+               my @hkeys = sort(keys(%$ahash));
+               #
+               # Get and display the objectclass name.
+               #
+               $alArray =  $$ahash{'name'};
+               $Global{'list'}->insert("end", "name:  $alArray\n");
+
+               foreach $varr (@hkeys)
+               {
+                # Step thru the hash keys
+  
+                next if ( $varr =~ /name/);  # already done name.
+                next if ( $varr =~ /type/);  # do not care about type
+
+                $alArray =  $$ahash{$varr};
+ 
+                if ( ref($alArray) eq 'ARRAY' )
+                {
+                 # it is a n array pointer so there is probably a list.
+ 
+                 my $asize = @$alArray;  # get the size of the list.
+                 #
+                 # if the array has size then print the array
+                 # else ignore the array.
+                 #
+                 if ( $asize  )
+                 {
+                 # Okay, there is something in the array. 
+ 
+                  $Global{'list'}->insert("end", "\t$varr: ");
+ 
+                  foreach $a ( @$alArray )
                   {
-                     $Global{'list'}->insert("end", "$value\n");
-                     next;
+                   $Global{'list'}->insert("end", "$a ");
                   }
-                  if ( defined(@item) )
-                  {
-                     if ( $value eq 'MAY' || $value eq 'MUST' )
-                     {
-                     $Global{'list'}->insert("end", "$value contain:  @item\n");
-                     }
-                     else
-                     {
-                     $Global{'list'}->insert("end", "$value:  @item\n");
-                     }
-                  }
-               }
+                  $Global{'list'}->insert("end", "\n");
+                 }
+                }
+                else
+                {
+                 # It is not an array
+                 if ( $alArray ==  1)
+                 { 
+                  # it is just and information attribute for the object
+                  $Global{'list'}->insert("end", "\t$varr\n");
+                 }
+                 else
+                 {
+                  $Global{'list'}->insert("end", "\t$varr:  $alArray\n");
+                 }
+                }
+ 
+               } 
 
             $Global{'list'}->insert("end", " \n");
             $Global{'list'}->insert("end", "--------------------------------------------------\n");
@@ -2140,6 +2224,7 @@ $Global{'histWindow'}->destroy if Tk::Exists($Global{'histWindow'});
 #
  
 sub questionAction {
+&globalPos();
 my $x = $Global{'horz'} + 0;
 my $y = $Global{'vert'} + 50;
  
@@ -2179,7 +2264,7 @@ delete($Global{'answerWindow'});
 &ldapActionDelete;
  
 } # End of accept subroutine
-} # End of BIND subroutine
+} # End of questionAction subroutine
 
  
 #
@@ -2189,7 +2274,8 @@ delete($Global{'answerWindow'});
 sub ldapAction {
 
 $Global{'ldapActionDN'} = shift;
- 
+
+&globalPos(); 
 my $x = $Global{'horz'} + 0;
 my $y = $Global{'vert'} + 30;
  
@@ -2514,6 +2600,7 @@ my ( $ab, $lb, $Value, $attr  ) = @_;
 #
 if (!Exists($Global{'changeWindow'}) )
 {
+&globalPos();
 my $x = $Global{'horz'} + 75;
 my $y = $Global{'vert'} + 75;
 my $acframe;
@@ -2896,6 +2983,8 @@ if ( $mesg->code )
    ERROR($errstr);
 }
 
+$ldap->unbind;
+
 }
 
 #
@@ -2974,6 +3063,7 @@ $Global{'newsuperior'} = "";
 $Global{'newrdn'} = "";
 $Global{'RenameDN'} = "";
 $Global{'deleteoldrdn'} = 1;
+&globalPos();
 my $x = $Global{'horz'} + 0;
 my $y = $Global{'vert'} + 50;
 my @rdnData;
@@ -3109,6 +3199,7 @@ my $cframe;
 my $lframe;
 my $rbclear;
 #my $list;
+&globalPos();
 my $x = $Global{'horz'} + 100;
 my $y = $Global{'vert'} + 100;
 #
@@ -3217,6 +3308,7 @@ sub displayEdit()
 my $ecframe;
 my $elframe;
 my $erbclear;
+&globalPos();
 my $x = $Global{'horz'} + 75;
 my $y = $Global{'vert'} + 75;
 #
@@ -3455,6 +3547,7 @@ $Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
 
 sub displayDnList
 {
+&globalPos();
 my $x = $Global{'horz'};
 my $y = $Global{'vert'}  + 230 ;
 
@@ -4016,6 +4109,7 @@ return @new_base;
 sub rootDse
 {
 my $base;
+&globalPos();
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
 my $error;
@@ -4113,6 +4207,19 @@ foreach $attr (@Attributes)
 }
 
 $ldap->unbind;
+
+}
+
+#
+# Determine new mainWindow position.
+#
+sub globalPos 
+{
+
+my @pos;
+@pos = split(/\+/,$Global{'mainWindow'}->geometry());
+$Global{'horz'} = $pos[1];
+$Global{'vert'} = $pos[2];
 
 }
 
