@@ -43,6 +43,7 @@
       <module>Net::LDAP::FAQ</module>
       <module>Net::LDAP::Examples</module>
       <module>Net::LDAP::RFC</module>
+      <module>Net::LDAP::Security</module>
     </group>
   </section>
   <section>

@@ -65,6 +65,7 @@ htdocs/Net/LDAP/RFC.html
 htdocs/Net/LDAP/Reference.html
 htdocs/Net/LDAP/Schema.html
 htdocs/Net/LDAP/Search.html
+htdocs/Net/LDAP/Security.html
 htdocs/Net/LDAP/Util.html
 htdocs/Net/LDAPS.html
 htdocs/index.html
