@@ -1,13 +1,8 @@
 #!/bin/sh
 
-(
-  for x in $(find . -type d)
-  do
-    if [ -f $x/CVS/Entries ]; then
-      grep ^/ $x/CVS/Entries | cut -d/ -f2 | sed s,^,$x/, | sed s,^\./,,
-    fi
-  done
-  find lib -name \*.pm
-  find lib -name \*.pod
-) | sort -u > MANIFEST.new
+find . -name Entries \
+| egrep /CVS/Entries$ \
+| xargs perl -aF/ -lne 'print substr($ARGV,2,-11),$F[1] if m,^/, and $F[2] !~ /^-/ and $F[1] !~ /^\./;' -- \
+| sort -u > MANIFEST.new
+
 diff -u MANIFEST MANIFEST.new && rm MANIFEST.new
