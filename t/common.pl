@@ -52,6 +52,7 @@ BEGIN {
 
 use Net::LDAP;
 use Net::LDAP::LDIF;
+use Net::LDAP::Util qw(canonical_dn);
 use File::Path qw(rmtree);
 use File::Basename qw(basename);
 
@@ -143,7 +144,7 @@ sub client {
     }
   }
   else {
-    until($ldap = Net::LDAP->new($HOST, port => $PORT)) {
+    until($ldap = Net::LDAP->new($HOST, port => $PORT, version => $LDAP_VERSION)) {
       die "ldap://$HOST:$PORT/ $@" if ++$count > 10;
       sleep 1;
     }
@@ -165,9 +166,14 @@ sub compare_ldif {
     return;
   }
 
+  my @canon_opt = (casefold => 'lower', separator => ', ');
   foreach $entry (@_) {
+    $entry->dn(canonical_dn($entry->dn, @canon_opt));
     foreach $attr ($entry->attributes) {
       $entry->delete($attr) if $attr =~ /^(modifiersname|modifytimestamp|creatorsname|createtimestamp)$/i;
+      if ($attr =~ /^(seealso|member|owner)$/i) {
+	$entry->replace($attr => [ map { canonical_dn($_, @canon_opt) } $entry->get_value($attr) ]);
+      }
     }
     $ldif->write($entry);
   }

@@ -1,4 +1,4 @@
-dn: cn=All Staff,ou=Groups,o=University of Michigan,c=US
+dn: cn=All Staff, ou=Groups, o=University of Michigan, c=US
 member: cn=Manager, o=University of Michigan, c=US
 member: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=Un
  iversity of Michigan, c=US
@@ -25,7 +25,7 @@ cn: All Staff
 description: Everyone in the sample data
 objectclass: groupofnames
 
-dn: cn=Alumni Assoc Staff,ou=Groups,o=University of Michigan,c=US
+dn: cn=Alumni Assoc Staff, ou=Groups, o=University of Michigan, c=US
 member: cn=Manager, o=University of Michigan, c=US
 member: cn=Dorothy Stevens, ou=Alumni Association, ou=People, o=University of 
  Michigan, c=US
