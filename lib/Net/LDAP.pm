@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.16_02";
+$VERSION = "0.17";
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
