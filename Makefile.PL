@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.8 2002/02/18 16:51:41 gbarr Exp $
+# $Id: Makefile.PL,v 1.9 2002/05/17 13:50:56 chrisridd Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -59,7 +59,7 @@ check_module('Digest::MD5') or print <<"EDQ","\n";
 The Digest::MD5 module is needed ONLY IF intend to use CRAM-MD5 SASL authentication
 EDQ
 
-check_module('IO::Socket::SSL') or print <<"EDQ","\n";
+check_module('IO::Socket::SSL',0.81) or print <<"EDQ","\n";
 The IO::Socket::SSL module is needed ONLY IF you intend to use LDAPS
 EDQ
 
