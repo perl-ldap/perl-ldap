@@ -31,7 +31,7 @@ Net::LDAP - Lightweight Directory Access Protocol
  
  $result = $ldap->add ( 'cn = Barbara Jensen, o=University of Michigan, c=us',
                attr => [ 'cn'   => ['Barbara Jensen', 'Barbs Jensen'],
-                	 'sn    => 'Jensen',
+                	 'sn'   => 'Jensen',
                 	 'mail' => 'b.jensen@umich.edu',
                 	 'objectclass' => ['top', 'person',
                                            'organizationalPerson',
@@ -40,6 +40,7 @@ Net::LDAP - Lightweight Directory Access Protocol
              );
  
  $result->code && warn "failed to add entry: ", $result->error ;
+ $ldap->unbind;  # take down session
 
 =head1 DESCRIPTION
 
@@ -908,6 +909,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.19 2003/03/09 10:57:19 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.20 2003/05/06 11:52:40 chrisridd Exp $>
 
 =cut
