@@ -24,7 +24,7 @@ The sub-class L<Net::LDAP::Search> returned by
 L<search|Net::LDAP/item_search> also defines many methods.
 
 If the L<Net::LDAP> object is in async mode then all these methods,
-except C<done>, will cause a wait until the request is completed.
+except C<done> and C<mesg_id>, will cause a wait until the request is completed.
 
 =head1 METHODS
 
