@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.10";
+$VERSION = "0.11";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into 
@@ -255,7 +255,8 @@ sub item {
 
   my $item_ref = $self->{oid}->{$oid[0]} or return _error($self, "Unknown OID");
 
-  my $value = $item_ref->{$item_name} or return _error($self, "No such property");
+  my $value = defined($item_name) ? $item_ref->{lc $item_name} : $item_ref
+    or return _error($self, "No such property");
   delete $self->{error};
 
   if( ref $value eq "ARRAY" && wantarray ) {
@@ -544,12 +545,7 @@ sub _parse_schema {
       # Force a name if we don't have one
       #
       if (!exists $schema_entry{name}) {
-        if (exists $schema_entry{desc}) {
-	  ($schema_entry{name} = $schema_entry{desc}) =~ s/\s+//g
-        }
-        else {
-	  $schema_entry{name} = "$type:$schema_entry{oid}"
-        }
+	$schema_entry{name} = $schema_entry{oid};
       }
 
       #
