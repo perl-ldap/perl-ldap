@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.35 2003/01/24 04:47:38 charden Exp $
+# $Id: tklkup,v 1.36 2003/01/24 13:11:21 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -52,12 +52,12 @@ my %NC     = ();
 
 
 $Global{'jpeg'}   = 1;
-eval { use Tk::JPEG; }; 
+eval { require Tk::JPEG; }; 
 $Global{'jpeg'}   = 0 if ( $@ );
 
 $Global{'splash'}   = 1;
-eval { use Tk::Splashscreen;
-       use Tie::Watch;
+eval { require Tk::Splashscreen;
+       require Tie::Watch;
       };
 $Global{'splash'}   = 0 if ( $@ );
 
