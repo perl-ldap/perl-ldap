@@ -38,8 +38,9 @@ require Exporter;
   ldap_error_text
   ldap_error_desc
   canonical_dn
+  ldap_explode_dn
 );
-$VERSION = "0.06";
+$VERSION = "0.07";
 
 =item ldap_error_name ( NUM )
 
@@ -275,10 +276,68 @@ decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
 
 sub canonical_dn {
   my ($dn, $rev) = @_;
+  my @dn = ldap_explode_dn($dn) or return undef;
 
-  $dn = $dn->dn if ref($dn);
+  my($comma, $plus) = $rev ? ("\000","\001") : (",", "+");
+
+  join($comma,
+    map {
+      my $h = $_;
+      my @t = sort keys %$h;
+      join($plus,
+ 	map {
+	  my $val = $h->{$_};  
+	  if ($val !~ /^#/) {
+	    $val =~ s/([\\",=+<>#;])/\\$1/g;
+	    $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
+	    $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
+	  }
+	  "$_=$val";
+	} $rev ? reverse(@t) : @t)
+    } $rev ? reverse(@dn) : @dn);
   
-  my (@dn, @rdn);
+}
+
+
+=item ldap_explode_dn ( DN )
+
+Explodes the given DN into a list of hashes. Each RDN will be
+a separate element in the list returned.
+
+Each RDN is returned as a hash.
+
+Returns the empty list if DN is
+not a valid Distinguished Name
+
+It also performs the following operations on the given DN
+
+=over 4
+
+=item *
+
+Lowercases values that are # followed by hex.
+
+=item *
+
+Uppercases type names.
+
+=item *
+
+Removes the leading OID. characters if the type is an OID instead
+of a name.
+
+=back
+
+B<Note> values that are hex encoded (ie start with a #) are not
+decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
+
+=cut
+
+
+sub ldap_explode_dn {
+  my ($dn) = @_;
+
+  my (@dn, %rdn);
   while (
 	 $dn =~ /\G(?:
 		\s*
@@ -304,25 +363,21 @@ sub canonical_dn {
     if ($val !~ /^#/) {
       $val =~ s/^"(.*)"$/$1/;
       $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2})
-	       /length($1)==1 ? $1 : chr(hex($1))
-	       /xeg;
-      $val =~ s/([\\",=+<>#;])/\\$1/g;
-      $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
-
-      $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
+               /length($1)==1 ? $1 : chr(hex($1))
+               /xeg;
     }
 
-    push @rdn, "\U$type\E=$val";
+    $rdn{uc $type} = $val;
 
     unless (defined $sep and $sep eq '+') {
-      push @dn, join($rev ? "\001" : "+", sort @rdn);
-      @rdn = ();
+      push @dn, { %rdn };
+      %rdn = ();
     }
   }
 
   (length($dn) != (pos($dn)||0))
-    ? undef
-    : join($rev ? "\000" : ",",$rev ? (reverse @dn) : @dn);
+    ? ()
+    : @dn;
 }
 
 =back
@@ -339,7 +394,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.12 2001/06/11 16:29:05 gbarr Exp $>
+I<$Id: Util.pm,v 1.13 2001/11/10 06:29:54 gbarr Exp $>
 
 =cut
 
