@@ -97,7 +97,7 @@ sub new {
   my $obj  = bless {}, $type;
 
   foreach my $h (ref($host) ? @$host : ($host)) {
-    if ($obj->_connect($host, $arg)) {
+    if ($obj->_connect($h, $arg)) {
       $obj->{net_ldap_host} = $h;
       last;
     }
