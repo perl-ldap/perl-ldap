@@ -12,7 +12,8 @@ This document serves to answer the most frequently asked questions on both the
 perl-ldap Mailing List and those sent to Graham Barr.
 
 The latest version of this FAQ can be found at 
- http://perl-ldap.sourceforge.net/FAQ.html
+
+ http://ldap.perl.org/FAQ.html
 
 =head1 GENERAL
 
@@ -33,6 +34,7 @@ which require a C compiler.
 Perl-ldap is available from CPAN. You will find it in the
 authors/id/GBARR directory. Alternatively you can download
 the latest version from 
+
  http://www.cpan.org/search?dist=perl-ldap
 
 B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
@@ -44,7 +46,7 @@ name.
 
 =head2 Is there a web page for perl-ldap ?
 
-Yes there is at http://perl-ldap.sourceforge.net/
+Yes there is at http://ldap.perl.org/
 
 =head2 Is there a mailing list ?
 
@@ -54,7 +56,7 @@ You can subscribe to this list by mailing perl-ldap-subscribe@perl.org
 
 =head2 Is the mailing list archived ?
 
-Yes, at http://archive.develooper.com/perl-ldap@perl.org/
+Yes, at http://nntp.perl.org/group/perl.ldap
 
 Archives of messages since we switched to using sourceforge can be
 found at
@@ -68,35 +70,43 @@ newlines escapes (\n) are removed (and probably other
 escapes as well).  
 
 There is also an archive of the perl-ldap mailing list at
-http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
+
+ http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
+dd
 which also has messages from before the move to sourceforge.
 The xray archive does not munge email messages.
 
 =head2 Is there any online documentation ?
 
-Yes. perl-ldap has online documentation at 
- http://perl-ldap.sourceforge.net/ 
+Yes. perl-ldap has online documentation at
+
+ http://ldap.perl.org/ 
+
 which will have the latest documentation available.
 
 =head2 Is there a public CVS repository ?
 
-Yes, it is located at sourceforge.net
+No, but there is a public SVN repository at
 
-=head2 Can I get perl-ldap from the public CVS repository?
+  http://svn.mutatus.co.uk
 
-Yes, any one can pull perl-ldap from the public CVS repository
-on sourceforge.net.
+=head2 Can I get perl-ldap from the public SVN repository?
+
+Yes, any one can pull perl-ldap from the public SVN repository
+on perl.ldap.org.
 
 There are several ways this can be done.
 
-Web;
+=over 4
 
-You can download it from SourceForge by following the release link:  
+=item Web
+
+You can download it from CPAN by following the release link:  
 
 The 2 lines in the following example should be put together as 
 one continuous line.  Example;
 
- http://download.sourceforge.net/perl-ldap/perl-ldap-0.20.tar.gz
+ http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.31.tar.gz
 
 B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
 Netscape on Windows systems sometimes has a problem storing the module
@@ -105,21 +115,20 @@ To correct the problem, with the pointer on the link, do a right click
 and then select B<save link as> to save the file with the correct file
 name.
 
-CVS;
+=item SVN
 
-You can download latest version of perl-ldap from SourceForge by 
-executing a anonymous CVS "get" command.  When the password is 
-requested press the enter key.
+You can download latest development version of perl-ldap from
+svn.mutatus.co.uk by executing a anonymous SVN "checkout" command.
 
 The 2 lines in the following example should be put together as 
 one continuous line.  Example;
 
- cvs -d:pserver:anonymous@cvs.perl-ldap.sourceforge.net:/cvsroot/perl-ldap
+ svn co http://svn.mutatus.co.uk/repos/perl-ldap/trunk
 
-Web page;
+=item Web page
 
 Most of the time there is a URL link on the perl-ldap 
-home page on sourceforge that points to the latest released
+home page on ldap.perl.org that points to the latest released
 version of perl-ldap.  Due to the fact that humans must
 update the web page to point to a new release it sometimes does
 not get updated as quickly as it should.
@@ -131,10 +140,12 @@ To correct the problem, with the pointer on the link, do a right click
 and then select B<save link as> to save the file with the correct file
 name.
 
-=head2 What is CVS.
+=back
 
-"CVS" is an acronym for the "Concurrent Versions System".
-CVS is a "Source Control" or "Revision Control" tool
+=head2 What is SVN.
+
+"SVN" is an abbreviation for "Subversion" (see http://subversion.tigris.org).
+Subversion is a "Source Control" or "Revision Control" tool
 designed to keep track of source changes made by groups of
 developers working on the same files, allowing them to
 stay in sync with each other as each individual chooses.
@@ -164,7 +175,7 @@ the Internet at http://www.ietf.org/ (the master repository) and many
 other places. There's a link to all the LDAP-related RFCs at
 Perl-LDAP's web site, http://perl-ldap.sourceforge.net/rfc.html. Some
 of the more important RFC numbers are RFC 1777 for LDAPv2 and RFC 2251
-for LDAPv3.
+as well as RFC3377 for LDAPv3.
 
 =head2 What is a LDAP Directory.
 
@@ -180,8 +191,8 @@ communicating with a client.
 =head2 What is an Entry.
 
 The traditional directory definition of a directory object 
-is called an Entry. Entries are composed of attributes
-that contain the information to be recorded about an object.
+is called an Entry. Entries are composed of attributes that
+contain the information to be recorded about the object.
 
 (An entry in LDAP is somewhat analogous to a record in a table in an
 SQL database, but don't get too hung up about this analogy!)
@@ -403,11 +414,11 @@ To install the modules that are in the perl-ldap distribution follow the
 same steps that you would for most other distributions found on CPAN, that
 is
 
-   # replace 0.27 with the version you have
+   # replace 0.31 with the version you have
 
-   gunzip perl-ldap-0.27.tar.gz
-   tar xvf perl-ldap-0.27.tar       
-   cd perl-ldap-0.27
+   gunzip perl-ldap-0.31.tar.gz
+   tar xvf perl-ldap-0.31.tar       
+   cd perl-ldap-0.31
 
    perl Makefile.PL
    make
@@ -437,11 +448,11 @@ the system architecture name, in this case it is
 C</usr/local/perl/perl5.005/lib/site_perl/5.005>. The files required
 can then be installed with
 
-   # replace 0.13 with the version you have
+   # replace 0.31 with the version you have
 
-   gunzip perl-ldap-0.13.tar.gz
-   tar xvf perl-ldap-0.13.tar       
-   cd perl-ldap-0.13/lib
+   gunzip perl-ldap-0.31.tar.gz
+   tar xvf perl-ldap-0.31.tar       
+   cd perl-ldap-0.31/lib
 
    cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
 
@@ -450,23 +461,32 @@ can then be installed with
 There are several ways that Perl-LDAP can be installed into an
 ActiveState Perl tree.
 
- 1.  The ActiveState ppm command can be used to install Perl-LDAP.
-     When a new version of Perl-LDAP is released, it takes ActiveState
-     a period of time to get the new release into the ActiveState ppm
-     system. 
+=over 4
 
- 2.  If the user has nmake installed, the user can do a normal perl 
-     module install using nmake instead of make.
+=item 1.
 
- 3.  If the user does not have nmake or make, the user can install 
-     Perl-LDAP using the install-nomake script by issuing the 
-     following command.
+The ActiveState ppm command can be used to install Perl-LDAP.
+When a new version of Perl-LDAP is released, it takes ActiveState
+a period of time to get the new release into the ActiveState ppm
+system. 
 
-       perl install-nomake
+=item 2.
 
-     The install-nomake script can be used on any system that does not
-     have make installed. 
+If the user has nmake installed, the user can do a normal perl 
+module install using nmake instead of make.
 
+=item 3.
+
+If the user does not have nmake or make, the user can install 
+Perl-LDAP using the install-nomake script by issuing the 
+following command.
+
+ perl install-nomake
+
+The install-nomake script can be used on any system that does not
+have make installed. 
+
+=back
 
 =head2 What other modules will I need ?
 
@@ -481,6 +501,14 @@ This module is required for perl-ldap to work.
 
 You can obtain the latest release from
   http://search.cpan.org/search?module=Convert::ASN1
+
+=item Authen::SASL
+
+This module is optional.  You only need to install Authen::SASL
+if you want to use the SASL authentication method.
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=Authen::SASL
 
 =item Digest::MD5
 
@@ -581,14 +609,19 @@ So, for example, to determine the result of the bind operation.
 
 =head2 How can I set the LDAP version of a connection to my ldap server?
 
-This is done by adding the version option when binding to the LDAP
-server.
+This is done by adding the version option when connecting or binding
+to the LDAP server.
 
 For example;
+
+  $ldap = Net::LDAP->new( $server, version => 3 );
+
+or
 
   $mesg = $ldap->bind( $dn, password => $passwd, version => 3 );
 
 Valid version numbers are 2 and 3.
+As of perl-ldap 0.27 the default LDAP version is 3.
 
 =head2 I did a search on my directory using the 'search' method. Where did
 the results go ?
@@ -696,13 +729,22 @@ Consider the following:
 
 Values for the scope parameter are as follows.
 
- base  Search only the base object.
- 
- one   Search the entries immediately below the base
-       object.
- 
- sub   Search the whole tree below the base object.
-       This is the default.                                         
+=over 4
+
+=item base
+
+Search only the base object.
+
+=item one
+
+Search the entries immediately below the base object.
+
+=item sub
+
+Search the whole tree below the base object.
+This is the default.                                         
+
+=back
 
 =head1 GETTING SEARCH RESULTS
 
@@ -809,7 +851,7 @@ Example:
    }
 
    my $dn = $entry->dn; # Obtain DN of this entry
- 
+
    @attrs = $entry->attributes; # Obtain attributes for this entry.
    foreach my $var (@attrs)
    {
@@ -832,7 +874,7 @@ Example:
    # of code can be omitted.
    #
    $mesg->pop_entry;
- 
+
  }  # End of callback subroutine
 
 As you can see the example is straight forward and it does not waste
@@ -858,8 +900,18 @@ object, e.g.
                            capath => '/usr/local/cacerts/',
                            );
 
-There are additional options to the LDAPS new method and
-several additional methods are included in the LDAPS object class.  
+Starting with version 0.28 perl-ldap also supports URIs in the new method.
+So, the above can also be expressed as:
+
+  $ldaps = Net::LDAP->new("ldaps://$server",
+                           port => '10000',
+                           verify => 'require',
+                           capath => '/usr/local/cacerts/',
+                           );
+
+There are additional options to the new method with LDAPS URIs 
+and the LDAPS new method and several additional methods are
+included in the LDAPS object class.  
 
 For further information and code examples read the LDAPS
 module documentation;  perldoc Net::LDAPS
@@ -873,7 +925,9 @@ store multiple DN values.  Two standard object classes are
 'groupOfNames' (which has a 'member' attribute) and
 'groupOfUniqueNames' (which has a 'uniqueMember' attribute.)
 
-A group can be a member of another group.
+According to the RFCs a group can be a member of another group,
+but some LDAP server vendors restrict this flexibility by not
+allowing nested groups in their servers.
 
 Two scripts for working with groups are available in the contrib
 directory.  They are isMember.pl and printMembers.pl. 
@@ -904,18 +958,18 @@ want to be correct.
 Directory Service Markup Language (DSML) is the XML
 standard for representing directory service information in
 XML.
- 
-Support for DSML is include in PERL-LDAP starting with version
+
+Support for DSML is included in PERL-LDAP starting with version
 .20.
 
 At the moment this module only reads and writes DSML entry
 entities. It cannot process any schema entities because
 schema entities are processed differently than elements.
- 
+
 Eventually this module will be a full level 2 consumer and
 producer enabling you to give you full DSML conformance.
 
-The specification for DSML is at http://www.dsml.org/
+The specification for DSML is at http://www.oasis-open.org/specs/
 
 For further information and code examples read the DSML
 module documentation;  perldoc Net::LDAP::DSML
@@ -1047,9 +1101,10 @@ It is an error to delete an attribute that doesn't exist.  When you
 get the error back the server ignores the entire modify operation
 you sent it, so you need to make sure the error doesn't happen.
 
-Another approach, if you are using LDAPv3 (note Net::LDAP does not use
-LDAPv3 by default) is to use a 'replace' with your attribute name and no
-values. In LDAPv3, this is defined to always work even if that attribute
+Another approach, if you are using LDAPv3 (note beginning with version .27
+Net::LDAP uses LDAPv3 by default) is to use a 'replace' with your
+attribute name and no values.
+In LDAPv3, this is defined to always work even if that attribute
 doesn't exist in the entry.
 
 ie:
@@ -1098,7 +1153,7 @@ in the file.  Then when reading the file, decode the base64 encoded
 string back to binary and then use perl ldap to store the data
 in the directory.
 
-=head2 How do I create a Microsoft Exchange user.
+=head2 How do I create a Microsoft Exchange 5.x user.
 
 This is a solution provide by a perl-ldap user.
 
@@ -1156,6 +1211,129 @@ replace the placeholders.
 
   print ldap_error_name($result->code);
 
+=head2 Ho do I reset a user's password ...
+
+=head2 Z<>... in most LDAP servers ?
+
+Most LDAP servers use the standard userPassword attribute as the
+attribute to set when you want to change a user's password.
+
+They usually allow to set the password either using the regular 
+modify operation on the userPassword attribute or using the
+extended LDAP Password Modify operation defined in RFC3062.
+
+The recommended method is the extended Password Modify operation,
+which offers a standardized way to set user passwords but 
+unfortunately is not available on all LDAP servers.
+
+Whether the extended Password Modify operation is available can be
+found out by searching the attribute supportedExtension for the
+value 1.3.6.1.4.1.4203.1.11.1 in the RootDSE object.
+
+If the extended Password Modify operation is not avaiable the
+alternative is the regular modification of the userPassword attribute.
+
+But this method has some drawbacks:
+
+=over 4
+
+=item *
+
+Depending on the type of the server the arguments to the modify
+operations may vary. Some want the modify done with replace,
+some want it done by explicitely deleting the old password
+and add of the new one.
+This may even depend on whether you change the password for the bound
+user or as an administrator for another user.
+
+=item *
+
+With the modify operation some servers expect the client to
+do the hashing of the password on the client side. I.e. all
+clients that set passwords need to agree on the algorithm
+and the format of the hashed password.
+
+=item *
+
+Some LDAP servers do not allow setting the password if the
+connection is not sufficiently secured. I.e. require SSL or TLS
+support to set the password (which is heavily recommended anyway ;-)
+
+=back
+
+Here is an example of how to change your own password (for brevity's 
+sake error checking is left out):
+
+  use Net::LDAP;
+
+  my $ldap = Net::LDAP->new('ldaps://server.domain')  or  die "$@";
+  my $mesg = $ldap->bind('cn=Joe User,dc=perl,dc=ldap,dc=org',
+                         password => 'oldPW');
+
+  my $rootdse = $ldap->root_dse();
+
+  if ($rootdse->supported_extension('1.3.6.1.4.1.4203.1.11.1') {
+
+      require Net::LDAP::Extension::SetPassword;
+
+      $mesg = $ldap->set_password(user => 'cn=Joe User,dc=perl,dc=ldap,dc=org',
+                                  oldpasswd => 'oldPW',
+                                  newpasswd => 'newPW');
+  }
+  else {
+      $mesg = $ldap->modify('cn=Joe User,dc=perl,dc=ldap,dc=org',
+                            changes => [
+                                delete => [ userPassword => $oldPW ]
+                                add    => [ userPassword => $newPW ] ]);
+  }
+
+  $ldap->unbind();
+
+=head2 Z<>... in MS Active Directory ?
+
+With Active Directory a user's password is stored in the unicodePwd
+attribute and changed using the regular modify operation.
+
+ADS expects this password to be encoded in Unicode - UTF-16 to be exact.
+Before the unicode conversion is done the password needs to be
+surrounded by double quotes which do not belong to the user's password.
+
+For the password modify operation to succeed SSL is required.
+
+When changing the password for the user bound to the directory
+ADS expects it to be done by deleting the old password and
+adding the new one.
+When doing it as a user with administrative priviledges replacing
+the unicodePwd's value with a new one is allowed too.
+
+Here's an example that demonstrates setting your own password
+(again almost no error checking):
+
+  use Net::LDAP;
+  use Unicode::Map8;
+  use Unicode::String qw(utf16);
+
+  # build the conversion map from your local character set to Unicode
+  my $charmap = Unicode::Map8->new('latin1')  or  die;
+
+  # surround the PW with double quotes and convert it to UTF-16
+  # byteswap() was necessary in experiments on i386 Linux, YMMV
+  my $oldUniPW = $charmap->tou('"'.$oldPW.'"')->byteswap()->utf16();
+  my $newUniPW = $charmap->tou('"'.$newPW.'"')->byteswap()->utf16();
+
+  my $ldap = Net::LDAP->new('ldaps://ads.domain.controller')  or  die "$@";
+
+  my $mesg = $ldap->bind('cn=Joe User,dc=your,dc=ads,dc=domain',
+                         password => 'oldPW');
+
+  $mesg = $ldap->modify('cn=Joe User,dc=your,dc=ads,dc=domain',
+                        changes => [
+                            delete => [ unicodePwd => $oldUniPW ]
+                            add    => [ unicodePwd => $newUniPW ] ]);
+
+  $ldap->unbind();
+
+
 =head2 How can I simulate server failover.
 
 Perl-LDAP does not do server failover, however there are several
@@ -1163,15 +1341,21 @@ programming options for getting around this situation.
 
 Here is one possible solution.
 
-   unless ( $ldaps =
+  unless ( $ldaps =
             Net::LDAPS->new($ldapserverone,
                             port=>636,timeout=>5) ) 
-           {
-            $ldaps = Net::LDAPS->new($ldapservertwo,
-                                     port=>636,timeout=>20) || 
-            return 
-            "Can't connect to $ldapserverone or $ldapservertwo via LDAPS: $@";
-           }
+          {
+              $ldaps = Net::LDAPS->new($ldapservertwo,
+                                       port=>636,timeout=>20) || 
+              return 
+              "Can't connect to $ldapserverone or $ldapservertwo via LDAPS: $@";
+          }
+
+As of version 0.27 of perl-ldap the above can be expressed much simpler:
+
+  $ldaps = Net::LDAPS->new([ $ldapserverone, $ldapservertwo ],
+                           port=>636, timeout=>5)  or  die "$@";
+
 
 =head1 Using X.509 certificates.
 
@@ -1185,7 +1369,7 @@ which is a binary format.
 Your first job is to ensure that your certificates are therefore in DER/BER
 format. You could use OpenSSL to convert from PEM like this:
 
-	openssl x509 -inform PEM -in cert.pem -outform DER -out cert.der
+  openssl x509 -inform PEM -in cert.pem -outform DER -out cert.der
 
 Consult the OpenSSL documentation to find out how to perform other
 conversions.
@@ -1197,35 +1381,35 @@ LDAP you are using.
 
 To slurp in the certificate try something like this:
 
-    my $cert;
-    {
-        local $/ = undef; # Slurp mode
-        open CERT, "cert.der" or die;
-        binmode CERT;
-        $cert = <CERT>;
-        close CERT;
-    }
-    # The certificate is now in $cert
+  my $cert;
+  {
+      local $/ = undef; # Slurp mode
+      open CERT, "cert.der" or die;
+      binmode CERT;
+      $cert = <CERT>;
+      close CERT;
+  }
+  # The certificate is now in $cert
 
 For LDAPv2, because most directory vendors ignore the string representation
 of certificates defined in RFC 1778, you should add this value to the
 directory like this:
 
-    $res = $ldap->modify("cn=My User, o=My Company,c=XY",
-                         add => [
-                                 'userCertificate' => [ $cert ]
-                                ]);
-    die "Modify failed (" . ldap_error_name($res->code) . ")\n"
-        if $res->code;
+  $res = $ldap->modify("cn=My User, o=My Company,c=XY",
+                       add => [
+                               'userCertificate' => [ $cert ]
+                              ]);
+  die "Modify failed (" . ldap_error_name($res->code) . ")\n"
+      if $res->code;
 
 For LDAPv3, you must do this instead:
 
-    $res = $ldap->modify("cn=My User, o=My Company, c=XY",
-                         add => [
-                                 'userCertificate;binary' => [ $cert ]
-                                ]);
-    die "Modify failed (" . ldap_error_name($res->code) . ")\n"
-        if $res->code;
+  $res = $ldap->modify("cn=My User, o=My Company, c=XY",
+                       add => [
+                               'userCertificate;binary' => [ $cert ]
+                              ]);
+  die "Modify failed (" . ldap_error_name($res->code) . ")\n"
+      if $res->code;
 
 Of course, the entry you are trying to add the certificate to must use
 object classes that permit the userCertificate attribute, otherwise the
@@ -1235,10 +1419,10 @@ strongAuthenticationUser auxiliary object class. Others might also.
 
 =head1 ADDITIONAL DIRECTORY AND LDAP RESOURCES.
 
-=head2 URL(s).
+=head2 URLs.
 
 Directory Services Mark Language (DSML)
-http://www.dsml.org/
+http://www.oasis-open.org/specs/
 
 eMailman LDAP information
 http://www.emailman.com/ldap/
@@ -1256,6 +1440,7 @@ http://www.kingsmountain.com/ldapRoadmap.shtml
 
 Mark Wahl's LDAP World at Innosoft.
 http://www.innosoft.com/ldapworld/
+(outdated: last update was in 1998)
 
 Open Source LDAP Directory Server.
 http://www.openldap.org/
@@ -1263,8 +1448,12 @@ http://www.openldap.org/
 CriticalPath
 http://www.cp.net/
 
+IBM Directory Server
+http://www-306.ibm.com/software/network/directory/server/
+
 Innosoft
 http://www.innosoft.com
+(acquired by Sun)
 
 Isode (was MessagingDirect)
 http://www.isode.com/
@@ -1274,6 +1463,9 @@ http://developer.netscape.com/directory/
 
 Nexor's X.500 and Internet Directories
 http://www.nexor.com/info/directory.htm/
+
+Novell's eDirectory
+http://www.novell.com/
 
 Novell's LDAPzone
 http://ldapzone.com/
@@ -1308,15 +1500,18 @@ By Sven B. Schreiber.  ISBN:  0201657775
 Implementing LDAP.
 By Mark Wilcox.  ISBN:  1861002211
 
-LDAP : Programming Directory-Enabled Applications With 
+LDAP: Programming Directory-Enabled Applications With 
 Lightweight Directory Access Protocol. 
 By Tim Howes, Mark Smith.  ISBN:  1578700000
 
-LDAP Programming; Directory Management and Integration in Perl.
+LDAP Programming; Directory Management and Integration.
 By Clayton Donley.  ISBN:  1884777910
 
 LDAP Programming with Java. 
 By Rob Weltman, Tony Dahbura.  ISBN:  0201657589
+
+LDAP System Administration.
+By Gerald Carter.  ISBN:  1565924916
 
 Managing Enterprise Active Directory Services. 
 By Robbie Allen, Richard Puckett.  ISBN:  0672321254
@@ -1325,7 +1520,7 @@ Solaris and LDAP Naming Services.
 By Tom Bialaski, Michael Haines. ISBN:  0-13-030678-9
 
 Understanding and Deploying LDAP Directory Services (2ed).
-By Tim Howes, Mark Smith, Gordon Good
+By Tim Howes, Mark Smith, Gordon Good.
 ISBN:  0672323168
 
 LDAP Directories Explained.
@@ -1337,8 +1532,8 @@ Any good FAQ is made up of many authors, everyone that contributes
 information to the perl-ldap mail list is a potential author.
 
 An attempt to maintain this FAQ is being done by Chris Ridd
- E<lt>chris.ridd@isode.comE<gt>. It was previously updated by Clif Harden 
- E<lt>charden@pobox.comE<gt>.
+E<lt>chris.ridd@isode.comE<gt> and Peter Marschall <peter@adpm.de>.
+It was previously updated by Clif Harden E<lt>charden@pobox.comE<gt>.
 
 The original author of this FAQ was Graham Barr E<lt>gbarr@pobox.comE<gt>
 
