@@ -83,7 +83,7 @@ while(my($op,$dn) = splice(@tests,0,2)) {
       print "'$dn' failed to parse\n";
     }
     elsif ($failed = $canon eq $refdn) {
-      print "'$reforig'\n'$refdn'\n\nmatched\n\n'$dn'\n'$canon'\n";
+      print "'$refdn'\n\nmatched\n\n'$dn'\n'$canon'\n";
     }
   }
   else {

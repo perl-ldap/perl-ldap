@@ -315,7 +315,7 @@ sub canonical_dn {
     }
   }
 
-  (length($dn) != pos($dn))
+  (length($dn) != (pos($dn)||0))
     ? undef
     : join(",",@dn);
 }
@@ -334,7 +334,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.9 2001/03/08 13:31:45 gbarr Exp $>
+I<$Id: Util.pm,v 1.10 2001/04/11 07:49:53 gbarr Exp $>
 
 =cut
 
