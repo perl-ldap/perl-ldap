@@ -883,8 +883,7 @@ whatever is relevant to your setup.
      $res = $ldap->unbind();
 
 
-=head2 How do I add a jpeg photo into a entry in the directory
-via html -forms.
+=head2 How do I add a jpeg photo into a entry in the directory via html-forms.
 
 Follow the following code example, replacing the (...) with
 whatever is relevant to your setup. 
@@ -950,7 +949,7 @@ The code required will look similar to the following code snippet.
                   control => {type => "2.16.840.1.113730.3.4.2"} ); 
 
 =head2 How do I add an ACI/ACL entry to a directory server with
-Perl-LDAp
+Perl-LDAP.
 
 The following code snippet works with a Netscape directory server and 
 should work with any other LDAP directory server.  You will need the
