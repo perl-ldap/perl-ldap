@@ -1,3 +1,414 @@
+2002-07-18 14:01  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.26
+	
+2002-07-18 13:58  Graham Barr
+
+	* MANIFEST, lib/Net/LDAP/Extension/SetPassword.pm:
+
+	Added Net::LDAP::Extension::SetPassword
+	
+2002-07-16 00:07  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix arguemnts passed to IO::Socket::SSL by start_tls
+	
+2002-07-15 02:28  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added new book listing, Managing Enterprise Active Directory Services
+	
+2002-06-30 02:32  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added information and URL for Rafael Corvalan's LDAP shell.
+	
+2002-06-18 13:39  Graham Barr
+
+	* lib/Net/LDAP/Entry.pod:
+
+	POD clarification for ->delete
+	
+2002-06-15 03:47  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to close windows after ldap actions are taken.  This is to force
+	a new search after data has been changed.
+	
+2002-06-12 03:04  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added a reference to Clayton Donley's new book; LDAP Programming.
+	Added a reference to Octet String, another directory provider.
+	Removed reference to Iplanet.
+	Added a reference to Sun One which now has the Iplanet directory server.
+	
+2002-06-03 16:48  Graham Barr
+
+	* Makefile.PL:
+
+	Dont generate html docs when creating release dist
+	
+2002-06-03 16:42  Graham Barr
+
+	* mkmanf:
+
+	Dont scan htdocs for files
+	
+2002-06-03 16:35  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Add Mailing list section
+	
+2002-06-03 16:26  Graham Barr
+
+	* lib/Net/LDAP/Search.pm, lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	New implementation of canonical_dn and ldap_explode_dn,
+	thanks to Norbert Klasen
+	
+2002-05-31 16:16  Graham Barr
+
+	* MANIFEST, data/00-cmp.ldif:
+
+	Add missing file data/00-cmp.ldif to CVS and MANIFEST
+	
+2002-05-29 12:02  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Handle the case where the version spec is by itself
+	
+2002-05-29 03:47  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Initial attempt at putting POD documentation in the DSML.pm module.
+	
+2002-05-28 12:15  Chris Ridd
+
+	* lib/Net/: LDAPS.pm, LDAP.pod:
+
+	Added decryptkey parameter
+	
+2002-05-28 10:34  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Remember host connected to, needed for sasl
+	
+2002-05-28 10:03  Graham Barr
+
+	* CREDITS:
+
+	Add Kartik Subbarao and Norbert Klasen
+	
+2002-05-28 09:34  Graham Barr
+
+	* htdocs/index.xml, mkhtml, mkindex:
+
+	No longer including html generated from POD in the distribution
+	
+2002-05-28 09:13  Graham Barr
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Fix return hash for get_value($attr, alloptions => 1);
+	
+2002-05-28 08:57  Graham Barr
+
+	* lib/Net/LDAP/Schema.pm:
+
+	Fix bug when fetching elements with OIDs
+	
+2002-05-28 08:52  Graham Barr
+
+	* lib/Net/LDAP/: DSML/Parser.pm, DSML.pm:
+
+	New DSML module that uses XML::SAX
+	
+2002-05-28 02:54  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Made several code corrections to the code that stores xml formatted
+	schema information in a file.  This is due to the new DSML.pm module.
+	
+2002-05-25 06:05  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Change schema code to comprehend the new Schema.pm file.
+	Added code to determine new x and y position when the main window moves.
+	
+2002-05-21 15:53  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Changed extendedRequest to extendedReq
+	
+2002-05-17 14:50  Chris Ridd
+
+	* Makefile.PL:
+
+	Specified minimum version of IO::Socket::SSL
+	
+2002-05-17 14:49  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Removed workaround for old IO::Socket::SSL versions
+	
+2002-04-23 17:07  Graham Barr
+
+	* lib/LWP/Protocol/ldap.pm:
+
+	Patch from mah@everybody.org
+	
+2002-04-23 11:57  Graham Barr
+
+	* lib/Net/LDAP/: Schema.pm, Schema.pod:
+
+	New Schema API
+	
+2002-04-23 11:52  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Support line continuations in LDIF files in comments.
+	Patch from Norbert Klasen
+	
+2002-02-18 16:51  Graham Barr
+
+	* MANIFEST, Makefile.PL, htdocs/index.xml, lib/Authen/SASL.pm,
+	lib/Authen/SASL.pod, lib/Authen/SASL/CRAM_MD5.pm,
+	lib/Authen/SASL/EXTERNAL.pm, lib/Net/LDAP.pm, lib/Net/LDAP/Bind.pm:
+
+	Change over to using Authen::SASL v2.00, which is now distributed
+	in a separate distribution
+	
+2002-02-18 15:58  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Allow host passed to new to be an array ref of several to try
+	
+2002-02-04 18:58  Graham Barr
+
+	* data/00-in.ldif, data/core.schema, data/slapd2-conf.in,
+	t/00ldif-entry.t, t/50populate.t, t/51search.t, t/52modify.t,
+	t/53schema.t, t/54dse.t, t/55ssl.t, t/common.pl:
+
+	Some testcase tweaks
+	
+2002-02-04 14:58  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Add support for the version number line
+	
+2002-01-31 15:25  Graham Barr
+
+	* lib/Net/LDAP/Util.pm, t/01canon_dn.t:
+
+	move some logic from canonical_dn into explode_dn and add some more
+	tests for DNs
+	
+2002-01-31 14:04  Graham Barr
+
+	* lib/Net/LDAP/Filter.pm:
+
+	Fix uninit warning
+	
+2002-01-31 13:32  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Fix the \n output when the output is to a terminal or a pipe
+	
+2002-01-23 13:25  Graham Barr
+
+	* lib/Net/LDAP/Schema.pm:
+
+	Tweak the regexp that parses the elements to beter match qdstrings
+	that contain '
+	
+2002-01-09 17:19  Graham Barr
+
+	* lib/Net/LDAP/Filter.pm, t/02filter.t:
+
+	Fix filters to be RFC compliant
+	
+2002-01-03 03:01  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Corrected _schemaToXML function to comprehend that a multi-valued oid
+	number could be returned from name2oid method. Now use the is_attribute,
+	is_objectclass, ...,  methods to determine oid number.
+	
+2002-01-03 02:53  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected schema parse and display code to comprehend that a multi-valued
+	oid number could be returned from name2oid method. Now use the
+	is_attribute, is_objectclass, ...,  methods to determine oid number.
+	
+2002-01-01 03:39  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Corrected VERSION number.  No code changes were made.
+	
+2001-12-29 22:53  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to allow the schema information to be stored in a file as
+	DSML XML data.  User can now select to store the data as text or XML.
+	
+2001-12-29 22:51  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Added close method.  The close method does not do anything, but is called
+	by the DESTROY method. For some reason the close method was never coded.
+	Original DSML writter must have had a reason for doing this, just never
+	implement it.
+	
+2001-12-29 01:50  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to allow editing of a entry's attributes.
+	This makes this software a full featured LDAP directory interface.
+	Added pod documentation about new windows and features.
+	
+2001-12-25 01:09  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Updated the VERSION variable, brings in more inline with the
+	CVS version number.  No code changes were made.
+	
+2001-12-25 01:05  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Made changes to _schemaToXML subroutine to speed it up.
+	
+2001-12-20 05:05  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Completed coding of schema to DSML xml process.
+	Changed the way file and array processing was done with schema data.
+	Added additional pod documentation.
+	
+2001-12-19 22:27  Graham Barr
+
+	* lib/Net/LDAP/Schema.pm:
+
+	- Fix bug in ->item when $item_name is not specified
+	- Don't generate an element name from the description, use the OID
+	
+2001-12-19 04:37  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Added code to put schema data into DSML XML format.  Data
+	can be stored in an array reference or file.
+	
+2001-12-18 12:59  Clif Harden
+
+	* lib/Net/LDAP/DSML.pm:
+
+	
+	Changed code to allow and comprehend the passing of an array
+	referrence instead of a file handle.  This touched all of the
+	methods that wrote to a file.  The new code does/should not affect
+	the way the code worked with a file handle.
+	
+2001-12-17 16:50  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added text about simulated server failover.
+	
+2001-12-17 01:35  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added fail safe code to the DELETE entry operation.  This forces the
+	user to confirm the delete entry request.
+	Added pod documentation for the DELETE fail safe window.
+	
+2001-12-15 05:06  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected pod documentation error.
+	
+2001-12-15 04:57  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to allow various entry modifications.
+	Added code to delete an entry.
+	Added code to do a mod RDN on an entry.
+	Changed search code to display in a ROText box.
+	Started code for entry data modification, this code is not complete
+	but will not break anything if used.  It will just display the data
+	in the Text box that will be used of modification.
+	Updated pod documentation to reflect the code changes.
+	
+2001-12-03 16:20  Graham Barr
+
+	* Makefile.PL:
+
+	Add check for MIME::Base64
+	
+2001-11-10 06:35  Graham Barr
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Fix case-sensitively in get_value with alloptions=>1
+	
+2001-11-10 06:29  Graham Barr
+
+	* lib/Net/LDAP/Util.pm:
+
+	Added ldap_explode_dn
+	
 2001-10-29 17:29  Graham Barr
 
 	* RELEASE_NOTES, lib/Net/LDAP.pm:
@@ -12,7 +423,7 @@
 	
 2001-10-24 15:37  Graham Barr
 
-	* htdocs/: index.html, index.xml:
+	* MANIFEST, htdocs/index.html, htdocs/index.xml:
 
 	Add the new Security pod to the index page
 	
@@ -21,6 +432,12 @@
 	* lib/Net/LDAP/RFC.pod:
 
 	LDIF is now an RFC.
+	
+2001-10-24 14:51  Chris Ridd
+
+	* MANIFEST:
+
+	Added lib/Net/LDAP/Security.pod
 	
 2001-10-24 14:49  Chris Ridd
 
@@ -36,7 +453,7 @@
 	
 2001-10-23 16:07  Graham Barr
 
-	* contrib/ldapmodify.pl:
+	* MANIFEST, contrib/ldapmodify.pl:
 
 	Added contrib/ldapmodify.pl from Kartik Subbarao
 	
@@ -306,15 +723,15 @@
 	
 2001-07-06 11:56  Graham Barr
 
-	* install-nomake:
+	* MANIFEST, install-nomake:
 
 	Add install-nomake for those who don't have make
 	
 2001-07-06 11:55  Graham Barr
 
-	* test.cfg, data/cert.pem, data/key.pem, data/slapd2-conf.in,
-	lib/Net/LDAP.pm, lib/Net/LDAPS.pm, t/54dse.t, t/55ssl.t,
-	t/common.pl:
+	* MANIFEST, test.cfg, data/cert.pem, data/key.pem,
+	data/slapd2-conf.in, lib/Net/LDAP.pm, lib/Net/LDAPS.pm, t/54dse.t,
+	t/55ssl.t, t/common.pl:
 
 	Remove croaks from SSL/TLS methods
 	Add testing for Net::LDAPS and start_tls
@@ -366,6 +783,12 @@
 
 	Use syswrite() instead of send(), so Net::LDAPS does not need to redefine _sendmesg()
 	Split out the connect from new(), so Net::LDAPS does not need to redefine new()
+	
+2001-07-03 20:44  Graham Barr
+
+	* MANIFEST:
+
+	Add 70sortctrl.t and ldifsort.pl
 	
 2001-07-03 20:30  Graham Barr
 
@@ -421,12 +844,12 @@
 	
 2001-06-11 18:03  Graham Barr
 
-	* test.cfg, data/50-cmp.ldif, data/50-in.ldif, data/51-in.ldif,
-	data/51a-cmp.ldif, data/51b-cmp.ldif, data/51c-cmp.ldif,
-	data/51d-cmp.ldif, data/52-cmp.ldif, data/52-in.ldif,
-	data/52-mod.ldif, data/core.schema, data/cosine.schema,
-	data/inetorgperson.schema, data/slapd2-conf.in, t/50populate.t,
-	t/51search.t, t/52modify.t, t/common.pl:
+	* MANIFEST, test.cfg, data/50-cmp.ldif, data/50-in.ldif,
+	data/51-in.ldif, data/51a-cmp.ldif, data/51b-cmp.ldif,
+	data/51c-cmp.ldif, data/51d-cmp.ldif, data/52-cmp.ldif,
+	data/52-in.ldif, data/52-mod.ldif, data/core.schema,
+	data/cosine.schema, data/inetorgperson.schema, data/slapd2-conf.in,
+	t/50populate.t, t/51search.t, t/52modify.t, t/common.pl:
 
 	Update test suite to work with either OpenLDAP1 or OpenLDAP2
 	
@@ -610,10 +1033,17 @@
 
 	Tweaks to dependcies of distdir
 	
+2001-04-10 18:02  Graham Barr
+
+	* MANIFEST:
+
+	Add docs for ProxyAuth module
+	
 2001-04-10 17:30  Graham Barr
 
-	* htdocs/index.xml, lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Constant.pm,
-	lib/Net/LDAP/Control.pm, lib/Net/LDAP/Control/ProxyAuth.pm:
+	* MANIFEST, htdocs/index.xml, lib/Net/LDAP/ASN.pm,
+	lib/Net/LDAP/Constant.pm, lib/Net/LDAP/Control.pm,
+	lib/Net/LDAP/Control/ProxyAuth.pm:
 
 	Add Net::LDAP::Control::ProxyAuth from Olivier Dubois
 	
@@ -680,7 +1110,7 @@
 	
 2001-03-12 14:01  Graham Barr
 
-	* contrib/: jpegDisplay.pl, jpegLoad.pl:
+	* MANIFEST, contrib/jpegDisplay.pl, contrib/jpegLoad.pl:
 
 	New contrib scripts from Clif Harden
 	
@@ -783,7 +1213,7 @@
 	
 2001-01-29 22:32  Graham Barr
 
-	* OldChanges:
+	* MANIFEST, OldChanges:
 
 	Move perforce changelog aside and now generate with cvs2cl
 	
@@ -866,21 +1296,21 @@
 	
 2000-05-03 13:28  Graham Barr
 
-	* Makefile.PL, README, RELEASE_NOTES, TODO, bin/ldapdelete.PL,
-	bin/ldapmodrdn.PL, bin/ldapsearch.PL, contrib/checkauth.pl,
-	contrib/examples, contrib/isMember.pl, contrib/isMember.readme,
-	contrib/printMembers.pl, contrib/printMembers.readme,
-	contrib/schema, contrib/schema.README, contrib/schema.tklkup,
-	contrib/tklkup, contrib/tklkup.README, contrib/tklkup.tklkup,
-	data/00-cmp2.ldif, data/00-in.ldif, data/50-cmp.ldif,
-	data/50-in.ldif, data/51-in.ldif, data/51a-cmp.ldif,
-	data/51b-cmp.ldif, data/51c-cmp.ldif, data/51d-cmp.ldif,
-	data/52-cmp.ldif, data/52-in.ldif, data/52-mod.ldif,
-	data/schema.in, data/slapd-conf.in, data/slapd.at.conf,
-	data/slapd.oc.conf, lib/Authen/SASL.pm, lib/Authen/SASL.pod,
-	lib/Authen/SASL/CRAM_MD5.pm, lib/Bundle/Net/LDAP.pm,
-	lib/LWP/Protocol/ldap.pm, lib/Net/LDAP.pm, lib/Net/LDAP.pod,
-	lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Bind.pm,
+	* MANIFEST, Makefile.PL, README, RELEASE_NOTES, TODO,
+	bin/ldapdelete.PL, bin/ldapmodrdn.PL, bin/ldapsearch.PL,
+	contrib/checkauth.pl, contrib/examples, contrib/isMember.pl,
+	contrib/isMember.readme, contrib/printMembers.pl,
+	contrib/printMembers.readme, contrib/schema, contrib/schema.README,
+	contrib/schema.tklkup, contrib/tklkup, contrib/tklkup.README,
+	contrib/tklkup.tklkup, data/00-cmp2.ldif, data/00-in.ldif,
+	data/50-cmp.ldif, data/50-in.ldif, data/51-in.ldif,
+	data/51a-cmp.ldif, data/51b-cmp.ldif, data/51c-cmp.ldif,
+	data/51d-cmp.ldif, data/52-cmp.ldif, data/52-in.ldif,
+	data/52-mod.ldif, data/schema.in, data/slapd-conf.in,
+	data/slapd.at.conf, data/slapd.oc.conf, lib/Authen/SASL.pm,
+	lib/Authen/SASL.pod, lib/Authen/SASL/CRAM_MD5.pm,
+	lib/Bundle/Net/LDAP.pm, lib/LWP/Protocol/ldap.pm, lib/Net/LDAP.pm,
+	lib/Net/LDAP.pod, lib/Net/LDAP/ASN.pm, lib/Net/LDAP/Bind.pm,
 	lib/Net/LDAP/Constant.pm, lib/Net/LDAP/Constant.pod,
 	lib/Net/LDAP/Control.pm, lib/Net/LDAP/Entry.pm,
 	lib/Net/LDAP/Entry.pod, lib/Net/LDAP/Examples.pod,

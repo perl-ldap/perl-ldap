@@ -1,3 +1,19 @@
+perl-ldap 0.26 18 Jul 2002
+==========================
+
+* canonical_dn and ldap_explode_dn have a new implementation.
+* Net::LDAP::DSML reimplemented using XML::SAX
+* Net::LDAP::Schema reimplemented. API needed to change to fix
+  many bugs in previous implementation
+* Added support for version number in Net::LDAP::LDIF
+  (support for fill version still todo)
+
+perl-ldap 0.251 15 May 2002
+===========================
+
+* Added support for Adamson's SASL authentication
+* Both Cyrus SASL and Perl SASL modules are sought
+
 perl-ldap 0.25 29 Oct 2001
 ==========================
 
