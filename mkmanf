@@ -1,10 +1,13 @@
 #!/bin/sh
 
 (
-  for x in $(find . -name Entries | egrep CVS/Entries$ | sed 's,CVS/Entries$,,')
+  for x in $(find . -type d)
   do
-    grep ^/ $x/CVS/Entries | cut -d/ -f2 | sed s,^,$x, | sed s,^\./,,
+    if [ -f $x/CVS/Entries ]; then
+      grep ^/ $x/CVS/Entries | cut -d/ -f2 | sed s,^,$x/, | sed s,^\./,,
+    fi
   done
-  find htdocs -name CVS -prune -o -type f -print
+  find lib -name \*.pm
+  find lib -name \*.pod
 ) | sort -u > MANIFEST.new
 diff -u MANIFEST MANIFEST.new && rm MANIFEST.new
