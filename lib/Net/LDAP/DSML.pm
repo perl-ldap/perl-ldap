@@ -1,17 +1,17 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.14 2002/05/29 02:47:37 charden Exp $
+# $Id: DSML.pm,v 1.15 2002/07/18 18:19:43 gbarr Exp $
 # 
 
 use strict;
-use vars qw(@ISA);
+use vars qw(@ISA $VERSION);
 use Carp;
 use XML::SAX::Base;
 use Net::LDAP::Entry;
 
 @ISA = qw(XML::SAX::Base);
-
+$VERSION = "0.10";
 
 # OO purists will hate this :)
 my %schema_typemap = qw(
@@ -650,6 +650,7 @@ sub DESTROY {}
 
 sub AUTOLOAD {
   (my $meth = $AUTOLOAD) =~ s/^.*:://;
+  no strict 'refs';
   *{$meth} = sub { shift->{handler}->$meth(@_) };
   goto &$meth;
 }
