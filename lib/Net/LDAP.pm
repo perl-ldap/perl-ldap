@@ -21,6 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			   LDAP_INAPPROPRIATE_AUTH
 			   LDAP_SERVER_DOWN
+			   LDAP_USER_CANCELED
 			   LDAP_EXTENSION_START_TLS
 			);
 
@@ -670,7 +671,7 @@ sub _recvresp {
   for( $ready = 1 ; $ready ; $ready = $sel->can_read(0)) {
     my $pdu;
     asn_read($sock, $pdu)
-      or return _drop_conn($self, LDAP_OPERATIONS_ERROR, "Communications Error");
+      or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, "Communications Error");
 
     my $debug;
     if ($debug = $ldap->debug) {
@@ -687,13 +688,20 @@ sub _recvresp {
     my $result = $LDAPResponse->decode($pdu)
       or return LDAP_DECODING_ERROR;
 
-    my $mid = $result->{messageID};
+    my $mid  = $result->{messageID};
+    my $mesg = $ldap->{net_ldap_mesg}->{$mid};
 
-    my $mesg = $ldap->{net_ldap_mesg}->{$mid} or
-      do {
-	print STDERR "Unexpected PDU, ignored\n" if $debug & 10;
-	next;
-      };
+    unless ($mesg) {
+      if (my $ext = $result->{protocolOp}{extendedResp}) {
+	if (($ext->{responseName} || '') eq '1.3.6.1.4.1.1466.20036') {
+	  # notice of disconnection
+	  return _drop_conn($ldap, LDAP_SERVER_DOWN, "Notice of Disconnection");
+	}
+      }
+
+      print STDERR "Unexpected PDU, ignored\n" if $debug & 10;
+      next;
+    }
 
     $mesg->decode($result) or
       return $mesg->code;
@@ -800,7 +808,7 @@ sub supported_sasl_mechanism {
 
 sub _supported_feature {
   my $attr = shift;
-  my $root = $shift->root_dse( attrs => [$attr] )
+  my $root = shift->root_dse( attrs => [$attr] )
     or return undef;
   my %ext;
   map { $ext{$_} = 1 } $root->get_value( $attr );
