@@ -28,7 +28,7 @@ supports all methods defined in L<Net::LDAP::Message>.
 Returns a reference to a HASH, where the keys are the DNs of the
 results and the values are HASH references. These second level HASHes
 hold the attributes such that the keys are the attribute names, in
-lowercase, and the values are references to and ARRAY holding the
+lowercase, and the values are references to an ARRAY holding the
 values.
 
 This method will block until the whole search request has finished.
@@ -116,6 +116,6 @@ same terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Search.pod,v 1.6 2003/08/01 16:34:42 chrisridd Exp $>
+I<$Id: Search.pod,v 1.7 2003/08/02 18:50:18 chrisridd Exp $>
 
 =cut
