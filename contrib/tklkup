@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # !/usr/local/bin/perl
 #
-# Copyright (c) 1999 Clif Harden.  All Rights Reserved
+# Copyright (c) 1999 - 2001 Clif Harden.  All Rights Reserved
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU GENERAL PUBLIC LICENSE.
 #----------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.13 2001/08/24 03:03:55 charden Exp $
+# $Id: tklkup,v 1.14 2001/08/26 23:58:56 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,15 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.14  2001/08/26 23:58:56  charden
+# Added setFilter subroutine.
+# Added Set Filter Condition menu button.
+# Added code to allow setting of 4 different search filter combinations;
+# equal, begins with, ends with, and contains.
+# Added pod documentation for Set Filter Condition.
+#
 # Revision 1.13  2001/08/24 03:03:55  charden
+#
 # Added code to set the environment variable HOME if it is not set.
 # ActiveState perl does not seem to have this variable set up like the
 # Unix version of perl.
@@ -168,6 +176,7 @@ $Global{'sclear'} = 0;
 $Global{'limit'}  = 30;
 $Global{'port'}   = 389;
 $Global{'platform'} = ($^O eq 'MSWin32') ? $^O : 'unix' ;
+$Global{'infoFilter'} = "equal";
 
 my $sbbframe;
 my @base       = ();
@@ -452,9 +461,10 @@ $Global{'mainWindow'}->geometry("+$Global{'horz'}+$Global{'vert'}");
 #
 
 $Global{'mainWindow'}->Button(-text => "EXIT", 
-                    -command => sub{ exit; }, -font => $Global{'Font'}, 
+                    -command => sub{ exit; }, 
+                    -font => $Global{'Font'}, 
                     -borderwidth => 5  ) 
-                    -> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
+                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
 
 
 $dsaframe = $Global{'mainWindow'}->Frame()
@@ -609,6 +619,44 @@ $tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 )
 
 $cframe = $attframe->Frame()
       ->pack( -fill => "both", -side => "bottom" );
+
+#
+# Create get Filter selection menu button.
+#
+
+$sfcmenu = $cframe -> Menubutton(-text => " SET FILTER CONDITON",
+                 -relief => "raised", -font => $Global{'Font'},
+                 -borderwidth => 3 )
+                 -> pack(-side => $Global{'hand'} );
+
+#
+# Set up the select search base radio buttons.
+#
+
+$rbsf   = $sfcmenu -> radiobutton(-label =>   "equal",
+                  -variable => \$Global{'infoFilter'},
+                  -value => "equal", -command => \&setFilter );
+
+$rbsf   = $sfcmenu -> radiobutton(-label =>   "begins with",
+                  -variable => \$Global{'infoFilter'},
+                  -value => "begins with", -command => \&setFilter );
+
+
+$rbsf   = $sfcmenu -> radiobutton(-label =>   "ends with",
+                  -variable => \$Global{'infoFilter'},
+                  -value => "ends with", -command => \&setFilter );
+
+
+$rbsf   = $sfcmenu -> radiobutton(-label =>   "contains",
+                  -variable => \$Global{'infoFilter'},
+                  -value => "contains", -command => \&setFilter );
+
+
+$flclist = $cframe ->Listbox( -width => 11, -height => 1  );
+
+$flclist->pack(-side => $Global{'hand'} );
+
+$flclist->insert(0, $Global{'infoFilter'});
 
 #
 # Create Clear Attribute Data and Search Directory buttons
@@ -910,6 +958,16 @@ sub base {
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 
 } # End of base subroutine
+
+sub setFilter {
+
+#
+# Put search filter conditions into the list box.
+#
+
+$flclist->insert(0 , $Global{'infoFilter'});
+
+} # End of setFilter subroutine
 
  
 #
@@ -1244,7 +1302,7 @@ $srbfilelabel = $Global{'schemaWindow'}->LabFrame(-label => "SCHEMA DUMP TO FILE
       ->pack( -fill => "both", -anchor => "w", -padx => 2, -pady => 2);
 
 $srbfile = $srbfilelabel -> Checkbutton( 
-          -text => "Write schema data to file, enter file\nname in text box below this line.   ",
+          -text => "Write schema data to file, enter file name in text box below this line.   ",
           -variable =>  \$Global{'sfile'}, -onvalue => 1, -offvalue => 0,
           -font => $Global{'Font'} )
           -> pack(-anchor => "w" );
@@ -1336,7 +1394,7 @@ $sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
       -> pack(-side => "top", -anchor => 'w' );
 
 
-      $sellframe -> Button(-text => "SHOW HIERARCHIAL OBJECTCLASS TREE",
+      $sellframe -> Button(-text => "SHOW HIERARCHIAL\nOBJECTCLASS TREE",
       -command =>  \&Hierarchial,  -font => $Global{'Font'},
       -borderwidth => 3 )
       -> pack(-side => "bottom" );
@@ -2132,7 +2190,27 @@ $match = $Global{'adata'};
 }
 else
 {
-$match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+if ( $Global{'infoFilter'} =~ /^equal$/ )
+{
+  $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+}
+elsif ( $Global{'infoFilter'} =~ /^begins with$/ )
+   {
+     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . "*)";
+   }
+elsif ( $Global{'infoFilter'} =~ /^ends with$/ )
+   {
+     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . ")";
+   }
+elsif ( $Global{'infoFilter'} =~ /^contains$/ )
+   {
+     $match = "(" . $Global{'info'} . '=*' . $Global{'adata'} . "*)";
+   }
+   else
+   {
+     $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+   }
+
 }
 
 $error = 0;  # initialize error flag.
@@ -2857,6 +2935,24 @@ by the GUI.  If the GUI is icon-ed or exited, the tear off
 window will follow the actions of the GUI.  All other 
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
+
+
+The I<SET FILTER CONDITION> button will activate a drop down menu.  
+From the menu the user will select the "RadioButton" that 
+corresponds to the filter conditions the user wishes to use 
+in the directory search.  When selected the "RadioButton" 
+diamond will turn red in color.  This menu is a designed 
+to be a "I<tear off>" menu, selecting the 
+"---------------" line will cause the pull down menu to 
+become a separate window that is still somewhat controlled 
+by the GUI.  If the GUI is icon-ed or exited, the tear off 
+window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+The four filter conditions control how the search filter
+will be created.  Just to the side of the I<SET FILTER CONDITION>
+button is a text box that displays the filter condition
+that is selected.
 
 The I<CLEAR ATTRIBUTE DATA> button will clear out the text
 that appears in the Attribute Data text box.
