@@ -31,24 +31,24 @@ use strict;
 getopts('acD:e:f:h:p:P:w:', \%opt);
 $opt{h} ||= 'localhost';
 my $conn = Net::LDAP->new($opt{h}) or die "$opt{h}: $!\n";
-my $result = $conn->bind(dn => $opt{D}, password => $opt{w});
+my $result = $conn->bind($opt{D}, password => $opt{w});
 $result->code && die("$opt{h}: bind: ", $result->error, "\n");
 my $ldif = Net::LDAP::LDIF->new($opt{f}, "r");
 $ldif->{changetype} = 'add' if $opt{a};
 my $ldiferr;
 
-while (my $change = $ldif->read_cmd()) {
+while (my $change = $ldif->read_entry()) {
 	print "dn: ", $change->dn, "\n";
 	my $result = $change->update($conn);
 	if ($result->code) {
 		print STDERR "ldapmodify: ", $result->error, "\n";
 		if ($opt{e}) {
 			if (!$ldiferr) {
-				$ldiferr = Net::LDAP::LDIF->new($opt{e}, 'a') 
+				$ldiferr = Net::LDAP::LDIF->new($opt{e}, 'a', change => 1) 
 					or die "$opt{e}: $!\n";
 			}
 			print { $ldiferr->{fh} } "# Error: ", $result->error;
-			$ldiferr->write_cmd($change);
+			$ldiferr->write_entry($change);
 			print { $ldiferr->{fh} } "\n";
 		}
 		last unless $opt{c};

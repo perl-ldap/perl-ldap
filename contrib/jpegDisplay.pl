@@ -87,7 +87,7 @@ my $ldap = new Net::LDAP($opt{'h'},
 #
 # Bind to directory.
 #
-$ldap->ldapbind(password => "$opt{'w'}", dn => "$opt{'D'}", version => $opt{'V'}) or die $@;
+$ldap->bind($opt{'D'}, password => "$opt{'w'}", version => $opt{'V'}) or die $@;
 
 #
 # Search directory for record that matches filter 
@@ -119,7 +119,7 @@ else
 
   $dn = $entry->dn();
 
-    my $attr = $entry->get_attribute("jpegPhoto");
+    my $attr = $entry->get_value("jpegPhoto");
     if(ref($attr)) 
       {
       $picture = @$attr[0];
@@ -139,6 +139,7 @@ else
 # Store the jpeg data to a temp file.
 #
 open(TMP, "+>$jpegFile");
+binmode(TMP);
 $| = 1;
 
 print TMP $picture;
