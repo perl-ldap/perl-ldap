@@ -22,7 +22,7 @@ Net::LDAP::Util - Utility functions
 =head1 DESCRIPTION
 
 B<Net::LDAP::Util> is a collection of utility functions for use with
-the L<Net::LDAP|Net::LDAP> modules.
+the L<Net::LDAP> modules.
 
 =head1 FUNCTIONS
 
@@ -39,7 +39,7 @@ require Exporter;
   ldap_error_desc
   canonical_dn
 );
-$VERSION = "0.05";
+$VERSION = "0.06";
 
 =item ldap_error_name ( NUM )
 
@@ -229,6 +229,45 @@ sub ldap_error_desc {
 Returns the given DN in a cononical form. Returns undef if DN is
 not a valid Distinguished Name
 
+It performs the following operations on the given DN
+
+=over 4
+
+=item *
+
+Lowercases values that are # followed by hex.
+
+=item *
+
+Removes the leading OID. caracters if the type is an
+OID instead of a name.
+
+=item *
+
+Uppercases type names.
+
+=item *
+
+Backslashifies RFC 2253-magic characters.
+
+=item *
+
+Backslash and hex encodes 0x00-0x1f and 0x7f-0xff characters.
+
+=item *
+
+Converts all leading and trailing spaces in values to be \20.
+
+=item *
+
+If an RDN contains multiple parts, the parts are re-ordered so that the
+attribute names are in alphabetical order.
+
+=back
+
+B<Note> values that are hex encoded (ie start with a #) are not
+decoded. So  SN=Barr is not treated the same as SN=#42617272
+
 =cut
 
 
@@ -267,7 +306,7 @@ sub canonical_dn {
       $val =~ s/([\\",=+<>#;])/\\$1/g;
       $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
 
-      $val = qq{"$val"} if $val =~ /^\s+|\s\s|\s+$/;
+      $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
     }
 
     push @rdn, "\U$type\E=$val";
@@ -297,7 +336,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.7 2001/02/14 19:43:29 gbarr Exp $>
+I<$Id: Util.pm,v 1.8 2001/03/08 13:18:52 gbarr Exp $>
 
 =cut
 

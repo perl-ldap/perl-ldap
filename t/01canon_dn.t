@@ -38,11 +38,17 @@ my @tests = map { /^\s*(\w\S+)\s+(.*)/ } split(/\n/,<<'EOS');
   same	oid.1.3.6.1.4.1.1466.0=Hi,O=Test,C=GB
   same	OID.1.3.6.1.4.1.1466.0=Hi,O=Test,C=GB
 
-  ref	CN=Clif Harden+IDNUMBER="a0125589 ",OU=tiPerson,OU=person,O=ti,C=us
+  ref	CN=Clif Harden+IDNUMBER=a0125589\20,OU=tiPerson,OU=person,O=ti,C=us
   diff	cn=Clif Harden+IDNumber=a0125589,ou=tiPerson,ou=person,o=ti,c=us
   same	cn=Clif Harden+IDNumber=a0125589\ ,ou=tiPerson,ou=person,o=ti,c=us
   same	cn=Clif Harden+IDNumber=a0125589\20 ,ou=tiPerson,ou=person,o=ti,c=us
-  same	cn=Clif Harden+IDNumber=a0125589\20,ou=tiPerson,ou=person,o=ti,c=us
+  same	cn=Clif Harden+IDNumber="a0125589 ",ou=tiPerson,ou=person,o=ti,c=us
+
+
+  ref   CN=\20\20Graham  Barr\20\20,OU=person,O=vc,C=us
+  same  Cn="  Graham  Barr  ",OU=person,O=vc,C=us
+  same  cn="  Graham \20Barr\20 ",OU=person,O=vc,C=us
+
 
 EOS
 
