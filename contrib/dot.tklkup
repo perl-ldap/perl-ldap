@@ -4,12 +4,16 @@
 #
 #
 # Default main window width, user may need to adjust
+# Sun systems seem to do best on 600.
+# Linux systems seem to do best at 500.
 #
-mwwidth: 400
+mwwidth: 600
 #
 # Default main window height, user may need to adjust
+# Sun systems seem to do best on 430.
+# Linux systems seem to do best at 400.
 #
-mwheight: 540
+mwheight: 430
 #
 #  Set up which side you want the Attributes pane to be displayed
 #  on.
