@@ -1,13 +1,21 @@
-# $Id: Control.pm,v 1.7 2003/05/07 10:52:11 chrisridd Exp $
+# $Id: Control.pm,v 1.8 2003/05/08 12:52:16 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Control;
 
-use Net::LDAP::Constant qw(/^LDAP_CONTROL/);
 use vars qw($VERSION);
 use strict;
+
+use Net::LDAP::Constant qw(
+  LDAP_CONTROL_SORTREQUEST
+  LDAP_CONTROL_SORTRESULT
+  LDAP_CONTROL_VLVREQUEST
+  LDAP_CONTROL_VLVRESPONSE
+  LDAP_CONTROL_PAGED
+  LDAP_CONTROL_PROXYAUTHENTICATION
+);
 
 $VERSION = "0.04";
 
@@ -17,7 +25,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::SortResult' 	=> LDAP_CONTROL_SORTRESULT,
 
   'Net::LDAP::Control::VLV'		=> LDAP_CONTROL_VLVREQUEST,
-  'Net::LDAP::Control::VLVResponse'	=> LDAP_CONTROL_VLVRESPONSE,     
+  'Net::LDAP::Control::VLVResponse'	=> LDAP_CONTROL_VLVRESPONSE,
 
   'Net::LDAP::Control::Paged'		=> LDAP_CONTROL_PAGED,
 
@@ -84,7 +92,7 @@ sub from_asn {
   }
 
   delete $asn->{error};
- 
+
   bless($asn, $class)->init;
 }
 
@@ -285,6 +293,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Control.pm,v 1.7 2003/05/07 10:52:11 chrisridd Exp $>
+I<$Id: Control.pm,v 1.8 2003/05/08 12:52:16 gbarr Exp $>
 
 =cut
