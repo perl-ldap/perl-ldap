@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.37 2003/01/25 03:38:24 charden Exp $
+# $Id: tklkup,v 1.38 2003/01/25 03:45:49 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -96,8 +96,8 @@ $Global{'max'} = 0;
 $Global{'infoFilter'} = "equal";
 $Global{'nismapname'} = 0;
 $Global{'records'} = 0;
-$Global{'mwwidth'} = 00;
-$Global{'mwheight'} = 40;
+$Global{'mwwidth'} = 400;
+$Global{'mwheight'} = 540;
 
 my $sbbframe;
 my @base       = ();
@@ -319,7 +319,6 @@ $Global{'hand'}   = $opt_r ? 'right' : 'left';
 }
 
 $Global{'mainWindow'}->geometry("$Global{'mwheight'}x$Global{'mwwidth'}+$Global{'horz'}+$Global{'vert'}");
-#$Global{'mainWindow'}->geometry("+$Global{'horz'}+$Global{'vert'}");
 
 $splashList->insert("0", "Determining search bases.") 
         if ( $Global{splash} );
