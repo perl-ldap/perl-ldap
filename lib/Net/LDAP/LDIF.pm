@@ -215,6 +215,7 @@ sub _read_entry {
       while(@ldif) {
         my $line = shift @ldif;
         my $attr;
+	my $xattr;
   
         if ($line eq "-") {
           $entry->$modify($lastattr, \@values)
@@ -224,10 +225,11 @@ sub _read_entry {
           last;
         }
  
-        $line =~ s/^([-;\w]+):\s*// and $attr = $1;
+        $line =~ s/^([-;\w]+):([\<\:]?)\s*// and
+	    ($attr, $xattr) = ($1, $2);
 
         # base64 encoded attribute: decode it
-        if ($line =~ s/^:\s*//) {
+        if ($xattr eq ':') {
           eval { require MIME::Base64 };
           if ($@) {
             $self->_error($@, @ldif);
@@ -236,7 +238,7 @@ sub _read_entry {
           $line = MIME::Base64::decode($line);
         }
         # url attribute: read in file:// url, fail on others
-        elsif ($line =~ s/^\<\s*(.*?)\s*$/$1/) {
+        elsif ($xattr eq '<' and $line =~ s/^(.*?)\s*$/$1/) {
           $line = $self->_read_url_attribute($line, @ldif);
           return  if !defined($line);
         }
@@ -266,11 +268,14 @@ sub _read_entry {
     my $vals = [];
     my $line;
     my $attr;
+    my $xattr;
+
     foreach $line (@ldif) {
-      $line =~ s/^([-;\w]+):\s*// && ($attr = $1) or next;
+      $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
+	  (($attr, $xattr) = ($1, $2)) or next;
   
       # base64 encoded attribute: decode it
-      if ($line =~ s/^:\s*//) {
+      if ($xattr eq ':') {
         eval { require MIME::Base64 };
         if ($@) {
           $self->_error($@, @ldif);
@@ -279,7 +284,7 @@ sub _read_entry {
         $line = MIME::Base64::decode($line);
       }
       # url attribute: read in file:// url, fail on others
-      elsif ($line =~ s/^\<\s*(.*?)\s*$/$1/) {
+      elsif ($xattr eq '<' and $line =~ s/^(.*?)\s*$/$1/) {
         $line = $self->_read_url_attribute($line, @ldif);
         return  if !defined($line);
       }
