@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.15 2001/08/27 03:11:33 charden Exp $
+# $Id: tklkup,v 1.16 2001/09/05 02:57:57 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,14 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.16  2001/09/05 02:57:57  charden
+# Made major modifications to the way the code operates.  When searchs
+# are done the DN of the returned entry(s) is displayed in a semi-hierarchial
+# list.  Selecting a DN will result in another window being displayed
+# that has the data for the selected DN.
+#
 # Revision 1.15  2001/08/27 03:11:33  charden
+#
 # Change code to retrieve schema information when Explore Schema
 # button is pressed. The Retrieve Schema button can still be used
 # to retrieve schema data.
@@ -178,7 +185,7 @@ $Global{'fdata'} = "";
 $Global{'hand'}  = 'left';
 $Global{'horz'} = 200;
 $Global{'vert'} = 20;
-$Global{'Font'} = "7x5";
+$Global{'Font'} = "{ MS Sans Serif} 10";
 $Global{'CORE_SERVER'} = "";
 $Global{'sclear'} = 0;
 $Global{'limit'}  = 30;
@@ -215,6 +222,7 @@ my $debug  = $opt_d ? 1 : 0;
 #
 
 if ( !$debug && $Global{'platform'} eq 'unix' ) {
+
 
         FORK: {
 
@@ -262,6 +270,15 @@ my @server    = ();
 #
 # Check for dot file, use it to configure program.
 #
+
+if ( $Global{'platform'} eq 'unix' ) 
+{
+ $ENV{'TMP'} = "/tmp";
+}
+else
+{
+ $ENV{'TMP'} = "./";
+}
 
 #
 #  Active State Perl does not always set ENV HOME.
@@ -629,6 +646,15 @@ $tframe->Entry(-textvariable => \$Global{'adata'}, -width => 25 )
 $cframe = $attframe->Frame()
       ->pack( -fill => "both", -side => "bottom" );
 
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear, 
+        -font => $Global{'Font'}, -borderwidth => 3 )
+        -> pack( -side => $Global{'hand'} );
+
 #
 # Create get Filter selection menu button.
 #
@@ -666,15 +692,6 @@ $flclist = $cframe ->Listbox( -width => 11, -height => 1  );
 $flclist->pack(-side => $Global{'hand'} );
 
 $flclist->insert(0, $Global{'infoFilter'});
-
-#
-# Create Clear Attribute Data and Search Directory buttons
-#
-
-$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear, 
-        -font => $Global{'Font'}, -borderwidth => 3 )
-        -> pack( -side => $Global{'hand'} );
-
 
 #
 # Create get root dse entry button.
@@ -2060,11 +2077,12 @@ my $y = $Global{'vert'} + 100;
 #
 # Create Main Window
 #
-if (!  Exists($displayWindow) )
+if (!Exists($displayWindow) )
 {
+
 $displayWindow = MainWindow->new;
 
-$displayWindow->title("DIRECTORY DISPLAY SEARCH");
+$displayWindow->title("DIRECTORY SEARCH DISPLAY");
 
 $displayWindow->geometry("+$x+$y");
 
@@ -2072,7 +2090,7 @@ $displayWindow->geometry("+$x+$y");
 # Create process Exit button
 #
 
-$displayWindow->Button(-text => "CLOSE DISPLAY SEARCH RESULT WINDOW", 
+$displayWindow->Button(-text => "CLOSE SEARCH DISPLAY RESULT WINDOW", 
               -command => \&display_cancel, -font => $Global{'Font'},
               -borderwidth => 5 )
               -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
@@ -2092,7 +2110,7 @@ $cframe = $displayWindow->Frame()
 $cframe -> Button(-text => "     CLEAR DATA     ", 
      -command =>  \&display_clear, -font => $Global{'Font'},
      -borderwidth => 3 ) 
-     ->pack( -side => $Global{'hand'} );
+     ->pack( -fill => 'both' );
 
 #
 # Create list frame.
@@ -2121,17 +2139,17 @@ $rbclear->select();
 #
 
 $list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 60, -height => 20, -wrap => 'none', 
+        -width => 80, -height => 20, -wrap => 'none', 
         -font => $Global{'Font'}  );
 
 $list->pack(-fill => "both", -expand => 1 );
 
 }
-else
-{
-$displayWindow->deiconify() if Tk::Exists($displayWindow);
-$displayWindow->raise() if Tk::Exists($displayWindow);
-}
+#else
+#{
+#$displayWindow->deiconify() if Tk::Exists($displayWindow);
+#$displayWindow->raise() if Tk::Exists($displayWindow);
+#}
 
 
 sub display_clear {
@@ -2153,11 +2171,213 @@ $displayWindow->destroy if Tk::Exists($displayWindow);
 
 } # End of subroutine displaySearch
  
+
+sub displayDnList
+{
+my $x = $Global{'horz'};
+my $y = $Global{'vert'}  + 230 ;
+
 #
+# Set up the Tk windows.
+#
+#
+
+if ( ! Exists($Global{'searchHistWindow'} ) ) 
+{
+  eval 
+     { 
+       $Global{'searchHistWindow'} = MainWindow->new(); 
+     };
+  print "$@" if ( defined($@)); }
+else 
+{
+$Global{'searchHistWindow'}->deiconify() if Tk::Exists($Global{'searchHistWindow'}); 
+$Global{'searchHistWindow'}->raise() if Tk::Exists($Global{'searchHistWindow'}); 
+}                                                                               
+
+$Global{'searchHistWindow'}->geometry("+$x+$y"); 
+$Global{'searchHistWindow'}->title("SEARCH RESULTS");
+#
+# Create label box
+#
+
+if ( !Exists($Global{'label'}) )
+{
+$Global{'searchLabel'} = $Global{'searchHistWindow'}->Label()->pack;
+}
+
+#
+# Create process Exit button
+#
+
+$hbuttonSearch = $Global{'searchHistWindow'}->Button(
+              -text => "CLOSE SEARCH DISPLAY WINDOW", 
+              -command => \&histSearch_cancel, -font => $Global{'Font'},
+              -borderwidth => 5 )
+              -> pack(-fill => "both", -padx => 2, -pady => 2 ) 
+              if ( Exists($Global{'searchHistWindow'} ) && 
+                   !Exists($hbuttonSearch ) );
+
+#
+# Create Hierarchial DN list box, this is where the DN data
+# tree will be displayed.
+#
+
+$Global{'searchHList'} = $Global{'searchHistWindow'}
+   ->Scrolled('HList', 
+            -font       => $Global{'Font'},
+            -scrollbars => 'se',
+            -width      => 50, 
+            -height     => 20,
+            -itemtype   => 'text',
+            -separator  => '/',
+            -selectmode => 'single',
+            -browsecmd  => sub {
+#
+            my $objects = shift;   # get the dn
+            my $dataArray;
+            my $blank = "   ";
+            my $data;
+            my $dn;
+            my $max;
+            my $lb;
+            my $info;
+            my @infoKeys;
+            my @DNs = ();
+
+            &displaySearch();  # create the entry data display window.
+            # clear the entry data display window.
+            if ( $display_clear ) { &display_clear(); }
+            #
+            # Format and display the data associcated with the dn 
+            # passed to this subroutine.
+            #
+            @DNs = split(/\//,$objects); # split base from dn.
+
+            $dataArray = $Global{'searchResults'};
+            $data = $$dataArray{$DNs[1]}; # get data associated with this dn
+            $dn = $$data[0];     # get DN
+            $max = $$data[1];    # get max size of atttributes
+            $info = $$data[2];   # get data hash address.
+            @infoKeys = sort(keys(%$info));  # get a list of all attributes.
+             #
+             # create attribute label 
+             #
+             $lb = $list->Label(-text => "DN:", 
+                                -relief => 'groove',
+                                -anchor => 'e',
+                                -width => ($max+2) );
+
+             $list->windowCreate("end", -window => $lb );
+             #
+             # create data entry window
+             #
+             $lb = $list->Entry(-width => 85,
+                                -textvariable => \$dn);
+             $list->windowCreate("end", -window => $lb );
+
+             $list->insert("end", "\n"); # position to the next row.
+            #
+            # For each attribute display it's data
+            # 
+            foreach my $var (@infoKeys)
+            {
+
+            if ( $var =~ /^jpegPhoto/i )
+            {
+             #
+             # Display jpegPhoto in separate window if Tk::JPEG is used.
+             #
+             my $Value = decode_base64($$info{$var});
+             displayPhoto($Value, $dn ) if ( $Global{'jpeg'}) ;  
+             $dstring = "JpegPhoto binary data is not being displayed.\n";
+             #
+             # create attribute label 
+             #
+             $lb = $list->Label(-text => "$var:", 
+                                -relief => 'groove',
+                                -anchor => 'e',
+                                -width => ($max+2) );
+
+             $list->windowCreate("end", -window => $lb );
+             #
+             # create data entry window
+             #
+             $lb = $list->Entry(-width => 85,
+                                -textvariable => \$dstring);
+             $list->windowCreate("end", -window => $lb );
+
+             $list->insert("end", "\n"); # position to the next row.
+             next;
+            }
+
+            my $values = $$info{$var}; # get attribute data array.
+            foreach my $Value ( @$values)
+            {
+             #
+             # create attribute label 
+             #
+             $lb = $list->Label(-text => "$var:", 
+                                         -relief => 'groove',
+                                         -anchor => 'e',
+                                         -width => ($max+2) );
+
+             $list->windowCreate("end", -window => $lb );
+
+             #
+             # Format data and print data into Entry Box
+             # 
+             if ( $var =~ /;binary$/ )
+             {
+               $encoded = encode_base64($Value);
+               $lb = $list->Entry(-width => 85,
+                                  -textvariable => \$encoded);
+             }
+             else
+             {
+               $lb = $list->Entry(-width => 85,
+                                  -textvariable => \$Value);
+             }                                                                       
+             $list->windowCreate("end", -window => $lb ); 
+ 
+             # position to the next row. 
+             $list->insert("end", "\n");
+
+            }
+            }
+
+             $lb = $list->Entry(-width => 85,
+                                  -textvariable => \$blank);
+             $list->windowCreate("end", -window => $lb ); 
+             # position to the next row. 
+             $list->insert("end", "\n");
+ 
+            } # End of subroutine browsecmd
+
+   );  # End of Scrolled HList.
+
+
+sub histSearch_clear {
+
+#
+# Clear out text in List Box
+#
+
+$Global{'searchList'}->delete("1.0", "end");
+
+} # End of clear subroutine
+ 
+sub histSearch_cancel{
+
+$Global{'searchList'}->destroy if Tk::Exists($Global{'searchList'});
+$Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
+$Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
+} # End of cancel subroutine
+
+} # End of cancel subroutine
+
 #
 # Search the directory for data
-#
-#
 #
 
 sub search 
@@ -2181,15 +2401,14 @@ my %opt = (
 );
 
 #
+# Destroy the dn history list if it exists.
 #
-#
-# Display the search results list box.
-#
-#
-displaySearch();
+$Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
 
-
-if ( $display_clear ) { &display_clear(); }
+#
+# Display the DN search results list box.
+#
+displayDnList();
 
 #
 # Parameter(s) to return
@@ -2275,6 +2494,8 @@ if ( $error == 1 )
    return;
 }
 
+$Global{'searchResults'} = {};  # initialize results hash.
+
 $mesg = $ldap->search(
   base   => $LDAP_SEARCH_BASE,
   filter => $f,
@@ -2298,6 +2519,38 @@ if ( $mesg->code )
    return;
 }
 
+
+#
+# Create Hierarchial DN list box data tree, 
+# and display data.
+#
+
+
+eval{
+#
+# Create the base point.
+#
+$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
+
+$results = $Global{'searchResults'};
+
+@dnKeys = sort(keys(%$results));
+
+#
+# build the hierachical list using the DN
+#
+foreach my $dnvar ( @dnKeys ) 
+{
+ $var = $$results{$dnvar};  # get entry data array
+ $shbase = $LDAP_SEARCH_BASE . "/" . $$var[0]; # create new leaf
+ $Global{'searchHList'}->add($shbase, -text => $$var[0]); # add leaf to tree.
+}
+$Global{'searchHList'}->pack(-side => "right");
+};
+
+print "$@" if ( defined($@));
+
+
 $ldap->unbind if ( defined($ldap));
 
 #
@@ -2306,24 +2559,27 @@ $ldap->unbind if ( defined($ldap));
 
 sub print_entry {
   my($mesg,$entry) = @_;
-  my @ref;
+  my @ref = ();
+  my $dn;
+  my $max;
+  my $data = [];
+  my $information = {};
 
   if ( !defined($entry) )
   { 
-    $list->insert("end", "No records found matching filter $match.\n") 
-       if ($mesg->count == 0) ;
+#    $list->insert("end", "No records found matching filter $match.\n") 
+#       if ($mesg->count == 0) ;
 
     return;
   }
  
+  $dn = $entry->dn;           # store the entry dn
   #
   #
   #
-  if ( @ref = $mesg->referrals() )
+  @ref = $mesg->referrals();
+  if ( @ref )
   {
-  $list->insert("end", " \n");
-  $list->insert("end", "-----------------------------------------------------------------------------\n");
-  $list->insert("end", " \n");
   foreach (@ref )
   {
     $list->insert("end", "LDAP Referral: $_ \n");
@@ -2332,26 +2588,12 @@ sub print_entry {
   }
   else
   {
-   
   #
   # Get a list of record attributes
   #
   
   my @attrs = sort $entry->attributes;
-  my $max = 0;
-  $list->insert("end", " \n");
-  $list->insert("end", "-----------------------------------------------------------------------------\n");
-
-  #
-  # Get record DN
-  #
-  
-  my $dn = $entry->dn();
-  
-  $list->insert("end", " \n");
-  $list->insert("end", "DN:  $dn\n");
-  $list->insert("end", " \n");
-
+  $max = 0;
   #
   # Calculate each attribute`s text length.
   # We use this to create a pretty print out in the 
@@ -2371,13 +2613,16 @@ sub print_entry {
     if ( /^jpegPhoto/i )
     {
       #
-      # Display jpegPhoto in separate window if Tk::JPEG is used.
+      # record jpegPhoto data.
       #
-      displayPhoto(@$attr[0], $dn ) if ( $Global{'jpeg'}) ;  
-      $dstring = sprintf "%${max}s: JpegPhoto binary data is not being displayed.\n",$_,$encoded;
-      $list->insert("end",  "$dstring");
+      $encoded = encode_base64(@$attr[0]);
+      $$information{$_} = $encoded;
       next;
     }
+
+    $$information{$_} = $attr;  # record ldap data
+
+    next;
 
     if(ref($attr)) {
       foreach $a (@$attr) {
@@ -2387,17 +2632,12 @@ sub print_entry {
         if ( /;binary$/ )
         {
         $encoded = encode_base64($a);
-        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
-        $list->insert("end",  "$dstring");
+        $$information{$_} = $encoded;  # record ldap data
         }
         else
         {
-        $dstring = sprintf "%${max}s: %s\n",$_,$a;
-        $list->insert("end",  "$dstring");
+        $$information{$_} = $a;  # record ldap data
         }                                                                       
-
-#        $dstring = sprintf "%${max}s: %s\n",$_,$a;
-#        $list->insert("end",  "$dstring");
       }
     }
     else {
@@ -2406,20 +2646,20 @@ sub print_entry {
       #
         if ( /;binary$/ )
         {
-        $encoded = encode_base64($attr);
-        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
-        $list->insert("end",  "$dstring");
+         $encoded = encode_base64($attr);
+         $$information{$_} = $encoded;  # record ldap data
         }
         else
         {
-        $dstring = sprintf "%${max}s: %s\n",$_,$attr;
-        $list->insert("end",  "$dstring");
-        }                                                                       
-#      $dstring = sprintf "%${max}s: %s\n",$_,$attr;
-#      $list->insert("end",  "$dstring");
+        $$information{$_} = $attr;  # record ldap data
+        } 
     }
   }
  }
+push(@$data, $dn);   # dn of entry
+push(@$data, $max);  # max attribute string lenght
+push(@$data, $information);
+${$Global{'searchResults'}}{$dn} = $data;
 }
 
 } # End of search subroutine
@@ -2430,7 +2670,7 @@ sub print_entry {
 sub displayPhoto
 {
 my ($picture, $dn) = @_; 
-my $jpegFile = "/tmp/jpegfile.$$";
+my $jpegFile = $ENV{'TMP'} ."/jpegfile.$$";
 #
 # Store the jpeg data to a temp file.
 #
@@ -2617,17 +2857,15 @@ return @new_base;
 sub rootDse
 {
 my $base;
-my $ebutton;
-my $list;
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
 my $error;
 
 if ( $Global{'setVersion'} != 1 )
 {
-$error = "LDAP version is not equal to 3.";
-ERROR(\$error);
-return;
+ $error = "LDAP version is not equal to 3.";
+ ERROR(\$error);
+ return;
 }
 
 my $version = 3;
@@ -2636,8 +2874,9 @@ my $ldap = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
 $ldap->bind( version => $version ) or die;
 my $root = $ldap->root_dse();
 
-my @Attributes = ( qw( namingContexts supportedLDAPVersion 
-                    supportedControl supportedExtension altServer ) );
+my @Attributes = ( qw(namingContexts supportedLDAPVersion 
+                    supportedControl supportedExtension altServer) );
+
 if ( !defined($root) )
 {
    my $error =  "Root DSE entry could not be obtained.";
@@ -2651,73 +2890,72 @@ if ( !defined($root) )
  
 if ( ! Exists($Global{'rootWindow'} ) )
 {
-  eval
-     {
-       $Global{'rootWindow'} = MainWindow->new();
-     };
-  print "$@" if ( defined($@)); }
-else
-{
-$Global{'rootWindow'}->deiconify() if Tk::Exists($Global{'rootWindow'});
-$Global{'rootWindow'}->raise() if Tk::Exists($Global{'rootWindow'});
+   $Global{'rootWindow'} = MainWindow->new();
+   $Global{'rootWindow'}->title("ROOT DSE ENTRY");
+   $Global{'rootWindow'}->geometry("+$x+$y"); 
 }
-
-$Global{'rootWindow'}->title("ROOT DSE ENTRY");
- 
-$Global{'rootWindow'}->geometry("+$x+$y"); 
 
 #
 # Create label box
 #
- 
-if ( !Exists($label) )
+# 
+if ( !Exists($Global{'labelDSE'}) )
 {
-$label = $Global{'rootWindow'}->Label()->pack;
+ $Global{'labelDSE'} = $Global{'rootWindow'}->Label()->pack;
 }
  
 #
 # Create process Exit button
 #
  
-$ebutton = $Global{'rootWindow'}->Button(
+$Global{'ebuttonDSE'} = $Global{'rootWindow'}->Button(
               -text => "CLOSE ROOT DSE DISPLAY WINDOW",
               -command => \&root_cancel, -font => $Global{'Font'},
               -borderwidth => 5 )
               -> pack(-fill => "both", -padx => 2, -pady => 2 )
               if ( Exists($Global{'rootWindow'} ) &&
-                   !Exists($ebutton ) );
+                   !Exists($Global{'ebuttonDSE'} ) );
  
 #
 # Create list box, this is where the selected objectclass data will
 # be displayed.
 #
  
-if ( !Exists($list) )
+if ( !Exists($Global{'listDSE'}) )
 {
-$list = $Global{'rootWindow'}->Scrolled('ROText',
-            -scrollbars => 'se', -width=>50, -wrap => "none",
-            -font => $Global{'Font'}, -height => 10 )
-            ->pack();
+ $Global{'listDSE'} = $Global{'rootWindow'}->Scrolled('ROText',
+             -scrollbars => 'se', -width=>50, -wrap => "none",
+             -font => $Global{'Font'}, -height => 10 )
+             ->pack();
 }
- 
+else
+{
+ #
+ # clear the list box
+ #
+ $Global{'listDSE'}->delete("1.0", "end");
+} 
+
 foreach $attr (@Attributes)
 {
 
-$base = $root->get_value( $attr, asref => 1); 
-foreach (@$base)
-{
-$list->insert("end", "$attr:  $_\n");
-}
+ $base = $root->get_value( $attr, asref => 1); 
+ foreach (@$base)
+ {
+ $Global{'listDSE'}->insert("end", "$attr:  $_\n");
+ }
 
 }
 
 $ldap->unbind;
 
 }
+
 sub root_cancel
 {
-$Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'}); 
+ $Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'}); 
 }
+
 #----------------------------------------#
 # Usage() - display simple usage message #
 #----------------------------------------#
@@ -2750,9 +2988,10 @@ directory server.  It is GUI based with several buttons for
 selecting directory servers, search bases, attributes and
 for enabling the Directory Schema Search window.
 
-This script has been tested on Solaris, RedHat 6.0 Linux, and
-Mandrake 6.5 but should work with any system that has PERL and the 
-required modules installed in it.
+This script has been tested on Solaris, RedHat 6.0 Linux, 
+Mandrake 6.5  and ActiveState Perl 628 but should work with 
+any system that has PERL and the required modules installed in 
+it.
 
 There are 2 files associated with the tklkup program in this 
 tar file; dot.tklkup, and tklkup.
@@ -2959,6 +3198,8 @@ window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
+The I<CLEAR ATTRIBUTE DATA> button will clear out the text
+that appears in the Attribute Data text box.
 
 The I<SET FILTER CONDITION> button will activate a drop down menu.  
 From the menu the user will select the "RadioButton" that 
@@ -2976,9 +3217,6 @@ The four filter conditions control how the search filter
 will be created.  Just to the side of the I<SET FILTER CONDITION>
 button is a text box that displays the filter condition
 that is selected.
-
-The I<CLEAR ATTRIBUTE DATA> button will clear out the text
-that appears in the Attribute Data text box.
 
 The I<OBTAIN ROOT DSE ENTRY> button will attempt to obtain the
 root dse entry for the selected directory server.  If the root
@@ -3040,47 +3278,11 @@ The Display Search Result window can be destroyed by
 enabling the proper window manager destroy function.
 
 The Directory Data text box is where the results of the
-directory search will be displayed.  With the cursor
-in the Directory Data text box you have access to additional
-functions when you depress the mouse "action" button.
-When the "action" mouse button is depressed a small text box
-with 4 additional functions will be displayed inside the 
-Directory Data text box.  These 4 functions are;
-
- File -> This function exits the program.  You can not edit
-         the Directory Data text box because it is created 
-         as a read only text box.
-
- Edit -> This function gives the user 3 additional functions;
-         Copy -> I do not know what this function does.
-         Select All -> Highlights/Selects all of the text in
-         the Directory Data text box.
-         Unselect All -> Unselects all of the text in 
-         the Directory Data text box.
-         Select/Unselect are used in-conjunction with the 
-         Copy function.
-
- Search -> This function gives the user 4 additional
-         functions.
-         Find, Find Next, Find Previous -> These functions
-         find text in the Directory Data text box.
-         Replace -> This function allows you to replace the
-         text that is selected.  However this is just 
-         a fake replacement as you can not edit the 
-         Directory Data text box because it is created 
-         as a read only text box.
-
- View -> This function gives the user 3 additional 
-         functions.
-         Goto Line ->  When selected will prompt the
-         user for a line number, the line number being
-         the line number the user wishes to see.
-         What Line ->  When selected will tell the user
-         what line number the cursor is on.
-         Wrap ->  When selected will prompt the user
-         to choose how to do line wrapping in the 
-         Directory Data text box.
-  
+directory search will be displayed.  If there were valid
+results returned from the search a list of DN entry(s) will
+be displayed in the hierarchial list box.  Selecting a DN will 
+cause a Directory Search Display window to appear with the 
+corresponding DS's directory data.
 
 Associated with the Directory Data text box is the "RadioButton"
 that determines how often the data in the directory text
