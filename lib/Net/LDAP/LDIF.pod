@@ -68,8 +68,6 @@ Use base64.
 
 =back
 
-=back
-
 =item onerror =E<gt> 'die' | 'warn' | undef
 
 Specify what happens when an error is detected.
@@ -88,6 +86,21 @@ C<Net::LDAP::LDIF> will warn with an appropriate message.
 
 C<Net::LDAP::LDIF> will warn with an appropriate message if C<-w> is
 in effect.  The method that was called will return C<undef>.
+
+=item change =E<gt> 1
+
+Write entry changes to the LDIF file instead of the entries itself.
+I.e. write LDAP operations acting on the entries to the file instead of the entries contents.
+
+=item version =E<gt> '1'
+
+Set the LDIF version to write to the resulting LDIF file.
+
+According to RFC 2849 currently the only legal value for this option is I<1>.
+
+The default is I<undef> meaning no version information is written to the LDIF file.
+
+=back
 
 =back
 
@@ -113,6 +126,14 @@ Returns I<true> when the end of the file is reached.
 =item write_entry ( ENTRIES )
 
 Write the entries to the LDIF file.
+
+=item version ( [ VERSION ] )
+
+If called without arguments it returns the version of the LDIF file
+or undef if no version has been set.
+If called with an argument it sets the LDIF version to VERSION.
+
+According to RFC 2849 currently the only legal value for VERSION is I<1>.
 
 =item done ( )
 

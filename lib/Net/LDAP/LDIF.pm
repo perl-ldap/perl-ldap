@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.13";
+$VERSION = "0.14";
 
 my %mode = qw(w > r < a >>);
 
@@ -51,9 +51,9 @@ sub new {
   $opt{'onerror'} = 'die' unless exists $opt{'onerror'};
 
   $opt{'lowercase'} ||= 0;
+  $opt{'change'} ||= 0;
 
   my $self = {
-    change => 0,
     changetype => "modify",
     modify => 'add',
     wrap => 78,
@@ -376,7 +376,7 @@ sub write_entry {
 	print "\n";
       }
       else {
-        print "version: $self->{version}\n" if defined $self->{version};
+        print "version: $self->{version}\n\n" if defined $self->{version};
       }
       _write_dn($entry->dn,$self->{'encode'},$wrap);
 
@@ -389,9 +389,10 @@ sub write_entry {
         _write_attrs($entry,$wrap,$lower);
         next;
       }
-      elsif ($type eq 'modrdn') {
+      elsif ($type =~ /modr?dn/o) {
+        my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
         print _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
-        print 'deleteoldrdn: ', scalar $entry->get_value('deleteoldrdn'),"\n";
+        print 'deleteoldrdn: ', $deleteoldrdn,"\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
         print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
         next;
@@ -419,7 +420,7 @@ sub write_entry {
 	print "\n";
       }
       else {
-        print "version: $self->{version}\n" if defined $self->{version};
+        print "version: $self->{version}\n\n" if defined $self->{version};
       }
       _write_dn($entry->dn,$self->{'encode'},$wrap);
       _write_attrs($entry,$wrap,$lower);
@@ -523,7 +524,8 @@ sub current_lines {
 
 sub version {
   my $self = shift;
-  $self->{version};
+  return $self->{version} unless @_;
+  $self->{version} = shift;
 }
 
 sub next_lines {
