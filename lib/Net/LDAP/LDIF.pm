@@ -80,8 +80,8 @@ sub _read_lines {
        $self->eof(1);
        return;
     }
-    $ln =~ s/^#.*\n//mg;
     $ln =~ s/\n //sg;
+    $ln =~ s/^#.*\n//mg;
     chomp($ln);
     $self->{_current_lines} = $ln;
     chomp(@ldif = split(/^/, $ln));
