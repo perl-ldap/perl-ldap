@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= "0.25_50";
+$VERSION 	= "0.25_04";
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -808,7 +808,7 @@ sub start_tls {
   require Net::LDAPS;
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
   IO::Socket::SSL::context_init( { Net::LDAPS::SSL_context_init_args($arg) } );
-  IO::Socket::SSL::socketToSSL($sock)
+  IO::Socket::SSL::socketToSSL($sock, {Net::LDAPS::SSL_context_init_args($arg)})
     ? $mesg
     : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
 }
