@@ -5,7 +5,7 @@ BEGIN {
   start_server(version => 3, ssl => 1);
 }
 
-print "1..13\n";
+print "1..15\n";
 
 $ldap = client();
 print "ok 1\n";
