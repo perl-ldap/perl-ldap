@@ -942,9 +942,19 @@ sub start_tls {
 
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
-  IO::Socket::SSL::socketToSSL($sock, {_SSL_context_init_args($arg)})
-    ? $mesg
-    : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
+  my $sock_class = ref($sock);
+
+  return $mesg
+    if IO::Socket::SSL::socketToSSL($sock, {_SSL_context_init_args($arg)});
+
+  my $err = $@;
+
+  if ($sock_class ne ref($sock)) {
+    $err = $sock->errstr;
+    bless $sock, $sock_class;
+  }
+
+  _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $err);
 }
 
 sub cipher {
