@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.02";
+$VERSION = "0.03";
 
 
 sub first_entry { # compat
@@ -160,7 +160,7 @@ sub references {
 
 sub as_struct {
   my $self = shift;
-  my %result = map { ( $_->dn, $_->{'attrs'} ) } entries($self);
+  my %result = map { ( $_->dn, ($_->{'attrs'} || $_->_build_attrs) ) } entries($self);
   return \%result;
 }
 

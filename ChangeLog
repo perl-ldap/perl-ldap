@@ -1,3 +1,8 @@
+Change 517 on 2000/05/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- fix bug in ->as_struct introduced by new code in Net::LDAP::Entry
+
 Change 516 on 2000/05/12 by <gbarr@pobox.com> (Graham Barr)
 
 	Release 0.17
