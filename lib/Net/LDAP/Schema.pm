@@ -76,17 +76,6 @@ sub parse {
   return $schema;
 }
 
-sub error {
-  $_[0]->{error};
-}
-
-#
-# Return base entry
-#
-sub entry {
-  $_[0]->{entry};
-}
-
 #
 # Dump as LDIF
 #
@@ -605,6 +594,17 @@ sub name {
   my $arg = shift;
   my $oid = $self->name2oid( $arg ) or return undef;
   return $self->oid2name( $oid );
+}
+
+sub error {
+  $_[0]->{error};
+}
+
+#
+# Return base entry
+#
+sub entry {
+  $_[0]->{entry};
 }
 
 1;
