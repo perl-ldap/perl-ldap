@@ -368,9 +368,9 @@ sub write_entry {
         next;
       }
       elsif ($type eq 'modrdn') {
-        print _write_attr('newrdn',$entry->get_value('newrdn'),$wrap,$lower);
-        print 'deleteoldrdn: ',$entry->get_value('deleteoldrdn'),"\n";
-        my $ns = $entry->get_value('newsuperior');
+        print _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
+        print 'deleteoldrdn: ', scalar $entry->get_value('deleteoldrdn'),"\n";
+        my $ns = $entry->get_value('newsuperior', asref => 1);
         print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
         next;
       }
