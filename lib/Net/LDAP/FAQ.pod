@@ -1037,8 +1037,7 @@ distributed, and may be redistributed, under the same terms as Perl itself.
 
 =for html <hr>
 
-$Id: FAQ.pod,v 1.13 2001/05/15 02:45:13 charden Exp $
-
 =cut
 
+$Id: FAQ.pod,v 1.14 2001/05/15 02:54:22 charden Exp $
 
