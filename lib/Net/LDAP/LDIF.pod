@@ -126,10 +126,10 @@ Returns the lines that will generate the next Net::LDAP::Entry object.
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>.
+Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>.
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 

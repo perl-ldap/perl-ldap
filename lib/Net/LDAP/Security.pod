@@ -91,11 +91,11 @@ sign legitimate certificates.
 
 =item 2
 
-check that the least-significant cn RDN in the server's
-certificate's DN is the fully-qualified hostname of the hostname that
-you connected to when creating the LDAPS object. For example if the
-server is <cn=ldap.example.com,ou=My department,o=My company>, then
-the RDN to check is cn=ldap.example.com.
+check that the least-significant cn RDN in the server's certificate's
+DN is the fully-qualified hostname of the hostname that you connected
+to when creating the LDAPS object. For example if the server is
+E<lt>cn=ldap.example.com,ou=My department,o=My companyE<gt>, then the
+RDN to check is cn=ldap.example.com.
 
 =back
 
@@ -174,24 +174,24 @@ L<Authen::SASL>
 
 =head1 ACKNOWLEDGEMENTS
 
-Jim Dutton <jimd@dutton3.it.siu.edu> provided lots of useful feedback
+Jim Dutton E<lt>jimd@dutton3.it.siu.eduE<gt> provided lots of useful feedback
 on the early drafts.
 
 =head1 AUTHOR
 
-Chris Ridd <chris.ridd@messagingdirect.com>
+Chris Ridd E<lt>chris.ridd@isode.comE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001 Chris Ridd. All rights reserved. This program is
+Copyright (c) 2001-2003 Chris Ridd. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Security.pod,v 1.1 2001/10/24 13:49:23 chrisridd Exp $>
+I<$Id: Security.pod,v 1.2 2003/05/07 11:19:41 chrisridd Exp $>
 
 =cut

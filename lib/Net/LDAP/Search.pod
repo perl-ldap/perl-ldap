@@ -5,9 +5,9 @@ Net::LDAP::Search - Object returned by Net::LDAP search method
 =head1 SYNOPSIS
 
   use Net::LDAP;
-  
+
   $mesg = $ldap->search( @search_args );
-  
+
   @entries = $mesg->entries;
 
 =head1 DESCRIPTION
@@ -95,14 +95,14 @@ L<Net::LDAP::Reference>
 =head1 ACKNOWLEDGEMENTS
 
 This document is based on a document originally written by Russell Fulton
-<r.fulton@auckland.ac.nz>.
+E<lt>r.fulton@auckland.ac.nzE<gt>.
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>.
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
@@ -112,6 +112,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Search.pod,v 1.4 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: Search.pod,v 1.5 2003/05/07 11:17:06 chrisridd Exp $>
 
 =cut
