@@ -64,6 +64,7 @@ lib/Net/LDAP/Entry.pm
 lib/Net/LDAP/Entry.pod
 lib/Net/LDAP/Examples.pod
 lib/Net/LDAP/Extension.pm
+lib/Net/LDAP/Extension/SetPassword.pm
 lib/Net/LDAP/Extra.pm
 lib/Net/LDAP/FAQ.pod
 lib/Net/LDAP/Filter.pm
