@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.22 2003/02/14 05:20:59 charden Exp $
+# $Id: tklkup,v 2.23 2003/02/19 02:22:13 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -98,6 +98,7 @@ $Global{'records'} = 0;
 $Global{'mwwidth'} = 600;
 $Global{'mwheight'} = 520;
 $Global{dirConnError} = undef();
+$Global{'setSSL'} = 0;
 
 my $sbbframe;
 my @base       = ();
@@ -230,18 +231,23 @@ $smenu = $mwf -> Menubutton(-text => "SELECT SERVER",
 #
  
 $setVersion = $mwf -> Checkbutton(
-                       -text => "LDAP VERSION 3",
+                       -text => "LDAP V3",
                        -variable =>  \$Global{'setVersion'}, -onvalue => 3,
                        -offvalue => 2, -font => $Global{'Font'} )
                        -> pack(-side => "left", -anchor => "center" );
  
 $setVersion->select();
+
+#
+# Create a SSL Checkbutton that will set up  a SSL variable
+# 
+#
  
-#$Global{'mainWindow'}->Button(-text => "EXIT THE APPLICATION",
-#                    -command => sub{ exit; },
-#                    -font => $Global{'Font'},
-#                    -borderwidth => 5  )
-#                    -> pack(-fill => "both", -padx => 5, -pady => 2 ) ;
+$mwf -> Checkbutton(
+                       -text => "SSL",
+                       -variable =>  \$Global{'setSSL'}, -onvalue => 1,
+                       -offvalue => 0, -font => $Global{'Font'} )
+                       -> pack(-side => "left", -anchor => "center" );
 
 
 $Global{nb} = $Global{'mainWindow'}->NoteBook()
@@ -287,6 +293,12 @@ sub ops_items
 [
  
 [ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
+"",
+[ 'command', 'Toggle SSL', -accelerator => "Ctrl-s", -command => \&toggleSSL ],
+"",
+[ 'command', 'Toggle LDAP Version', -accelerator => "Ctrl-l", -command => \&toggleVersion ],
+"",
+[ 'command', 'Exit', -accelerator => "Ctrl-x", -command => sub { exit;} ],
  
 ];
  
@@ -300,7 +312,15 @@ if ( $Global{schemaServer} ne $Global{CORE_SERVER} )
 {
 $Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 $Global{schema_timer}->cancel;
-&schema if ( $Global{schemaServer} ne $Global{CORE_SERVER} ); 
+if ( $Global{schemaServer} ne $Global{CORE_SERVER} ) 
+{
+$currentPanel = $Global{nb} -> raised();
+$Global{nb} -> raise('INFO');
+
+&schema; 
+
+$Global{nb} -> raise($currentPanel);
+}
 $Global{schemaServer} = $Global{LDAP_SERVER};
 $Global{schema_timer} = $Global{mainWindow}->repeat(1000, \&update_schema);
 $Global{mainWindow} -> Unbusy;  # window is not busy
@@ -326,6 +346,37 @@ sub init_schemaHash
  $schemaHash{ 'mru' }  = [];
  
 } # End of subroutine init_schemaHash
+
+
+
+sub toggleSSL
+{
+
+if ( $Global{setSSL} )
+{
+ $Global{setSSL} = 0
+}
+else
+{
+ $Global{setSSL} = 1
+}
+ 
+} # End of subroutine toggleSSL
+
+sub toggleVersion
+{
+ 
+if ( $Global{setVersion} == 2 )
+{
+ $Global{setVersion} = 3
+}
+else
+{
+ $Global{setVersion} = 2
+}
+ 
+} # End of subroutine toggleVersion
+
 
 sub initializeProgram
 {
@@ -645,7 +696,7 @@ $sbbframe = $hlframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
 # Create the Attributes frame
 #
 
-$aframe = $tpframe ->LabFrame(-label => "ATTRIBUTES",
+$aframe = $tpframe ->LabFrame(-label => "FILTER\nATTRIBUTES",
           -labelside => "acrosstop",
           -relief => "raised") 
           ->pack( -side => "left", -fill => "both");
@@ -898,7 +949,7 @@ foreach my $Nclabel ( @NcKeys )
 # searched for.
 #
  
-$tframe = $bmframe->LabFrame(-label => "ATTRIBUTE DATA",
+$tframe = $bmframe->LabFrame(-label => "FILTER DATA",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "bottom" , -anchor => "w");
  
@@ -912,7 +963,7 @@ $tframe->Entry(-textvariable => \$Global{'adata'}, -width => 27 )
 #
 # Create Clear Attribute Data and Search Directory buttons
 #
-$tframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear,
+$tframe -> Button(-text => "CLEAR FILTER DATA", -command =>  \&AClear,
         -font => $Global{'Font'}, -borderwidth => 5 )
         -> pack( -side => "left", -anchor => "w", -pady => 2, -padx => 2 );
  
@@ -1545,6 +1596,9 @@ my $error;
 
 $error = 0;
 
+$currentPanel = $Global{nb} -> raised();
+$Global{nb} -> raise('INFO');
+
 $Global{ldap}->unbind if ( defined($Global{ldap}) );
 $Global{ldap} = undef if ( defined($Global{ldap}) );
 #
@@ -1695,6 +1749,7 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 $Global{mainWindow} -> update;  #
 
 $Global{mainWindow} -> Unbusy;  # window is not busy
+$Global{nb} -> raise($currentPanel);
 } # End of server subroutine
 
 
@@ -1736,7 +1791,7 @@ $Global{dirConnError} = undef();
  # Make the connection to the directory server
  #
  
-if ( $Global{port} == 636 )
+if ( $Global{port} == 636 || $Global{'setSSL'} )
 {
  
 eval
@@ -2212,6 +2267,24 @@ $Global{'portWindow'}->Button(-text => "CANCEL", -command => \&portCancel,
            -font => $Global{'Font'}, -borderwidth => 3)
            -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
  
+$Global{'portWindow'}->Label(-text => "Port 389 default")
+      ->pack( -side => "top", -anchor => 'w', -pady => 1 );
+ 
+$Global{'portWindow'}->Label(-text => "Port 636 ssl default")
+      ->pack( -side => "top", -anchor => 'w', -pady => 1 );
+ 
+
+#
+# Create a ssl Checkbutton that will set up ssl variable
+# to set ssl if not port 636.
+#
+ 
+$Global{'portWindow'}  -> Checkbutton(
+                       -text => "SSL connection",
+                       -variable =>  \$Global{'setSSL'}, -onvalue => 1,
+                       -offvalue => 0, -font => $Global{'Font'} )
+                       -> pack(-side => "top", -anchor => "w" );
+
 my $portframe = $Global{'portWindow'}->LabFrame(-label => "PORT",
       -labelside => "acrosstop")
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
@@ -2234,6 +2307,7 @@ $Global{'portWindow'} = undef();
 sub portAccept{ 
  
 $Global{'port'} = $port_data;
+$Global{setSSL} = 1 if ( $port_data == 636);
 $Global{dsaptls}->insert(0, $Global{port});
 $Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
 $Global{'portWindow'} = undef(); 
@@ -4643,10 +4717,14 @@ directory server.  It is GUI based with several buttons for
 selecting directory servers, search bases, attributes and
 for enabling the Directory Schema Search window.
 
-This script has been tested on Solaris, RedHat 6.0 Linux, RedHat 73, 
-Mandrake 6.5  and ActiveState Perl 628 but should work with 
+This script has been tested on Solaris, RedHat 7.3 Linux, 
+Mandrake 6.5 Linux,  and ActiveState Perl 628 but should work with 
 any system that has PERL and the required modules installed in 
 it.
+
+The SSL connection has been tested on Solaris, RedHat 7.3, and
+Mandrake 6.5 Linux.  The SSL connection from a Microsoft Windows 
+system has not been tested.
 
 There are 2 files associated with the tklkup program in this 
 tar file; dot.tklkup, and tklkup.
@@ -4814,6 +4892,16 @@ will display the information obtained from the root dse entry.
 If the root dse entry can not be obtained then an error message
 window will be displayed.  This menu has a "Hot" key, Ctrl-r.
 
+The I<Toggle LDAP Version> menu will toggle the ldap version
+between version 2 and 3.  This menu has a "Hot" key, Ctrl-l.
+
+The I<Toggle SSL> menu will toggle between a SSL ldap connection
+and a standard ldap connection.  This menu has a "Hot" key, 
+Ctrl-s.
+
+The I<Exit> menu will exit the program.  This menu has a
+"Hot" key, Ctrl-x.
+
 The I<SET BIND CREDENTIALS> button will activate a window 
 that is separate from the main window.  This menu has a 
 "Hot" key, Alt-b.
@@ -4847,9 +4935,12 @@ The I<DIRECTORY PORT> button will activate a window
 that is separate from the main window.  This menu has a 
 "Hot" key, Alt-p.
 
-The new window contains two buttons and one text box. 
-If the user needs to change the TCP connection port, this
-is where it is done.
+The new window contains two buttons, a SSL checkbox, and one 
+text box.  If the user needs to change the TCP connection port, 
+this is where it is done.
+
+The SSL checkbox is where the user can select SSL for a
+SSL connection on some other port besides 636.
 
 At the top of the window is a Cancel button, pressing
 this button will cancel the operation of setting the
@@ -4890,11 +4981,18 @@ off window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The I<LDAP VERSION> "RadioButton" diamond will select the
+The I<LDAP V3> "RadioButton" diamond will select the
 LDAP protocol version.  When selected the "RadioButton" 
 diamond will be red in color.  This indicates that the 
 ldap connection will use the version I<3> protocol.  To use 
 ldap version I<2> protocol press the "RadioButton" diamond 
+so that it becomes a gray color.
+
+The I<SSL> "RadioButton" diamond will select the
+LDAP SSL protocol connection.  When selected the "RadioButton" 
+diamond will be red in color.  This indicates that the 
+ldap connection will use the I<SSL> protocol.  To use the 
+I<standard> ldap protocol press the "RadioButton" diamond 
 so that it becomes a gray color.
 
 At this point the tklkup GUI is made of five display and 
@@ -4933,9 +5031,9 @@ that is selected.
 The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the attribute the
-user wishes to use in the directory search.  When selected 
-the "RadioButton" diamond will turn red in color.  This menu 
-is a designed to be a "I<tear off>" menu, selecting the 
+user wishes to use in the filter of the directory search.  When 
+selected the "RadioButton" diamond will turn red in color.  This 
+menu is a designed to be a "I<tear off>" menu, selecting the 
 "---------------" line will cause the pull down menu to 
 become a separate window that is still somewhat controlled 
 by the GUI.  If the GUI is icon-ed or exited, the tear off 
@@ -4965,7 +5063,8 @@ user will input the needed information for modifing an entry's
 DN.
 
 I<DELETE> - Will cause the selected DN to be deleted from the
-directory.
+directory.  When this button has the focus, it's text will turn
+red, letting the user know to use caution with this button.
 
 I<EDIT> - Will cause a Entry Edit Display window with the 
 corresponding entry data in it.  It is from this window that the 
@@ -4982,14 +5081,14 @@ the "Search" button.  When a mouse click is done on the
 "SEARCH THE DIRECTORY" button the program will execute a ldap search
 of the directory.  
 
-The I<ATTRIBUTE DATA> text box is where the user will enter 
+The I<FILTER DATA> text box is where the user will enter 
 the data to be searched for.  The program will automatically
 put the beginning and ending parenthesis around the data.
 If the I<Filter> attribute is selected this is where the 
 I<COMPLETE> filter is entered, the program will not modify this
 string in any way.
 
-The I<CLEAR ATTRIBUTE DATA> button will clear out the text
+The I<CLEAR FILTER DATA> button will clear out the text
 that appears in the Attribute Data text box.
 
 The I<SET FILTER CONDITION> button will activate a drop down menu.  
