@@ -4,64 +4,64 @@ Net::LDAP::Entry - An LDAP entry object
 
 =head1 SYNOPSIS
 
-  use Net::LDAP;
+ use Net::LDAP;
 
-  $ldap = Net::LDAP->new($host);
-  $mesg = $ldap->search(@search_args);
+ $ldap = Net::LDAP->new ( $host );
+ $mesg = $ldap->search ( @search_args );
 
-  my $max = $mesg->count;
-  for($i = 0 ; $i < $max ; $i++) {
-    my $entry = $mesg->entry($i);
-    foreach my $attr ($entry->attributes) {
-      print join("\n ",$attr, $entry->get_value($attr)),"\n";
-    }
-  }
+ my $max = $mesg->count;
+ for ( $i = 0 ; $i < $max ; $i++ ) {
+   my $entry = $mesg->entry ( $i );
+   foreach my $attr ( $entry->attributes ) {
+     print join( "\n ", $attr, $entry->get_value( $attr ) ), "\n";
+   }
+ }
 
-  # or
+ # or
 
-  use Net::LDAP::Entry;
+ use Net::LDAP::Entry;
 
-  $entry = Net::LDAP::Entry->new;
+ $entry = Net::LDAP::Entry->new;
 
-  $entry->add(
-    attr1 => 'value1',
-    attr2 => [qw(value1 value2)]
-  );
+ $entry->add (
+   attr1 => 'value1',
+   attr2 => [ qw(value1 value2) ]
+ );
 
-  $entry->delete( 'unwanted' );
+ $entry->delete ( 'unwanted' );
 
-  $entry->replace(
-    attr1 => 'newvalue'
-    attr2 => [qw(new values)]
-  );
+ $entry->replace (
+   attr1 => 'newvalue'
+   attr2 => [ qw(new values) ]
+ );
 
-  $entry->update( $ldap ); # update directory server
+ $entry->update ( $ldap ); # update directory server
 
-  $entry2 = $entry->clone; # copies entry
+ $entry2 = $entry->clone; # copies entry
 
 =head1 DESCRIPTION
 
-The B<Net::LDAP::Entry> object represents a single entry in the directory.
-It is a container for attribute-value pairs.
+The B<Net::LDAP::Entry> object represents a single entry in the
+directory.  It is a container for attribute-value pairs.
 
-A B<Net::LDAP::Entry> object can be used in two situations. The first and
-probably most common use is in the result of a search to the directory
-server.
+A B<Net::LDAP::Entry> object can be used in two situations. The first
+and probably most common use is in the result of a search to the
+directory server.
 
 The other is where a new object is created locally and then a single
 command is sent to the directory server to add, modify or replace an
-entry. Entries for this purpose can also be created by reading an
-LDIF file with the L<Net::LDAP::LDIF> module.
+entry. Entries for this purpose can also be created by reading an LDIF
+file with the L<Net::LDAP::LDIF> module.
 
 =head1 CONSTRUCTORS
 
 =over 4
 
-=item new
+=item new ( )
 
 Create a new entry object with the changetype set to C<'add'>
 
-=item clone
+=item clone ( )
 
 Returns a copy of the B<Net::LDAP::Entry> object.
 
@@ -71,36 +71,31 @@ Returns a copy of the B<Net::LDAP::Entry> object.
 
 =over 4
 
+=item add ( ATTR =E<gt> VALUE, ... )
 
+Add more attributes or values to the entry. Each C<VALUE> should be a
+string if only a single value is wanted in the attribute, or a
+reference to an array of strings if multiple values are wanted. The
+values given will be added to the values which already exist for the
+given attributes.
 
-=item add ( ATTR =E<gt> VALUE [, ATTR2 =E<gt> VALUE2 ... ] )
+ $entry->add ( 'sn' => 'Barr' );
 
-Add one or more new attributes to the entry. Each value
-must be a scalar variable or a reference to an array. The
-values given will be added to the values which already exist
-for the given attributes.
+ $entry->add ( 'street' => [ '1 some road','nowhere' ] );
 
-  $entry->add( 'sn' => 'Barr');
+B<NOTE>: these changes are local to the client and will not appear on
+the directory server until the C<update> method is called.
 
-  $entry->add( 'street' => [ '1 some road','nowhere']);
+=item attributes ( OPTIONS )
 
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-
-
-=item attributes ( [ OPTIONS ] )
-
-Return a list of attributes that this entry has.
-
-OPTIONS is a list of name/value pairs, valid options are :-
+Return a list of attributes in this entry
 
 =over 4
 
-=item nooptions
+=item nooptions =E<gt> 1
 
-If TRUE, return a list of the attribute names excluding any options. For example for the entry
+Return a list of the attribute names excluding any options. For
+example for the entry
 
   name: Graham Barr
   name;en-us: Bob
@@ -108,10 +103,10 @@ If TRUE, return a list of the attribute names excluding any options. For example
 
 then
 
-  @values = $entry->attributes()
+  @values = $entry->attributes;
   print "default: @values\n";
 
-  @values = $entry->attributes( nooptions => 1);
+  @values = $entry->attributes ( nooptions => 1 );
   print "nooptions: @values\n";
 
 will output
@@ -121,15 +116,17 @@ will output
 
 =back
 
+=item changetype ( )
 
+Returns the type of operation that would be performed when the update
+method is called.
 
-=item changetype ( [ TYPE ] )
+=item changetype ( TYPE )
 
-If called without arguments it returns the type of operation that would
-be performed when the update method is called. If called with an argument
-it will set the changetype to TYPE.
+Set the type of operation that will be performed when the update
+method is called to C<TYPE>.
 
-Possible values for TYPE are
+Possible values for C<TYPE> are
 
 =over 4
 
@@ -140,144 +137,134 @@ will result in the entry being added to the directory server.
 
 =item delete
 
-The update method will call the delete method on the client object, which
-will result in the entry being removed from the directory server.
+The update method will call the delete method on the client object,
+which will result in the entry being removed from the directory
+server.
 
 =item modify
 
-The update method will call the modify method on the client object, which
-will result in any changes that have been made locally being made to the
-entry on the directory server.
+The update method will call the modify method on the client object,
+which will result in any changes that have been made locally being
+made to the entry on the directory server.
 
 =item moddn/modrdn
 
-The update method will call the moddn method on the client object, which
-will result in any DN changes that have been made locally being made
-to the entry on the directory server. These DN changes are specified by
-setting the entry attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
+The update method will call the moddn method on the client object,
+which will result in any DN changes that have been made locally being
+made to the entry on the directory server. These DN changes are
+specified by setting the entry attributes newrdn, deleteoldrdn, and
+(optionally) newsuperior.
 
 =back
 
+=item delete ( )
 
+Delete the entry from the server on the next call to C<update>.
 
-=item delete ( ATTR [ =E<gt> VALUE [, ATTR2 =E<gt> VALUE2... ]] )
+=item delete ( ATTR =E<gt> [ VALUE, ... ], ... )
 
 Delete the values of given attributes from the entry. Values are
 references to arrays; passing a reference to an empty array is the
-same as passing undef, and will result in the entire attribute being
-deleted. If no attributes are passed then the next call to update will
-cause the entry to be deleted from the server. For example:
+same as passing C<undef>, and will result in the entire attribute
+being deleted. For example:
 
-    $entry->delete( 'mail' => [ 'foo.bar@example.com' ] );
-    $entry->delete( 'description' => [ ], 'streetAddress' => [ ] );
+ $entry->delete ( 'mail' => [ 'foo.bar@example.com' ] );
+ $entry->delete ( 'description' => [ ], 'streetAddress' => [ ] );
 
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
+B<NOTE>: these changes are local to the client and will not appear on
+the directory server until the C<update> method is called.
 
+=item dn ( )
 
+Get the DN of the entry.
 
-=item dn ( [ DN ] )
+=item dn ( DN )
 
-Set or get the DN for the entry. With no arguments C<dn> will return
-the current DN. If an argument is given then it will change the DN
-for the entry and return the previous value.
+Set the DN for the entry, and return the previous value.
 
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-
+B<NOTE>: these changes are local to the client and will not appear on
+the directory server until the C<update> method is called.
 
 =item exists ( ATTR )
 
-Returns TRUE if the entry has an attribute called ATTR.
+Returns C<TRUE> if the entry has an attribute called C<ATTR>.
 
+=item get_value ( ATTR, OPTIONS )
 
-
-=item get_value ( ATTR [, OPTIONS ] )
-
-Get the values for the attribute ATTR. In a list context returns all
-values for the given attribute, or the empty list if the attribute does
-not exist. In a scalar context returns the first value for the attribute
-or undef if the attribute does not exist.
-
-The return value may be changed by OPTIONS, which is a list of name
-=E<gt> value pairs, valid options are :-
+Get the values for the attribute C<ATTR>. In a list context returns
+all values for the given attribute, or the empty list if the attribute
+does not exist. In a scalar context returns the first value for the
+attribute or undef if the attribute does not exist.
 
 =over 4
 
-=item alloptions
+=item alloptions =E<gt> 1
 
-If TRUE then the result will be a hash reference. The keys of the hash
-will be the options and the hash value will be the values for those attributes.
-For example if an entry had
+The result will be a hash reference. The keys of the hash will be the
+options and the hash value will be the values for those attributes.
+For example if an entry had:
 
-  name: Graham Barr
-  name;en-us: Bob
+ name: Graham Barr
+ name;en-us: Bob
 
 Then a get for attribute "name" with alloptions set to a true value
 
-  $ref = $entry->get_value( 'name', alloptions => 1);
+ $ref = $entry->get_value ( 'name', alloptions => 1 );
 
 will return a hash reference that would be like
 
-  {
-    ''       => [ 'Graham Barr' ],
-    ';en-us' => [ 'Bob' ]
-  }
+ {
+   ''       => [ 'Graham Barr' ],
+   ';en-us' => [ 'Bob' ]
+ }
 
-=item asref
+=item asref =E<gt> 1
 
-If TRUE then the result will be a reference to an array containing all the
-values for the attribute, or undef if the attribute does not exist.
+The result will be a reference to an array containing all the values
+for the attribute, or C<undef> if the attribute does not exist.
 
-  $scalar = $entry->get_value('name');
+ $scalar = $entry->get_value ( 'name' );
 
-$scalar will be the first value for the C<name> attribute, or C<undef> if the
-entry does not contain a C<name> attribute.
+$scalar will be the first value for the C<name> attribute, or C<undef>
+if the entry does not contain a C<name> attribute.
 
-  $ref    = $entry->get_value('name', asref => 1);
+ $ref = $entry->get_value ( 'name', asref => 1 );
 
-$ref will be a reference to an array, which will have all the values for
-the C<name> attribute. If the entry does not have an attribute called C<name>
-then $ref will be C<undef>
+$ref will be a reference to an array, which will have all the values
+for the C<name> attribute. If the entry does not have an attribute
+called C<name> then $ref will be C<undef>.
 
 =back
 
-B<NOTE>: In the interest of performance the array references returned by C<get_value>
-are references to structures held inside the entry object. These values and
-thier contents should B<NOT> be modified directly.
+B<NOTE>: In the interest of performance the array references returned
+by C<get_value> are references to structures held inside the entry
+object. These values and thier contents should B<NOT> be modified
+directly.
 
+=item replace ( ATTR =E<gt> VALUE, ... )
 
+Similar to C<add>, except that the values given will replace any
+values that already exist for the given attributes.
 
-=item replace ( ATTR =E<gt> VALUE [, ATTR2 =E<gt> VALUE2 ... ] )
-
-Similar to add, except that the values given will replace
-any values that already exist for the given attributes.
-
-B<NOTE>: these changes are local to the client and will not
-appear on the directory server until the C<update> method
-is called.
-
-
+B<NOTE>: these changes are local to the client and will not appear on
+the directory server until the C<update> method is called.
 
 =item update ( CLIENT )
 
-Update the directory server with any changes that have been made locally
-to the attributes of this entry. This means any calls that have been
-made to add, replace or delete since the last call to changetype or
-update was made.
+Update the directory server with any changes that have been made
+locally to the attributes of this entry. This means any calls that
+have been made to add, replace or delete since the last call to
+changetype or update was made.
 
-This method can also be used to modify the DN of the entry on the server,
-by specifying moddn or modrdn as the changetype, and setting the entry 
-attributes newrdn, deleteoldrdn, and (optionally) newsuperior.
+This method can also be used to modify the DN of the entry on the
+server, by specifying moddn or modrdn as the changetype, and setting
+the entry attributes newrdn, deleteoldrdn, and (optionally)
+newsuperior.
 
-CLIENT is a C<Net::LDAP> object where the update will be sent to.
+C<CLIENT> is a C<Net::LDAP> object where the update will be sent to.
 
-The result will be an object of type
-L<Net::LDAP::Message> as returned by the add, modify
-or delete method called on CLIENT.
+The result will be an object of type L<Net::LDAP::Message> as returned
+by the add, modify or delete method called on CLIENT.
 
 =back
 
@@ -290,17 +277,17 @@ L<Net::LDAP::LDIF>
 
 Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
-Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-E<lt>perl-ldap@perl.orgE<gt>.
+Please report any bugs, or post any suggestions, to the perl-ldap
+mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program is
-free software; you can redistribute it and/or modify it under the same
-terms as Perl itself.
+Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.11 2003/05/07 10:57:16 chrisridd Exp $>
+I<$Id: Entry.pod,v 1.12 2003/08/01 19:00:39 chrisridd Exp $>
 
 =cut
