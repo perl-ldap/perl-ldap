@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15_03";
+$VERSION = "0.15_04";
 
 my %mode = qw(w > r < a >>);
 
@@ -50,9 +50,11 @@ sub new {
   # Default the error handling to die 
   $opt{'onerror'} = 'die' unless exists $opt{'onerror'};
 
+  # sanitize options
   $opt{'lowercase'} ||= 0;
   $opt{'change'} ||= 0;
   $opt{'sort'} ||= 0;
+  $opt{'version'} ||= 0;
 
   my $self = {
     changetype => "modify",
@@ -158,7 +160,7 @@ sub _read_entry {
   #shift @ldif if @ldif && $ldif[0] !~ /\D/;
 
   if (@ldif and $ldif[0] =~ /^version:\s+(\d+)/) {
-    $self->{version} = $1;
+    $self->{'version'} = $1;
     shift @ldif;
     return $self->_read_entry
       unless @ldif;
@@ -458,8 +460,8 @@ sub _write_entry {
 	$res &&= print "\n";
       }
       else {
-        $res &&= print "version: $self->{version}\n\n"
-          if defined $self->{version};
+        $res &&= print "version: $self->{'version'}\n\n"
+          if ($self->{'version'});
       }
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
 
@@ -489,11 +491,12 @@ sub _write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
-	  $res &&= print "-\n" if $dash++;
+	  $res &&= print "-\n"  if (!$self->{'version'} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           $res &&= print $type,": ",$attr,"\n";
           $res &&= _write_attr($attr,$val,$wrap,$lower);
+	  $res &&= print "-\n"  if ($self->{'version'});
         }
       }
     }
@@ -503,8 +506,8 @@ sub _write_entry {
 	$res &&= print "\n";
       }
       else {
-        $res &&= print "version: $self->{version}\n\n"
-          if defined $self->{version};
+        $res &&= print "version: $self->{'version'}\n\n"
+          if ($self->{'version'});
       }
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
       $res &&= _write_attrs($entry,$wrap,$lower,$sort);
@@ -608,8 +611,8 @@ sub current_lines {
 
 sub version {
   my $self = shift;
-  return $self->{version} unless @_;
-  $self->{version} = shift;
+  return $self->{'version'} unless @_;
+  $self->{'version'} = shift || 0;
 }
 
 sub next_lines {

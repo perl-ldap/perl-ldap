@@ -109,6 +109,9 @@ Set the LDIF version to write to the resulting LDIF file.
 
 According to RFC 2849 currently the only legal value for this option is I<1>.
 
+When this option is set Net::LDAP::LDIF tries to adhere more strictly to the
+LDIF specification in RFC2489 in a few places.
+
 The default is I<undef> meaning no version information is written to the LDIF file.
 
 =item wrap =E<gt> 78
