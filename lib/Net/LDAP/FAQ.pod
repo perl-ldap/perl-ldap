@@ -478,8 +478,9 @@ Consider the following:
                       );
 
 $mesg is a search object container. It is a reference blessed into the
-L<Net::LDAP::Search|Net::LDAP::Search> package. By calling methods on this object
-you can obtain information about the result and also the individual entries.
+L<Net::LDAP::Search|Net::LDAP::Search> package. By calling methods on 
+this object you can obtain information about the result and also the 
+individual entries.
 
 The first thing to check is if the search was successful. This is done with
 with the method $mesg->code. This method will return the status code
@@ -777,6 +778,37 @@ whatever is relevant to your setup.
 
   print $q->end_html();
 
+=head2 What happens when you delete an attribute that does not exist.
+
+It is an error to delete an attribute that doesn't exist.  When you 
+get the error back the server ignores the entire modify operation
+you sent it, so you need to make sure the error doesn't happen.
+
+Another approach, if you are using LDAPv3 (note Net::LDAP does not use
+LDAPv3 by default) is to use a 'replace' with your attribute name and no
+values. In LDAPv3, this is defined to always work even if that attribute
+doesn't exist in the entry.
+
+ie:
+
+  my $mesg = $ldap->modify( $entry, replace => { %qv_del_arry } );
+
+But make sure you are using LDAPv3, because that is defined to *not* work
+in LDAPv2. (A nice incompatibility between LDAPv2 and LDAPv3.)
+
+=head2 How can I delete a referral from an LDAP tree.
+
+Since this is a proprietrary feature, you will have to check your
+server's documentation. You might find that you need to use a control. If
+there is a control called something like managedsait, that's the one you
+should probably use.  For proper operation you will need the oid number
+for managedsait; 2.16.840.1.113730.3.4.2 and do not specify a value for
+type.
+
+The code required will look similiar to the following code snippet.
+
+  $mesg =  $ldap->delete("ref=\"ldap://acme/c=us,o=bricks\",o=clay",
+                  control => {type => "2.16.840.1.113730.3.4.2"} ); 
 
 =head2 How do I avoid file type and data type miss-matching when loading
 data from a Win32 system.
@@ -1004,6 +1036,8 @@ Copyright (c) 1999-2000 Graham Barr. All rights reserved. This document is
 distributed, and may be redistributed, under the same terms as Perl itself.
 
 =for html <hr>
+
+$Id: FAQ.pod,v 1.13 2001/05/15 02:45:13 charden Exp $
 
 =cut
 
