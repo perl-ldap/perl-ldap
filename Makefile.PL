@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.9 2002/05/17 13:50:56 chrisridd Exp $
+# $Id: Makefile.PL,v 1.10 2002/06/03 15:48:12 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -110,13 +110,10 @@ sub MY::postamble {
 
 <<EOS;
 
-run_mkhtml :
-	./mkhtml
-
-run_mkmanf : run_mkhtml
+run_mkmanf : 
 	./mkmanf
 
-distdir : run_mkhtml run_mkmanf
+distdir : run_mkmanf
 
 EOS
 
