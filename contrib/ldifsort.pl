@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-# $Id: ldifsort.pl,v 1.1 2001/07/03 19:30:02 gbarr Exp $
+# $Id: ldifsort.pl,v 1.2 2003/06/24 21:58:34 kartik_subbarao Exp $
 
 =head1 NAME
 
@@ -13,7 +13,7 @@ Sorts an LDIF file by the specified key attribute.
 
 =head1 SYNOPSIS
 
-ldifsort.pl B<-k keyattr> [B<-nd>] file.ldif
+ldifsort.pl B<-k keyattr> [B<-and>] file.ldif
 
 =over 4
 
@@ -22,6 +22,12 @@ ldifsort.pl B<-k keyattr> [B<-nd>] file.ldif
 Specifies the key attribute for making sort comparisons. If 'dn' is
 specified, sorting is done by the full DN string, which can be composed of 
 different attributes for different entries.
+
+=item B<-a>
+
+Specifies that attributes within a given entry should also be sorted. This
+has the side effect of removing all comments and line continuations in the 
+LDIF file.
 
 =item B<-n>
 
@@ -51,9 +57,10 @@ use Getopt::Std;
 use strict;
 
 my %args;
-getopts("k:nd", \%args);
+getopts("k:and", \%args);
 
 my $keyattr = $args{k};
+my $sortattrs = $args{a};
 my $ldiffile = $ARGV[0];
 
 die "usage: $0 -k keyattr [-n] [-d] ldiffile\n"
@@ -96,7 +103,14 @@ my @sorted;
 foreach my $valuepos (@sorted) {
 	seek(LDIFH, $valuepos->[1], 0);
 	my $entry = <LDIFH>;
-	print $entry;
-	print "\n" if $entry !~ /\n\n$/;
+	if ($sortattrs) {
+		$entry =~ s/\n //mg; # collapse line continuations
+		my @lines = grep(!/^#/, split(/\n/, $entry));
+		my $dn = shift(@lines);
+		print "$dn\n", join("\n", sort @lines), "\n\n";
+	}
+	else {
+		print $entry;
+		print "\n" if $entry !~ /\n\n$/;
+	}
 }
-
