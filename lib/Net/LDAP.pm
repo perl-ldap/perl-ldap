@@ -807,7 +807,7 @@ sub start_tls {
   require Net::LDAPS;
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
   IO::Socket::SSL::context_init( { Net::LDAPS::SSL_context_init_args($arg) } );
-  (IO::Socket::SSL::socketToSSL($sock) and tie *{$sock}, 'IO::Socket::SSL', $sock)
+  IO::Socket::SSL::socketToSSL($sock)
     ? $mesg
     : _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, $@);
 }
