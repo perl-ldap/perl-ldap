@@ -187,24 +187,23 @@ sub may {
 sub _must_or_may {
   my $self = shift;
   my $must_or_may = shift;
-  my @oc = shift;
+  my @oc = @_ or return;
   
   #
   # If called with an entry, get the OC names and continue
   #
   if( UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
     my $entry = $oc[0];
-    @oc = $entry->get_value( "objectclass" );
+    @oc = $entry->get_value( "objectclass" )
+      or return;
   }
-
-  return unless @oc;
 
   my %res;		# Use hash to get uniqueness
 
   foreach my $oc ( @oc ) {
     my $oid = $self->is_objectclass( $oc );
     if( $oid ) {
-      my $res = $self->{oid}->{$oid}->{$must_or_may};
+      my $res = $self->{oid}->{$oid}->{$must_or_may} or next;
       @res{ @$res } = (); 	# Add in, getting uniqueness
     }
   }
