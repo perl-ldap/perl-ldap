@@ -77,7 +77,7 @@ sub start_server {
     while(<CONFI>) {
       s/\$([A-Z]\w*)/${$1}/g;
       s/^TLS/#TLS/ unless $SSL_PORT;
-      s/^(sasl.*)/#\1/ unless $SASL;
+      s/^(sasl.*)/#$1/ unless $SASL;
       print CONFO;
     }
     close(CONFI);
