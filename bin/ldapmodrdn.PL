@@ -17,7 +17,7 @@ open OUT, ">$script" or die "open for writing $script: $!";
 print OUT <<"!GROK!THIS!";
 $Config{startperl}
     eval 'exec $Config{perlpath} -S \$0 \${1+"\$@"}'
-	if \$running_under_some_shell;
+	if \$running_under_some_shell && \$running_under_some_shell;
 !GROK!THIS!
 
 # In the following, perl variables are not expanded during extraction.
@@ -28,11 +28,11 @@ print OUT <<'!NO!SUBS!';
 #
 # c.ridd@isode.com
 #
-# $Id: ldapmodrdn.PL,v 1.1 2000/05/03 12:28:26 gbarr Exp $
+# $Id: ldapmodrdn.PL,v 1.2 2000/07/30 21:03:50 gbarr Exp $
 #
 # $Log: ldapmodrdn.PL,v $
-# Revision 1.1  2000/05/03 12:28:26  gbarr
-# Initial revision
+# Revision 1.2  2000/07/30 21:03:50  gbarr
+# *** empty log message ***
 #
 # Revision 1.1  1999/01/11 08:39:12  cjr
 # Initial revision

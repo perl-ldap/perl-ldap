@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.1 2000/05/03 12:28:40 gbarr Exp $
+# $Id: tklkup,v 1.2 2000/07/30 21:03:50 gbarr Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,30 @@
 #
 # Revisions:
 # $Log: tklkup,v $
-# Revision 1.1  2000/05/03 12:28:40  gbarr
+# Revision 1.2  2000/07/30 21:03:50  gbarr
+# *** empty log message ***
+#
+# Revision 1.6  2000/06/18 04:08:16  clif
+# Changed several pod commands to enhance the lookup
+# and feel of the pod documentation.
+#
+# Revision 1.5  2000/06/08 01:12:27  clif
+# Correct wording in the pod documentation.
+#
+# Revision 1.4  2000/05/27 21:34:12  clif
+# Added the README.tklkup file as a internal pod document.
+#
+# Revision 1.3  2000/05/27 18:35:38  clif
+# Removed leading dashes form Net::LDAP options.  These dashes had been
+# depricated.
+#
+# Revision 1.2  2000/05/27 18:29:35  clif
+# Added radio button for selection of version 2 or 3 ldap. Version
+# 3 was maded the default version.
+# Added code to make the binary user certificate data base64 encoded
+# for display purposes.
+#
+# Revision 1.1  2000/01/23 03:00:20  clif
 # Initial revision
 #
 #
@@ -30,6 +53,254 @@
 #
 #
 
+=head1 NAME
+
+tklkup -  A script to do LDAP directory lookups.
+
+=head1 SYNOPSIS
+
+
+This script is used to lookup information from a LDAP 
+directory server.  It is GUI based with several buttons for 
+selecting directory servers, search bases, and attributes.
+
+This script has been tested on Solaris and RedHat 6.0 Linux, 
+but should work with any system that has PERL and the required 
+modules installed in it.
+
+There are 2 files associated with the tklkup program in this 
+tar file; dot.tklkup, and tklkup.
+
+About the files.
+
+=over 4
+
+=item dot.tklkup
+
+dot.tklkup - This is the initialization file that should be put 
+into each users home directory as I<.tklkup>.  
+
+This file will have to be setup properly before the user 
+can expect the tklkup script to work properly.  The odds of this
+initialization file being setup correctly for anyone is I<ZERO>.
+However the script can be run with this file to get a feel 
+for how the script will look.
+
+It allows the user to customize how tklkup will look for them.
+If the .tklkup files does not exist in a users home
+directory the program has a set of built-in defaults
+that it will use.
+
+To be used this file must have user read permission.
+
+There are 4 commands that can be used with this file;
+hand, attribute, server, and base.
+ 
+ hand -> values: left or right.  Defines where the 
+                 attribute label box will be place.
+
+ attribute -> attribute upon which the data search will be
+              based.  One attribute per line.
+
+ server -> name of the directory server that you wish
+           to conduct the data search. One server per line.
+
+ base -> directory search base from which to start the 
+         data search. One search base per line.
+
+-------------------------------------------------------------------
+
+=item tklkup
+
+tklkup - PERL executable file.  
+
+You may need to change the first line of the PERL tklkup script 
+to point to your file pathname of perl.
+
+When executed tklkup will display a window on your
+computer.  The graphical user interface, GUI, has 
+several sections to it.  
+
+Exit button.  At the top of the GUI is the "Exit"
+button.  When a mouse click is done on the "Exit" button 
+the program will terminate.
+
+The SET LDAP VERSION "RadioButton" diamond will select the
+LDAP protocol version.  When selected the "RadioButton" 
+diamond will be red in color.  This indicates that the 
+ldap connection will use the version I<3> protocol.  To use 
+ldap version I<2> protocol press the "RadioButton" diamond 
+so that it becomes a gray color.
+ 
+The SELECT DIRECTORY SERVER button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the directory server the
+user wishes to use.  When selected the "RadioButton" diamond
+will turn red in color.  This menu is a designed to be a 
+"I<tear off>" menu, selecting the "---------------" line will 
+cause the pull down menu to become a separate window that 
+is still somewhat controlled by the GUI.  The 
+DIRECTORY SERVER text box will display the directory name 
+that is selected.  If the GUI is icon-ed or exited, the tear 
+off window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+
+The SELECT SEARCH BASE button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the search base  the
+user wishes to use in the directory search.  When selected 
+the "RadioButton" diamond will turn red in color.  The 
+DIRECTORY SEARCH BASE text box will display the directory 
+search base that is selected.  This menu is a designed to 
+be a "I<tear off>" menu, selecting the "---------------" line 
+will cause the pull down menu to become a separate window 
+that is still somewhat controlled by the GUI.  If the GUI
+is icon-ed or exited, the tear off window will follow the
+actions of the GUI.  All other actions like moving or 
+closing just the torn off window must be done by the 
+user's window manager.
+
+The SELECT ADDITIONAL ATTRIBUTES button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the attribute the
+user wishes to use in the directory search.  When selected 
+the "RadioButton" diamond will turn red in color.  This menu 
+is a designed to be a "I<tear off>" menu, selecting the 
+"---------------" line will cause the pull down menu to 
+become a separate window that is still somewhat controlled 
+by the GUI.  If the GUI is icon-ed or exited, the tear off 
+window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+
+The Clear Attribute Data button will clear out the text
+that appears in the Attribute Data text box.
+
+The Attribute Data text box is where the user will enter 
+the data to be searched for.
+
+The Clear Data button will clear out the text that 
+appears in the Directory Data text box.
+
+The Directory Data text box is where the results of the
+directory search will be displayed.  With the cursor
+in the Directory Data text box you have access to additional
+functions when you depress the mouse "action" button.
+When the "action" mouse button is depressed a small text box
+with 4 additional functions will be displayed inside the 
+Directory Data text box.  These 4 functions are;
+
+ File -> This function exits the program.  You can not edit
+         the Directory Data text box because it is created 
+         as a read only text box.
+
+ Edit -> This function gives the user 3 additional functions;
+         Copy -> I do not know what this function does.
+         Select All -> Highlights/Selects all of the text in
+         the Directory Data text box.
+         Unselect All -> Unselects all of the text in 
+         the Directory Data text box.
+         Select/Unselect are used in-conjunction with the 
+         Copy function.
+
+ Search -> This function gives the user 4 additional
+         functions.
+         Find, Find Next, Find Previous -> These functions
+         find text in the Directory Data text box.
+         Replace -> This function allows you to replace the
+         text that is selected.  However this is just 
+         a fake replacement as you can not edit the 
+         Directory Data text box because it is created 
+         as a read only text box.
+
+ View -> This function gives the user 3 additional 
+         functions.
+         Goto Line ->  When selected will prompt the
+         user for a line number, the line number being
+         the line number the user wishes to see.
+         What Line ->  When selected will tell the user
+         what line number the cursor is on.
+         Wrap ->  When selected will prompt the user
+         to choose how to do line wrapping in the 
+         Directory Data text box.
+  
+
+Associated with the Directory Data text box is the "RadioButton"
+that determines how often the data in the directory text
+box is cleared.  If the "RadioButton" is selected, colored
+red, the directory data text box will be cleared out before
+each directory query.  If the "RadioButton" is not selected
+the directory data text box will NOT be cleared out until 
+the Clear Data button in clicked or the CLEAR DIRECTORY DATA
+ON EACH QUERY "RadioButton" is selected.
+
+-------------------------------------------------------------------
+
+=item REQUIREMENTS
+
+
+To use this program you will need the following.
+
+
+At least PERL version 5.004.  You can get a stable version of PERL
+from the following URl;
+   http://cpan.org/src/index.html
+
+Perl Tk800.015 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Tk/
+
+Perl LDAP module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Net/
+
+Depending on the modules loaded in your PERL system, you may need to
+load the following 2 PERL modules.
+
+Perl Convert-Berr module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Convert/
+
+Perl Digest-MD5 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/MD5/
+
+Bundled inside each PERL module is instructions on how to install the 
+module into your PERL system.
+
+-------------------------------------------------------------------
+
+=item INSTALLING THE SCRIPT
+
+Install the tklkup script anywhere you wish, I suggest 
+/usr/local/bin/tklkup.
+
+Install the dot.tklkup file in each users home directory
+as .tklkup.  It is possible to use a central copy and
+create a link in the user home directory to the central copy.
+
+-------------------------------------------------------------------
+
+=back
+
+Since the script is in PERL, feel free to modify it if it does not 
+meet your needs.  This is one of the main reasons I did it in PERL.
+If you make an addition to the code that you feel other individuals
+could use let me know about it.  I may incorporate your code
+into my code.
+
+=head1 AUTHOR
+
+Clif Harden <charde@utdallas.edu>
+If you find any errors in the code please let me know at
+charden@utdallas.edu.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999-2000 Clif Harden. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=cut
+
+use MIME::Base64;
 use Net::LDAP qw(:all);
 use Net::LDAP::Filter;
 use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
@@ -48,6 +319,8 @@ my $adata = "";
 my $uid = "";
 my $info = "";
 my $slist;
+my $setVersion;
+my $clear;
 
 #--------------------------------------------------------
 # Handle the command line parameter(s)
@@ -235,6 +508,17 @@ $slist = $sframe ->Listbox( -height => 1  );
 $slist->pack(-fill => "both", -expand => 1 );
 
 $slist->insert("end", $LDAP_SERVER);
+
+#
+# Create a LDAP version Radiobutton that will set up  variable
+# setVersion to set the LDAP version before each directory query.
+#
+ 
+$setVersion = $sframe -> Checkbutton(-text => "SET LDAP VERSION, LDAP V3 DEFAULT",      -variable =>  \$setVersion, -onvalue => 1, -offvalue => 0 )
+      -> pack(-anchor => sw );
+ 
+$setVersion->select();
+                                                                                
 
 #
 # Create search base list box.
@@ -541,8 +825,19 @@ sub search
 {
 
 my $error;
+my $version;
 
 if ( $clear ) { &clear(); }
+
+if ( $setVersion ) 
+{ 
+$version = 3;
+}
+else
+{
+$version = 2;
+}
+
 
 my %opt = (
   'd' => 0
@@ -587,7 +882,7 @@ if ( $error == 1 )
 }
 
 my $ldap = new Net::LDAP($LDAP_SERVER,
-                         -timeout => 1,
+                         timeout => 1,
                         ) or $error = 1; 
 
 if ( $error == 1 )
@@ -596,7 +891,7 @@ if ( $error == 1 )
    return;
 }
 
-$ldap->ldapbind(-password => "", -dn => "") or $error = 1;
+$ldap->ldapbind(password => "", dn => "", version => $version ) or $error = 1;
 
 if ( $error == 1 )
 {
@@ -608,10 +903,10 @@ my $wanted = [ map { defined($ldap2ph{$_}) ? ($_)
 		  : defined($ph2ldap{$_}) ? ($ph2ldap{$_}) : ()} @wanted ];
 
 $mesg = $ldap->search(
-  -base   => $LDAP_SEARCH_BASE,
-  -filter => $f,
-  -attrs  => $wanted,
-  -callback => \&print_entry,
+  base   => $LDAP_SEARCH_BASE,
+  filter => $f,
+  attrs  => $wanted,
+  callback => \&print_entry,
 ) or $error = 1; 
 
 
@@ -683,16 +978,39 @@ sub print_entry {
       #
       # Format data and print data into List Box
       #
+        if ( /;binary$/ )
+        {
+        $encoded = encode_base64($a);
+        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
+        $list->insert("end",  "$dstring");
+        }
+        else
+        {
         $dstring = sprintf "%${max}s: %s\n",$_,$a;
         $list->insert("end",  "$dstring");
+        }                                                                       
+
+#        $dstring = sprintf "%${max}s: %s\n",$_,$a;
+#        $list->insert("end",  "$dstring");
       }
     }
     else {
       #
       # Format data and print data into List Box
       #
-      $dstring = sprintf "%${max}s: %s\n",$_,$attr;
-      $list->insert("end",  "$dstring");
+        if ( /;binary$/ )
+        {
+        $encoded = encode_base64($attr);
+        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
+        $list->insert("end",  "$dstring");
+        }
+        else
+        {
+        $dstring = sprintf "%${max}s: %s\n",$_,$attr;
+        $list->insert("end",  "$dstring");
+        }                                                                       
+#      $dstring = sprintf "%${max}s: %s\n",$_,$attr;
+#      $list->insert("end",  "$dstring");
     }
   }
 }

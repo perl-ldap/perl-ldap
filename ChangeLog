@@ -1,3 +1,54 @@
+Change 553 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	More doc updates
+
+Change 552 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- Added some ability to handle options
+
+Change 551 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Control::*
+	- Added lots of docs
+	Net::LDAP::Control::VLV
+	- Added methods for moving the page
+
+Change 550 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Constant
+	- Added OID for Matched Values control
+
+Change 549 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Modified bind() to require an auth argument if passed arguments
+	  and also refuse to assect an empty password for password =>
+	  anon binding must be dome with noauth => or anonymous =>
+
+Change 548 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	bin/ldapsearch.PL
+	- Use URI::ldap instead of URI::RUL::ldap
+	bin/ldapsearch.PL, bin/ldapdelete.PL, bin/ldapmodrdn.PL
+	- Made -wc clean
+
+Change 547 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Moved Convert::ASN1 into PREREQ_PM
+
+Change 546 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Added CREDITS and ISNTALL
+
+Change 545 on 2000/07/25 by <gbarr@pobox.com> (Graham Barr)
+
+	contrib/ updates from Clif Harden.
+
+Change 544 on 2000/07/04 by <gbarr@pobox.com> (Graham Barr)
+
+	Add C<use Net::LDAP::Control> to all controls
+
 Change 543 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::DSML

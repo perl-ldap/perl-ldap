@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.3 2000/06/29 06:07:51 gbarr Exp $
+# $Id: Makefile.PL,v 1.4 2000/07/30 21:03:50 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -48,11 +48,7 @@ sub check_module {
   $ok;
 }
 
-print "\nChecking for installed modules\n\n";
-
-check_module('Convert::ASN1',0.07) or print <<"EDQ","\n";
-Convert::ASN1 version 0.07 or later is essential for perl-ldap
-EDQ
+print "\nChecking for OPTIONAL modules\n\n";
 
 check_module('URI',1.02) && check_module('URI::ldap',1.10) or print <<"EDQ","\n";
 The URI::ldap module is needed ONLY IF you want to parse LDAP URLs
@@ -72,9 +68,9 @@ EDQ
 
 print "\n",<<"EDQ","\n" if $missing;
 ****************************************************************************
-You are missing some modules that MAY be needed for the modules in perl-ldap
-to work correctly. Read the above messages and download any required
-modules from http://www.perl.com/CPAN
+You are missing some modules that MAY be needed for some of the features
+in perl-ldap to work correctly. Read the above messages and download
+any required modules from http://www.perl.com/CPAN
 ****************************************************************************
 EDQ
 
@@ -97,6 +93,7 @@ WriteMakefile(
   EXE_FILES    => $opt_s ? [ values %PL_FILES ] : [],
   PL_FILES     => \%PL_FILES,
   clean        => {FILES => 'temp'},
+  PREREQ_PM    => { 'Convert::ASN1' => 0.07 },
   @ppd,
 );
 

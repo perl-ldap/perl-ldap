@@ -10,7 +10,11 @@ Net::LDAP::Util - Utility functions
 
 =head1 SYNOPSIS
 
-  use Net::LDAP::Util qw(ldap_error_text);
+  use Net::LDAP::Util qw(ldap_error_text ldap_error_name);
+
+  $mesg = $ldap->search( .... );
+
+  die "Error ",ldap_error_name($mesg->code) if $mesg->code;
 
 =head1 DESCRIPTION
 
@@ -109,7 +113,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.2 2000/05/22 20:59:50 gbarr Exp $>
+I<$Id: Util.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
 
 =cut
 

@@ -1,4 +1,4 @@
-# $Id: SortResult.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $
+# $Id: SortResult.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -6,6 +6,7 @@
 package Net::LDAP::Control::SortResult;
 
 use Net::LDAP::ASN qw(SortResult);
+use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
 
@@ -56,7 +57,8 @@ Net::LDAP::Control::SortResult - LDAPv3 sort result control object
 =head1 SYNOPSIS
 
  use Net::LDAP::Control::Sort;
- use Net::LDAP::Constant qw( LDAP_CONTROL_SORTRESULT );
+ use Net::LDAP::Constant qw(LDAP_CONTROL_SORTRESULT);
+ use Net::LDAP::Util qw(ldap_error_name);
 
  $sort = Net::LDAP::Control::Sort->new(
    order => "cn -age"
@@ -66,7 +68,20 @@ Net::LDAP::Control::SortResult - LDAPv3 sort result control object
 
  ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
 
- print "Results are sorted\n" if $resp and !$resp->result;
+ if ($resp) {
+   if ($resp->result) {
+     my $attr = $resp->attr;
+     print "Problem sorting, ",ldap_error_name($resp->result);
+     print " ($attr)" if $attr;
+     print "\n";
+   }
+   else {
+     print "Results are sorted\n";
+   }
+ }
+ else {
+   print "Server does not support sorting\n";
+ }
 
 =head1 DESCRIPTION
 
@@ -75,36 +90,36 @@ It provides a class for manipulating the LDAP sort request control C<1.2.840.113
 
 A sort result control will be returned by the server in response to a search with a sort
 control. If a sort result control is not returned then the user may assume that the
-server does not support sorting and the resutls are not sorted.
+server does not support sorting and the results are not sorted.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
 =over 4
 
-=item result
-
 =item attr
 
+If C<result> indicates that there was a problem with sorting and that problem was
+due to one of the attributes specified in the sort control. C<attr> is set to
+the name of the attribute causing the problem.
+
+=item result
+
+This is the result code that describes if the sort operation was sucessful. If will
+be one of the result codes describes below.
 
 =back
 
 
 =head1 METHODS
 
-Net::LDAP::Control::SortResult provides the following methods in addition to
-those defined by L<Net::LDAP::Control|Net::LDAP::Control>
-
-=over 4
-
-=item result [ RESULT ]
-
-=item attr [ ATTR ]
-
-=back
+As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+described above is also avaliable as a method on the object which will
+return the current value for the attribute if called without an argument,
+and set a new value for the attribute if called with an argument.
 
 =head1 RESULT CODES
 
-Possible results from a sort request are listed below. See L<Net::LDAP::Constant> for
+Possible results from a sort request are listed below. See L<Net::LDAP::Constant|Net::LDAP::Constant> for
 a definition of each.
 
 =over 4
@@ -154,6 +169,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: SortResult.pm,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: SortResult.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
 
 =cut

@@ -17,7 +17,7 @@ open OUT, ">$script" or die "open for writing $script: $!";
 print OUT <<"!GROK!THIS!";
 $Config{startperl}
     eval 'exec $Config{perlpath} -S \$0 \${1+"\$@"}'
-	if \$running_under_some_shell;
+	if \$running_under_some_shell && \$running_under_some_shell;
 !GROK!THIS!
 
 # In the following, perl variables are not expanded during extraction.
@@ -28,11 +28,11 @@ print OUT <<'!NO!SUBS!';
 #
 # c.ridd@isode.com
 #
-# $Id: ldapsearch.PL,v 1.1 2000/05/03 12:28:29 gbarr Exp $
+# $Id: ldapsearch.PL,v 1.2 2000/07/30 21:03:50 gbarr Exp $
 #
 # $Log: ldapsearch.PL,v $
-# Revision 1.1  2000/05/03 12:28:29  gbarr
-# Initial revision
+# Revision 1.2  2000/07/30 21:03:50  gbarr
+# *** empty log message ***
 #
 # Revision 1.3  1999/01/11 08:33:34  cjr
 # Revised for 0.09 API
@@ -47,7 +47,7 @@ print OUT <<'!NO!SUBS!';
 use strict;
 use Carp;
 use Net::LDAP;
-use URI::URL::ldap;
+use URI::ldap;
 use Net::LDAP::LDIF;
 use vars qw($opt_n $opt_v $opt_t $opt_u $opt_A $opt_B $opt_L $opt_R $opt_d
 	    $opt_F $opt_S $opt_f $opt_b $opt_b $opt_s $opt_a $opt_l $opt_z
@@ -60,7 +60,7 @@ my %derefs = ( 'never' => 0, 'search' => 1, 'find' => 2, 'always' => 3 );
 
 # We only print attributes that we know are text
 # This stuff is in lieu of a workable Schema module
-my @textsyntax = qw(
+my @textsyntax = grep /^\w/, (<<'EOS' =~ /(#.*|\S+)/g); # qw() with comments
 		    # RFC 2251
 		    modifiersName modifyTimestamp
 		    creatorsName createTimestamp
@@ -90,7 +90,7 @@ my @textsyntax = qw(
 		    collectivePostalAddress collectiveTelephoneNumber
 		    collectiveFacsimileTelephoneNumber
 		    supportedLDAPVersion
-		  );
+EOS
 
 my %istext; # keys are canonicalised attribute names.
 foreach (@textsyntax) { $istext{lc($_)} = 1; };
@@ -148,7 +148,7 @@ my $filter = shift || die "$0: missing filter\n";
 # other server, unless the referral indicates it should. This prevents you
 # revealing your password (etc) to random servers.
 
-my $initial = URI::URL::ldap->new;
+my $initial = URI->new("ldap:");
 $initial->host($opt_h);
 $initial->dn($opt_b);
 $initial->port($opt_p) if $opt_p;
@@ -163,7 +163,7 @@ my $ldif = Net::LDAP::LDIF->new if $opt_L;
 my $first_record = 1;
 
 while (@urls) {
-    my $url = URI::URL::ldap->new(shift @urls);
+    my $url = URI::ldap->new(shift @urls);
     my %exts = $url->extensions;
     my $ldap;
     my %openargs;
@@ -207,7 +207,10 @@ while (@urls) {
     $searchargs{base} = $opt_b if $opt_b;
     $searchargs{base} = $url->dn if $url->dn;
     $searchargs{scope} = $opt_s if $opt_s;
-    $searchargs{scope} = $url->scope if $url->scope;
+# Version of URI::ldap in URI-1.07 will always return a scope
+# waiting for next release so we can use ->_scope which will
+# return undef when there is no scope specified in the URL
+#    $searchargs{scope} = $url->scope if $url->scope;
     $searchargs{scope} = $scopes{$searchargs{scope}} if $searchargs{scope};
     $searchargs{deref} = $derefs{$opt_a} if $opt_a;
     $searchargs{sizelimit} = $opt_z if $opt_z;

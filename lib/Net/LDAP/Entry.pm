@@ -22,8 +22,7 @@ sub new {
 # Build attrs cache, created when needed
 
 sub _build_attrs {
-  my $self = shift;
-  $self->{attrs} = { map { (lc($_->{type}),$_->{vals}) }  @{$self->{asn}{attributes}} };
+  +{ map { (lc($_->{type}),$_->{vals}) }  @{$_[0]->{asn}{attributes}} };
 }
 
 # If we are passed an ASN structure we really do nothing
@@ -67,14 +66,21 @@ sub get_attribute {
 sub get {
   my $self = shift;
   my $type = lc(shift);
+  my %opt  = @_;
 
-  my $attrs = $self->{attrs} || _build_attrs($self);
+  if ($opt{alloptions}) {
+    my %ret = map {
+                $_->{type} =~ /^\Q$type\E(.*)/ ? (lc($1), $_->{vals}) : ()
+              } @{$self->{asn}{attributes}};
+    return %ret ? \%ret : undef;
+  }
+  else {
+    foreach my $attr (@{$self->{asn}{attributes}}) {
+      return $attr->{vals} if $type eq lc $attr->{type};
+    }
+  }
 
-  return unless exists $attrs->{$type};
-
-  wantarray
-    ? @{$attrs->{$type}}
-    : $attrs->{$type};
+  return;
 }
 
 
@@ -90,7 +96,7 @@ sub changetype {
 sub add {
   my $self  = shift;
   my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
-  my $attrs = $self->{attrs} || _build_attrs($self);
+  my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while (my($type,$val) = splice(@_,0,2)) {
     $type = lc $type;
@@ -112,7 +118,7 @@ sub add {
 sub replace {
   my $self  = shift;
   my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
-  my $attrs = $self->{attrs} || _build_attrs($self);
+  my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type, $val) = splice(@_,0,2)) {
     $type = lc $type;
@@ -153,7 +159,7 @@ sub delete {
   }
 
   my $cmd = $self->{'changetype'} eq 'modify' ? [] : undef;
-  my $attrs = $self->{attrs} || _build_attrs($self);
+  my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type,$val) = splice(@_,0,2)) {
     $type = lc $type;
@@ -214,7 +220,7 @@ sub dump {
   my($attr,$val);
   my $l = 0;
 
-  for (keys %{ $self->{attrs} || _build_attrs($self) }) {
+  for (keys %{ $self->{attrs} ||= _build_attrs($self) }) {
     $l = length if length > $l;
   }
 
@@ -235,8 +241,18 @@ sub dump {
 
 sub attributes {
   my $self = shift;
-  carp("attributes called with arguments") if @_;
-  map { $_->{type} } @{$self->{asn}{attributes}};
+  my %opt  = @_;
+
+  if ($opt{nooptions}) {
+    my %done;
+    return map {
+      $_->{type} =~ /^([^;]+)/;
+      $done{lc $1}++ ? () : ($1);
+    } @{$self->{asn}{attributes}};
+  }
+  else {
+    return map { $_->{type} } @{$self->{asn}{attributes}};
+  }
 }
 
 sub asn {

@@ -213,8 +213,10 @@ is assumed.
 
 =item noauth
 
+=item anonymous
+
 Bind without any password, the value passed with this option is ignored. This
-is the default if no password option is given.
+is the default if no arguments are given.
 
 =item password
 
@@ -636,6 +638,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.3 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.4 2000/07/30 21:03:50 gbarr Exp $>
 
 =cut

@@ -1,5 +1,9 @@
 perl-ldap - A Client interface to LDAP servers
 
+Copyright (c) 1997-2000 Graham Barr. All rights reserved.
+This package is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
 *******************************************************************************
 This code should be considered very much as work-in-progress.
 Any part of this release could be subject to change.
@@ -14,19 +18,17 @@ To subscribe goto
 
 *******************************************************************************
 
-Copyright (c) 1997-2000 Graham Barr. All rights reserved.
-This package is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
 For the latest information see http://perl-ldap.sourceforge.net/
 
 QUICK START GUIDE:
 
     perl-ldap uses the following modules/distributions.
 
-	Convert::ASN1 - required
-	URI::ldap     - optional, needed for URL parsing
-	Digest::MD5   - optional, needed for SASL CRAM-MD5 auth
+	Convert::ASN1   - required
+	URI::ldap       - optional, needed for URL parsing
+	Digest::MD5     - optional, needed for SASL CRAM-MD5 auth
+	IO::Socket::SSL - optional, needed for Net::LDAPS
+	XML::Parser     - optional, needed for Net::LDAP::DSML
 
     First ensure the above modules/distributions are installed then
     build/test/install Net::LDAP by doing

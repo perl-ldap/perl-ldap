@@ -53,6 +53,14 @@ LDIF file with the L<Net::LDAP::LDIF|Net::LDAP::LDIF> module.
 
 =head1 CONSTRUCTOR
 
+=over 4
+
+=item new
+
+Create a new entry object with the changetype set to C<'add'>
+
+=back
+
 =head1 METHODS
 
 =over 4
@@ -117,15 +125,57 @@ update will be sent back to the same server.
 The result will be an object of type L<Net::LDAP::Message|Net::LDAP::Message> as returned
 by the add, modify or delete method called on CLIENT.
 
-=item attributes
+=item attributes ( [ OPTIONS ] )
 
 Return a list of attributes that this entry has.
 
-=item get ( ATTR )
+OPTIONS is a list of name/value pairs, valid options are :-
+
+=over 4
+
+=item nooptions
+
+If TRUE, return a list of the attribute names excluding any options. For example for the entry
+
+  name: Graham Barr
+  name;en-us: Bob
+  jpeg;binary: **binary data**
+
+the return list would be C<( 'name', 'jpeg' )>.
+
+=back
+
+=item get ( ATTR [, OPTIONS ] )
 
 Get the values for the attribute ATTR. The result will be a reference
 to an array, if that attribute exists. If the attribute does not exist
 the C<undef> will be returned.
+
+OPTIONS is a list of name/value pairs, valid options are :-
+
+=over 4
+
+=item alloptions
+
+If TRUE then the result will be a hash reference. The keys of the hash
+will be the options and the hash value will be the values for those attributes.
+For example if an entry had
+
+  name: Graham Barr
+  name;en-us: Bob
+
+Then a get for attribute "name" with alloptions set would return 
+
+  {
+    ''       => [ 'Graham Barr' ],
+    ';en-us' => [ 'Bob' ]
+  }
+
+=back
+
+B<NOTE>: In the interest of performance the array references returned by C<get>
+are references to structures held inside the entry object. These values
+should B<not> be modified directly.
 
 =item changetype ( [ TYPE ] )
 
@@ -177,6 +227,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: Entry.pod,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
 
 =cut

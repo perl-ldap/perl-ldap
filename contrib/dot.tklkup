@@ -1,0 +1,37 @@
+#
+#  Initialization file for tklkp and schema.  This file should reside
+#  in the user home directory as .tklkup.
+#
+#  Set up which side you want the Attributes pane to be displayed
+#  on.
+#
+hand: left
+#
+#
+# Set up the additional search attributes you want listed on
+# the Select Additional Attributes button.
+#
+attribute: uid 
+attribute: cn 
+attribute: sn 
+attribute: rfc822mailbox 
+attribute: uidNumber 
+attribute: gidNumber 
+attribute: telephonenumber 
+attribute: facsimiletelephonenumber 
+attribute: givenname 
+attribute: fullname 
+attribute: firstname
+#
+# Set up the Directory Servers you want listed on
+# the Select Directory Server button.
+#
+server: ldap.switchboard.com
+server: ldap.umich.edu
+#
+# Set up the directory search base(s) you want listed on
+# the Select Search Base button.
+#
+base: ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+base: ou=Alumni Association, ou=People, o=University of Michigan, c=US
+

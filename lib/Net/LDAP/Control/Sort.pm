@@ -1,4 +1,4 @@
-# $Id: Sort.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $
+# $Id: Sort.pm,v 1.4 2000/07/30 21:03:50 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -6,6 +6,7 @@
 package Net::LDAP::Control::Sort;
 
 use vars qw(@ISA $VERSION);
+use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
 $VERSION = "0.01";
@@ -142,38 +143,37 @@ include a sort result control. This control is handled by L<Net::LDAP::Control::
 
 =item order
 
-C<order> may be a string or a reference to an array. If it is a string it is split
-on whitespace, otherwise the contents of the array is used.
+A string which defines how entries may be sorted. It consists of
+multiple directives, spearated by whitespace. Each directive describes how
+to sort entries using a single attribute. If two entries have identical
+attributes, then the next directive in the list is used.
 
-Each element in the array specifies a sorting order as follows
+Each directive specifies a sorting order as follows
 
   -attributeType:orderingRule
 
 The leading C<-> is optional, and if present indicates that the sorting order should
-be reversed. attributeType is the attribute name to sort by. orderingRule is optional and
-indicates the rule to use for the sort and should be valid for the given attributeType.
+be reversed. C<attributeType> is the attribute name to sort by. C<orderingRule> is optional and
+indicates the rule to use for the sort and should be valid for the given C<attributeType>.
 
 Any one attributeType should only appear once in the sorting list.
+
+B<Examples>
+
+  "cn"         sort by cn using the default ordering rule for the cn attribute
+  "-cn"        sort by cn using the reverse of the default ordering rule
+  "age cn"     sort by age first, then by cn using the default ordering rules
+  "cn:1.2.3.4" sort by cn using the ordering rule defined as 1.2.3.4
 
 =back
 
 
 =head1 METHODS
 
-Net::LDAP::Control::Sort provides the following methods in addition to
-those defined by L<Net::LDAP::Control|Net::LDAP::Control>
-
-=over 4
-
-=item order [ ORDER ]
-
-ORDER may be a string or a list. If it is a string then it is split on whitespace
-and treated as if a list had been passed. See C<order> above for a description
-of the format for each element.
-
-If no arguments are passed then a list is returned of the current ordering elements.
-
-=back
+As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+described above is also avaliable as a method on the object which will
+return the current value for the attribute if called without an argument,
+and set a new value for the attribute if called with an argument.
 
 =head1 SEE ALSO
 
@@ -196,6 +196,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Sort.pm,v 1.3 2000/05/22 20:59:50 gbarr Exp $>
+I<$Id: Sort.pm,v 1.4 2000/07/30 21:03:50 gbarr Exp $>
 
 =cut

@@ -19,6 +19,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_FILTER_ERROR
 			   LDAP_LOCAL_ERROR
 			   LDAP_PARAM_ERROR
+			   LDAP_INAPPROPRIATE_AUTH
 			);
 
 $VERSION = 0.19_01;
@@ -147,10 +148,13 @@ my %ptype = qw(
   kerberos41      krbv41
   kerberos42      krbv42
   sasl            sasl
+  noauth          anon
+  anonymous       anon
 );
 
 sub bind {
   my $ldap = shift;
+  my $acnt = @_;
   my $arg  = &_dn_options;
 
   require Net::LDAP::Bind;
@@ -166,15 +170,20 @@ sub bind {
     version => $ldap->version,
   );
 
-  my($auth_type,$passwd) = (simple => "");
+  my($auth_type,$passwd) = $acnt ? () : (simple => '');
 
   keys %ptype; # Reset iterator
   while(my($param,$type) = each %ptype) {
     if (exists $arg->{$param}) {
-      ($auth_type,$passwd) = ($type,$arg->{$param});
+      ($auth_type,$passwd) = $type eq 'anon' ? (simple => '') : ($type,$arg->{$param});
+      return $mesg->set_error(LDAP_INAPPROPRIATE_AUTH, "No password, did you mean noauth or anonymous ?")
+        if $type eq 'simple' and $passwd eq '';
       last;
     }
   }
+
+  return $mesg->set_error(LDAP_INAPPROPRIATE_AUTH, "No AUTH supplied")
+    unless $auth_type;
 
   if ($auth_type eq 'sasl') {
 #    if ($version < 3) {

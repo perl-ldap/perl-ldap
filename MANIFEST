@@ -1,4 +1,6 @@
+CREDITS
 ChangeLog
+INSTALL
 MANIFEST
 Makefile.PL
 README
@@ -8,6 +10,7 @@ bin/ldapdelete.PL
 bin/ldapmodrdn.PL
 bin/ldapsearch.PL
 contrib/checkauth.pl
+contrib/dot.tklkup
 contrib/examples
 contrib/isMember.pl
 contrib/isMember.readme
@@ -15,10 +18,8 @@ contrib/printMembers.pl
 contrib/printMembers.readme
 contrib/schema
 contrib/schema.README
-contrib/schema.tklkup
 contrib/tklkup
 contrib/tklkup.README
-contrib/tklkup.tklkup
 data/00-cmp2.ldif
 data/00-in.ldif
 data/50-cmp.ldif
@@ -96,7 +97,6 @@ lib/Net/LDAP/Util.pm
 lib/Net/LDAPS.pm
 perl-ldap.ppd
 t/00ldif-entry.t
-t/01url.t
 t/02filter.t
 t/50populate.t
 t/51search.t
