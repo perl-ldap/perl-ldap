@@ -640,7 +640,7 @@ encrypt.
 
 =item clientkey =E<gt> '/path/to/key.pem'
 
-=item decryptkey =E<gt> sub { ... }
+=item keydecrypt =E<gt> sub { ... }
 
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
@@ -648,7 +648,7 @@ operation) then set clientcert to the user's certificate file, and
 clientkey to the user's private key file. These files must be in PEM
 format.
 
-If the private key is encrypted (highly recommended) then decryptkey
+If the private key is encrypted (highly recommended) then keydecrypt
 should be a subroutine that returns the decrypting key. For example:
 
  $ldap = Net::LDAP->new( 'myhost.example.com', version => 3 );
@@ -656,7 +656,7 @@ should be a subroutine that returns the decrypting key. For example:
                            verify => 'require',
                            clientcert => 'mycert.pem',
                            clientkey => 'mykey.pem',
-                           decryptkey => sub { 'secret'; },
+                           keydecrypt => sub { 'secret'; },
                            capath => '/usr/local/cacerts/'
                          );
 
@@ -920,6 +920,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.34 2003/10/12 08:32:03 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.35 2003/11/10 18:31:04 chrisridd Exp $>
 
 =cut
