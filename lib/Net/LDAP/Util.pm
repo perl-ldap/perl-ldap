@@ -224,10 +224,14 @@ sub ldap_error_desc {
 
 
 
-=item canonical_dn ( DN )
+=item canonical_dn ( DN [, FOR_SORT ])
 
 Returns the given DN in a canonical form. Returns undef if DN is
 not a valid Distinguished Name
+
+If FOR_SORT is specified and is a I<true> value, the the DNs returned
+will have their RDN components in reverse order. This is primarily
+used for sorting.
 
 It performs the following operations on the given DN
 
@@ -270,7 +274,8 @@ decoded. So C<SN=Barr> is not treated the same as C<SN=#42617272>
 
 
 sub canonical_dn {
-  my $dn = shift;
+  my ($dn, $rev) = @_;
+
   $dn = $dn->dn if ref($dn);
   
   my (@dn, @rdn);
@@ -310,14 +315,14 @@ sub canonical_dn {
     push @rdn, "\U$type\E=$val";
 
     unless (defined $sep and $sep eq '+') {
-      push @dn, join("+", sort @rdn);
+      push @dn, join($rev ? "\001" : "+", sort @rdn);
       @rdn = ();
     }
   }
 
   (length($dn) != (pos($dn)||0))
     ? undef
-    : join(",",@dn);
+    : join($rev ? "\000" : ",",$rev ? (reverse @dn) : @dn);
 }
 
 =back
@@ -334,7 +339,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.11 2001/04/12 16:40:40 gbarr Exp $>
+I<$Id: Util.pm,v 1.12 2001/06/11 16:29:05 gbarr Exp $>
 
 =cut
 
