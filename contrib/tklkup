@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.4 2001/01/29 21:50:30 gbarr Exp $
+# $Id: tklkup,v 1.5 2001/03/31 05:04:33 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,8 +21,15 @@
 #
 # Revisions:
 # $Log: tklkup,v $
-# Revision 1.4  2001/01/29 21:50:30  gbarr
-# Moved files back
+# Revision 1.5  2001/03/31 05:04:33  charden
+# Removed base and mybase options.
+# Added button and code to allow changing of server port number.
+# Added code to limit the number of search bases detected.
+# Change code that does auto base detection.
+# Added code to query rootDSE for namingContexts when a base was
+# not specified on a server line in the .tklkup file.
+# Changed layout of schema GUI.  Added code to handle additional
+# schema objects.
 #
 # Revision 1.3  2000/12/20 03:15:42  charden
 # Corrected error in the calling of the get_value method so that
@@ -89,7 +96,6 @@ use Tk::ROText;
 
 my $bindpw = "";
 my $binddn = "";
-my $mybase = 0;
 my $adata = "";
 my $uid = "";
 my $info = "";
@@ -105,7 +111,12 @@ my $Font = "7x5";
 my $CORE_SERVER;
 my $sbbframe;
 my @base       = ();
+my $base       = "";
 my @BaseButton = ();
+my $sclear;
+my $limit = 30;
+my $port = 389;
+my $defaultPort = 389;
 
 #--------------------------------------------------------
 # Handle the command line parameter(s)
@@ -209,26 +220,32 @@ TYPE: {
                      $hand = $data[1];
                      last TYPE; };
 
+    /^port/i && do {
+                     $port = $data[1];
+                     last TYPE; };
+
+    /^limit/i && do {
+                     if (defined($data[1]) ) 
+                     { 
+                      $limit = $data[1]; 
+                     }
+                     else 
+                     { 
+                      $limit = 30; 
+                     }
+                     last TYPE; };
+
     /^attribute/i && do {
                      push(@attribute, $data[1]);
                      last TYPE; };
 
     /^server/i && do {
                      push(@server, $data[1]);
-                     if ( !$mybase && defined($data[2]) )
+                     if ( defined($data[2]) )
                      {
                      $server{$data[1]} = $data[2];
                      }
 		     last TYPE; };
-
-    /^base/i && do {
-                     push(@base, $data[1]);
-                     $base = $data[1];
-                     last TYPE; };
-
-    /^mybase/i && do {
-                     $mybase = 1;
-                     last TYPE; };
 
     /^font/i && do {
                      $Font = $data[1];
@@ -271,10 +288,8 @@ $CORE_SERVER = $LDAP_SERVER;
 # Default directory search base.
 #
 
-if ( !$mybase && defined($server{$server[0]}) )
-{
  #
- # Find and branches the branches of the directory.
+ # Find the branches of the directory.
  #
  
  if ( defined($server{$server[0]}) )
@@ -283,7 +298,41 @@ if ( !$mybase && defined($server{$server[0]}) )
  }
  else
  {
- @base =  getBases($LDAP_SERVER, $base);
+ my $error;
+ my $entry;
+
+ my $ldap = new Net::LDAP($LDAP_SERVER,
+                         timeout => 1,
+                         port => $port,
+                         debug => $opt{'d'},
+                        ) or $error = 1;
+
+    if ( !$error )
+    {
+
+    $ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
+
+    if ( !$error  )
+    {
+      $entry = $ldap->root_dse();
+      if ( defined($entry) )
+      {
+        my $attr = $entry->get_value('namingContexts', asref => 1);
+        if ( defined($attr) )
+        {
+        @base =  getBases($LDAP_SERVER, @$attr[0]);
+        }
+        else 
+        {
+          @base = ();
+        }
+      }
+    }
+    }
+    else 
+    {
+    @base = ();
+    }
  }
 
  if ( @base >= 1)
@@ -292,14 +341,9 @@ if ( !$mybase && defined($server{$server[0]}) )
  }
  else
  {
- $LDAP_SEARCH_BASE = $base;
+ $LDAP_SEARCH_BASE = "";
  }
 
-}
-else
-{
- $LDAP_SEARCH_BASE = $base[0];
-}
 
 #
 # Default directory search attributes.
@@ -565,7 +609,11 @@ foreach (@attribute)
 } # End of foreach (@attribute)
 
 
-$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA SEARCH",
+$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
+
+$prtframe = $attframe->LabFrame(-label => "DIRECTORY PORT",
       -labelside => "acrosstop" )
       ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
 
@@ -577,6 +625,17 @@ $schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA SEARCH",
  
 $abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
                    -relief => "raised", -command => \&SCHEMA, 
+                   -font => $Font, -borderwidth => 3 )
+                   -> pack( -side => "$hand", -anchor => "w" );
+
+#
+# Create port button.
+# This will cause another window to be displayed where
+# the user will be able to display port information.
+#
+ 
+$abind = $prtframe -> Button(-text => "SET DIRECTORY\nPORT",
+                   -relief => "raised", -command => \&PORT, 
                    -font => $Font, -borderwidth => 3 )
                    -> pack( -side => "$hand", -anchor => "w" );
 
@@ -614,8 +673,8 @@ my $ptr;
 $slist->insert(0 , $LDAP_SERVER);
 $sslist->insert(0 , $LDAP_SERVER) if ( Exists($sslist) ) ;
 
-if ( !$mybase )
-{
+#if ( !$mybase )
+#{
 $ptr = 1;
 
 #
@@ -641,8 +700,52 @@ if ( $CORE_SERVER ne $LDAP_SERVER && defined($server{$LDAP_SERVER} ) )
 }
 else
 {
-$base[0] = $base;
+ my $error;
+ my $mesg;
+ my $entry;
+
+ my $ldap = new Net::LDAP($LDAP_SERVER,
+                         timeout => 1,
+                         port => $port,
+                         debug => $opt{'d'},
+                        ) or $error = 1;
+
+    if ( !$error )
+    {
+
+    $ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
+
+    if ( !$error  )
+    {
+      $entry = $ldap->root_dse();
+      if ( defined($entry) )
+      {
+        my $attr = $entry->get_value('namingContexts', asref => 1);
+        if ( defined($attr) )
+        {
+        @base =  getBases($LDAP_SERVER, @$attr[0]);
+        }
+        else 
+        {
+          @base = ();
+        }
+      }
+    }
+    }
+    else 
+    {
+    @base = ();
+    }
 }
+
+ if ( @base >= 1)
+ {
+ $LDAP_SEARCH_BASE = $base[0];
+ }
+ else
+ {
+ $LDAP_SEARCH_BASE = "";
+ }
 
 #
 # Set up the select search base radio buttons.
@@ -656,7 +759,7 @@ foreach (@base)
 
 }
 
-} # End of if ( !$mybase )
+# } # End of if ( !$mybase )
 
 $LDAP_SEARCH_BASE = $base[0];
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
@@ -766,6 +869,77 @@ $bindWindow->destroy() if Tk::Exists($bindWindow);
 } # End of accept subroutine
 } # End of BIND subroutine
 
+
+
+
+
+
+
+
+
+
+ 
+#
+# Create Main Port Window
+#
+ 
+sub PORT {
+ 
+$port_data = $port;
+my $x = $horz + 150;
+my $y = $vert + 150;
+ 
+#
+# Create Main Port Window
+#
+ 
+$portWindow = MainWindow->new;
+ 
+$portWindow->title("Directory Port");
+ 
+$portWindow->geometry("+$x+$y");
+#
+# Create process accept button
+#
+$portWindow->Button( -text => "Accept", -command => \&portAccept, 
+           -font => $Font, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+#
+# Create process cancel button
+#
+$portWindow->Button(-text => "Cancel", -command => \&portCancel, 
+           -font => $Font, -borderwidth => 3)
+           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
+ 
+my $portframe = $portWindow->LabFrame(-label => "PORT",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+ 
+#
+# Create Port Entry text box.
+#
+ 
+$portframe->Entry(-textvariable => \$port_data, -width => 10 )
+      -> pack(-fill => 'x');
+ 
+ 
+sub portCancel{
+ 
+$portWindow->destroy() if Tk::Exists($portWindow);
+ 
+} # End of cancel subroutine
+ 
+sub portAccept{ 
+ 
+$port = $port_data;
+ 
+$portWindow->destroy() if Tk::Exists($portWindow);
+ 
+} # End of accept subroutine
+} # End of PORT subroutine
+
+
 } # End of MAIN_PROCESS subroutine
 
 
@@ -842,7 +1016,6 @@ my $aframe;
 my $tframe;
 my $sbframe;
 #my $sslist;
-my $sclear;
 my $x = $horz + 100;
 my $y = $vert + 100;
 #
@@ -931,29 +1104,60 @@ $srbclear->select();
 
 $selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
                                  -labelside => "acrosstop" )
-      ->pack( -side => "top", -expand => 1, -fill => "both" );
+      ->pack( -side => "right", -expand => 1, -fill => "both" );
 
-$sellAll = $selframe -> Checkbutton(-text => "All",
+$sellframe = $selframe->Frame( -borderwidth => 0, 
+                        -relief => "raised")->pack(
+                        -fill => "both", -side => "top", 
+                        -padx => 0, -pady => 0);
+
+$sellAll = $sellframe -> Checkbutton(-text => "All",
       -variable =>  \$selectAll, -onvalue => 1, -offvalue => 0, 
       -font => $Font )
-      -> pack(-side => "left", -anchor => 'nw' );
+      -> pack(-side => "top", -anchor => 'w' );
 
 $sellAll->select();
 
-$sellObj = $selframe -> Checkbutton(-text => "objectClasses",
+$sellObj = $sellframe -> Checkbutton(-text => "objectClasses",
       -variable =>  \$selectObj, -onvalue => 1, -offvalue => 0, 
       -font => $Font )
-      -> pack(-side => "left", -anchor => 'nw' );
+      -> pack(-side => "top", -anchor => 'w' );
 
-$sellMatch = $selframe -> Checkbutton(-text => "matchingRules",
+$sellMatch = $sellframe -> Checkbutton(-text => "matchingRules",
       -variable =>  \$selectMatch, -onvalue => 1, -offvalue => 0, 
       -font => $Font )
-      -> pack(-side => "left", -anchor => 'nw' );
+      -> pack(-side => "top", -anchor => 'w' );
 
-$sellAtt = $selframe -> Checkbutton(-text => "attributeType",
+$sellAtt = $sellframe -> Checkbutton(-text => "attributeType",
       -variable =>  \$selectAtt, -onvalue => 1, -offvalue => 0, 
       -font => $Font )
-      -> pack(-side => "left", -anchor => 'nw' );
+      -> pack(-side => "top", -anchor => 'w' );
+
+
+$sellsyn = $sellframe -> Checkbutton(-text => "ldapsyntaxes",
+      -variable =>  \$selectSyn, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellnf = $sellframe -> Checkbutton(-text => "nameforms",
+      -variable =>  \$selectNf, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$selldsr = $sellframe -> Checkbutton(-text => "ditstructurerules",
+      -variable =>  \$selectDsr, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$selldcr = $sellframe -> Checkbutton(-text => "ditcontentrules",
+      -variable =>  \$selectDcr, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "top", -anchor => 'w' );
+
+$sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
+      -variable =>  \$selectMru, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "top", -anchor => 'w' );
 
 #
 # Create Clear Attribute Data and Search Directory buttons
@@ -977,7 +1181,7 @@ $slframe ->Button(-text => "     Clear Data     ",
 #
 
 $schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
-        -width => 60, -height => 20, -wrap => 'none', -font => $Font  );
+        -width => 50, -height => 20, -wrap => 'none', -font => $Font  );
 
 $schema_list->pack( -side => "bottom" );
 
@@ -1001,7 +1205,8 @@ $schema_list->delete("1.0", "end");
  
 sub schema_cancel{
  
-$schemaWindow->withdraw if Tk::Exists($schemaWindow);
+# $schemaWindow->withdraw if Tk::Exists($schemaWindow);
+$schemaWindow->destroy if Tk::Exists($schemaWindow);
  
 } # End of cancel subroutine
  
@@ -1019,7 +1224,7 @@ sub schema
 my $error;
 my $dt = "/tmp/schema.dat.$$";
 
-if ( $clear ) { &schema_clear(); }
+if ( $sclear ) { &schema_clear(); }
 
 my $version;
 
@@ -1038,6 +1243,7 @@ $version = 2;
 
 my $ldap = new Net::LDAP($LDAP_SERVER,
                          timeout => 1,
+                         port => $port,
                          debug => $opt{'d'},
                         ) or $error = 1;
 
@@ -1077,6 +1283,7 @@ if ( $sfile && defined($schema) )
   $schema_list->insert("end",  "Schema data written to file: $fdata\n");
   $sfile = 0;
   $fdata = "";
+  $ldap->unbind;
   return;
 }
 
@@ -1124,6 +1331,76 @@ if ( $selectAll || $selectMatch )
 &print_loop($schema_list, \@ocs, "matchingRules" ) if ( defined(@ocs) );
 }
 
+#
+# Get the schema matchingruleuse
+#
+@ocs = $schema->matchingruleuse(); 
+
+#
+# Display the matchingruleuse
+#
+ 
+if ( $selectAll || $selectMru )
+{
+&print_loop($schema_list, \@ocs, "matchingRuleUse" ) if ( defined(@ocs) );
+}
+
+#
+# Get the schema ldapsyntaxes
+#
+@ocs = $schema->syntaxes(); 
+
+#
+# Display the ldapsyntaxes
+#
+ 
+if ( $selectAll || $selectSyn )
+{
+&print_loop($schema_list, \@ocs, "ldapSyntax" ) if ( defined(@ocs) );
+}
+
+#
+# Get the schema nameForms
+#
+@ocs = $schema->nameforms(); 
+
+#
+# Display the nameForms
+#
+ 
+if ( $selectAll || $selectNf )
+{
+&print_loop($schema_list, \@ocs, "nameForms" ) if ( defined(@ocs) );
+}
+
+#
+# Get the schema ditstructurerules
+#
+@ocs = $schema->ditstructurerules(); 
+
+#
+# Display the ditstructurerules
+#
+ 
+if ( $selectAll || $selectDsr )
+{
+&print_loop($schema_list, \@ocs, "ditstructurerules" ) if ( defined(@ocs) );
+}
+
+#
+# Get the schema ditstructurerules
+#
+@ocs = $schema->ditcontentrules(); 
+
+#
+# Display the nameForms
+#
+ 
+if ( $selectAll || $selectDcr )
+{
+&print_loop($schema_list, \@ocs, "ditcontentrules" ) if ( defined(@ocs) );
+}
+
 } # End of if ( defined($schema) ) 
 else 
 {
@@ -1142,6 +1419,8 @@ else
   $schema_list->insert("end",  "   servers will not return schema data.\n");
 
 }
+
+$ldap->unbind;
 
 } # End of schema subroutine
 
@@ -1244,7 +1523,8 @@ $list->delete("1.0", "end");
  
 sub display_cancel{
  
-$displayWindow->withdraw if Tk::Exists($displayWindow);
+# $displayWindow->withdraw if Tk::Exists($displayWindow);
+$displayWindow->destroy if Tk::Exists($displayWindow);
  
 } # End of cancel subroutine
 
@@ -1319,6 +1599,7 @@ if ( $error == 1 )
 
 my $ldap = new Net::LDAP($LDAP_SERVER,
                          timeout => 1,
+                         port => $port,
                         ) or $error = 1; 
 
 if ( $error == 1 )
@@ -1359,6 +1640,8 @@ if ( $mesg->code )
    $list->insert("end", "$errstr\n");
    return;
 }
+
+$ldap->unbind;
 
 #
 # Get and print out the record attributes.
@@ -1487,6 +1770,7 @@ my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
 
 my $ldap = new Net::LDAP($host,
                          timeout => 30,
+                         port => $port,
                         ) or $error = 1;
 
 #
@@ -1508,6 +1792,7 @@ $ldap->bind( password => "$bindpw", dn => "$binddn", version => 3 ) or $error = 
 if ( $error == 1 )
 {
    print "Bind error:  $@\n";
+   $ldap->unbind;
    return @base;
 }
 
@@ -1516,14 +1801,15 @@ $ptr = 0;
 
 while ( $ptr < @base )
 {
-my @new_base = calBase($base, $ldap, $f );
-
-push(@base, @new_base);
-
-$base = $base[++$ptr];
-
+ if ( @base < $limit )
+ { 
+  my @new_base = calBase($base, $ldap, $f );
+  push(@base, @new_base);
+ }
+ $base = $base[++$ptr];
 }
 
+$ldap->unbind;
 return @base;
 
 } # End of subroutine getBases()
@@ -1661,28 +1947,20 @@ that it will use.
 
 To be used this file must have user read permission.
 
-There are 4 commands that can be used with this file;
-hand, attribute, server, and base.
+There are 5 commands that can be used with this file;
+hand, attribute, server, limit, and port.
  
  hand -> values: left or right.  Defines where the 
                  attribute label box will be place.
 
+ limit -> value: default is 30.  Limits the number of 
+                 search base(s) detected.
+
+ port -> value: default is 389.  User should set this
+                 to match their needs.
+
  attribute -> attribute upon which the data search will be
               based.  One attribute per line.
-
- Server, mybase, and base work together to discribe a directory 
- setup.
-
- mybase -> Tells the script to use the base directives for 
-           determining search base(s). This directive should be
-           invoked before the base or server directives.        
-
- base -> directory search base from which to start the 
-         data search when mybase is defined.
-         Also used when mybase is not defined for servers 
-         that do not have a defined base attached to them. In
-         this case if there is more than base line, the
-         last base line defined will be the one that is used.
 
  server -> name of the directory server that you wish
            to conduct the data search. 
@@ -1692,17 +1970,20 @@ hand, attribute, server, and base.
                   or
            server: server name: base 
 
-           The I<server: server name> format will use the 
-           base directive(s) to define the base.
-           It has the advantage of speed with no delays, but
-           one base definition may not be suitable for 
-           all your directory servers with different DIT layouts.
+           The I<server: server name> format will try to use the 
+           root_dse function to define the base.
+           It the root_dse returns the namingContexts attribute,
+           that information will be use to determine the search
+           base(s).
+           If the root_dse returns undefined or has no namingContexts
+           attribute, a null string will be the search base.
+           In this case the user will have to define a search base
+           in the server command of the .tklkup file.
 
            The I<server: server name: base> format will 
            cause each of the defined servers to have it's 
            own special initial search base and use this initial
-           search base to find all of the other search bases if
-           the directive mybase is I<not> defined.
+           search base to find all of the other search bases.
            This is an attempt to do auto search base detection.
            Using this method has one I<draw back>, when changing
            to a different directory server there is a possible
@@ -1724,9 +2005,6 @@ hand, attribute, server, and base.
            same search base, there should be little or no delay
            when switching to the new server.          
            
-           If the directive I<mybase> is defined the base information
-           on each server directive is ignored. 
-
  Now a word about directory branch, or search base, detection.  There 
  are many things that can prevent this function from working properly. 
  Several version 2 LDAP servers that this was tested on required 
@@ -1762,18 +2040,18 @@ When executed tklkup will display a window on your
 computer.  The graphical user interface, GUI, has 
 several sections to it.  
 
-Exit button.  At the top of the GUI is the "Exit"
+I<Exit> button.  At the top of the GUI is the "Exit"
 button.  When a mouse click is done on the "Exit" button 
 the program will terminate.
 
-The SET LDAP VERSION "RadioButton" diamond will select the
+The I<SET LDAP VERSION> "RadioButton" diamond will select the
 LDAP protocol version.  When selected the "RadioButton" 
 diamond will be red in color.  This indicates that the 
 ldap connection will use the version I<3> protocol.  To use 
 ldap version I<2> protocol press the "RadioButton" diamond 
 so that it becomes a gray color.
  
-The SELECT SERVER button will activate a 
+The I<SELECT SERVER> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the directory server the
 user wishes to use.  When selected the "RadioButton" diamond
@@ -1787,7 +2065,7 @@ off window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The BIND TO DIRECTORY button will activate a window 
+The I<BIND TO DIRECTORY> button will activate a window 
 that is separate from the main window.  
 
 The new window contains two buttons and two text boxs. 
@@ -1810,7 +2088,7 @@ as they are typed into the text box.
 At the bottom of the window is the Accept button, pressing
 this button will set the bind DN and the password.
 
-The SELECT BASE button will activate a 
+The I<SELECT BASE> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the search base  the
 user wishes to use in the directory search.  When selected 
@@ -1825,7 +2103,7 @@ actions of the GUI.  All other actions like moving or
 closing just the torn off window must be done by the 
 user's window manager.
 
-The SELECT ADDITIONAL ATTRIBUTES button will activate a 
+The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
 "RadioButton" that corresponds to the attribute the
 user wishes to use in the directory search.  When selected 
@@ -1838,15 +2116,37 @@ window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The CLEAR ATTRIBUTE DATA button will clear out the text
+The I<CLEAR ATTRIBUTE DATA> button will clear out the text
 that appears in the Attribute Data text box.
 
-The ATTRIBUTE DATA text box is where the user will enter 
+The I<ATTRIBUTE DATA> text box is where the user will enter 
 the data to be searched for.
 
-The EXPLORE DIRECTORY SCHEMA button will activate the 
+The I<DIRECTORY PORT> button will activate a window 
+that is separate from the main window.  
+
+The new window contains two buttons and one text box. 
+If the user needs to change the TCP connection port, this
+is where it is done.
+
+At the top of the window is a Cancel button, pressing
+this button will cancel the operation of setting the
+port number.
+
+The text box is where the user will enter the port
+number to connect. Display in the text box is the
+current port number.
+
+At the bottom of the window is the Accept button, pressing
+this button will set the port number.
+
+The I<EXPLORE DIRECTORY SCHEMA> button will activate the 
 Directory Schema Search Window.  For information about
 this window see the Schema section of the manual.
+
+I<SEARCH> button.  At the bottom of the GUI is the "Search"
+button.  When a mouse click is done on the "Search" button 
+the program will execute a ldap search.
 
 
 -------------------------------------------------------------------
@@ -2078,13 +2378,13 @@ into my code.
 
 =head1 AUTHOR
 
-Clif Harden <charde@utdallas.edu>
+Clif Harden <charden@pobox.com>
 If you find any errors in the code please let me know at
-charden@utdallas.edu.
+charden@pobox.com.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2000 Clif Harden. All rights reserved. This program is
+Copyright (c) 1999-2001 Clif Harden. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
