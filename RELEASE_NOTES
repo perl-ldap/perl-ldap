@@ -1,3 +1,25 @@
+perl-ldap 0.23 April 20 2001
+============================
+
+* Fixed bug in Net::LDAP::Filter when the filter contained an escaped *
+* Fixed SASL bind to call challenge with serverSaslCreds
+* Fixed some uninit errors in Net::LDAP::Entry
+* Various documention updates
+* Added Net::LDAP::Util::canonical_dn
+* Net::LDAP::LDIF will now call canonical_dn for any DN which
+  contains non-printable characters
+* Added support for matchingruleuse, ditstructurerules, ditcontentrules
+  and nameForms into Net::LDAP::Schema
+* The ->schema method in Net::LDAP has changed how it finds the
+  schema to return. The new method is more correct, but there may
+  be a possibility that this change has created an incompatability.
+* New control module Net::LDAP::Control::ProxyAuth from
+  Olivier Dubois added
+* Added support for moddn in Net::LDAP::LDIF.
+* Minor fixes to the DSML output (fixing illegal XML.)
+
+
+
 perl-ldap 0.22 September 14 2000
 ================================
 

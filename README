@@ -1,6 +1,6 @@
 perl-ldap - A Client interface to LDAP servers
 
-Copyright (c) 1997-2000 Graham Barr. All rights reserved.
+Copyright (c) 1997-2001 Graham Barr. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
