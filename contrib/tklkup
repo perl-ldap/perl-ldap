@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.32 2003/01/17 02:55:56 charden Exp $
+# $Id: tklkup,v 1.33 2003/01/20 00:33:42 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -41,6 +41,8 @@ use Tk::LabFrame;
 use Tk::ROText;
 use Tk::HList;
 use Tk::Label;
+
+use subs qw/ops_items/;
 #
 # Global variables, wish I did not have to use them
 # but Tk forces me to.
@@ -48,9 +50,17 @@ use Tk::Label;
 my %Global = ();
 my %NC     = ();
 
+my $programVersion = "$Id\$";
+
 $Global{'jpeg'}   = 1;
 eval { use Tk::JPEG; }; 
 $Global{'jpeg'}   = 0 if ( $@ );
+
+$Global{'splash'}   = 1;
+eval { use Tk::Splashscreen;
+       use Tie::Watch;
+      };
+$Global{'splash'}   = 0 if ( $@ );
 
 #
 # Window roots
@@ -160,6 +170,38 @@ my $bframe;
 #my $sbmenu;
 my @attribute = ();
 my @server    = ();
+
+#
+# Create Main Window
+#
+
+$Global{'mainWindow'} = MainWindow->new;
+$Global{'mainWindow'}->geometry("520x320+$Global{'horz'}+$Global{'vert'}");
+$Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
+
+$Global{'menubar'}->cascade(-label => "~Directory OPS",
+                  -menuitems => ops_items);
+$Global{'menubar'}->command(-label => "Set ~Bind Credentials", 
+                  -command => \&BIND );
+$Global{'menubar'}->command(-label => "Set DSA ~Port", 
+                  -command => \&PORT );
+
+$splash = $Global{'mainWindow'}->Splashscreen(-milliseconds => 0) 
+        if ( $Global{splash} );
+$splframe = $splash->LabFrame(-label => "DIRECTORY SEARCH SPLASH SCREEN",
+      -labelside => "acrosstop")
+      ->pack() if ( $Global{splash} );
+
+$splashList = $splframe->Listbox( -height => 2, -width => 40  ) 
+        if ( $Global{splash} );
+$splashList->pack() 
+        if ( $Global{splash} );
+$splashList->insert("0", "Splash box") 
+        if ( $Global{splash} );
+$splash->Splash() 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
 #
 # Check for dot file, use it to configure program.
 #
@@ -173,6 +215,10 @@ else
  $ENV{'TMP'} = "./";
 }
 
+$splashList->insert("0", "Reading initialization file") 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
 #
 #  Active State Perl does not always set ENV HOME.
 #
@@ -273,6 +319,10 @@ $Global{'hand'}   = $opt_r ? 'right' : 'left';
 
 }
 
+$splashList->insert("0", "Determining search bases.") 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
 #
 # Default directory server.
 #
@@ -321,7 +371,6 @@ if ( $mesg->code && $mesg->code != 48 )
 {
   $errstr = $mesg->code;
   ERROR($errstr);
-  print $mesg->code,"\n";
 }
 if ( $mesg->code || $Global{setVersion} )
 { 
@@ -332,10 +381,9 @@ if ( $mesg->code || $Global{setVersion} )
  my $t1 = [];
  $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
  ${$NC{$server{$server[0]}}}[1] = $t1;      # 
-# print "server == ", $server{$server[0]}, "\n";
 
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
- @base =  getBases($Global{'LDAP_SERVER'}, $server{$server[0]});
+ push(@base, @$t1);
  }
  else
  {
@@ -354,11 +402,15 @@ if ( $mesg->code || $Global{setVersion} )
    {
     foreach my $ncbase ( @$attr )
     {
+     $splashList->insert("1", "Searching $ncbase") 
+        if ( $Global{splash} );
+     $splash->update() 
+        if ( $Global{splash} );
      my $t1 = [];
      ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
      ${$NC{$ncbase}}[1] = $t1;      # 
      push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
-     push(@base, getBases($Global{'LDAP_SERVER'}, $ncbase));
+     push(@base, @$t1);
     }
    }
  }
@@ -384,6 +436,13 @@ else
  }
 
 
+$splashList->insert("0", "Setting tklkup GUI.") 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
+
+$Global{'mainWindow'}->title("DIRECTORY SEARCH");
+
 #
 # Default directory search attributes.
 #
@@ -396,15 +455,6 @@ if ( $#attribute < 1 )
 
 push(@attribute,"Filter");  # put roll your on filter at the end
 
-#
-# Create Main Window
-#
-
-$Global{'mainWindow'} = MainWindow->new;
-
-$Global{'mainWindow'}->title("DIRECTORY SEARCH");
-
-$Global{'mainWindow'}->geometry("+$Global{'horz'}+$Global{'vert'}");
 #
 # Create process Exit button
 #
@@ -466,17 +516,17 @@ foreach (@server)
 # the user will enter the bind DN and password.
 #
  
-$abind = $stframe -> Button(-text => " SET BIND\n CREDENTIALS",
-                 -relief => "raised", -command => \&BIND, 
-                 -font => $Global{'Font'}, -borderwidth => 3 )
-                 -> pack( -side => $Global{'hand'}, -anchor => "w", -pady => 2);
+##$abind = $stframe -> Button(-text => " SET BIND\n CREDENTIALS",
+##                 -relief => "raised", -command => \&BIND, 
+##                 -font => $Global{'Font'}, -borderwidth => 3 )
+##                 -> pack( -side => $Global{'hand'}, -anchor => "w", -pady => 2);
 #
 # Create a LDAP version Checkbutton that will set up  variable
 # setVersion to set the LDAP version before each directory query.
 #
  
 $setVersion = $sbframe -> Checkbutton(
-                       -text => "SET LDAP VERSION, LDAP V3 DEFAULT",
+                       -text => "LDAP VERSION 3, DEFAULT",
                        -variable =>  \$Global{'setVersion'}, -onvalue => 3, 
                        -offvalue => 2, -font => $Global{'Font'} )
                        -> pack(-side => "left", -anchor => "center" );
@@ -509,6 +559,10 @@ $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
                  -borderwidth => 3 )
                  -> pack(-side => "left", -anchor => "w" );
 
+$splashList->insert("0", "Creating cascading search base menus.") 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
 #
 # Create the cascade search base menus
 #
@@ -610,7 +664,7 @@ $sfcmenu = $cframe -> Menubutton(-text => " SET FILTER CONDITON",
                  -> pack(-side => $Global{'hand'} );
 
 #
-# Set up the select search base radio buttons.
+# Set up the filter type radio buttons.
 #
 
 $rbsf   = $sfcmenu -> radiobutton(-label =>   "equal",
@@ -642,10 +696,14 @@ $flclist->insert(0, $Global{'infoFilter'});
 # Create get root dse entry button.
 #
 
-$cframe -> Button(-text => "OBTAIN ROOT DSE ENTRY", 
-        -command =>  \&rootDse, 
-        -font => $Global{'Font'}, -borderwidth => 3 )
-        -> pack( -side => $Global{'hand'} );
+$splashList->insert("0", "Creating root dse and attribute buttons.") 
+        if ( $Global{splash} );
+$splash->update() 
+        if ( $Global{splash} );
+##$cframe -> Button(-text => "OBTAIN ROOT DSE ENTRY", 
+##        -command =>  \&rootDse, 
+##        -font => $Global{'Font'}, -borderwidth => 3 )
+##        -> pack( -side => $Global{'hand'} );
 
 #
 # Create left attribute selection frame
@@ -729,13 +787,9 @@ foreach (@attribute)
 } # End of foreach (@attribute)
 
 
-$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA",
-      -labelside => "acrosstop" )
-      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
-
-$prtframe = $attframe->LabFrame(-label => "DIRECTORY PORT",
-      -labelside => "acrosstop" )
-      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
+##$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA",
+##      -labelside => "acrosstop" )
+##      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
 
 #
 # Create schema button.
@@ -743,26 +797,13 @@ $prtframe = $attframe->LabFrame(-label => "DIRECTORY PORT",
 # the user will be able to display schema information.
 #
  
-$abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
-                   -relief => "raised", -command => \&SCHEMA, 
-                   -font => $Global{'Font'}, -borderwidth => 3 )
-                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
-
-#
-# Create port button.
-# This will cause another window to be displayed where
-# the user will be able to display port information.
-#
- 
-$abind = $prtframe -> Button(-text => "SET DIRECTORY\nPORT",
-                   -relief => "raised", -command => \&PORT, 
-                   -font => $Global{'Font'}, -borderwidth => 3 )
-                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
+##$abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
+##                   -relief => "raised", -command => \&SCHEMA, 
+##                   -font => $Global{'Font'}, -borderwidth => 3 )
+##                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
 
 
-#$_ = $Global{'mainWindow'}->geometry();
-
-#/^=?(\d+x\d+)?([+-]\d+[+-]\d+)?$/;
+$splash->Destroy() if ( $Global{splash} );
 
 #
 # Run the Main loop looking for events.
@@ -770,7 +811,19 @@ $abind = $prtframe -> Button(-text => "SET DIRECTORY\nPORT",
 
 MainLoop;
 
+sub ops_items
+{
 
+[
+
+[ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
+"",
+[ 'command', 'Explore Directory ~Schema ', -accelerator => "Ctrl-s", -command => \&SCHEMA ],
+
+];
+
+
+}
 
 sub AClear {
 
@@ -814,10 +867,16 @@ $ptr = 1;
 while ( @BaseButton >= 1  )
 {
   $widget = pop(@BaseButton);
+  foreach my $mvar ( @$widget)
+  {
   $sbmenu->menu->delete($ptr);
+  }
   ++$ptr;
 }
 
+%NC = ();  # Delete the old stuff.
+@BaseButton = ();  # Delete the old stuff.
+@NcKeys = ();  # Delete the old stuff.
 
 if ( $Global{port} == 636 )
 {
@@ -856,7 +915,6 @@ if ( !$mesg->code || $Global{setVersion} == 3 )
 if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
  # user defined base
- %NC = ();  # Delete the old stuff.
  my $t1 = [];
  $NC{$server{$Global{'LDAP_SERVER'}}} = [ "0" ];  # dummy load in position 0
  ${$NC{$server{$Global{'LDAP_SERVER'}}}}[1] = $t1;      #
@@ -868,7 +926,6 @@ else
  my $entry;
  # use root_dse to find the bases
 
- %NC = ();  # Delete the old stuff.
  $entry = $Global{ldap}->root_dse();
  if ( defined($entry) )
  {
@@ -887,8 +944,6 @@ else
 
 #  $Global{ldap}->unbind if ( defined($Global{ldap}));
 #  $Global{ldap} = undef if ( defined($Global{ldap}));
-
-}
 
 }
 
@@ -930,6 +985,9 @@ foreach my $Nclabel ( @NcKeys )
 {
 $sbmenu->cascade(-label => "$Nclabel");
 $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
+}
+
+
 }
 
 if ( @NcKeys)
@@ -983,7 +1041,7 @@ $flclist->insert(0 , $Global{'infoFilter'});
 
 } # End of setFilter subroutine
 
- 
+
 #
 # Create Main Bind Window
 #
@@ -1206,62 +1264,7 @@ $Global{'portWindow'} = undef();
  
 sub portAccept{ 
  
-my $error;
-
-$error = 0;
-
-$Global{ldap}->unbind if ( defined($Global{ldap}) );
-$Global{ldap} = undef if ( defined($Global{ldap}) );
-
 $Global{'port'} = $port_data;
-
-#
-# Connect to directory server
-# 
-
-if ( $Global{port} == 636 )
-{
- $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
-else
-{
- $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
-                          timeout => 1,
-                          port => $Global{'port'},
-                          debug => $opt{'d'},
-                        ) or $error = 1;
-}
-
-if ( $error == 1 )
-{
-   ERROR("Connect error:  $@\n");
-    
-  # $schema_list->insert("end",  "Connect error:  $@\n");
-   return;
-}
-
-$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
-                     dn => "$Global{'binddn'}", 
-                     version => $Global{'setVersion'},
-                   );
-
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
-}
-
-#
-# New server setup
-# 
-&server;
-
 $Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
 $Global{'portWindow'} = undef(); 
  
@@ -4123,11 +4126,11 @@ if ( $Global{'nismapname'} )
  #
  # Solaris Native LDAP enabled
  #
- $match = "(|(ou=*)(nismapname=*))";  #search only for ou entries.
+ $match = "(|(o=*)(ou=*)(nismapname=*))";  #search only for ou entries.
 }
 else
 {
- $match = "(ou=*)";  #search only for ou entries.
+ $match = "(|(o=*)(ou=*))";  #search only for ou entries.
 }
 my $error = 0;  # initialize error flag.
 
@@ -4163,7 +4166,7 @@ my @new_base = ();
 $mesg = $Global{ldap}->search(
   base   => $base,
   filter => $f,
-  attrs  => [ "cn" ],
+  attrs  => [ "cn","nismapname" ],
   scope  => "one",
 );
 
@@ -4172,7 +4175,7 @@ $mesg = $Global{ldap}->search(
 # Search call work, but there was an ldap error.
 #
 
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 11 ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
@@ -4194,14 +4197,14 @@ if ( $mesg->code )
  $_ = $dn;
 
 #
-# Record only dn that start with ou=
+# Record only dn that start with ou=, o=, or in some cases nismapname.
 # Normal entrys can be mixed in with these objects.
 #
- if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/ ) )
+ if ( $Global{'nismapname'} && ( /^ou=/ || /^o=/ || /^nismapname/i ) )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
- elsif ( /^ou=/ )
+ elsif ( /^ou=/ || /^o=/ )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
@@ -4559,33 +4562,38 @@ If tklkup is run in debug mode or on a system that is not
 listed above it will I<NOT> fork and will run in in 
 foreground mode.
 
-I<Exit> button.  At the top of the GUI is the "Exit"
-button.  When a mouse click is done on the "Exit" button 
-the program will terminate.
+During initial program initialization a "splash" screen will
+be displayed telling the user what is going on.  It is possible
+that the user will never see the splash screen if tklkup 
+initializes quickly.
 
-The I<SET LDAP VERSION> "RadioButton" diamond will select the
-LDAP protocol version.  When selected the "RadioButton" 
-diamond will be red in color.  This indicates that the 
-ldap connection will use the version I<3> protocol.  To use 
-ldap version I<2> protocol press the "RadioButton" diamond 
-so that it becomes a gray color.
 
-The I<SELECT SERVER> button will activate a 
-drop down menu.  From the menu the user will select the 
-"RadioButton" that corresponds to the directory server the
-user wishes to use.  When selected the "RadioButton" diamond
-will turn red in color.  This menu is a designed to be a 
-"I<tear off>" menu, selecting the "---------------" line will 
-cause the pull down menu to become a separate window that 
-is still somewhat controlled by the GUI.  The 
-DIRECTORY SERVER text box will display the directory name 
-that is selected.  If the GUI is icon-ed or exited, the tear 
-off window will follow the actions of the GUI.  All other 
-actions like moving or closing just the torn off window 
-must be done by the user's window manager.
+-------------------------------------------------------------------
+
+=head1 Directory Search Menu Bar
+
+At the top of the GUI is the main menu bar.  It has 3 drop down
+menus; "Directory OPS", "Set Bind Credentials", and 
+"Set DSA Port".
+
+The I<DIRECTORY OPS> button will activate a drop down menu that
+has 2 menu selections; 
+
+The I<Explore ROOT DSE> menu will attempt to obtain the
+root dse entry for the selected directory server.  If the root
+dse entry is obtained a separate window will be displayed that 
+will display the information obtained from the root dse entry.
+If the root dse entry can not be obtained then an error message
+window will be displayed.  This menu has a "Hot" key, Ctrl-r.
+
+The I<EXPLORE DIRECTORY SCHEMA> menu will activate the 
+Directory Schema Search Window.  This menu has a "Hot" key, Ctrl-s.
+For information about this window see the Schema section of 
+the manual.  
 
 The I<SET BIND CREDENTIALS> button will activate a window 
-that is separate from the main window.  
+that is separate from the main window.  This menu has a 
+"Hot" key, Alt-b.
 
 The new window contains two buttons and two text boxes. 
 For security reasons nothing is initially displayed in the 
@@ -4605,7 +4613,61 @@ for the DN.  Star "*" will be shown for the characters
 as they are typed into the text box.  
 
 At the bottom of the window is the Accept button, pressing
-this button will set the bind DN and the password.
+this button will set the bind DN and the password.  Pressing the
+accept button will cause the program to bind to the currently
+selected directory server.
+
+The I<DIRECTORY PORT> button will activate a window 
+that is separate from the main window.  This menu has a 
+"Hot" key, Alt-p.
+
+The new window contains two buttons and one text box. 
+If the user needs to change the TCP connection port, this
+is where it is done.
+
+At the top of the window is a Cancel button, pressing
+this button will cancel the operation of setting the
+port number.
+
+The text box is where the user will enter the port
+number to connect. Display in the text box is the
+current port number.
+
+At the bottom of the window is the Accept button, pressing
+this button will set the port number.  Changing the connection
+port number will I<NOT> cause the program to issue a new
+connection to the directory server.  The user must re-select or
+change to a new directory server.
+
+
+-------------------------------------------------------------------
+
+=head1 Directory Search GUI
+
+I<Exit> button.  Just below the main menu bar is the "Exit"
+button.  When a mouse click is done on the "Exit" button 
+the program will terminate.
+
+The I<LDAP VERSION> "RadioButton" diamond will select the
+LDAP protocol version.  When selected the "RadioButton" 
+diamond will be red in color.  This indicates that the 
+ldap connection will use the version I<3> protocol.  To use 
+ldap version I<2> protocol press the "RadioButton" diamond 
+so that it becomes a gray color.
+
+The I<SELECT SERVER> button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the directory server the
+user wishes to use.  When selected the "RadioButton" diamond
+will turn red in color.  This menu is a designed to be a 
+"I<tear off>" menu, selecting the "---------------" line will 
+cause the pull down menu to become a separate window that 
+is still somewhat controlled by the GUI.  The 
+DIRECTORY SERVER text box will display the directory name 
+that is selected.  If the GUI is icon-ed or exited, the tear 
+off window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
 
 The I<SELECT BASE> button will activate a cascading 
 drop down menu that contains the NamingContexts of the directory
@@ -4666,41 +4728,12 @@ will be created.  Just to the side of the I<SET FILTER CONDITION>
 button is a text box that displays the filter condition
 that is selected.
 
-The I<OBTAIN ROOT DSE ENTRY> button will attempt to obtain the
-root dse entry for the selected directory server.  If the root
-dse entry is obtained a separate window will be displayed that 
-will display the information obtained from the root dse entry.
-If the root dse entry can not be obtained then an error message
-window will be displayed.
-
 The I<ATTRIBUTE DATA> text box is where the user will enter 
 the data to be searched for.  The program will automatically
 put the beginning and ending parenthesis around the data.
 If the I<Filter> attribute is selected this is where the 
 I<COMPLETE> filter is entered, the program will not modify this
 string in any way.
-
-The I<DIRECTORY PORT> button will activate a window 
-that is separate from the main window.  
-
-The new window contains two buttons and one text box. 
-If the user needs to change the TCP connection port, this
-is where it is done.
-
-At the top of the window is a Cancel button, pressing
-this button will cancel the operation of setting the
-port number.
-
-The text box is where the user will enter the port
-number to connect. Display in the text box is the
-current port number.
-
-At the bottom of the window is the Accept button, pressing
-this button will set the port number.
-
-The I<EXPLORE DIRECTORY SCHEMA> button will activate the 
-Directory Schema Search Window.  For information about
-this window see the Schema section of the manual.
 
 I<SEARCH> button.  At the bottom of the GUI is the "Search"
 button.  When a mouse click is done on the "Search" button 
