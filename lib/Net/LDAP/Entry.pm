@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.16";
+$VERSION = "0.17";
 
 sub new {
   my $self = shift;
@@ -78,7 +78,7 @@ sub get_value {
 
   if ($opt{alloptions}) {
     my %ret = map {
-                $_->{type} =~ /^\Q$type\E(.*)/i ? (lc($1), $_->{vals}) : ()
+                $_->{type} =~ /^\Q$type\E((?:;.*)?)$/i ? (lc($1), $_->{vals}) : ()
               } @{$self->{asn}{attributes}};
     return %ret ? \%ret : undef;
   }
