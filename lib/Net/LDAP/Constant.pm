@@ -484,6 +484,10 @@ Indicates if the server supports the Start TLS extension (RFC 2830)
 
 Indicates that the server supports the Password Modify extension (RFC 3062)
 
+=item LDAP_EXTENSION_WHO_AM_I (1.3.6.1.4.1.4203.1.11.3)
+
+Indicates that the server supports the "Who am I?" extension (draft-zeilenga-ldap-authzid-09)
+
 =back
 
 =head1 SEE ALSO
