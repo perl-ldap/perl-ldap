@@ -429,7 +429,7 @@ Previous releases did not take the B<DN> argument which replaces this option.
 
 =item add
 
-The B<add> option should be a reference to a HASH. The values of the
+The B<add> option should be a reference to a HASH. The keys of the
 HASH are the attributes to add, and the values may be a string or a reference
 to a list of values.
 
@@ -943,6 +943,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.31 2003/05/22 12:16:57 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.32 2003/05/23 07:07:31 chrisridd Exp $>
 
 =cut
