@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15";
+$VERSION = "0.15_01";
 
 my %mode = qw(w > r < a >>);
 
@@ -120,7 +120,7 @@ sub _read_url_attribute {
 
   if ($url =~ s/^file:(?:\/\/)?//) {
     my $fh = $self->{_attr_fh};
-    unless (open($fh, '<', $url)) {
+    unless (open($fh, '<'.$url)) {
       $self->_error("can't open $line: $!", @ldif);
       return;
     }
