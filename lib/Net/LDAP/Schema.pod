@@ -32,27 +32,11 @@ may be an object class, attribute or syntax) then a case-insensitive name
 or raw oid (object identifier, in dotted numeric string form, e.g. 2.5.4.0)
 may be supplied.
 
-=over 4
-
-=item all_attributes ( )
-
-=item all_ditcontentrules ( )
-
-=item all_ditstructurerules ( )
-
-=item all_matchingrules ( )
-
-=item all_matchingruleuses ( )
-
-=item all_nameforms ( )
-
-=item all_objectclasses ( )
-
-=item all_syntaxes ( )
-
-Returns a list of all the requested types in the schema. Each item in
-the list is a reference to a HASH; the various keys in each HASH are
-named after the keys defined in RFC 2252:
+Each returned item of schema (eg an attribute definition) is returned
+in a HASH. The keys in the returned HASH are lowercased versions of
+the keys read from the server. Here's a partial list (not all HASHes
+define all keys) although note that RFC 2252 permits other keys as
+well:
 
  name
  desc
@@ -76,6 +60,26 @@ named after the keys defined in RFC 2252:
  not
  oc
  form
+
+=over 4
+
+=item all_attributes ( )
+
+=item all_ditcontentrules ( )
+
+=item all_ditstructurerules ( )
+
+=item all_matchingrules ( )
+
+=item all_matchingruleuses ( )
+
+=item all_nameforms ( )
+
+=item all_objectclasses ( )
+
+=item all_syntaxes ( )
+
+Returns a list of all the requested types in the schema.
 
 =item attribute ( NAME )
 
@@ -113,19 +117,22 @@ return undefined.  Otherwise a value of 1 is always returned.
 
 =item error ( )
 
-Returns the last error encountered.
+Returns the last error encountered when parsing the schema.
 
 =item may ( OBJECTCLASS )
 
 Given an argument which is the name or oid of a known object class,
-returns the names of the attributes which are optional in the class.
+returns a list of HASHes describing the attributes which are optional
+in the class.
 
   @may = $schema->may ( $oc );
+  # First optional attr has the name '$may[0]->{name}'
 
 =item must ( OBJECTCLASS )
 
 Given an argument which is the name or oid of a known object class,
-returns the names of the attributes which are mandatory in the class
+returns a list of HASHes describing the attributes which are mandatory
+in the class.
 
   @must = $schema->must ( $oc );
 
@@ -173,6 +180,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.13 2003/08/05 13:33:04 chrisridd Exp $>
+I<$Id: Schema.pod,v 1.14 2003/08/16 08:44:26 chrisridd Exp $>
 
 =cut
