@@ -59,17 +59,31 @@ protocol.
 =item new ( HOST [, OPTIONS ] )
 
 Creates a new B<Net::LDAP> object and opens a connection to the named host.
-OPTIONS is a list of key-value pairs, valid options are :-
 
-C<HOST> may also be a reference to an array of hosts to try. Each will
-be tried in order until a connection is made. Only when all have
-failed will the result of C<undef> be returned.
+C<HOST> may be a host name or an IP number. TCP port may be specified
+after the host name followed by a column ':' (such as
+localhost:10389). The default TCP port is 389.
+
+You can also specify a URI, such as 'ldaps://127.0.0.1:666' or
+'ldapi://%2fvar%2flib%2fldap_sock'. Note that '%2f's in the LDAPI
+socket path will be translated into '/'. This is to support LDAP query
+options like base, search etc. although query part of the URI will be
+ignored in this context. If port was not specified in the URI, the
+default is either 389 or 636 for 'LDAP' and 'LDAPS' schemes
+respectively.
+
+C<HOST> may also be a reference to an array of hosts, host-port pairs
+or URI's to try. Each will be tried in order until a connection is
+made. Only when all have failed will the result of C<undef> be
+returned.
+
+OPTIONS is a list of key-value pairs, valid options are :-
 
 =over 4
 
 =item port
 
-Port to connect to on the remote server.
+Port to connect to on the remote server. May be overridden by C<HOST>.
 
 =item timeout
 
@@ -917,6 +931,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.27 2003/05/09 13:32:49 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.28 2003/05/09 16:56:49 gbarr Exp $>
 
 =cut
