@@ -229,24 +229,27 @@ sub delete {
 sub update {
   my $self = shift;
   my $ldap = shift;
+  my %opt = @_;
   my $mesg;
-  my $cb = sub { $self->changetype('modify') unless $_[0]->code };
+  my $user_cb = delete $opt{callback};
+  my $cb = sub { $self->changetype('modify') unless $_[0]->code;
+                 $user_cb->(@_) if $user_cb };
 
   if ($self->{'changetype'} eq 'add') {
-    $mesg = $ldap->add($self, 'callback' => $cb, @_);
+    $mesg = $ldap->add($self, 'callback' => $cb, %opt);
   }
   elsif ($self->{'changetype'} eq 'delete') {
-    $mesg = $ldap->delete($self, 'callback' => $cb, @_);
+    $mesg = $ldap->delete($self, 'callback' => $cb, %opt);
   }
   elsif ($self->{'changetype'} =~ /modr?dn/) {
     my @args = (newrdn => $self->get_value('newrdn'),
                 deleteoldrdn => $self->get_value('deleteoldrdn'));
     my $newsuperior = $self->get_value('newsuperior');
     push(@args, newsuperior => $newsuperior) if $newsuperior;
-    $mesg = $ldap->moddn($self, @args, 'callback' => $cb, @_);
+    $mesg = $ldap->moddn($self, @args, 'callback' => $cb, %opt);
   }
   elsif (@{$self->{'changes'}}) {
-    $mesg = $ldap->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, @_);
+    $mesg = $ldap->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, %opt);
   }
   else {
     require Net::LDAP::Message;
