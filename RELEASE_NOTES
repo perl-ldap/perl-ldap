@@ -1,3 +1,9 @@
+perl-ldap 0.27 27 Jan 2003
+==========================
+
+* Default protocol version is now version 3
+* Fixed support for multiple hosts to be passed to new
+
 perl-ldap 0.26 18 Jul 2002
 ==========================
 

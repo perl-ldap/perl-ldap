@@ -1,3 +1,222 @@
+2003-01-27 14:19  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Document the ability to pass an array ref for the HOST parameter to new
+	
+2003-01-25 05:17  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected an error in the rootDse subroutine.
+	
+2003-01-25 05:00  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Removed one of the mainwindow update commands in the schema display
+	section, it was interfering with the automatic window sizing on
+	window creation.
+	
+2003-01-25 03:45  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Replaced width and height test values with correct values.
+	
+2003-01-25 03:38  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Moved position of process message window.
+	Added main window height and width options.
+	Added busy indicator.
+	
+2003-01-25 03:35  Clif Harden
+
+	* contrib/dot.tklkup:
+
+	
+	Added options for main window width and height.
+	
+2003-01-24 13:11  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Change 3 use statments to require statments.
+	
+2003-01-24 04:47  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected several errors.
+	Added a list box for process messages.
+	Corrected a memory hogging issue with the way returned entry
+	data was stored.
+	
+2003-01-21 01:45  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected an error in the mod rdn section.
+	
+2003-01-20 00:33  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Made major changes to the layout of GUI and program operation.
+	Added Splash screen on program initialization.
+	Added Menubar to top of GUI.  Moved Bind Credentials and Port buttons
+	to menubar.  Added Directory OPS drop down menu to menubar and moved
+	Obtain Root DSE and Schema buttons to Directory Ops menu.
+	Removed the dsa re-connect and bind operations when the dsa port
+	number is changed.  User must re-select dsa for the new port number
+	to be used.
+	Corrected a nismapname error in the search base detection routines.
+	Changed wording on several buttons and check boxes.
+	Remove the cvs tag that put revision information in the program. This was
+	done to make the program smaller.
+	
+2003-01-17 02:55  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Changed the Bind To Directory button to Set Bind Credential button.
+	Changed completely the way a connection is made to the directory server.
+	Changing any of the port, bind credentials, or directory server will reconnect
+	to the currently selected directory server and pull new a new set of
+	search bases.
+	Added support for SSL connections.
+	
+2002-12-30 05:30  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Modified the error checking on ldap modify commands.
+	Corrected all the ldap bind commands.
+	Added CheckError subrountine.
+	Added a few comments at the end of subrountines.
+	
+2002-12-03 02:35  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added section on what is a proper bind DN.
+	Corrected some spelling errors.
+	
+2002-11-06 04:27  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected a few pod errors that podchecker found.
+	
+2002-11-03 01:47  Kartik Subbarao
+
+	* contrib/ldifdiff.pl:
+
+	Speeded up attribute value comparisons significantly.
+	
+2002-10-24 14:08  Graham Barr
+
+	* lib/Net/: LDAP.pm, LDAP.pod:
+
+	Add multihomed to the options passed onto IO::Socket
+	
+2002-10-24 14:04  Graham Barr
+
+	* lib/Net/LDAP/: LDIF.pm, LDIF.pod:
+
+	Allow the file passed to new to be a pipe to/from a sub-process
+	
+2002-10-24 13:49  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Patch for solitary comments from Peter Marschall
+	
+2002-10-08 02:41  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Change the way search base(s) are displayed.  Instead of one big list,
+	the base list has been setup as a cascading menu based on the
+	namingContext(s) of the directory server.
+	
+2002-09-11 13:54  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix typo preventing multiple being passed to new
+	
+2002-09-11 13:53  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Change default protocol version to 3
+	
+2002-09-11 13:52  Graham Barr
+
+	* MANIFEST:
+
+	Add contrib/ldifuniq.pl
+	
+2002-09-11 13:49  Graham Barr
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Base64 encode values when needed
+	
+2002-09-11 13:49  Graham Barr
+
+	* lib/Net/LDAP/: Search.pm, Filter.pm:
+
+	Fix perl5.004 compatability issues
+	
+2002-08-24 16:13  Kartik Subbarao
+
+	* contrib/README:
+
+	Added ldifuniq.pl
+	
+2002-08-19 13:21  Graham Barr
+
+	* lib/Net/LDAP/Constant.pm:
+
+	Add LDAP_CONTROL_TREE_DELETE
+	
+2002-07-19 03:44  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added the calling of the DSML end_dsml function when schema XML information
+	is writen to a file.
+	
+2002-07-18 21:04  Graham Barr
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Need to end the dsml:attribute-type element
+	
+2002-07-18 19:19  Graham Barr
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Added no strict 'refs' to AUTOLOAD
+	
 2002-07-18 14:01  Graham Barr
 
 	* RELEASE_NOTES, lib/Net/LDAP.pm:
