@@ -1,4 +1,4 @@
-# Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1997-2003 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.20";
+$VERSION = "0.21";
 
 sub new {
   my $self = shift;
@@ -250,7 +250,7 @@ sub update {
   }
   else {
     require Net::LDAP::Message;
-    $mesg = Net::LDAP::Message->new( {} );
+    $mesg = Net::LDAP::Message->new( $ldap );
     $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
   }
 
