@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.11 2002/01/01 03:39:36 charden Exp $
+# $Id: DSML.pm,v 1.12 2002/01/03 03:01:14 charden Exp $
 #
 
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
@@ -30,7 +30,7 @@ use strict;
 use Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 sub new {
   my $pkg = shift;
@@ -173,7 +173,8 @@ foreach my $var ( @atts)
    #
    # Get the oid number of the object.
    #
-   $oid = $schema->name2oid( "$var" );
+#   $oid = $schema->name2oid( "$var" );
+   $oid = $schema->is_matchingrule( "$var" );
    #
    # Get the name of this matchingrule
    #
@@ -188,14 +189,14 @@ foreach my $var ( @atts)
 
 @atts = $schema->attributes();
 $self->{'net_ldap_title'} = "attribute-type";
-$self->_schemaToXML( \@atts, $schema,$mrs) if ( @atts );
+$self->_schemaToXML( \@atts, $schema,$mrs,"is_attribute") if ( @atts );
 
 #
 # Get the schema objectclasses
 #
 @atts = $schema->objectclasses();
 $self->{'net_ldap_title'} = "objectclass-type";
-$self->_schemaToXML( \@atts,$schema,$mrs) if ( @atts );
+$self->_schemaToXML( \@atts,$schema,$mrs,"is_objectclass") if ( @atts );
 
 } # End of _print_schema subroutine
 
@@ -205,7 +206,7 @@ $self->_schemaToXML( \@atts,$schema,$mrs) if ( @atts );
 
 sub _schemaToXML()
 {
-my ( $self,$ocs,$schema,$mrs ) = @_;
+my ( $self,$ocs,$schema,$mrs,$method ) = @_;
 
 my $fh = $self->{'net_ldap_dsml_array'} or return;
 my $title = $self->{'net_ldap_title'} or return;
@@ -219,7 +220,8 @@ foreach my $var ( @$ocs)
    #
    # Get the oid number of the object.
    #
-   my $oid = $schema->name2oid( "$var" );
+#   my $oid = $schema->name2oid( "$var" );
+   my $oid = $schema->$method( "$var" );
    $container{'id'} = $var;
   
    $container{'oid'} = $oid;
