@@ -26,12 +26,12 @@ Net::LDAPI - use LDAP over a UNIX domain socket
 
  use Net::LDAPI;
 
- $ldapi = new Net::LDAPI('/var/lib/ldapi');
+ $ldapi = Net::LDAPI->new('/var/lib/ldapi');
 
  # alternate way
  use Net::LDAP;
 
- $ldapi = new Net::LDAP('ldapi://');
+ $ldapi = Net::LDAP->new('ldapi://');
 
 =head1 DESCRIPTION
 

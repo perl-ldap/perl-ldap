@@ -784,7 +784,7 @@ If the private key is encrypted (highly recommended!) then set
 decryptkey to a reference to a subroutine that returns the decrypting
 key. For example:
 
- $ldap = new Net::LDAP('myhost.example.com', version => 3);
+ $ldap = Net::LDAP->new('myhost.example.com', version => 3);
  $ldap->start_tls(verify => 'require',
                   clientcert => 'mycert.pem',
                   clientkey => 'mykey.pem',
@@ -943,6 +943,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.30 2003/05/22 09:24:23 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.31 2003/05/22 12:16:57 chrisridd Exp $>
 
 =cut
