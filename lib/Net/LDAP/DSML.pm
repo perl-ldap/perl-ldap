@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.18 2003/03/09 11:00:31 chrisridd Exp $
+# $Id: DSML.pm,v 1.19 2003/05/07 10:53:42 chrisridd Exp $
 # 
 
 use strict;
@@ -11,7 +11,7 @@ use XML::SAX::Base;
 use Net::LDAP::Entry;
 
 @ISA = qw(XML::SAX::Base);
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 # OO purists will hate this :)
 my %schema_typemap = qw(
@@ -866,7 +866,7 @@ B<Example>
   my $schema = $ldap->schema();
   $dsml->write_schema($schema);
 
-=back 4
+=back
 
 =head1 AUTHOR
 
