@@ -253,7 +253,7 @@ database is optimized for transactions (where a series of operations is
 counted as 1, thus if one of the steps fails, the RDBMS can roll-back to
 the state it was in before you started).
 
-Directories also typically are hierarchical in nature (RBBMS is typically
+Directories also typically are hierarchical in nature (RDBMS is typically
 flat, but you can implement a hierarchy using tables and queries),
 network-able, distributed and replicated.
 
@@ -409,9 +409,9 @@ to the specified server. Any error message will be available in $@
 =head2 How can I tell when the server returns an error, bind() always returns
 true ?
 
-Most methods in Net::LDAP return a L<Net::LDAP::Message|Net::LDAP::Message> object, or a sub-class
-of that. This object will hold the results from the server, including and result
-code.
+Most methods in Net::LDAP return a L<Net::LDAP::Message|Net::LDAP::Message> 
+object, or a sub-class of that. This object will hold the results 
+from the server, including the result code.
 
 So, for example, to determine the result of the bind operation.
 
@@ -440,7 +440,7 @@ L<Net::LDAP::Search|Net::LDAP::Search> package. By calling methods on this objec
 you can obtain information about the result and also the individual entries.
 
 The first thing to check is if the search was successful. This is done with
-with the method C<$mesg->code>. This method will return the status code
+with the method $mesg->code. This method will return the status code
 that the server returned. A success will yield a zero value, but there are
 other values, some of which could also be considered a success.
 See L<Net::LDAP::Constant|Net::LDAP::Constant>
@@ -931,7 +931,7 @@ Any good FAQ is made up of many authors, everyone that contributes
 information to the perl-ldap mail list is a potential author.
 
 An attempt to maintain this FAQ is being done by Clif Harden 
- <charden@texoma.net>.
+ <charden@pobox.com>.
 
 The original author of this FAQ was Graham Barr <gbarr@pobox.com>
 
