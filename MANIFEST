@@ -19,6 +19,7 @@ contrib/ldifdiff.pl
 contrib/ldifsort.pl
 contrib/ldifuniq.pl
 contrib/printMembers.pl
+contrib/recursive-ldap-delete.pl
 contrib/tklkup
 data/00-cmp.ldif
 data/00-cmp2.ldif
