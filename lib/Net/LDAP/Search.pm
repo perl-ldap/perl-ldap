@@ -145,9 +145,9 @@ sub references {
 
   $self->sync unless exists $self->{resultCode};
 
-  return unless exists $self->{'Reference'} && ref($self->{'Reference'});
+  return unless exists $self->{'reference'} && ref($self->{'reference'});
 
-  @{$self->{'Reference'} || []}
+  @{$self->{'reference'} || []}
 }
 
 sub as_struct {
