@@ -610,6 +610,11 @@ sub sync {
   $err;
 }
 
+sub disconnect {
+  my $self = shift;
+  _drop_conn($self, LDAP_USER_CANCELED, "Explicit disconnect");
+}
+
 sub _sendmesg {
   my $ldap = shift;
   my $mesg = shift;
