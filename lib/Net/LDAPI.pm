@@ -1,7 +1,7 @@
-# Copyright (c) 2000-2002 Chris Ridd <chris.ridd@messagingdirect.com> and
-# Graham Barr <gbarr@pobox.com>. All rights reserved.  This program is
-# free software; you can redistribute it and/or modify it under the
-# same terms as Perl itself.
+# Copyright (c) 2003 Derrik Pates <dpates@dsdk12.net> and Graham Barr
+# <gbarr@pobox.com>. All rights reserved.  This program is free
+# software; you can redistribute it and/or modify it under the same
+# terms as Perl itself.
 
 package Net::LDAPI;
 @Net::LDAPI::ISA = ( 'Net::LDAP' );
@@ -69,13 +69,13 @@ None yet.
 
 =head1 AUTHOR
 
-Derrik Pates <dpates@dsdk12.net>
+Derrik Pates E<lt>dpates@dsdk12.netE<gt>
 
 =head1 COPYRIGHT
 
-Original code Copyright (c) 2000-2002, Chris Ridd and Graham Barr. All
-rights reserved. This library is free software; you can redistribute it
-and/or modify it under the same terms as Perl itself.
+Original code Copyright (c) 2003, Derrik Pates and Graham Barr. All
+rights reserved. This library is free software; you can redistribute
+it and/or modify it under the same terms as Perl itself.
 
 =cut
 
