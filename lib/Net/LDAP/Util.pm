@@ -41,7 +41,20 @@ require Net::LDAP::Constant;
   ldap_error_desc
   canonical_dn
   ldap_explode_dn
+  escape_filter_value
+  unescape_filter_value
+  escape_dn_value
+  unescape_dn_value
 );
+%EXPORT_TAGS = (
+	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
+	filter	=> [ qw(escape_filter_value unescape_filter_value) ],
+	dn    	=> [ qw(canonical_dn ldap_explode_dn
+	                escape_dn_value unescape_dn_value) ],
+	escape 	=> [ qw(escape_filter_value unescape_filter_value
+	                escape_dn_value unescape_dn_value) ],
+);
+
 $VERSION = "0.10";
 
 =item ldap_error_name ( ERR )
@@ -397,11 +410,11 @@ Uppercase attribute type names. This is the default.
 
 Do not change attribute type names.
 
+=back
+
 =item reverse
 
 If TRUE, the RDN sequence is reversed.
-
-=back
 
 =back
 
@@ -472,7 +485,118 @@ sub ldap_explode_dn($%) {
 }
 
 
+=item escape_filter_value ( VALUES )
+
+Escapes the given B<VALUES> according to RFC 2254 so that they
+can be safely used in LDAP filters.
+
+Any control characters with an ACII code E<lt> 32 as well as the
+characters with special meaning in LDAP filters "*", "(", ")",
+and "\" the backslash are converted into the representation
+of a backslash followed by two hex digits representing the
+hexadecimal value of the character.
+
+Returns the converted list in list mode and the first element
+in scalar mode.
+
+=cut
+
+## convert a list of values into its LDAP filter encoding ##
+# Synopsis:  @escaped = escape_filter_value(@values)
+sub escape_filter_value(@)
+{
+my @values = @_;
+
+  map { $_ =~ s/([\x00-\x1F\*\(\)\\])/"\\".unpack("H2",$1)/oge; } @values;
+
+  return(wantarray ? @values : $values[0]);
+}
+
+
+=item unescape_filter_value ( VALUES )
+
+Undoes the conversion done by B<escape_filter_value()>.
+
+Converts any sequences of a backslash followed by two hex digits
+into the corresponding character.
+
+Returns the converted list in list mode and the first element
+in scalar mode.
+
+=cut
+
+## convert a list of values from its LDAP filter encoding ##
+# Synopsis:  @values = unescape_filter_value(@escaped)
+sub unescape_filter_value(@)
+{
+my @values = @_;
+
+  map { $_ =~ s/\\([0-9a-fA-F]{2})/pack("H2",$1)/oge; } @values;
+
+  return(wantarray ? @values : $values[0]);
+}
+
+
+=item escape_dn_value ( VALUES )
+
+Escapes the given B<VALUES> according to RFC 2253 so that they
+can be safely used in LDAP DNs.
+
+The characters ",", "+", """, "\", "E<lt>", "E<gt>", ";", "#", "="
+with a special meaning in RFC 2252 are preceeded by ba backslash.
+Control characters with an ASCII code E<lt> 32 are represented
+as \hexpair.
+Finally all leading and trailing spaces are converted to
+sequences of \20.
+
+Returns the converted list in list mode and the first element
+in scalar mode.
+
+=cut
+
+## convert a list of values into its DN encoding ##
+# Synopsis:  @escaped = escape_dn_value(@values)
+sub escape_dn_value(@)
+{
+my @values = @_;
+
+  map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
+        $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
+        $_ =~ s/(^\s+|\s+$)/"\\20" x length($1)/oge; } @values;
+
+  return(wantarray ? @values : $values[0]);
+}
+
+
+=item unescape_dn_value ( VALUES )
+
+Undoes the conversion done by B<escape_dn_value()>.
+
+Any escape sequence starting with a baskslash - hexpair or
+special character - will be transformed back to the
+corresponding character.
+
+Returns the converted list in list mode and the first element
+in scalar mode.
+
+=cut
+
+## convert a list of values from its LDAP filter encoding ##
+# Synopsis:  @values = unescape_dn_value(@escaped)
+sub unescape_dn_value($)
+{
+my @values = @_;
+
+  map { $_ =~ s/\\([\\",=+<>#;]|[0-9a-fA-F]{2})
+               /(length($1)==1) ? $1 : pack("H2",$1)
+               /ogex; } @values;
+
+  return(wantarray ? @values : $values[0]);
+}
+
+
 =back
+
 
 =head1 AUTHOR
 
@@ -490,7 +614,7 @@ ldap_explode_dn and canonical_dn also
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.18 2003/05/20 14:58:49 chrisridd Exp $>
+I<$Id: Util.pm,v 1.19 2004/01/20 07:12:24 chrisridd Exp $>
 
 =cut
 
