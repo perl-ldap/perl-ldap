@@ -1,0 +1,79 @@
+#!/usr/bin/perl
+
+use strict;
+use XML::XPath;
+
+my $infile = shift || 'index.xml';
+(my $outfile = $infile) =~ s/xml$/html/;
+
+open(OUT,">$outfile") or die "Cannot open $outfile: $!\n";
+select OUT;
+my $xp = XML::XPath->new(filename => $infile);
+
+my ($node, @nodes);
+my $title='';
+
+if (($node) = $xp->findnodes("/docindex/title/text()")) {
+  $title = sprintf("<title>%s</title>",$node->toString);
+}
+else {
+  warn "$infile has no title\n";
+}
+
+print "<html><head>$title</head><body><center>\n";
+
+if (my @sections = $xp->findnodes("/docindex/section")) {
+  print "<table>";
+  while (my $section = shift @sections) {
+    printf "<tr><th colspan=2><br><h2>%s</h2></th></tr>\n", $node->toString
+      if $node = ($section->findnodes("title/text()"))[0];
+    if (my @groups = $section->findnodes("group")) {
+      while(my $group = shift @groups) {
+	if (my @modules = $group->findnodes("module/text()")) {
+	  while(my $module = shift @modules) {
+	    printf qq{<tr><td><a href="%s">%s</a></td><td>%s</td></tr>\n},
+		module_info($module->toString);
+	  }
+	}
+	print "<tr><td colspan=2>&nbsp</td></tr>\n" if @groups;
+      }
+    }
+  }
+  print "</table>";
+}
+
+print "</center></body></html>\n";
+
+close OUT;
+
+sub module_info {
+  my $module = shift;
+  my $file = $module;
+
+  $file =~ s,::,/,g;
+  my $html = "$file.html";
+  my $desc;
+
+POD:
+  foreach my $pod ("lib/$file.pm","lib/$file.pod") {
+    open(F,$pod) or next;
+    local $_;
+    local $/ = "";
+    while(<F>) {
+      if (/^=head1 NAME/) {
+        $desc = <F>;
+        last POD;
+      }
+    }
+    close(F);
+  }
+
+  if (defined $desc) {
+    $desc =~ s/^\s*\S+\s*-+\s*//;
+  }
+  else {
+    $desc = "&nbsp;";
+  }
+
+  ($html,$module,$desc);
+}

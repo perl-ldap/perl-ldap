@@ -1,0 +1,10 @@
+#!/bin/sh
+
+(
+  for x in $(find . -name Entries | egrep CVS/Entries$ | sed 's,CVS/Entries$,,')
+  do
+    grep ^/ $x/CVS/Entries | cut -d/ -f2 | sed s,^,$x, | sed s,^\./,,
+  done
+  find htdocs -type f
+) | sort -u > MANIFEST.new
+diff -u MANIFEST MANIFEST.new && rm MANIFEST.new
