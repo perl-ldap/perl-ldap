@@ -369,6 +369,28 @@ can then be installed with
 
    cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
 
+=head2 How can I load Perl-LDAP into an ActiveState Perl installation.
+
+There are several ways that Perl-LDAP can be installed into an
+ActiveState Perl tree.
+
+ 1.  The ActiveState ppm command can be used to install Perl-LDAP.
+     When a new version of Perl-LDAP is released, it takes ActiveState
+     a period of time to get the new release into the ActiveState ppm
+     system. 
+
+ 2.  If the user has nmake installed, the user can do a normal perl 
+     module install using nmake instead of make.
+
+ 3.  If the user does not have nmake or make, the user can install 
+     Perl-LDAP using the install-nomake script by issuing the 
+     following command.
+
+       perl install-nomake
+
+     The install-nomake script can be used on any system that does not
+     have make installed. 
+
 
 =head2 What other modules will I need ?
 
@@ -417,12 +439,21 @@ If you are using a Linux system, many of the distributions
 have RPM packages that you can install.  Use your favorite
 web search engine to find the package that you need.
 
-=item XML::Parser
+=item XML::SAX
 
 If you want to use Net::LDAP::DSML you will need this module.
 
 You can obtain the latest release from
-  http://search.cpan.org/search?module=XML::Parser 
+  http://search.cpan.org/search?module=XML::SAX 
+
+
+=item ResourcePool::Factory::Net::LDAP
+
+If you want to use failover the ResourcePool::Factory::Net::LDAP
+perl module provides methods to do this.
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=ResourcePool::Factory::Net::LDAP
 
 =back
 
@@ -1156,8 +1187,8 @@ http://www.cp.net/
 Innosoft                                  
 http://www.innosoft.com
 
-MessagingDirect                                  
-http://www.messagingdirect.com/
+Isode                                  
+http://www.isode.com/
 
 Netscape Directory Developers Area
 http://developer.netscape.com/directory/
@@ -1174,7 +1205,7 @@ http://www.octetstring.com/
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
 
-Sun One, formerly IPlanet.
+Sun One, formerly Iplanet.
 http://wwws.sun.com/software/
 
 Eine deutsche LDAP Website 
