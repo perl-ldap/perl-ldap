@@ -1,4 +1,4 @@
-# $Id: SortResult.pm,v 1.6 2003/05/07 11:56:48 chrisridd Exp $
+# $Id: SortResult.pm,v 1.7 2003/07/09 20:27:32 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -8,6 +8,7 @@ package Net::LDAP::Control::SortResult;
 use Net::LDAP::ASN qw(SortResult);
 use Net::LDAP::Control;
 
+$VERSION = "0.01";
 @ISA = qw(Net::LDAP::Control);
 
 sub init {
@@ -173,6 +174,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: SortResult.pm,v 1.6 2003/05/07 11:56:48 chrisridd Exp $>
+I<$Id: SortResult.pm,v 1.7 2003/07/09 20:27:32 gbarr Exp $>
 
 =cut
