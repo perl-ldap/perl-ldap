@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.25 2003/02/25 16:03:20 charden Exp $
+# $Id: tklkup,v 2.26 2003/03/01 22:23:36 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -49,7 +49,6 @@ use subs qw/ops_items/;
 #
 my %Global = ();
 my %NC     = ();
- 
                                                                                 $Global{'jpeg'}   = 1;
 eval 'require Tk::JPEG';
 $Global{'jpeg'}   = 0 if ( $@ );
@@ -101,6 +100,8 @@ $Global{dirConnError} = undef();
 $Global{'setSSL'} = 0;
 
 my $sbbframe;
+my $LDAP_SEARCH_BASE = "";
+my $DN_BASE = "";
 my @base       = ();
 my $base       = "";
 my @BaseButton = ();
@@ -257,7 +258,6 @@ $Global{p2} = $Global{nb}->add('SEARCH',-label => 'SEARCH');
 
 &initializeP2;
 
-
 $Global{p3} = $Global{nb}->add('SEARCH DISPLAY',-label => 'SEARCH DISPLAY');
 
 &initializeP3;
@@ -294,14 +294,13 @@ sub ops_items
  
 [ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
 "",
-[ 'command', 'Toggle SSL', -accelerator => "Ctrl-s", -command => \&toggleSSL ],
+[ 'command', 'Toggle ~SSL', -accelerator => "Ctrl-s", -command => \&toggleSSL ],
 "",
-[ 'command', 'Toggle LDAP Version', -accelerator => "Ctrl-l", -command => \&toggleVersion ],
+[ 'command', 'Toggle ~LDAP Version', -accelerator => "Ctrl-l", -command => \&toggleVersion ],
 "",
-[ 'command', 'Exit', -accelerator => "Ctrl-x", -command => sub { exit;} ],
+[ 'command', 'E~xit', -accelerator => "Ctrl-x", -command => sub { exit;} ],
  
 ];
- 
  
 }# End of subroutine ops_items
 
@@ -328,7 +327,6 @@ $Global{mainWindow} -> Unbusy;  # window is not busy
  
 } # End of subroutine update_schema
 
-
 sub init_schemaHash
 {
  
@@ -346,8 +344,6 @@ sub init_schemaHash
  $schemaHash{ 'mru' }  = [];
  
 } # End of subroutine init_schemaHash
-
-
 
 sub toggleSSL
 {
@@ -522,7 +518,6 @@ if ( $#attribute < 1 )
 
 push(@attribute,"Filter");  # put roll your on filter at the end
 
-
 } # End of subroutine initializeProgram
 
 sub initializeBases
@@ -556,7 +551,8 @@ if ( !$error || $Global{setVersion} )
  # user defined base
  my $t1 = [];
  $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
- ${$NC{$server{$server[0]}}}[1] = $t1;      #
+ $NC{$server{$server[0]}}[1] = [ "0" ];  # dummy load in position 0
+ ${$NC{$server{$server[0]}}}[2] = $t1;      #
  
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
  push(@base, @$t1);
@@ -583,7 +579,8 @@ if ( !$error || $Global{setVersion} )
         if ( $Global{splash} );
      my $t1 = [];
      ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-     ${$NC{$ncbase}}[1] = $t1;      #
+     ${$NC{$ncbase}}[1] = [ "0" ];  # dummy load in position 0
+     ${$NC{$ncbase}}[2] = $t1;      #
      push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
      push(@base, @$t1);
     }
@@ -609,10 +606,12 @@ else
  if ( @base >= 1)
  {
  $LDAP_SEARCH_BASE = $base[0];
+ $DN_BASE = $base[0];
  }
  else
  {
  $LDAP_SEARCH_BASE = "";
+ $DN_BASE = "";
  }
 
 } # End of subroutine initializeBases
@@ -645,7 +644,7 @@ $Global{dsadsls}->insert("end", $Global{'LDAP_SERVER'});
 
 $dsasb = $dsaframe ->LabFrame( -labelside => "acrosstop",
                    -label => "SEARCH BASE") ->pack (-side =>"left");
-$Global{dsasbls} = $dsasb->Listbox( -height => 1  );
+$Global{dsasbls} = $dsasb->Listbox( -height => 1);
 $Global{dsasbls}->pack( -side => "left", -padx => 2, -pady => 5  );
 $Global{dsasbls}->insert("end", $LDAP_SEARCH_BASE);
 
@@ -679,10 +678,7 @@ $msgbox->pack( -side => "left" );
 
 $Global{'mainWindow'}->update;
 
-
-
 } # End of subroutine initializeP1
-
 
 #
 #  Initialize panel 2
@@ -703,7 +699,6 @@ $sbbframe = $hlframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
       -labelside => "acrosstop")
       ->pack( -side => "top", -anchor => "e");
 
-
 #
 # Create the Attributes and Save to frame
 #
@@ -719,7 +714,6 @@ $aframe = $ltframe ->LabFrame(-label => "FILTER\nATTRIBUTES",
           -labelside => "acrosstop",
           -relief => "raised") 
           ->pack( -side => "top", -fill => "both");
-
 
 #
 # Create the Save to frame
@@ -764,7 +758,8 @@ $btframe = $tpframe ->Frame(-borderwidth => 2,
 # Create the search base box
 #
 
-$sbblist = $sbbframe ->Listbox( -width => 38, -height => 1  );
+$sbblist = $sbbframe ->Listbox( -width => 40, -font => $Global{'Font'},
+                                -height => 1  );
  
 $sbblist->pack(-side => $Global{hand});
  
@@ -791,7 +786,7 @@ $sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
 $Global{'searchHList'} = $hlframe ->Scrolled('HList', 
             -font       => $Global{'Font'},
             -scrollbars => 'se',
-            -width      => 53, 
+            -width      => 50, 
             -height     => 13,
             -itemtype   => 'text',
             -separator  => '/',
@@ -809,7 +804,6 @@ $Global{'searchHList'} = $hlframe ->Scrolled('HList',
 $Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
 
 $Global{'searchHList'}->pack(-side => "right");
-
 
 #
 # Create additional attributes selection button
@@ -879,7 +873,6 @@ foreach (@attribute)
           -value => $_, -font => $Global{'Font'});
 } # End of foreach (@attribute)
  
- 
 #
 # Create ldap display button
 #
@@ -888,7 +881,6 @@ $Global{actionDisplay} = $btframe->Button( -text => "DISPLAY",
            -font => $Global{'Font'}, -borderwidth => 3 )
            -> pack(-side => "top", -anchor => "w", -padx => 1, -pady => 1 ) 
            if ( !Exists($Global{actionDisplay}));
- 
  
 #
 # Create save to ldif button
@@ -917,7 +909,6 @@ $Global{actionEdit} = $btframe->Button(-text => " EDIT  ",
            -> pack(-side => "top", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionEdit}));
  
- 
 #
 # Create ldap delete button
 #
@@ -937,7 +928,6 @@ $Global{actionCancel} = $btframe->Button(-text => "CANCEL ",
            -> pack(-side => "top", -anchor => "w", -padx => 1 ) 
            if ( !Exists($Global{actionCancel}));
 
- 
 #
 # Create save all to ldif button
 #
@@ -979,7 +969,7 @@ foreach ( @NcKeys )
 foreach $Nc (@NcKeys)
 {
  
-  foreach ( @{@{$NC{$Nc}}[1]} )
+  foreach ( @{@{$NC{$Nc}}[2]} )
   {
      push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
                        -variable => \$LDAP_SEARCH_BASE,
@@ -988,7 +978,6 @@ foreach $Nc (@NcKeys)
   }
  
 }
- 
  
 foreach my $Nclabel ( @NcKeys )
 {
@@ -1079,10 +1068,7 @@ $Global{actionCancel}->configure( -state => 'disable');
 
 $Global{'mainWindow'}->update;
 
-
-
 } # End of subroutine initializeP2
-
 
 #
 #  Initialize panel 3
@@ -1098,7 +1084,6 @@ my $rbclear;
 #
 # Create frame for clear buttons.
 #
-
 
 $cframe = $Global{p3}->Frame()
       ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
@@ -1149,8 +1134,6 @@ $list->pack(-fill => "both", -expand => 1 );
 #
 
 $Global{'mainWindow'}->update;
-
-
 
 } # End of subroutine initializeP3
 
@@ -1261,7 +1244,6 @@ $sellAtt = $sellframe -> Checkbutton(-text => "attributeType",
       -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
-
 $sellsyn = $sellframe -> Checkbutton(-text => "ldapsyntaxes",
       -variable =>  \$selectSyn, -onvalue => 1, -offvalue => 0, 
       -font => $Global{'Font'} )
@@ -1287,7 +1269,6 @@ $sellmru = $sellframe -> Checkbutton(-text => "matchingruleuse",
       -font => $Global{'Font'} )
       -> pack(-side => "top", -anchor => 'w' );
 
-
       $sellframe -> Button(-text => "SHOW HIERARCHIAL\nOBJECTCLASS TREE",
       -command =>  \&Hierarchial,  -font => $Global{'Font'},
       -borderwidth => 3 )
@@ -1311,7 +1292,6 @@ $schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
         -font => $Global{'Font'}  );
 
 $schema_list->pack( -side => "bottom" );
-
 
 #
 # Allow mainWindow to update
@@ -1349,7 +1329,215 @@ $Global{createLdifEntry} = $ldifframe->Button(
            -> pack(-side => "top", -anchor => "w", -padx => 5, -pady => 5 ) 
            if ( !Exists($Global{createLdifEntry}));
 
+$eframe = $Global{p5} ->Frame(-borderwidth => 2,-relief => "raised") 
+           ->pack(-side => "top", -anchor => 'e');
+
+$cteframe = $eframe ->LabFrame(-label => "MANUALLY CREATE ENTRY") 
+           ->pack(-side => "top", -anchor => 'e');
+
+#
+# Create dn base button.
+#
+ 
+$dnmenu = $cteframe -> Menubutton(-text => " SELECT\nDN BASE",
+                 -relief => "raised", -font => $Global{'Font'},
+                 -borderwidth => 3 )
+                 -> pack(-side => "right", -anchor => "e", 
+                         -padx => 5, -pady => 5  );
+#
+# Create the cascade search base menus
+#
+ 
+@NcKeys = sort(keys(%NC));
+ 
+foreach ( @NcKeys )
+{
+  my $t1 = $NC{$_};
+  $$t1[1] = $dnmenu->menu->Menu(-tearoff => 0);
+}
+                                                                                #
+# Set up the select search base radio buttons.
+#
+ 
+foreach $Nc (@NcKeys)
+{
+ 
+  foreach ( @{@{$NC{$Nc}}[2]} )
+  {
+     push(@DnBaseButton, @{$NC{$Nc}}[1]->radiobutton(-label => $_,
+                       -variable => \$DN_BASE,
+                       -value => $_, -command => \&dnbase,
+                       -font => $Global{'Font'} ) );
+  }
+ 
+}
+ 
+foreach my $Nclabel ( @NcKeys )
+{
+  $dnmenu->cascade(-label => "$Nclabel");
+  $dnmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[1]);
+}
+ 
+#
+# Create the search base box
+#
+
+$dnblist = $cteframe ->Listbox( -width => 40, -font => $Global{'Font'},
+                                -height => 1  );
+ 
+$dnblist->pack(-side => "left", -anchor => 'w',  -padx => 5, -pady => 5 );
+ 
+$dnblist->insert("end", $DN_BASE);
+
 } # End of subroutine initializeP5
+
+#
+#  Initialize panel 5a
+#
+
+sub initializeP5a
+{
+my $ocs = $schemaHash{'ocs'};
+my $obj = $schemaHash{'obj'};
+my $tree = $schemaHash{'tree'};
+my $schema = $schemaHash{'schema'};
+my @tmpKeys;
+my @must;
+my @may;
+
+#
+# Create Hierarchial list box, this is where the objectclass data
+# tree will be displayed.
+#
+
+$Global{'olist'} = $eframe->Scrolled('HList', 
+            -font       => $Global{'Font'},
+            -scrollbars => 'se',
+            -width      => $Global{'max'}, 
+            -height     => 20,
+            -itemtype   => 'text',
+            -separator  => '/',
+            -selectmode => 'single',
+            -browsecmd  => sub {
+#
+            my $objects = shift;
+            my $oid;
+            my @objectclasses = ();
+            @objectclasses = split(/\//,$objects);
+
+            $Global{entryData} = {};
+            $Global{entryData}->{objectClass} = [];
+            $Global{entryData}->{may} = [];
+            $Global{entryData}->{must} = [];
+
+            foreach my $var (@objectclasses)
+            { 
+               $Global{mainWindow}->update;
+               $oid = $$obj{$var}->[0];
+               #
+               # Get the various other items associated with
+               # this objectclass.
+               #
+               my $ahash = $schema->objectclass( "$oid" );
+               #
+               # Get and display the objectclass name.
+               #
+               push( @{$Global{entryData}->{objectClass}},$$ahash{'name'});
+
+                if ( $$ahash{must} )
+                {
+                $alArray =  $$ahash{must};
+ 
+                if ( ref($alArray) eq 'ARRAY' )
+                {
+                  push(@{$Global{entryData}->{must}}, @$alArray );
+                }
+                else
+                {
+                  push(@{$Global{entryData}->{must}}, $alArray );
+                }
+                }
+
+                if ( $$ahash{may} )
+                {
+                $alArray =  $$ahash{may};
+ 
+                if ( ref($alArray) eq 'ARRAY' )
+                {
+                  push(@{$Global{entryData}->{may}}, @$alArray );
+                }
+                else
+                {
+                  push(@{$Global{entryData}->{may}}, $alArray ) ;
+                      #if ( length($alArray) );
+                }
+                }
+
+            }
+            
+            &makeTheEntry;
+
+            } # End of subroutine browsecmd
+
+            ) -> pack( -side => "top", -anchor => 'e')
+            if ( !Tk::Exists($Global{'olist'}) ) ;  # End of Scrolled HList.
+
+@tmpKeys = sort(keys(%$tree));
+my $base;
+$base = "";
+
+#
+# Create Hierarchial list box data tree, 
+# and display data.
+#
+
+eval{
+ foreach ( @tmpKeys ) 
+ {
+    if ( $$tree{$_} ->[0] == 0 ) 
+    {
+      $$tree{$_} ->[0] = 1;
+      $Global{'olist'}->add($_, -text=>$_);  # do the base.
+    }
+
+    $base = $_; 
+    $array = $$tree{$_};
+    $ptr = 0;
+    foreach my $var ( @$array )
+    {
+      if ( !$ptr )
+      {
+        $ptr = 1;
+        next;
+      }
+      $_ = $base . "/" . $var; 
+      $Global{'olist'}->add($_, -text => $var);
+      if ( defined($$tree{$_}) )
+      {
+        $$tree{$_}->[0] = 1;
+      } 
+    }
+
+ }
+ $Global{'olist'}->pack(-side => "right");
+};
+print "$@" if ( defined($@));
+
+@tmpKeys = sort(keys(%$tree));
+
+#
+# Reset objectClass array.
+#
+
+foreach ( @tmpKeys ) 
+{
+ if ( defined($$tree{$_}) )
+ {
+  $$tree{$_}->[0] = 0;
+ } 
+}
+
+} # End of subroutine initializeP5a
 
 sub histSearch_clear {
 
@@ -1366,7 +1554,6 @@ sub histSearch_cancel{
 $Global{'searchList'}->destroy if Tk::Exists($Global{'searchList'});
 $Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
 } # End of cancel subroutine
-
 
 #
 # Search the directory for data
@@ -1508,7 +1695,6 @@ if ( $mesg->code && $mesg->code != 48 )
 # Create Hierarchial DN list box data tree, 
 # and display data.
 #
-
 
 eval
 {
@@ -1685,8 +1871,20 @@ while ( @BaseButton >= 1  )
   ++$ptr;
 }
 
+$ptr = 1;
+while ( @DnBaseButton >= 1  )
+{
+  $widget = pop(@DnBaseButton);
+  foreach my $mvar ( @$widget)
+  {
+  $dnmenu->menu->delete($ptr);
+  }
+  ++$ptr;
+}
+
 %NC = ();  # Delete the old stuff.
 @BaseButton = ();  # Delete the old stuff.
+@DnBaseButton = ();  # Delete the old stuff.
 @NcKeys = ();  # Delete the old stuff.
 
 $msgbox->delete("0.0", "end");
@@ -1702,7 +1900,8 @@ if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global
  # user defined base
  my $t1 = [];
  $NC{$server{$Global{'LDAP_SERVER'}}} = [ "0" ];  # dummy load in position 0
- ${$NC{$server{$Global{'LDAP_SERVER'}}}}[1] = $t1;      #
+ $NC{$server{$Global{'LDAP_SERVER'}}} = [ "1" ];  # dummy load in position 0
+ ${$NC{$server{$Global{'LDAP_SERVER'}}}}[2] = $t1;      #
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));
 
 }
@@ -1722,7 +1921,8 @@ elsif ( $Global{setVersion} == 3 )
        $Global{mainWindow}->update;
        my $t1 = [];
        ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-       ${$NC{$ncbase}}[1] = $t1;      #
+       ${$NC{$ncbase}}[1] = [ "0" ];  # dummy load in position 0
+       ${$NC{$ncbase}}[2] = $t1;      #
        push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
      }
    }
@@ -1738,7 +1938,9 @@ elsif ( $Global{setVersion} == 3 )
 foreach ( @NcKeys )
 {
    my $t1 = $NC{$_};
+   my $t9 = $NC{$_};
    $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
+   $$t9[1] = $dnmenu->menu->Menu(-tearoff => 0);
 }
 
 #
@@ -1748,13 +1950,18 @@ foreach ( @NcKeys )
 foreach $Nc (@NcKeys)
 {
  
-foreach ( @{@{$NC{$Nc}}[1]} )
-{
+ foreach ( @{@{$NC{$Nc}}[2]} )
+ {
    push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
                      -variable => \$LDAP_SEARCH_BASE,
                      -value => $_, -command => \&base,
                      -font => $Global{'Font'} ) );
-}
+
+   push(@DnBaseButton, @{$NC{$Nc}}[1]->radiobutton(-label => $_,
+                     -variable => \$DN_BASE,
+                     -value => $_, -command => \&dnbase,
+                     -font => $Global{'Font'} ) );
+ }
  
 }
 
@@ -1764,8 +1971,10 @@ foreach ( @{@{$NC{$Nc}}[1]} )
  
 foreach my $Nclabel ( @NcKeys )
 {
-$sbmenu->cascade(-label => "$Nclabel");
-$sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
+ $sbmenu->cascade(-label => "$Nclabel");
+ $dnmenu->cascade(-label => "$Nclabel");
+ $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
+ $dnmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[1]);
 }
 
 }
@@ -1786,13 +1995,16 @@ else
 if ( @NcKeys)
 {
  $LDAP_SEARCH_BASE = shift (@NcKeys);
+ $DN_BASE = $LDAP_SEARCH_BASE;
 }
 else
 {
  $LDAP_SEARCH_BASE = "";
+ $DN_BASE = "";
 }
 
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
+$dnblist->insert(0 , $LDAP_SEARCH_BASE);
 $Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
    if ( $Global{dsasbls} );
 
@@ -1803,29 +2015,26 @@ $Global{mainWindow} -> Unbusy;  # window is not busy
 $Global{nb} -> raise($currentPanel);
 } # End of server subroutine
 
-
 sub base {
-
 #
 # Put directory server search base into the list box.
 #
-
 $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 $Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
    if ( $Global{dsasbls} );
-
 } # End of base subroutine
 
-sub setFilter {
+sub dnbase {
+# Put dn base into the list box.
+$dnblist->insert(0 , $DN_BASE);
+} # End of dnbase subroutine
 
+sub setFilter {
 #
 # Put search filter conditions into the list box.
 #
-
 $flclist->insert(0 , $Global{'infoFilter'});
-
 } # End of setFilter subroutine
-
 
 #
 # Make the correction and bind to the directory server.
@@ -1853,9 +2062,7 @@ if ( $Global{'platform'} eq 'MSWin32')
 $error = "This program currently does not support SSL on Microsoft Windows systems.";
 ERROR(\$error);
 return 1;
- 
 }
-
 
 $Global{ldap} = eval $bindcommand;
 if ($@)
@@ -1960,7 +2167,6 @@ while ( $ptr < @base )
 return @base;
  
 } # End of subroutine getBases()
-
  
 sub calBase()
 {
@@ -2285,8 +2491,6 @@ $Global{'bindWindow'} = undef();
  
 } # End of accept subroutine
 } # End of BIND subroutine
-
-
  
 #
 # Create Main Port Window
@@ -2327,7 +2531,6 @@ $Global{'portWindow'}->Label(-text => "Port 389 default")
  
 $Global{'portWindow'}->Label(-text => "Port 636 ssl default")
       ->pack( -side => "top", -anchor => 'w', -pady => 1 );
- 
 
 #
 # Create a ssl Checkbutton that will set up ssl variable
@@ -2369,8 +2572,6 @@ $Global{'portWindow'} = undef();
  
 } # End of accept subroutine
 } # End of PORT subroutine
-
-
 
 #
 # Create Schema Display Window
@@ -2446,11 +2647,6 @@ foreach $ahash ( @$ocs)
 }
 
 } # End of subroutine print_loop
-
-#
-#
-#
-
 
 sub schema_clear {
 
@@ -2552,7 +2748,6 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
 
 }
 
-
 #
 # Allow mainWindow to update
 #
@@ -2565,7 +2760,6 @@ $ra_atts = [];
 #
 @$ra_atts = $schemaHash{'schema'}->all_attributes(); 
 $schemaHash{'atts'} = $ra_atts; 
-
 
 #
 # Display the attributes
@@ -2610,7 +2804,6 @@ if ( $selectAll || $selectObj )
 &print_loop($schema_list, $schemaHash{'ocs'}, "objectClasses") 
     if ( defined($schemaHash{'ocs'}) );
 }
-
 
 #
 # Get the schema matchingrules
@@ -2714,6 +2907,11 @@ if ( $selectAll || $selectDcr )
     if ( defined($schemaHash{'ditc'}) );
 }
 
+&objTree();   # Create the objectClass tree
+$Global{'olist'}->delete('all') if  Tk::Exists($Global{'olist'});
+$Global{mainWindow} -> update;  # Allow Tk to update
+&initializeP5a(); # Finish making panel 5
+
 } # End of if ( defined($schema) ) 
 else 
 {
@@ -2735,12 +2933,8 @@ else
 
 } # End of schema subroutine
 
-
-sub Hierarchial 
+sub objTree 
 {
-&globalPos();
-my $x = $Global{'horz'};
-my $y = $Global{'vert'}  + 200 ;
 my $ocs = $schemaHash{'ocs'};
 my $obj = $schemaHash{'obj'};
 $schemaHash{'tree'} = {};
@@ -2841,12 +3035,32 @@ $$tree{$Path} = [0, "$name"];
 
 }
 
-
 #
 # Allow mainWindow to update
 #
 
 $Global{'mainWindow'}->update;
+
+}
+
+sub Hierarchial 
+{
+&globalPos();
+my $x = $Global{'horz'};
+my $y = $Global{'vert'}  + 200 ;
+my $ocs = $schemaHash{'ocs'};
+my $obj = $schemaHash{'obj'};
+my $tree = $schemaHash{'tree'};
+my $schema = $schemaHash{'schema'};
+my @tmpKeys;
+my $size;
+my $Path;
+my $done;
+my @sup;
+my @name;
+my $name;
+my $SUP;
+my $array;
 
 #
 # Set up the Tk windows.
@@ -2884,9 +3098,6 @@ if ( !Exists($Global{'label'}) )
 $Global{'label'} = $Global{'histWindow'}->Label()->pack;
 }
 
-#
-# Create process Exit button
-#
 
 $hbutton = $Global{'histWindow'}->Button(
               -text => "CLOSE HIERARCHICAL DISPLAY WINDOW", 
@@ -3005,7 +3216,6 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
 
             );  # End of Scrolled HList.
 
-
 @tmpKeys = sort(keys(%$tree));
 my $base;
 $base = "";
@@ -3016,11 +3226,11 @@ $base = "";
 #
 
 eval{
-foreach ( @tmpKeys ) {
-    my $array = $$tree{$_};
-    if ( @$array[0] == 0 ) 
+ foreach ( @tmpKeys ) 
+ {
+    if ( $$tree{$_} ->[0] == 0 ) 
     {
-      @$array[0] = 1;
+      $$tree{$_} ->[0] = 1;
       $Global{'hlist'}->add($_, -text=>$_);  # do the base.
     }
 
@@ -3029,24 +3239,37 @@ foreach ( @tmpKeys ) {
     $ptr = 0;
     foreach my $var ( @$array )
     {
-    if ( !$ptr )
-    {
-      $ptr = 1;
-      next;
-    }
-    $_ = $base . "/" . $var; 
-    $Global{'hlist'}->add($_, -text => $var);
-    if ( defined($$tree{$_}) )
-    {
-      my $aptr = $$tree{$_};
-      @$aptr[0] = 1;
-    } 
+      if ( !$ptr )
+      {
+        $ptr = 1;
+        next;
+      }
+      $_ = $base . "/" . $var; 
+      $Global{'hlist'}->add($_, -text => $var);
+      if ( defined($$tree{$_}) )
+      {
+        $$tree{$_}->[0] = 1;
+      } 
     }
 
-}
-$Global{'hlist'}->pack(-side => "right");
+ }
+ $Global{'hlist'}->pack(-side => "right");
 };
 print "$@" if ( defined($@));
+
+@tmpKeys = sort(keys(%$tree));
+
+#
+# Reset objectClass array.
+#
+
+foreach ( @tmpKeys ) 
+{
+ if ( defined($$tree{$_}) )
+ {
+  $$tree{$_}->[0] = 0;
+ } 
+}
 
 sub hist_clear {
 
@@ -3059,17 +3282,12 @@ $Global{'list'}->delete("1.0", "end");
 } # End of clear subroutine
  
 sub hist_cancel{
-
 $Global{'list'}->destroy if Tk::Exists($Global{'list'});
 $Global{'hlist'}->destroy if Tk::Exists($Global{'hlist'});
 $Global{'histWindow'}->destroy if Tk::Exists($Global{'histWindow'});
-#$Global{'tree'} = {};
-#$Global{'obj'} = {};
 } # End of cancel subroutine
 
 } # End of subroutine  Hierarchial 
-
-
  
 #
 # Create Accept/Cancel Window
@@ -3149,6 +3367,311 @@ $Global{actionLdif}->configure( -state => 'disable');
 $Global{actionCancel}->configure( -state => 'disable');
 
 } # End of cancel subroutine
+
+sub ldapActionCreateEntry
+{
+
+if ( !Exists($Global{'olist'}) ) 
+{
+&initializeP5a(); # Finish making panel 5
+}
+
+} # End of subroutine ldapActionCreateEntry
+
+sub makeTheEntry
+{
+
+&globalPos();
+my $x = $Global{'horz'} + 100;
+my $y = $Global{'vert'} + 100;
+%Creation = ();
+
+#
+# Create Main Window
+#
+if (!  Exists($Global{'createWindow'}) )
+{
+$Global{'createWindow'} = MainWindow->new;
+ 
+$Global{'createWindow'}->title("CREATE DIRECTORY ENTRY");
+ 
+$Global{'createWindow'}->geometry("+$x+$y");
+#
+# Create process Exit button
+#
+ 
+$createExit = $Global{'createWindow'}->Button(
+                       -text => "CANCEL CREATE ENTRY DISPLAY",
+                       -command => \&create_cancel, -font => $Global{'Font'},
+                       -borderwidth => 5 )
+                       -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+
+$Global{'createWindow'}->Label( -text => "Select a radiobutton to indicate the Naming Attribute and make sure your dn base is correct.")
+      ->pack(-side => "top", -anchor => 'w');
+
+$Global{'createWindow'}->Label( -text => "All attributes in red, or located above the objectClass attributes, must have data")
+      ->pack(-side => "top", -anchor => 'w');
+
+$Global{'createWindow'}->Label(-text => "entered for the attribute.")
+      ->pack(-side => "top", -anchor => 'w');
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$createlist = $Global{'createWindow'} ->Scrolled('ROText', 
+        -scrollbars => 'se',
+        -width => 100, -height => 20, -wrap => 'none', 
+        -font => $Global{'Font'}  );
+
+$createlist->pack(-fill => "both", -expand => 1 );
+
+$max = 0;
+foreach ( @{$Global{entryData}->{must}} )
+{
+$max = length($_) if ( length($_) > $max );
+}
+
+foreach ( @{$Global{entryData}->{may}} )
+{
+$max = length($_) if ( length($_) > $max );
+}
+
+$Creation{dn} = [];
+
+$Creation{dn}->[0] = "$DN_BASE";
+
+$dnLabel = $createlist->Label(-text => "dn",
+                    -font => $Global{'Font'},
+                    -relief => 'groove',
+                    -anchor => 'e',
+                 #   -foreground => 'red',
+                    -width => ($max+7) );
+
+$createlist->windowCreate("end", -window => $dnLabel );
+
+$dnTxt = $createlist->Entry(-width => 65,
+                   -textvariable => \$Creation{dn}->[0] );
+
+$createlist->windowCreate("end", -window => $dnTxt );
+ 
+$createlist->insert("end", "\n"); # position to the next row.
+#
+# create attribute label
+#
+#$tmpdn = "";
+
+foreach ( @{$Global{entryData}->{must}} )
+{
+$Creation{$_} = []      if ( !/objectClass/ );
+$Creation{$_}->[0] = "" if ( !/objectClass/ );
+
+$NamingAttribute = "";
+
+${$_} = $createlist->Radiobutton( -text => "", -anchor => 'w',
+                    -variable => \$NamingAttribute, -value => "$_" ) 
+                    if ( !/objectClass/ );
+
+$createlist->windowCreate("end", -window => ${$_} );
+
+${$_} = $createlist->Label(-text => "$_",
+                    -font => $Global{'Font'},
+                    -relief => 'groove',
+                    -foreground => 'red',
+                    -anchor => 'e',
+                    -width => ($max+2) ) if ( !/objectClass/ );
+ 
+$createlist->windowCreate("end", -window => ${$_} );
+#
+# create data entry window
+#
+${$_} = $createlist->Entry(-width => 65,
+                   -textvariable => \$Creation{$_}->[0] ) 
+   if ( !/objectClass/ );
+
+$createlist->windowCreate("end", -window => ${$_} ) if ( !/objectClass/ );
+ 
+$createlist->insert("end", "\n") if ( !/objectClass/ );
+}
+
+$ptr = 0; 
+$Creation{objectClass} = [];
+
+foreach ( @{$Global{entryData}->{objectClass}} )
+{
+$Creation{objectClass}->[$ptr] = "$_";
+${$_} = $createlist->Label(-text => "objectClass",
+                    -font => $Global{'Font'},
+                    -relief => 'groove',
+                    -anchor => 'e',
+                    -width => ($max+7) );
+ 
+$createlist->windowCreate("end", -window => ${$_} );
+#
+# create data entry window
+#
+${$_} = $createlist->Label(-width => 65, -anchor => 'w',
+                   -text => $Creation{objectClass}->[$ptr]);
+
+$createlist->windowCreate("end", -window => ${$_} );
+ 
+$createlist->insert("end", "\n"); # position to the next row.
+++$ptr;
+}
+
+$Global{'createWindow'} ->update;
+
+
+foreach ( @{$Global{entryData}->{may}} )
+{
+$Creation{$_} = [];
+$Creation{$_}->[0] = "";
+
+${$_} = $createlist->Radiobutton( -text => "", -anchor => 'w',
+                    -variable => \$NamingAttribute, -value => "$_" ) 
+                    if ( !/objectClass/ );
+
+$createlist->windowCreate("end", -window => ${$_} );
+
+${$_} = $createlist->Label(-text => "$_",
+                    -font => $Global{'Font'},
+                    -relief => 'groove',
+                    -anchor => 'e',
+                    -width => ($max+2) )if ( !/objectClass/ );
+ 
+$createlist->windowCreate("end", -window => ${$_} );
+#
+# create data entry window
+#
+${$_} = $createlist->Entry(-width => 65,
+                   -textvariable => \$Creation{$_}->[0] );
+$createlist->windowCreate("end", -window => ${$_} );
+ 
+$createlist->insert("end", "\n"); # position to the next row.
+}
+
+#
+# Create the Create button
+#
+ 
+$createMe = $Global{'createWindow'}->Button(
+                       -text => "CREATE ENTRY",
+                       -command => \&create_entry, -font => $Global{'Font'},
+                       -borderwidth => 5 )
+                       -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+
+}
+
+} # End of subroutine makeTheEntry
+
+sub create_cancel
+{
+ 
+$Global{'createWindow'}->destroy if Tk::Exists($Global{'createWindow'});
+$Global{'createWindow'} = undef();
+} # End of create_cancel subroutine
+
+sub create_entry
+{
+my $error;
+my $do_it;
+my @add = ();
+my $mesg;
+my $DN;
+
+push(@add, 'objectClass');
+push(@add, $Creation{objectClass});
+delete($Creation{objectClass});
+
+if ( length($NamingAttribute) )
+{
+$DN = "$NamingAttribute=". $Creation{$NamingAttribute}[0] . "," . $Creation{dn}[0];
+}
+else
+{
+$DN = $Creation{dn}[0];
+}
+
+delete($Creation{dn});
+
+my @attrs = keys( %Creation ); 
+
+foreach $att ( @attrs )
+{
+  if ( length($Creation{$att}->[0]) )
+  {
+    push(@add, $att);
+    push(@add, $Creation{$att});
+  }
+
+}
+
+$Global{ldap}->unbind if ( defined($Global{ldap}) );
+$Global{ldap} = undef if ( defined($Global{ldap}) );
+$error = 0;
+
+$error = dirConn();
+
+if ( $error == 1 )
+{
+  if ( defined($Global{dirConnError}) ) 
+  {
+  $error = "Create Entry  $Global{dirConnError}";
+  ERROR(\$error);
+  }
+  else
+  {
+  ERROR($error);
+  }
+#  %Creation = ();
+#  &create_cancel;
+  return;
+}
+
+#print Dumper(@add), "\n\n";
+
+$do_it = 1;
+$Global{loopCount} = 0;
+
+while ($do_it == 1 )
+{ 
+ $mesg = $Global{ldap}->add($DN, attrs => \@add ); 
+   
+ if ( $mesg->code ) 
+ {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
+   $errstr = $mesg->code;
+   $errstr = ldap_error_text($errstr);
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+#    %Creation = ();
+#    &create_cancel;
+    return;
+   } 
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
+
+}
+
+%Creation = ();
+&create_cancel;
+
+} # End of subroutine create_entry
 
 #
 # Do LDAP entry data display.
@@ -3246,8 +3769,6 @@ $list->insert("end", "----------------------------------------------------------
 $list->insert("end", "\n");
 
 }
-
-
 
 #
 # Do LDAP entry edit.
@@ -3385,7 +3906,6 @@ $elist->insert("end", "\n");
 
 }
 
-
 sub changeAttribute
 {
 my ( $ab, $lb, $Value, $attr  ) = @_;
@@ -3423,7 +3943,6 @@ $Global{'changeWindow'}->Button(-text => "CANCEL ATTRIBUTE EDIT",
 # Create frame for clear buttons.
 #
  
- 
 $acframe = $Global{'changeWindow'}->Frame()
       ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
  
@@ -3436,7 +3955,6 @@ $acframe -> Button(-text => "     ACCEPT DATA CHANGE     ",
       -font => $Global{'Font'},
       -borderwidth => 3 )
       ->pack( -fill => 'both' );
- 
  
 #
 # Create list frame.
@@ -3455,7 +3973,6 @@ $alframe = $outerframe->LabFrame(-label => "ATTRIBUTE DATA",
       ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
       -expand => 1);
  
-
 #
 # Create a Text Box that will actually contain the
 # returned directory data.
@@ -3507,7 +4024,6 @@ $Global{'changeWindow'}->Button(-text => "ADD",
       -> pack(-side => $Global{'hand'},
       -padx => 2, -pady => 2 ) ;
 
- 
 if ( !defined($Global{'add_new_attribute'}) )
 {
 #
@@ -3520,7 +4036,6 @@ $Global{'changeWindow'}->Button(-text => "DELETE",
       -> pack(-side => $Global{'hand'},
       -padx => 2, -pady => 2 ) ;
 
- 
 #
 # Create process Replace button
 #
@@ -3582,7 +4097,6 @@ $Global{'tmpREPLACE'}{$$attr} = $$tbox->get('1.0','1.end');
 }
  
 } # End of replace_data subroutine
- 
  
 sub add_data {
 my ( $attr, $Value, $tbox ) = @_;
@@ -3655,7 +4169,6 @@ $Global{tmpDELETE} = {};
 
 }
 
-
 $tmp = $Global{'tmpREPLACE'};
 @Keys = sort(keys(%$tmp));
 
@@ -3683,8 +4196,6 @@ $Global{tmpREPLACE} = {};
 $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
  
 } # End of cancel subroutine
-
-
 
 } # End of subroutine changeAttribute
 
@@ -3775,8 +4286,6 @@ $Global{nb}->raise('SEARCH');
 
 } # End of ldapActionDelete subroutine
 
-
-
 #
 # Do create entry from ldif file.
 #
@@ -3789,7 +4298,6 @@ my $f;
 my $ldif;
 my @entry;
 my $do_it;
- 
  
 $error = 0;
 
@@ -3878,10 +4386,7 @@ if ( $error == 1 )
 
   $mesg = undef;
 
-
-
 } # End of ldapActionCreateLdifEntry subroutine
-
 
 #
 # Do LDAP multi-entry save to ldif
@@ -3990,8 +4495,6 @@ else
 }
 
 } # End of ldapActionMultiSaveToLdif subroutine
-
-
 
 #
 # Do single LDAP entry save to ldif
@@ -4123,7 +4626,6 @@ else
 
 } # End of ldapActionSaveToLdif subroutine
 
-
 #
 # Do LDAP entry rename.
 #
@@ -4158,7 +4660,6 @@ if ( $error == 1 )
   ERROR($error);
   }
 }
-
 
 } 
  
@@ -4288,7 +4789,6 @@ my $t1 = $newrdnframe->Entry(-textvariable => \$Global{'newrdn'}, -width => 25 )
       -> pack(-fill => 'x');
  
 $t1->insert("end", $rdn);
-
 
 #
 # Create a Deleteoldrdn Radiobutton that will execute subroutine clear
@@ -4440,8 +4940,6 @@ $elframe->Button(-text => "ADD\nATTRIBUTE",
       -> pack(-side => $Global{'hand'},
       -padx => 2, -pady => 2 ) ;
 
-
-
 }
 
 sub edit_cancel{
@@ -4588,7 +5086,6 @@ if ( $mesg->code )
 delete( $Global{'delete'} );
 
 }
-
 
 #
 # Execute any replace changes.
@@ -4776,8 +5273,6 @@ foreach $attr (@Attributes)
 
 } # End of subrountine rootDse
 
-
-
 #----------------------------------------#
 # Usage() - display simple usage message #
 #----------------------------------------#
@@ -4825,7 +5320,10 @@ it.
 
 The SSL connection has been tested on Solaris, RedHat 7.3, and
 Mandrake 6.5 Linux.  The SSL connection from a Microsoft Windows 
-system is not available at this time.
+system is not available at this time.  If the user has SSL on
+the Microsoft Windows system this can easily changed by
+modifying the tklkup program, in subroutine dirConn comment out
+the 6 lines of code that detects the platform type of MSWin32.
 
 There are 2 files associated with the tklkup program in this 
 tar file; dot.tklkup, and tklkup.
@@ -5115,13 +5613,13 @@ actions like moving or closing just the torn off window must be
 done by the user's window manager.
 
 From the window that contains the NamingContexts the user
-can select a namingContext to display the bases assiocated with
+can select a namingContext to display the bases associated with
 that naminContext.  In a non-torn off menu to select a namingContext
 simply pass the cursor over the nameingContext, a new window 
-containing the bases assiocated with that namingContext will be 
+containing the bases associated with that namingContext will be 
 displayed.  On a menu window that has been torn off, select the 
 namingContext by clicking on the namingContext, a new window 
-containing the bases assiocated with that namingContext will be 
+containing the bases associated with that namingContext will be 
 displayed.  From the bases menu the user will select the 
 "RadioButton" that corresponds to the search base the user 
 wishes to use in the directory search.  When selected the 
@@ -5148,12 +5646,12 @@ buttons will save the select data in XML format.
 If checkbox LDIF is select, the SAVE TO and SAVE ALL TO
 buttons will save the select data in LDIF format. 
 
-Just under the I<SELECT BASE> button is the hierarchial text 
+Just under the I<SELECT BASE> button is the hierarchical text 
 box where the DN results of the directory search will be displayed.
 If there were valid results returned from the search a list of DN 
-entry(s) will be displayed in the hierarchial list box.  Selecting 
+entry(s) will be displayed in the hierarchical list box.  Selecting 
 a DN will cause the five LDAP Action buttons to the left of the 
-hierarchial text box to be put in the active state.  It is with 
+hierarchical text box to be put in the active state.  It is with 
 these 5 buttons that the user can select to view, rename, edit,
 save to a ldif file, or delete the corresponding DSA's directory 
 data.
@@ -5166,7 +5664,7 @@ panel. The SEARCH DISPLAY panel will be brought to the foreground
 of the GUI.
 
 I<RENAME> - Will display a MODDN INFORMATION window in which the
-user will input the needed information for modifing an entry's
+user will input the needed information for modifying an entry's
 DN.
 
 I<DELETE> - Will cause the selected DN to be deleted from the
@@ -5175,7 +5673,7 @@ red, letting the user know to use caution with this button.
 
 I<EDIT> - Will cause a Entry Edit Display window with the 
 corresponding entry data in it.  It is from this window that the 
-user can change directory data.  This window is discribed in 
+user can change directory data.  This window is described in 
 detail later in this document.
 
 I<SAVE TO> - Will cause the entry that is selected to be written
@@ -5305,13 +5803,13 @@ the main window.
 
 The new window contains two buttons, two text boxes and one 
 checkbutton. 
-The text boxes are initailized with data that corresponds the
+The text boxes are initialized with data that corresponds the
 DN that was selected in the Search Results window.  It is in
 these text boxes that the user will enter the data needed for the
 modrdn operation to take place.
 
 At the top of the window is a Cancel button, pressing
-this button will cancel the operation of modifing the DN.
+this button will cancel the operation of modifying the DN.
 
 The Newrdn text box is where the user will enter the new RDN
 for the selected entry.
@@ -5362,7 +5860,7 @@ This line can not be edited.
 
 To edit an attribute, press the button that has the attributes name on
 it.  This will cause a I<ATTRIBUTE MODIFICATION> window to be displayed.
-This window is discribed in detail later in this documentation.
+This window is described in detail later in this documentation.
 
 When the user has finished making changes, press the I<CHANGE DATA> button.
 This will start the process of making the change(s) in the LDAP 
@@ -5404,13 +5902,13 @@ controls operations on multi-valued attributes during REPLACE operations.
 
 =head2 ADD operations.
 
-If the user wishs to add a new value to an attribute; the user should
+If the user wishes to add a new value to an attribute; the user should
 enter the new data in the attribute data text box and then press
 the I<ADD> button.
 
 =head2 DELETE operations.
 
-If the user wishs to delete the value from an attribute; the user should
+If the user wishes to delete the value from an attribute; the user should
 not bother the data in the attribute data text box and should press
 the I<DELETE> button.
 
@@ -5425,7 +5923,7 @@ right of the I<REPLACE> button.  Doing this will control how the add and
 delete operations are staged.  The user should then enter the new data in
 the attribute data text box and press the I<REPLACE> button.
 
-If the user wishs to replace all of the values for an attribute; 
+If the user wishes to replace all of the values for an attribute; 
 the user should enter the new data in the attribute data text box and 
 press the I<REPLACE> button.
 
@@ -5549,7 +6047,7 @@ The I<HIERARCHICAL OBJECTCLASS> window has two list boxes and
 a I<CLOSE HIERARCHICAL DISPLAY WINDOW> button.  The 
 I<CLOSE HIERARCHICAL DISPLAY WINDOW> button will destroy the 
 I<HIERARCHICAL OBJECTCLASS> window.  In one of the list boxes will
-be a hierarchial tree of all of the objectclasses obtained from the
+be a hierarchical tree of all of the objectclasses obtained from the
 directory server.  Doing a mouse button select on one of the 
 objects in the tree will cause information about that objectclass 
 branch to be displayed in the adjacent list box.  The most superior
@@ -5562,16 +6060,87 @@ displayed in that objectclass's section.
 
 =head1 CREATE ENTRY PANEL
 
-This panel is currently under construction.
+=head2 Entry creation or modification from LDIF.
 
-Currently the user can create an entry from a LDIF file.
+The user can create and modify an entry from a LDIF file.
 
-When the user presses the "CREATE ENTRY FROM LDIF FILE" button,
-the file listed in the "LDIF FILE NAME" text box will be used
-to create the entries listed in the ldif formatted file.
+When the user presses the "CREATE/MODIFY ENTRY FROM LDIF FILE" 
+button, the file listed in the "LDIF FILE NAME" text box will be used
+to create or modify the entries listed in the ldif formatted file.
+
+=head2 Manual entry creation using the objectClass as a template.
+
+In the MANUALLY CREATE ENTRY frame the user can manually create
+an entry using the objectClass list box as an entry template.
+
+First thing the user should do is select the proper DN base from
+the SELECT DN BASE button.  This will setup part of the entry's
+DN.
+
+After select the DN base the user can find and select an objeclass
+from the list of objectClasses.  When the user selects, by clicking
+the pointer on an objectClass, a CREATE DIRECTORY ENTRY window
+will be displayed.  It is from the CREATE DIRECTORY ENTRY window the
+the user will finish entering data for the new entry.
 
 -------------------------------------------------------------------
 
+=head1 CREATE DIRECTORY ENTRY WINDOW
+
+At the top of the CREATE DIRECTORY ENTRY window is the 
+CANCEL CREATE ENTRY DISPLAY button.  Pressing this button
+will cancel the entry creation process.
+
+Just below the CANCEL CREATE ENTRY DISPLAY button is a series of
+information messages for the user about the Naming Attribute selection
+and DN base.
+
+In the middle of the window is the actual data list box, it is in
+this list box that the user enters attribute information, selects
+the Naming Attribute, or sets up a DN.
+
+The data list box is for all practical purposes divided into 4
+sections.
+
+The DN text field is where the user can edit the DN base or 
+enter in a complete DN.  If the user enters a complete DN the 
+user should B<NOT> select a Naming Attribute radionbutton.
+
+Between the DN text field and the objectClass text fields will
+be all of the B<MUST> attributes.  The B<MUST> attribute names 
+will be colored red.  These attributes must have information in
+them for the entry to be accepted into the directory.
+
+The objectClass text fields are read only fields that list the
+objectClasses that will be used in the creation of the entry.
+
+All attributes below the objectClass text fields are B<MAY> 
+attributes, the user does not have to supply information about 
+these attributes unless the attribute is selected to be the
+Naming Attribute.  If the attribute is selected to be the Naming
+Attribute it B<MUST> have data associated with it.
+
+The B<Naming Attribute> radiobutton are used to select the
+attribute that will be used as the Naming Attribute.  The
+Naming Attribute is used to complete the entry DN.  The user
+does not have to use these buttons, but if one is selected,
+due to the nature of radiobuttons, one of them must be used
+as there is no way to deselect any of the radiobuttons.
+
+At the bottom of the CREATE DIRECTORY ENTRY window is the 
+CREATE ENTRY button.  Pressing this button will start the process
+of putting the new entry into the directory.
+
+If during the actual creation of the entry there is an error
+detected, a error window will be displayed stating the error.
+Once the error is acknowledged, the user can correct the error
+and then re-click the CREATE ENTRY button will re-attempt to 
+create the entry in the directory.  The CREATE DIRECTORY ENTRY  
+window will not be destroyed until either the user cancels the 
+action or the entry is created in the directory.
+
+
+-------------------------------------------------------------------
 
 =head1 INFO PANEL
 
@@ -5579,7 +6148,7 @@ This panel is mainly for information.
 
 The I<Process Messages> text window is where process messages
 will be displayed.  The messages are indicators of what is
-happening during the excution of the program.  By selecting 
+happening during the execution of the program.  By selecting 
 a line of text and moving the cursor up or down, the user
 can scroll thru the messages.
 
