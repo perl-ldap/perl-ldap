@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 1.2 2002/11/03 01:47:45 kartik_subbarao Exp $
+# $Id: ldifdiff.pl,v 1.3 2003/06/24 21:58:58 kartik_subbarao Exp $
 
 =head1 NAME
 
@@ -13,28 +13,40 @@ into the source.
 
 =head1 SYNOPSIS
 
-ldifdiff.pl B<-k keyattr> [B<-a attr1,attr2,...>] [B<-c attr1,attr2,...>] B<sourcefile> B<targetfile>
+ldifdiff.pl B<-k|--keyattr keyattr> [B<-a|--sourceattrs attr1,attr2,...>] [B<-c|--ciscmp attr1,...>] [B<--dnattrs attr1,...>] [B<--sharedattrs attr1,...>] B<sourcefile> B<targetfile>
 
 =head1 OPTIONS
 
 =over 4
 
-=item B<-k> keyattr
+=item B<-k|--keyattr> keyattr
 
 Specifies the key attribute to use when comparing source and target entries. 
 Entries in both LDIF files must be sorted by this attribute for comparisons to 
 be meaningful. F<ldifsort.pl> can be used to sort LDIF files by a given 
 attribute.
 
-=item B<-a attr1,attr2,...>
+=item B<-a|--sourceattrs attr1,attr2,...>
 
 (Optional) Specifies a list of attributes to consider when comparing
 source and target entries. By default, all attributes are considered.
 
-=item B<-c attr1,attr2,...>
+=item B<-c|--ciscmp attr1,...>
 
 (Optional) Compare values of the specified attributes case-insensitively. By 
 default, comparisons are case-sensitive. 
+
+=item B<--dnattrs attr1,...>
+
+(Optional) Specifies a list of attributes to be treated as DNs when being
+compared. The default set is manager, member, owner and uniqueMember.
+
+=item B<--sharedattrs attr1,...>
+
+(Optional) Specifies a list of attribues to be treated as "shared" attributes,
+where the source may not be a sole authoritative source. When modifying
+these attributes, separate "delete" and "add" LDIF changes are generated, 
+instead of a single "replace" change. The default set is objectClass.
 
 =item B<sourcefile>
 
@@ -51,17 +63,25 @@ Specifies the target LDIF file.
 use Net::LDAP;
 use Net::LDAP::LDIF;
 use Net::LDAP::Util qw(canonical_dn);
-use Getopt::Std;
+use Getopt::Long;
 
 use strict;
 
-my %args;
-getopts("a:c:k:", \%args);
-
-my $keyattr = $args{k};
-my @sourceattrs = split(/,/, $args{a});
-my %ciscmp = (objectclass => 1, manager => 1, owner => 1, uniquemember => 1);
-foreach (split(/,/, $args{c})) { $ciscmp{$_} = 1 }
+my @sourceattrs;
+my (%ciscmp, %dnattrs, %sharedattrs);
+my $keyattr;
+GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
+	'c|ciscmp=s' => sub { my @a = split(/,/,$_[1]); @ciscmp{@a} = (1) x @a },
+	'dnattrs=s' => sub { my @a = split(/,/,$_[1]); @dnattrs{@a} = (1) x @a },
+	'k|keyattr=s' => \$keyattr,
+	'sharedattrs=s' => sub { my @a=split(/,/,$_[1]); @sharedattrs{@a}=(1)x @a }
+	);
+%ciscmp = (objectclass => 1, manager => 1, owner => 1, uniquemember => 1)
+	unless keys %ciscmp;
+%dnattrs = (manager => 1, member => 1, owner => 1, uniquemember => 1)
+	unless keys %dnattrs;
+%sharedattrs = (objectclass => 1)
+	unless keys %sharedattrs;
 
 
 my ($sourcefile, $targetfile);
@@ -189,8 +209,6 @@ sub updateFromEntry
 	my ($source, $target, @attrs) = @_;
 	my ($attr, $val, $ldifstr);
 
-	my %sharedattrs = (objectclass => 1);
-
 	unless (@attrs) {
 		# add all source entry attributes
 		@attrs = $source->attributes;
@@ -211,13 +229,19 @@ sub updateFromEntry
 		my @sourcevals = $source->get_value($attr);
 		my @targetvals = $target->get_value($attr);
 		my (%sourceuniqvals, %targetuniqvals);
-		if ($ciscmp{$lcattr}) {
-			@sourceuniqvals{map { lc($_) } @sourcevals} = ();
-			@targetuniqvals{map { lc($_) } @targetvals} = ();
+		foreach (@sourcevals) {
+			my $val = $_;
+			$val = lc $val if $ciscmp{$lcattr};
+			# Get rid of spaces after non-escaped commas in DN attrs
+			$val =~ s/(?<!\\),\s+/,/g if $dnattrs{$lcattr};
+			$sourceuniqvals{$val} = undef;
 		}
-		else {
-			@sourceuniqvals{@sourcevals} = ();
-			@targetuniqvals{@targetvals} = ();
+		foreach (@targetvals) {
+			my $val = $_;
+			$val = lc $val if $ciscmp{$lcattr};
+			# Get rid of spaces after non-escaped commas in DN attrs
+			$val =~ s/(?<!\\),\s+/,/g if $dnattrs{$lcattr};
+			$targetuniqvals{$val} = undef;
 		}
 		foreach my $val (keys %sourceuniqvals) {
 			if (exists $targetuniqvals{$val}) {
@@ -234,6 +258,11 @@ sub updateFromEntry
 			# For 'shared' attributes (e.g. objectclass) where $source may not 
 			# be a sole authoritative source, we issue separate delete and 
 			# add modifications instead of a single replace.
+			#
+			# Note: this issues deletes/adds for the canonicalized versions of 
+			# values rather than the original values themselves, since the 
+			# canonicalized versions are readily available in a hash, whereas
+			# the original versions are in a linear array.
 			$target->delete($attr => [ keys(%targetuniqvals) ])
 				if keys(%targetuniqvals);
 			$target->add($attr => [ keys(%sourceuniqvals) ])
