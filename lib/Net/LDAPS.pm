@@ -55,7 +55,8 @@ sub SSL_context_init_args {
     SSL_use_cert    => $clientcert ? 1 : 0,
     SSL_cert_file   => $clientcert,
     SSL_verify_mode => $verify,
-    SSL_version     => 'sslv2/3',
+    SSL_version     => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
+                       'sslv2/3',
   );
 }
 
