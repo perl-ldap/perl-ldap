@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.22 2001/12/29 01:50:27 charden Exp $
+# $Id: tklkup,v 1.23 2001/12/29 22:53:47 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.23  2001/12/29 22:53:47  charden
+# Added code to allow the schema information to be stored in a file as
+# DSML XML data.  User can now select to store the data as text or XML.
+#
 # Revision 1.22  2001/12/29 01:50:27  charden
+#
 # Added code to allow editing of a entry's attributes.
 # This makes this software a full featured LDAP directory interface.
 # Added pod documentation about new windows and features.
@@ -178,6 +183,7 @@ use Net::LDAP qw(:all);
 use Net::LDAP::Filter;
 use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
 use Net::LDAP::Constant;
+use Net::LDAP::DSML;
 use Getopt::Std;
 
 use Tk;
@@ -1370,6 +1376,13 @@ $srbfile = $srbfilelabel -> Checkbutton(
           -variable =>  \$Global{'sfile'}, -onvalue => 1, -offvalue => 0,
           -font => $Global{'Font'} )
           -> pack(-anchor => "w" );
+
+$srbfilelabel -> Checkbutton( 
+          -text => "Write schema data to file in DSML XML format.",
+          -variable =>  \$Global{'xml'}, -onvalue => 1, -offvalue => 0,
+          -font => $Global{'Font'} )
+          -> pack(-anchor => "w" );
+
 #
 # Create Text Entry list box.
 #
@@ -1402,7 +1415,8 @@ $srbclear->select();
 
 $selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
                                  -labelside => "acrosstop" )
-      ->pack( -side => $Global{'hand'}, -expand => 1, -fill => "both" );
+                                 ->pack( -side => $Global{'hand'}, 
+                                 -expand => 1, -fill => "both" );
 
 $sellframe = $selframe->Frame( -borderwidth => 0, 
                         -relief => "raised")->pack(
@@ -1517,7 +1531,7 @@ $Global{'schemaWindow'} = undef();
 
 #
 #
-# Search the directory for data
+# Get the directory schema
 #
 #
 #
@@ -1590,6 +1604,7 @@ if ( $error == 1 )
 $schema = undef();
 my @items;
 my @item;
+my $dsml;
 
 $schemaHash{'schema'} = $ldap->schema();
 
@@ -1597,15 +1612,34 @@ if ( defined($schemaHash{'schema'}) )
 {
 if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
 {
+  if ( $Global{'xml'} )
+  {
   #
-  # write to file instead of text box
+  # write XML text to file instead of text box
+  #
+  $dsml = Net::LDAP::DSML->new();
+  open(FXML, ">$Global{'fdata'}");  
+  $dsml->open(*FXML);
+  $dsml->write($schemaHash{'schema'});
+  $dsml->finish();
+  close(FXML);
+  }
+  else
+  {
+  #
+  # write straight text to file instead of text box
   #
   $schemaHash{'schema'}->dump( $Global{'fdata'} );
-  $schema_list->insert("end",  "Schema data written to file: $Global{'fdata'}\n");
+  }
+ 
+  $schema_list->insert("end",
+                       "Schema data written to file: $Global{'fdata'}\n");
   $Global{'sfile'} = 0;
   $Global{'fdata'} = "";
+  $Global{'xml'} = 0;
   $ldap->unbind if ( defined($ldap));
   return;
+
 }
 
 $ra_atts = [];
