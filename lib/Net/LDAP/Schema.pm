@@ -130,13 +130,23 @@ sub syntax
   my $syntax = $self->{oid}->{$oid}->{syntax};
   unless( $syntax ) {
     my @sup = @{$self->{oid}->{$oid}->{sup}};
-    foreach my $sup ( @sup ) {
-      $syntax = $self->syntax( $sup );	# Hope there are no loops
-      last if $syntax;			# What would multi-syntax mean?
-    }
+    $syntax = $self->syntax( $sup[0] );
   }
 
   return $syntax;
+}
+
+sub superclass
+{
+   my $self = shift;
+   my $oc = shift;
+
+   my $oid = $self->is_objectclass( $oc );
+   return undef unless $oid;
+
+   my $res = $self->{oid}->{$oid}->{sup};
+   return undef unless $res;
+   return wantarray() ? @$res : $res;
 }
 
 sub must
@@ -593,7 +603,7 @@ sub _fixup_entry
   # Store some items as array refs always, for simpler code
   # Note - 'name' is made scalar later in this function
   #
-  foreach my $item_type ( qw( name must may ) ) {
+  foreach my $item_type ( qw( name must may sup ) ) {
     my $item = $schema_entry->{$item_type};
     if( $item && !ref $item ) {
       $schema_entry->{$item_type} = [ $item ];

@@ -1,3 +1,21 @@
+Change 507 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Check return value of asn_recv for defined not truth
+	  as on some systems the return value may be ''
+
+Change 506 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema (patch from Chris Ridd)
+	- Fix sup to always be an array ref
+	- add ->superclasses() method
+
+Change 505 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix bug in ->unbind() where $mesg was not being passed to _sendmsg()
+	- Added debug values 4 and 8 to dump with asn_dump()
+
 Change 496 on 2000/04/27 by <gbarr@pobox.com> (Graham Barr)
 
 	Release 0.16

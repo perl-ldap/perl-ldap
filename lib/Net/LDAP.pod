@@ -77,8 +77,10 @@ Timeout passed to L<IO::Socket|IO::Socket> when connecting the remote server.
 If passed a non-zero value then debug data will be sent to C<STDERR>. The
 bits of this value are :-
 
- 1   Show outgoing packets.
- 2   Show incoming packets.
+ 1   Show outgoing packets (using asn_hexdump).
+ 2   Show incoming packets (using asn_hexdump).
+ 4   Show outgoing packets (using asn_dump).
+ 8   Show incoming packets (using asn_dump).
 
 =item async
 
@@ -634,6 +636,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.1 2000/05/03 12:29:03 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.2 2000/05/04 08:42:45 gbarr Exp $>
 
 =cut

@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.16";
+$VERSION = "0.16_01";
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -138,13 +138,13 @@ sub unbind {
     controls      => $arg->{control}
   ) or return $mesg->set_error(LDAP_ENCODING_ERROR,"$@");
 
-  $ldap->_sendmesg();
+  $ldap->_sendmesg($mesg);
 }
 
 
 sub ldapbind {
   require Carp;
-  Carp::carp("->ldapbind depricated, use ->bind") if $^W;
+  Carp::carp("->ldapbind deprecated, use ->bind") if $^W;
   goto &bind;
 }
 
@@ -527,10 +527,16 @@ sub _sendmesg {
   my $ldap = shift;
   my $mesg = shift;
 
-  if ($ldap->debug & 1) {
+  my $debug;
+  if ($debug = $ldap->debug) {
     require Convert::ASN1::Debug;
     print STDERR "$ldap sending:\n";
-    Convert::ASN1::asn_hexdump(*STDERR, $mesg->pdu);
+
+    Convert::ASN1::asn_hexdump(*STDERR, $mesg->pdu)
+      if $debug & 1;
+
+    Convert::ASN1::asn_dump(*STDERR, $mesg->pdu)
+      if $debug & 4;
   }
 
   send($ldap->socket, $mesg->pdu, 0)
@@ -562,13 +568,19 @@ sub _recvresp {
 
   for( $ready = 1 ; $ready ; $ready = $sel->can_read(0)) {
     my $pdu;
-    asn_recv($sock, $pdu, 0)
+    defined asn_recv($sock, $pdu, 0)
       or return LDAP_OPERATIONS_ERROR;
 
-    if ($ldap->debug & 2) {
+    my $debug;
+    if ($debug = $ldap->debug) {
       require Convert::ASN1::Debug;
       print STDERR "$ldap received:\n";
-      Convert::ASN1::asn_hexdump(\*STDERR,$pdu);
+
+      Convert::ASN1::asn_hexdump(\*STDERR,$pdu)
+	if $debug & 2;
+
+      Convert::ASN1::asn_dump(\*STDERR,$pdu)
+	if $debug & 8;
     }
 
     my $result = $LDAPResponse->decode($pdu)

@@ -55,6 +55,11 @@ Returns a list of the names of all objectclasses in the schema.
 
 Return value is an array or array reference depending on calling context.
 
+=item superclass
+
+Given an argument which is the name or oid of a known objectclass, returns
+the list of names of the immediate superclasses.
+
 =item syntaxes
 
 Returns a list of the names of all objectclasses in the schema. (The name of
@@ -131,6 +136,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.1 2000/05/03 12:29:17 gbarr Exp $>
+I<$Id: Schema.pod,v 1.2 2000/05/04 08:42:45 gbarr Exp $>
 
 =cut
