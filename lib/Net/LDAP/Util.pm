@@ -33,6 +33,7 @@ the L<Net::LDAP> modules.
 
 use vars qw($VERSION);
 require Exporter;
+require Net::LDAP::Constant;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(
   ldap_error_name
@@ -41,7 +42,7 @@ require Exporter;
   canonical_dn
   ldap_explode_dn
 );
-$VERSION = "0.09";
+$VERSION = "0.10";
 
 =item ldap_error_name ( NUM )
 
@@ -51,24 +52,7 @@ is returned.
 
 =cut
 
-my @err2name;
-
-sub ldap_error_name {
-  my $code = 0+ shift;
-  require Net::LDAP::Constant;
-
-  unless (@err2name) {
-    local *FH;
-
-    if (open(FH,$INC{'Net/LDAP/Constant.pm'})) {
-      while(<FH>) {
-        ($err2name[hex($2)] = $1) if /^sub\s+(LDAP_\S+)\s+\(\)\s+\{\s+0x([0-9a-fA-f]{2})\s+\}/;
-      }
-      close(FH);
-    }
-  }
-  $err2name[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
-}
+# Defined in Constant.pm
 
 =item ldap_error_text ( NUM )
 
@@ -77,40 +61,7 @@ error code given is unknown then C<undef> is returned.
 
 =cut
 
-sub ldap_error_text {
-  my $name = ldap_error_name(shift);
-  my $text;
-  if($name =~ /^LDAP_/) {
-    my $pod = $INC{'Net/LDAP/Constant.pm'};
-    substr($pod,-3) = ".pod";
-    local *F;
-    open(F,$pod) or return;
-    local $/ = "";
-    local $_;
-    my $len = length($name);
-    my $indent = 0;
-    while(<F>) {
-      if(substr($_,0,11) eq "=item LDAP_") {
-        last if defined $text;
-	$text = "" if /^=item $name\b/;
-      }
-      elsif(defined $text && /^=(\S+)/) {
-        $indent = 1 if $1 eq "over";
-        $indent = 0 if $1 eq "back";
-	$text .= " * " if $1 eq "item";
-      }
-      elsif(defined $text) {
-        if($indent) {
-          s/\n(?=.)/\n   /sog;
-	}
-        $text .= $_;
-      }
-    }
-    close(F);
-    $text =~ s/\n+\Z/\n/ if defined $text;
-  }
-  $text;
-}
+# Defined in Constant.pm
 
 =item ldap_error_desc ( NUM )
 
@@ -534,7 +485,7 @@ ldap_explode_dn and canonical_dn also
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.16 2003/05/07 11:49:26 chrisridd Exp $>
+I<$Id: Util.pm,v 1.17 2003/05/08 09:27:41 gbarr Exp $>
 
 =cut
 
