@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.14";
+$VERSION = "0.14_01";
 
 my %mode = qw(w > r < a >>);
 
@@ -124,6 +124,7 @@ sub _read_url_attribute {
       $self->_error("can't open $line: $!", @ldif);
       return;
     }
+    binmode($fh);
     { # slurp in whole file at once
       local $/;
       $line = <$fh>;
