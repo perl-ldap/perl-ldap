@@ -1,3 +1,66 @@
+# -*- perl -*-
+
+use inc::Module::Install;
+
+name		('perl-ldap');
+module_name	('Net::LDAP');
+author		('Graham Barr <gbarr@cpan.org>');
+version_from	('lib/Net/LDAP.pm');
+license		('perl');
+abstract	('LDAP client library');
+
+check_nmake();      # check and download nmake.exe for Win32
+
+requires( perl => 5.004);
+include_deps('Test::More');
+
+features(
+  'SASL authentication' => [
+    -default => 0,
+    'Authen::SASL'  => 2.00,
+    recommends('Digest::MD5'),
+  ],
+  'LDAP URLs' => [
+    -default => 0,
+    'URI::ldap' => 1.10,
+  ],
+  'LDAPS' => [
+    -default => 0,
+    'IO::Socket::SSL' => 0.81,
+  ],
+  'Read/Write DSML files' => [
+    -default => 0,
+    'XML::SAX::Base' => 0,
+  ],
+  'Read/Write LDIF files' => [
+    -default => 0,
+    'MIME::Base64'  => 0,
+  ],
+);
+
+auto_install_now();
+
+&Makefile->write;
+&Meta->write;
+
+## - - - - - - - -
+
+sub MY::postamble {
+  return <<'POSTAMBLE';
+
+distdir : manifest run_cpansign
+
+run_cpansign :
+	cpansign -s
+
+POSTAMBLE
+
+}
+
+
+__END__
+
+
 # The -*- perl -*- script writes the Makefile for perl-ldap
 
 use 5.004;
@@ -102,21 +165,15 @@ WriteMakefile(
   @ppd,
 );
 
+
 sub MY::postamble {
+  return <<'POSTAMBLE';
 
-<<EOS;
-
-run_mkmanf : 
-	./mkmanf
-
-distdir : run_mkmanf
-
-distdir : run_cpansign
+distdir : manifest run_cpansign
 
 run_cpansign :
 	cpansign -s
 
-EOS
+POSTAMBLE
 
 }
-

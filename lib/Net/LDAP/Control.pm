@@ -19,7 +19,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ENTRYCHANGE
 );
 
-$VERSION = "0.04_01";
+$VERSION = "0.05";
 
 my %Pkg2Type = (
 

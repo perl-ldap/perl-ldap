@@ -1,3 +1,28 @@
+perl-ldap 0.32 --
+
+Bug Fixes
+  * Documentation updates
+  * Fixed LDIF output from ldapsearch command
+  * Return an error if no filter is passed to Net::LDAP::filter->parse
+  * Fixed bug handling comments in LDIF parser
+  * Fix to ldapsearch for passing scope with -s
+  * Do not send a fake userid in SASL binds
+  * Net::LDAP::Schema->parse() now returns undef on errors
+
+Enhancements
+  * Added supportedFeatures to the default list of attributes
+    fetched by ->root_dse
+  * Added option to sort attributes in LDIF output, with objectclass
+    being first floowed by all other attributes in alphabetical order
+  * Add escape/unescape filters/DN utility functions
+  * Added support for reading LDIF URL attributes using file://
+  * The socket created by new can now be bound to a local address & port
+  * Any controls returned by the server with each entry as a result from a search
+    are now available in the callback function
+  * Added classes for EntryChange, PersistentSearch and ManageDsaIT controls
+  * Allow options passed to Net::LDAP::Entry-.update to be passed to the
+    Net::LDAP method that is finally called
+
 perl-ldap 0.31  1 Jan 2004
 ==========================
 
@@ -179,4 +204,3 @@ perl-ldap 0.16 April 27 2000
   not contain all entries and $mesg->code will be LDAP_DECODING_ERROR.
   This has been seen when the client is running on NT or Linux and the
   server is an Exchange server.
-

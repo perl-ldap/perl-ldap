@@ -1,11 +1,9 @@
 CREDITS
-ChangeLog
+Changes
 INSTALL
 MANIFEST
 Makefile.PL
-OldChanges
 README
-RELEASE_NOTES
 SIGNATURE
 TODO
 bin/ldapdelete

@@ -3,7 +3,7 @@ package Net::LDAP::Extension::SetPassword;
 
 require Net::LDAP::Extension;
 
-$VERSION = "0.01_01";
+$VERSION = "0.02";
 @ISA = qw(Net::LDAP::Extension);
 
 use Convert::ASN1;

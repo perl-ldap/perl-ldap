@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.02_01";
+$VERSION = "0.03";
 
 use Convert::ASN1;
 
