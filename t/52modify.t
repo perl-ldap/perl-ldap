@@ -51,5 +51,5 @@ foreach $e ($ldif->read_cmd) {
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 
-compare_ldif("52",$mesg,$i);
+compare_ldif("52",$i,$mesg,$mesg->sorted);
 

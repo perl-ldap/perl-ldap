@@ -24,12 +24,15 @@ my $i = 4;
 foreach $e ($ldif->read_cmd) {
   print "ok ",$i++,"\n";
   $mesg = $e->update($ldap);
-  print "#",$mesg->code,"\n";
-  print "not " if $mesg->code;
+  if ($mesg->code) {
+    $e->dump;
+    print "# ",$mesg->code,": ",$mesg->error,"\n";
+    print "not ";
+  }
   print "ok ",$i++,"\n";
 }
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
   print "#",$mesg->code,"\n";
 
-compare_ldif("50",$mesg,$i);
+compare_ldif("50",$i,$mesg,$mesg->sorted);

@@ -29,10 +29,14 @@ data/51d-cmp.ldif
 data/52-cmp.ldif
 data/52-in.ldif
 data/52-mod.ldif
+data/core.schema
+data/cosine.schema
+data/inetorgperson.schema
 data/schema.in
 data/slapd-conf.in
 data/slapd.at.conf
 data/slapd.oc.conf
+data/slapd2-conf.in
 htdocs/Authen/SASL.html
 htdocs/Bundle/Net/LDAP.html
 htdocs/Net/LDAP.html
@@ -111,3 +115,4 @@ t/51search.t
 t/52modify.t
 t/53schema.t
 t/common.pl
+test.cfg

@@ -26,6 +26,7 @@ foreach $e ($ldif->read_cmd) {
   print "ok ",$i++,"\n";
   $mesg = $e->update($ldap);
   if ($mesg->code) {
+    $e->dump;
     print "# ",$mesg->code," ",$mesg->error,"\n";
     print "not ";
   }
@@ -36,17 +37,17 @@ foreach $e ($ldif->read_cmd) {
 
 # Exact searching
 $mesg = $ldap->search(base => $BASEDN, filter => 'sn=jensen');
-$i += compare_ldif("51a",$mesg,$i,'uid');
+$i += compare_ldif("51a",$i,$mesg,$mesg->sorted);
 
 # Or searching
-$mesg = $ldap->search(base => $BASEDN, filter => '(|(objectclass=rfc822mailgroup)(sn=jones))');
-$i += compare_ldif("51b",$mesg,$i,'uid');
+$mesg = $ldap->search(base => $BASEDN, filter => '(|(objectclass=groupofnames)(sn=jones))');
+$i += compare_ldif("51b",$i,$mesg,$mesg->sorted);
 
 # And searching
-$mesg = $ldap->search(base => $BASEDN, filter => '(&(objectclass=rfc822mailgroup)(cn=A*))');
-$i += compare_ldif("51c",$mesg,$i,'uid');
+$mesg = $ldap->search(base => $BASEDN, filter => '(&(objectclass=groupofnames)(cn=A*))');
+$i += compare_ldif("51c",$i,$mesg,$mesg->sorted);
 
 # Not searching
 $mesg = $ldap->search(base => $BASEDN, filter => '(!(objectclass=person))');
-$i += compare_ldif("51d",$mesg,$i,'uid');
+$i += compare_ldif("51d",$i,$mesg,$mesg->sorted);
 

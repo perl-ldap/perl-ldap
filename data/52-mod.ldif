@@ -5,8 +5,8 @@ drink: Orange Juice
 
 dn: cn=Bjorn Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
 changetype: modify
-replace: multilinedescription
-multilinedescription: The replaced multiLineDescription $ Blah Woof.
+replace: description
+description: The replaced multiLineDescription $ Blah Woof.
 -
 replace: drink
 drink: Iced Tea
@@ -32,18 +32,13 @@ objectclass: top
 objectclass: person
 objectclass: organizationalPerson
 objectclass: newPilotPerson
-objectclass: umichPerson
 cn: Gern Jensen
 title: Chief Investigator, ITD
 postaladdress: ITD $ 535 W. William St $ Ann Arbor, MI 48103
 seealso: cn=All Staff, ou=Groups, o=University of Michigan, c=US
-uid: gjensen
-krbname: gjensen@umich.edu
-nobatchupdates: TRUE
-onvacation: FALSE
 drink: Coffee
 homepostaladdress: 844 Brown St. Apt. 4 $ Ann Arbor, MI 48104
-multilinedescription: Very odd
+description: Very odd
 facsimiletelephonenumber: +1 313 555 7557
 telephonenumber: +1 313 555 8343
 mail: gjensen@mailgw.umich.edu
