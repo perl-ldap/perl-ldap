@@ -1,0 +1,1003 @@
+Change 611 on 2001/01/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Documentation updates
+
+Change 610 on 2000/12/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Add new ::Extra module for user loaded extensions
+
+Change 609 on 2000/12/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Ignore unexpected PDUs
+
+Change 608 on 2000/12/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Deleted schema script at Clif's request. It's functionality is in the
+	tklkup script
+
+Change 605 on 2000/10/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::LDIF, Net::LDAP::Entry
+	- Fix for attempting to write_cmd on an entry with no changes
+
+Change 604 on 2000/10/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix spelling typos
+
+Change 599 on 2000/09/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.22
+
+Change 598 on 2000/09/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- Prevent Out of memory error with 5.6.0
+
+Change 597 on 2000/09/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.21
+
+Change 596 on 2000/09/12 by <gbarr@pobox.com> (Graham Barr)
+
+	FAQ updates from Clif Harden
+
+Change 595 on 2000/09/11 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::ASN
+	- Add missing context tags to sort control
+
+Change 594 on 2000/09/11 by <gbarr@pobox.com> (Graham Barr)
+
+	Examples.pod
+	- Patch from Clif Harden
+
+Change 593 on 2000/09/08 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- Document that the CLIENT is not optional to ->update and that
+	  ->update cannot be used to change the RDN.
+	- Handle the case when ->update is called an there are no changes
+	  to be made,
+
+Change 592 on 2000/09/08 by <gbarr@pobox.com> (Graham Barr)
+
+	New FAQ from Clif Harden
+
+Change 591 on 2000/09/08 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- revert ->get back to 0.19 semantics
+
+Change 590 on 2000/09/08 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix ->modify to allow single values to be passed without []
+
+Change 570 on 2000/08/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Control::Sort
+	- Doc updates
+
+Change 569 on 2000/08/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Util
+	- Added ldap_error_desc() for short error descriptions
+	
+	Net::LDAP::Message
+	- Changed ->error() to use ldap_error_desc if the server did not return
+	  a message.
+	- Added ->server_error() to return the server error message or undef.
+
+Change 568 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- Added parsing for matchingRules
+
+Change 567 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP, Net::LDAP::Entry
+	- Fix syntax typo's
+
+Change 566 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- added ->get_value() and deprecated ->get()
+
+Change 565 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Message
+	- Added is_error for use by the onerror code in Net::LDAP
+
+Change 564 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- added `onerror' option to ->new
+
+Change 563 on 2000/08/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Create all message objects via ->message. This will allow sub-classes
+	  to also sub-class the message objects.
+
+Change 562 on 2000/08/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- Improved performance
+
+Change 560 on 2000/08/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.20
+
+Change 559 on 2000/08/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Update ldapsearch.PL to use _scope (new in URI-1.08)
+
+Change 554 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	contrib/
+	- Link contrib/ to SourceForge directory
+
+Change 553 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	More doc updates
+
+Change 552 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- Added some ability to handle options
+
+Change 551 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Control::*
+	- Added lots of docs
+	Net::LDAP::Control::VLV
+	- Added methods for moving the page
+
+Change 550 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Constant
+	- Added OID for Matched Values control
+
+Change 549 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Modified bind() to require an auth argument if passed arguments
+	  and also refuse to assect an empty password for password =>
+	  anon binding must be dome with noauth => or anonymous =>
+
+Change 548 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	bin/ldapsearch.PL
+	- Use URI::ldap instead of URI::RUL::ldap
+	bin/ldapsearch.PL, bin/ldapdelete.PL, bin/ldapmodrdn.PL
+	- Made -wc clean
+
+Change 547 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Moved Convert::ASN1 into PREREQ_PM
+
+Change 546 on 2000/07/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Added CREDITS and ISNTALL
+
+Change 545 on 2000/07/25 by <gbarr@pobox.com> (Graham Barr)
+
+	contrib/ updates from Clif Harden.
+
+Change 544 on 2000/07/04 by <gbarr@pobox.com> (Graham Barr)
+
+	Add C<use Net::LDAP::Control> to all controls
+
+Change 543 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::DSML
+	- New module from Mark Wilcox
+
+Change 542 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAPS
+	- New module added from Chris Ridd
+
+Change 541 on 2000/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::ASN
+	- Convert::ASN1 does not support DEFAULT values, so the should be
+	  marked as OPTIONAL
+
+Change 540 on 2000/06/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Examples.pod & Schema.pod updates from Clif Harden
+
+Change 538 on 2000/06/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- A few profiling/performance tweaks
+	- ->new() now accepts an ::Entry object
+	- separated ->parse() from ->new(), parse errors can now be obtained via ->error()
+
+Change 537 on 2000/06/08 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.19
+
+Change 533 on 2000/05/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Reset hash iterator for each call
+
+Change 532 on 2000/05/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix asn1 name from modifyDNRequest to modDNRequest
+
+Change 529 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- result code element changed name to resultCode during
+	  change-over to Convert::ASN1
+
+Change 527 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.18
+
+Change 526 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Now passes -wc with 5.004, 5.005_03 and 5.6.0
+
+Change 525 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Bundle::Net::LDAP
+	- Change Convert::ASN to Convert::ASN1
+
+Change 522 on 2000/05/19 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Return an error when there are unmatched ()
+
+Change 517 on 2000/05/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- fix bug in ->as_struct introduced by new code in Net::LDAP::Entry
+
+Change 516 on 2000/05/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.17
+
+Change 512 on 2000/05/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Change to use asn_read (needs patch to Convert::ASN::IO)
+
+Change 511 on 2000/05/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Change email/url's to point to sourceforge
+
+Change 507 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Check return value of asn_recv for defined not truth
+	  as on some systems the return value may be ''
+
+Change 506 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema (patch from Chris Ridd)
+	- Fix sup to always be an array ref
+	- add ->superclasses() method
+
+Change 505 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix bug in ->unbind() where $mesg was not being passed to _sendmsg()
+	- Added debug values 4 and 8 to dump with asn_dump()
+
+Change 496 on 2000/04/27 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.16
+
+Change 495 on 2000/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	- fix Controls critical value
+	- fix debug calls
+
+Change 494 on 2000/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Added VirtualListView and PAged controls
+
+Change 491 on 2000/04/17 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Control::Sort
+	- fix typos
+	- evaluate @order before deleting $self->{order}.
+	  Otherwise $_[0] may become undef
+
+Change 489 on 2000/04/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- control option will now call ->to_asn on blessed controls
+
+Change 488 on 2000/04/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Added Bundle::Net::LDAP
+
+Change 487 on 2000/04/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Add HTML docs and ppd to MANIFEST
+
+Change 486 on 2000/04/11 by <gbarr@pobox.com> (Graham Barr)
+
+	Rename Net::LDAP::Control::sort to Net::LDAP::Control::Sort
+
+Change 485 on 2000/04/11 by <gbarr@pobox.com> (Graham Barr)
+
+	- Better support for LDAPv3 controls, but more to come
+
+Change 484 on 2000/04/11 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Fix for endless loop when filter string contained \(
+	- various changes to workaround perl5.6.0 bug in qw()
+
+Change 481 on 2000/04/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::LDIF
+	- fix use of undef warning during global cleanup
+
+Change 480 on 2000/04/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Integrate from asn branch
+
+Change 479 on 2000/04/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Update ChangeLog
+
+Change 478 on 2000/04/03 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- new code for schema method from Mark Wilcox
+
+Change 467 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- new code for schema method from Mark Wilcox
+
+Change 466 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	More doc edits
+
+Change 464 on 2000/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Added PPD to Makefile.PL
+	Major POD edits to make pod2html work
+	Added html docs to distribution
+
+Change 400 on 2000/03/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.15
+
+Change 399 on 2000/03/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Misc fixes
+	Now passes all tests against slapd
+
+Change 398 on 2000/03/22 by <gbarr@pobox.com> (Graham Barr)
+
+	typo fixes
+
+Change 397 on 2000/03/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Fixes to debug code
+
+Change 395 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Allow the environment variable SLAPD_EXE to point to
+	slapd executable for testing
+
+Change 394 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Integrate changes from mainline
+
+Change 393 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Add Authen::SASL POD
+
+Change 392 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Remove Net::LDAP::Schema::oid7 as it is not used
+
+Change 391 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema update from John Berthels <jjb@berthels.uklinux.net>
+
+Change 390 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	- Added Net::LDAP::Examples POD from Russell Biggs F<rgb@ticnet.com>
+	- Fixed warnings from Net::LDAP::FAQ POD
+
+Change 389 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	- Added missing files from MANIFGEST needed for schema testing
+	- allow ->async method to change async mode
+
+Change 388 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	misc. fixes
+
+Change 387 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Add Net::LDAP::ASN to MANIFEST
+
+Change 385 on 2000/03/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Initial changes to use Convert::ASN1 instead of Convert::BER
+
+Change 363 on 2000/02/28 by <gbarr@pobox.com> (Graham Barr)
+
+	- Add docs for Net::LDAP::Schema
+	- Fix dates in Copyrights
+	- Ensure all pods refer to the mailing list
+
+Change 362 on 2000/02/25 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- fix typo
+
+Change 359 on 2000/02/15 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Control
+	- Add some error checking
+
+Change 358 on 2000/02/15 by <gbarr@pobox.com> (Graham Barr)
+
+	More changes for controls
+
+Change 357 on 2000/02/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Extract controls from BER packet
+
+Change 356 on 2000/02/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Add tests for new Schema module
+
+Change 355 on 2000/02/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.14
+
+Change 354 on 2000/02/14 by <gbarr@pobox.com> (Graham Barr)
+
+	Authen::SASL
+	- die if require fails
+
+Change 353 on 2000/02/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Added re-vamped schema code from
+	John Berthels <jjb@berthels.uklinux.net>
+	
+	Included in the diff is a minor tweak to Net::LDAP::LDIF (change
+	default mode to 'read' not 'truncate' after I blew away a test
+	file ;-) and a little added documentation.
+
+Change 352 on 2000/02/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Added more to contrib directory and started an FAQ
+
+Change 342 on 1999/10/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP.pod
+	attrs description update from Dan Harasty
+
+Change 337 on 1999/09/24 by <gbarr@pobox.com> (Graham Barr)
+
+	Added inital implementation of Net::LDAP::Control
+
+Change 334 on 1999/09/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Authen::SASL
+	- do not ignore initial
+
+Change 326 on 1999/09/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP.pod
+	- Update unbind docs to describe that some servers will
+	  close the connection
+
+Change 325 on 1999/09/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP.pod
+	- Added objectClass to add example
+	
+	Net::LDAP::Constant
+	- Added more constants
+
+Change 324 on 1999/09/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Updated contrib/printMembers.pl from Mark
+
+Change 323 on 1999/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Update 3.0 to contrib/isMember.pl
+
+Change 322 on 1999/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.13
+
+Change 321 on 1999/08/16 by <gbarr@pobox.com> (Graham Barr)
+
+	update to contrib/isMember.pl from Mark Wilcox
+
+Change 320 on 1999/08/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Added contrib directory with ismember.pl and printMembers.pl
+
+Change 319 on 1999/08/09 by <gbarr@pobox.com> (Graham Barr)
+
+	URI::URL::ldap, URI::ldap
+	- deleted from distribution
+	
+	Net::LDAP::Util
+	- Added missing package statement
+	
+	Net::LDAP::LDIF
+	- Fix for DN which are base64 encoded
+
+Change 315 on 1999/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.12
+
+Change 314 on 1999/06/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- now supports both V2 and V3 escaping
+
+Change 313 on 1999/06/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Make tests more portable by not using binmode when
+	output file is compared with the correct output file.
+
+Change 312 on 1999/06/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Constant
+	- Remove support for old constant names, user must now use LDAP_*
+
+Change 302 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.11
+
+Change 301 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Documentation typo fixes
+
+Change 300 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix bug where search would not return results. This was due
+	  to an EOF directly after the search completed.
+
+Change 299 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Add more tests
+
+Change 298 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- sorted() was calling non-existant method entry->attribute(),
+	  fix to be ->get()
+	
+	Net::LDAP::Util
+	- ldap_error_text was terminating premature if =item * was found
+	  before the real text
+	
+	Net::LDAP::Filter
+	- fix typo introduced in Change #286
+	- print now accepts an optional filehandle
+	
+	Net::LDAP::Filter, Net::LDAP::BER
+	- Added support for extensible matching
+
+Change 297 on 1999/04/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter, Net::LDAP::BER
+	- Added support for extensible matching
+
+Change 289 on 1999/03/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- sorted() was calling non-existant method entry->attribute(),
+	  fix to be ->get()
+
+Change 288 on 1999/03/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Util
+	- ldap_error_text was terminating premature if =item * was found
+	  before the real text
+
+Change 287 on 1999/03/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- fix typo introduced in Change #286
+	- print now accepts an optional filehandle
+
+Change 285 on 1999/03/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Support escape sequences
+	- Added as_string()
+
+Change 284 on 1999/03/26 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::LDIF
+	- Allow a hyphen in attibute names
+
+Change 283 on 1999/03/26 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Allow (attr=) in a filter to check for existing, but empty
+	  attributes
+
+Change 282 on 1999/03/26 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::LDIF
+	- Allow a hyphen in attibute names
+
+Change 281 on 1999/03/26 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Allow (attr=) in a filter to check for existing, but empty
+	  attributes
+
+Change 276 on 1999/03/25 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Fix bug in comparison operator and add testcases
+
+Change 265 on 1999/03/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.10
+
+Change 260 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Constant
+	- Added :all tag and documented
+
+Change 259 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Update POD not to show bad examples
+
+Change 258 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- added ->pop_entry and ->shift_entry to allow removal of entries
+	  from the internal list
+	- Added docs
+	
+	URI::URL::ldap, URI::ldap
+	- Now supports both new and old URI::* API's
+
+Change 257 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Updated te one example
+
+Change 256 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Util
+	- Added new module, currently contains subs for error code <-> text
+	  translation
+
+Change 255 on 1999/03/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- The ->delete method was sending the controls outside the PDU
+
+Change 244 on 1999/01/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Filter
+	- Changed pattern for the attribute name from (\w+) to ([^\s\n=]+)
+
+Change 243 on 1999/01/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- Fix quoting warning for earlier perls
+
+Change 242 on 1999/01/16 by <gbarr@pobox.com> (Graham Barr)
+
+	- Update ldapsearch script and add ldapmodrdn and ldapdelete scripts
+	- Net::LDAP::Search fix bug in reference decode
+
+Change 239 on 1998/12/23 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.09
+
+Change 238 on 1998/12/23 by <gbarr@pobox.com> (Graham Barr)
+
+	- fixed typos in Authen::SASL::CRAM_MD5 &  Net::LDAP::Extension
+	
+	- fixed URI::URL::ldap to work with new and old URI modules
+	
+	- Net::LDAP::LDIF can now read base64 encoded entries
+	
+	- Added methods ->count and ->as_struct to Net::LDAP::Search
+
+Change 237 on 1998/11/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Change Makefile.PL to check for Convert::BER v1.23 or later
+
+Change 236 on 1998/11/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Better error handling
+
+Change 235 on 1998/11/09 by <gbarr@pobox.com> (Graham Barr)
+
+	 fix case insensetivity in Net::LDAP::Entry::dump
+
+Change 232 on 1998/11/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Search
+	- Fix "Can't use an undefined value as an ARRAY reference" error message
+
+Change 230 on 1998/11/05 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix warnings about keys in => lists
+
+Change 226 on 1998/11/04 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- Allow ->delete with no arges to set changetype to 'delete'
+	
+	Doc updates
+
+Change 225 on 1998/10/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Update changelog
+
+Change 224 on 1998/10/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Increment VERSION
+
+Change 223 on 1998/10/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Authen::SASL::CRAM_MD5
+	- Changed to use Digest::HMAC_MD5
+	
+	Net::LDAP::Bind
+	- fixed typo in package declaration
+	
+	Net::LDAP::Entry
+	- decode sets changetype to modify
+	- deprecated ->ldif & ->ldif_read
+	
+	Net::LDAP::LDIF
+	- added ->done
+	- minor tweaks
+	
+	Net::LDAP::Search
+	- catch undefined value
+
+Change 222 on 1998/10/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Added tests
+
+Change 221 on 1998/10/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix bug in ->modify when processing changes option
+	
+	Net::LDAP::Entry
+	- option passed to ->modify should be 'changes'
+	
+	Net::LDAP::LDIF
+	- Allow user to specify default changetype
+
+Change 220 on 1998/10/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Entry
+	- fix typo
+	
+	Net::LDAP::LDIF
+	- Add ability to set wrap langth
+	
+	Net::LDAP::Search
+	- Added ->sorted method
+
+Change 219 on 1998/10/28 by <gbarr@pobox.com> (Graham Barr)
+
+	Typos in LDAP.pm
+
+Change 218 on 1998/10/27 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Added changes option to ->modify
+	
+	Net::LDAP::Entry
+	- Now keeps record of changes and has a ->update method to send changes
+	  to the server
+	
+	Net::LDAP::LDIF
+	- Now wites output identical to input
+	- Can read ldapmodify input
+	
+	More documentation
+
+Change 217 on 1998/10/26 by <gbarr@pobox.com> (Graham Barr)
+
+	- More doc updates -- now generates good HTML with Nick's podtohtml
+	- Moved constants into Net::LDAP::Constant
+	- Changed constants prefix from "ldap" to "LDAP_" to be consistent
+	  with other libraries
+
+Change 216 on 1998/10/26 by <gbarr@pobox.com> (Graham Barr)
+
+	Documentation updates
+
+Change 215 on 1998/10/24 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Added ldapAUTH_METHOD_NOT_SUPPORTED constant
+
+Change 214 on 1998/10/24 by <gbarr@pobox.com> (Graham Barr)
+
+	Authen::SASL::CRAM_MD5
+	- Speed improvement
+
+Change 209 on 1998/10/22 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix wrong opcode in modify
+	
+	Added Net::LDAP::LDIF
+	
+	POD updates
+
+Change 208 on 1998/10/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Update VERSION to 0.07
+
+Change 207 on 1998/10/21 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- A few subs now have some fixed args
+	
+	Net::LDAP::Search
+	- Fix bug with references
+	
+	Net::LDAP::BER
+	- Removed duplicate tags
+	
+	LWP::Protoco::ldap
+	- Several updates due to v3 changes in Net::LDAP
+	
+	Added skeleton pods
+
+Change 203 on 1998/10/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix typo's in Net::LDAP and Net::LDAP::Entry
+
+Change 201 on 1998/10/17 by <gbarr@pobox.com> (Graham Barr)
+
+	Edits missed in prev change
+
+Change 200 on 1998/10/17 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- attrsonly option to search should have been called typesonly, renamed
+	- fixed bug in modify
+	- search can now take strings as well as numbers for the scope and deref
+	  options
+	- attr option to add renamed to attrs for consistency with other methods
+	- Added root_dse
+	- schema returns ($mesg,$schema) in a list context and $schema in a
+	  scalar context
+	- add now takes dn as first argument
+	
+	Net::LDAP::Search
+	- Fixed decode problem for references
+	- Renamed all_entries as entries
+	- Renamed all_references as references
+	- first_entry and next_entry deprecated
+	- entry now only waits until the requested entry has arrived, not
+	  until the whole search has completed.
+	
+	Net::LDAP::Message
+	- Renamed referral as referrals, and now always returns a list
+	
+	Net::LDAP::Entry
+	- get_attribute renamed as get
+	- all_attributes renamed as attributes
+	
+	Net::LDAP::Schema
+	- Arg to new is now a Net::LDAP::Search object, not Net::LDAP
+	
+	pod updates
+	
+	added bin/ldapsearch.PL
+	added README
+
+Change 199 on 1998/10/16 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP*
+	- Many V3 changes
+	
+	URI::URL::ldap
+	- update to changes made to Net::LDAP API
+
+Change 194 on 1998/10/04 by <gbarr@pobox.com> (Graham Barr)
+
+	changed inheritance so not to inherit from IO::Socket
+	
+	renamed ladpbind as bind
+	
+	added V3 updates from Julian Onions, many thanks.
+	This included
+	 - new `sasl' option to bind
+	 - new `control' option to methods for V3 controls
+	 - new `version' option for bind & new
+	 - new method `extension' for V3 extension commands
+	 - renamed modrdn to moddn (modrdn still exists for compatability)
+	 - referral support
+	 - search references
+	
+	added Authen::SASL, a framework for SASL based authorization
+	
+	added Authen::SASL::CRAM_MD5
+	
+	new documentation
+	 - addition of the V3 stuff
+	 - docs now show options without leading -, although with and without
+	   are both legal (for now anyway)
+
+Change 186 on 1998/08/27 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::BER
+	- Add REFERAL_URL
+	
+	Net::LDAP::Message
+	- Start of support for referal
+	
+	Added LWP::Protocol::ldap and URI::URL::ldap
+
+Change 103 on 1998/01/29 by <gbarr@pobox.com> (Graham Barr)
+
+	rename Net/... -> lib/Net/...
+
+Change 97 on 1998/01/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- removed bind from new()
+	- fixes to modify()
+	
+	Net::LDAP::BER
+	- change base types of REQ_MODIFY and REQ_DELETE
+	
+	Net::LDAP::Filter
+	- updates from Russell Fulton
+	
+	added doc/perl-ldap.pod from Russell Fulton
+
+Change 94 on 1997/12/09 by <gbarr@pobox.com> (Graham Barr)
+
+	
+	Net::LDAP::Filter
+	- Fixed a -w warning
+
+Change 93 on 1997/12/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Added "use IO::Select"
+
+Change 88 on 1997/11/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Added code for modify method.
+	- Modified methods so that all arguments are passed
+	  as named arguments.
+	- Added Callback option to all methods
+
+Change 87 on 1997/11/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Added debug option to new
+
+Change 44 on 1997/11/06 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::*
+	- Removed use of Error
+
