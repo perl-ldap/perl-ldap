@@ -93,6 +93,27 @@ if the syntax is inherited).
 
   $name_syntax = $schema->syntax( "commonName" );
 
+=item items
+
+Given an argument which is the name or oid of a known object class or 
+attribute, returns the items available for this attribute or object class.
+The returned item name may have an undefined value.
+
+  @items = $schema->items( $oid );
+
+Return value is an array or array reference depending on calling context.
+
+=item item
+
+Given two arguments, first of which is the name or oid of a known
+object class or attribute and second of which is the name of the
+item, returns the item's data value.  The item's value may be 
+undefined.
+
+  @item = $schema->item( $oid, "desc" );
+
+Return value is an array or a value depending on calling context.
+
 =item must
 
 Given an argument which is the name or oid of a known object class, returns
@@ -129,6 +150,22 @@ the appropriate type.
   # Yes...so we can do this
   @must = $schema->must( $oid );
 
+=item dump
+
+Given an argument which is the name of a file, and the file or
+directory has write permission, will dump the raw schema 
+information to a file.  If no argument is given the raw schema 
+information is dumped to standard out.
+
+  $result = $schema->dump( "./schema.dump" );
+
+  or
+
+  $result = $schema->dump();
+
+If no schema data is returned from directory server, the method
+will return undefined.  Otherwise a value of 1 is always returned.
+
 =back
 
 =head1 SEE ALSO
@@ -152,6 +189,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.4 2000/06/13 21:03:00 gbarr Exp $>
+I<$Id: Schema.pod,v 1.5 2000/06/20 22:41:50 gbarr Exp $>
 
 =cut

@@ -1,3 +1,7 @@
+Change 540 on 2000/06/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Examples.pod & Schema.pod updates from Clif Harden
+
 Change 538 on 2000/06/13 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::Schema

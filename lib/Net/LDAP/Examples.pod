@@ -437,6 +437,98 @@ B<What is not covered in these examples at this time:>
 
     $ldap->unbind;
 
+=head1 LDAP SCHEMA RETRIEVAL
+
+The following code snippet shows how to retrieve schema information.
+
+The first procedure is to initialize a new LDAP object using the
+same procedures as listed at the beginning of this document.
+
+The second procedure is to bind to your directory server.  Some 
+servers may require authentication to retrieve the schema from the 
+directory server.  This procedure is listed at the beginning of 
+this document too.
+
+After a successful bind you are ready to retrieve the schema 
+information.  You do this by initializing a schema object.
+
+ $schema = $ldap->schema();
+
+In this case Net::LDAP will attempt to determine the dn under which
+the schema can be found. First it will look for the attribute
+C<subschemasubentry> in the root DSE. If that cannot be found then
+it will default to the assumption of C<cn=schema>
+
+Alternatively you can specify the dn where the schema is to be found
+with
+
+ $schema = $ldap->schema(dn => $dn);
+
+Once we have a dn to search for, Net::LDAP will fetch the schema entry with
+
+  $mesg = $self->search(
+    base   => $dn,
+    scope  => 'base',
+    filter => '(objectClass=*)',
+  );
+
+Once the schema object has been initialized, schema methods 
+are used to retrieve the data.  There are a number of ways this
+can be done.  Information on the schema methods can be found 
+in the Net::LDAP::Schema pod documentation.
+
+The following is a code snippet showing how to get and display 
+information about returned attributes.  
+
+  #
+  # Get the attributes
+  #
+
+  @attributes = $schema->attributes();
+  #
+  # Display the attributes
+  #
+
+  foreach ( @attributes)
+  {
+        print "attributeType\n";
+        #
+        # Get the various items associated with
+        # this attribute.
+        #
+        @attribute_items = $schema->items( "$oid" );
+        #
+        # Read returned item names and display their associated data.
+        #
+        foreach $value ( @attribute_items )
+        {
+           # We know we are dealing with an attribute, ignore type.
+           next if ( $value eq 'type');  # Type  holds oc or at 
+           #
+           # Read the data for this item of this oid.
+           #
+           @item = $schema->item( $oid, $value );
+           #
+           # Some item names have no data, the name itself is data.
+           # This type of item has 1 as data.
+           #
+           if ( defined(@item) && $item[0] == 1 )
+           {
+           print "\t$value\n";
+           next;
+           }
+           if ( defined(@item) && $#item >= 0 )
+           {
+           print "\t$value:  @item\n";
+           }
+
+        }
+  }
+
+The process is the basically the same for getting objectClass 
+information.  Where schema->attributes() is used, substitute 
+schema->objectclasses().  From that point on the process is
+the same for both objectClasses and attributes. 
 
 =head1 BUGS
 
@@ -452,7 +544,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.1 2000/05/03 12:29:10 gbarr Exp $>
+I<$Id: Examples.pod,v 1.2 2000/06/20 22:41:50 gbarr Exp $>
 
 =cut
 
