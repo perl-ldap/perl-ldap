@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 my %mode = qw(w > r < a >>);
 
@@ -85,8 +85,14 @@ sub _read_lines {
     chomp($ln);
     $self->{_current_lines} = $ln;
     chomp(@ldif = split(/^/, $ln));
-    $self->{_next_lines} = scalar <$fh> || '';
-    $self->eof(1) unless $self->{_next_lines};
+    do {
+      $ln = scalar <$fh> || '';
+      $self->eof(1) unless $ln;
+      $ln =~ s/\n //sg;
+      $ln =~ s/^#.*\n//mg;
+      chomp($ln);
+      $self->{_next_lines} = $ln;
+    } until ($self->{_next_lines} || $self->eof());
   }
 
   @ldif;
