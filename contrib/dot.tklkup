@@ -7,28 +7,13 @@
 #
 hand: left
 #
-#  Define what whose base to use, base that is specified by this 
-#  file or a base that is determined by querying the server. 
-#  You must be carefull when allowing the server to determine the 
-#  base, it could take quite sometime to determine all of the bases. 
-#  During this time the script will appear to be doing nothing, with 
-#  a possible error message being displayed when a search limit is 
-#  reached. 
-#  This attribute should be listed before any base or server 
-#  name/base lines are defined. 
+#  Default limit for number of search bases
 #
-mybase: 1
+limit: 30
 #
+#  Default ldap port
 #
-#  If mybase is invoked, not commented out, then use the following as
-#  bases
-#
-#  Base statment(s) when mybase is defined.  It will
-#  be the default when mybase is NOT defined but the server does NOT
-#  have a defined base associated with it. 
-#
-base: ou=People,o=ucalgary.ca
-base: o=University of Arkansas, c=US 
+port: 389
 #
 # Set up the search attributes you want listed on
 # the Attribute and Select Additional Attributes button.
