@@ -12,7 +12,7 @@ my @tests = map { /^\s*(\w\S+)\s+(.*)/ } split(/\n/,<<'EOS');
 
   bad	OU=Sales+CN=J. Smith,O=Widget Inc.,C=US,
 
-  ref	OU=Sales+CN=J. Smith,O=Widget Inc.,C=US
+  ref	CN=J. Smith+OU=Sales,O=Widget Inc.,C=US
   same	ou=Sales+cn=J. Smith,O=Widget Inc.,C=US
   same	cn=J. Smith+ou=Sales,O=Widget Inc.,C=US
   same	cn=J.\20Smith+ou=Sales,O=Widget\20Inc.,C=US
@@ -31,18 +31,31 @@ my @tests = map { /^\s*(\w\S+)\s+(.*)/ } split(/\n/,<<'EOS');
   # This is here to test a restriction that
   # canonical_dn does not decode BER encoded values
   ref	1.3.6.1.4.1.1466.0=#04024869,O=Test,C=GB
+  same	1.3.6.1.4.1.1466.0=#04024869,O=Test,C=GB
   diff	1.3.6.1.4.1.1466.0=\04\02Hi,O=Test,C=GB
 
   ref	1.3.6.1.4.1.1466.0=Hi,O=Test,C=GB
   same	oid.1.3.6.1.4.1.1466.0=Hi,O=Test,C=GB
   same	OID.1.3.6.1.4.1.1466.0=Hi,O=Test,C=GB
 
+  ref	CN=Clif Harden+IDNUMBER="a0125589 ",OU=tiPerson,OU=person,O=ti,C=us
+  diff	cn=Clif Harden+IDNumber=a0125589,ou=tiPerson,ou=person,o=ti,c=us
+  same	cn=Clif Harden+IDNumber=a0125589\ ,ou=tiPerson,ou=person,o=ti,c=us
+  same	cn=Clif Harden+IDNumber=a0125589\20 ,ou=tiPerson,ou=person,o=ti,c=us
+  same	cn=Clif Harden+IDNumber=a0125589\20,ou=tiPerson,ou=person,o=ti,c=us
+
 EOS
 
 print "1..", scalar(@tests)>>1, "\n";
 my $testno = 0;
-my ($refdn,$reforig);
+my $refdn;
 while(my($op,$dn) = splice(@tests,0,2)) {
+
+  if ($op eq 'ref') {
+    $refdn=$dn;
+    next;
+  }
+
   my $canon = canonical_dn($dn);
   my $failed = 0;
 
@@ -51,19 +64,12 @@ while(my($op,$dn) = splice(@tests,0,2)) {
       print "'$dn' should not have parsed\n";
     }
   }
-  elsif ( $op eq 'ref') {
-    if ($failed = !defined $canon) {
-      print "'$dn' did not parse\n";
-      $canon=''; # avoid uninit
-    }
-    ($refdn,$reforig) = ($canon,$dn);
-  }
   elsif ( $op eq 'same' ) {
     if ($failed = !defined $canon) {
       print "'$dn' failed to parse\n";
     }
     elsif ($failed = $canon ne $refdn) {
-      print "'$reforig'\n'$refdn'\n\ndid not match\n\n'$dn'\n'$canon'\n";
+      print "'$refdn'\n\ndid not match\n\n'$dn'\n'$canon'\n";
     }
   }
   elsif ($op eq 'diff' ) {
