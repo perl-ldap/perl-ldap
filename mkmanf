@@ -5,6 +5,6 @@
   do
     grep ^/ $x/CVS/Entries | cut -d/ -f2 | sed s,^,$x, | sed s,^\./,,
   done
-  find htdocs -type f
+  find htdocs -name CVS -prune -o -type f -print
 ) | sort -u > MANIFEST.new
 diff -u MANIFEST MANIFEST.new && rm MANIFEST.new
