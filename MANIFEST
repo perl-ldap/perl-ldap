@@ -15,6 +15,7 @@ contrib/dot.tklkup
 contrib/isMember.pl
 contrib/jpegDisplay.pl
 contrib/jpegLoad.pl
+contrib/ldifsort.pl
 contrib/printMembers.pl
 contrib/tklkup
 data/00-cmp2.ldif
@@ -114,5 +115,6 @@ t/50populate.t
 t/51search.t
 t/52modify.t
 t/53schema.t
+t/70sortctrl.t
 t/common.pl
 test.cfg
