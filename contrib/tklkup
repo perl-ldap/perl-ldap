@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.1 2003/02/11 03:41:01 charden Exp $
+# $Id: tklkup,v 2.2 2003/02/13 02:18:18 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -2359,9 +2359,9 @@ $msgbox->update;
 
 
 &schema_clear();
-my $dt = "/tmp/schema.dat.$$";
+$Global{'max'} = 0;  # Reset objectclass name lenght.
 
-#if ( $Global{'sclear'} ) { &schema_clear(); }
+my $dt = "/tmp/schema.dat.$$";
 
 if ( ! defined($Global{ldap}) )
 {
