@@ -239,15 +239,26 @@ sub bind {
 
     my $sasl = $passwd;
     # Tell the SASL object our user identifier
-    $sasl->user("dn: $dn") unless $sasl->user;
+    $sasl->callback( user => "dn: $stash{name}")
+      unless $sasl->callback('user');
+
+    my $sasl_conn = $sasl->client_new("ldap",$ldap->{net_ldap_host});
+
+    # Tell SASL the local and server IP addresses
+    $sasl_conn->property(
+      sockname => $ldap->{net_ldap_socket}->sockname,
+      peername => $ldap->{net_ldap_socket}->peername,
+    );
+
+    my $initial = $sasl_conn->client_start;
 
     $passwd = {
-      mechanism   => $sasl->name,
-      credentials => $sasl->initial
+      mechanism   => $sasl_conn->mechanism,
+      credentials => $initial
     };
 
     # Save data, we will need it later
-    $mesg->_sasl_info($stash{name},$control,$sasl);
+    $mesg->_sasl_info($stash{name},$control,$sasl_conn);
   }
 
   $stash{authentication} = { $auth_type => $passwd };

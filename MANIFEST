@@ -42,7 +42,6 @@ data/slapd-conf.in
 data/slapd.at.conf
 data/slapd.oc.conf
 data/slapd2-conf.in
-htdocs/Authen/SASL.html
 htdocs/Bundle/Net/LDAP.html
 htdocs/Net/LDAP.html
 htdocs/Net/LDAP/Constant.html
@@ -71,10 +70,6 @@ htdocs/Net/LDAPS.html
 htdocs/index.html
 htdocs/index.xml
 install-nomake
-lib/Authen/SASL.pm
-lib/Authen/SASL.pod
-lib/Authen/SASL/CRAM_MD5.pm
-lib/Authen/SASL/EXTERNAL.pm
 lib/Bundle/Net/LDAP.pm
 lib/LWP/Protocol/ldap.pm
 lib/Net/LDAP.pm

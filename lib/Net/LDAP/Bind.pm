@@ -5,7 +5,7 @@
 package Net::LDAP::Bind;
 
 use strict;
-use Net::LDAP qw(LDAP_SASL_BIND_IN_PROGRESS LDAP_DECODING_ERROR);
+use Net::LDAP qw(LDAP_SASL_BIND_IN_PROGRESS LDAP_DECODING_ERROR LDAP_SUCCESS);
 use Net::LDAP::Message;
 use vars qw(@ISA);
 
@@ -23,18 +23,22 @@ sub decode {
      or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
     and return;
 
+  my $sasl = $self->{sasl};
+  my $ldap = $self->parent;
+
+  $ldap->{net_ldap_socket} = $sasl->securesocket($ldap->{net_ldap_socket})
+    if $sasl and $bind->{resultCode} == LDAP_SUCCESS;
+
   return $self->SUPER::decode($result)
     unless $bind->{resultCode} == LDAP_SASL_BIND_IN_PROGRESS;
 
   # tell our LDAP client to forget us as this message has now completed
   # all communications with the server
-  $self->parent->_forgetmesg($self);
+  $ldap->_forgetmesg($self);
 
   $self->{mesgid} = Net::LDAP::Message->NewMesgID(); # Get a new message ID
 
-  my $sasl = $self->{sasl};
-  my $ldap = $self->parent;
-  my $resp = $sasl->challenge($bind->{serverSaslCreds});
+  my $resp = $sasl->client_step($bind->{serverSaslCreds});
 
   $self->encode(
     bindRequest => {
@@ -42,7 +46,7 @@ sub decode {
     name    => $self->{dn},
     authentication => {
       sasl    => {
-        mechanism   => $sasl->name,
+        mechanism   => $sasl->mechanism,
         credentials => $resp
       }
     },

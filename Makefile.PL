@@ -1,5 +1,5 @@
 # The -*- perl -*- script writes the Makefile for perl-ldap
-# $Id: Makefile.PL,v 1.7 2001/12/03 16:20:26 gbarr Exp $
+# $Id: Makefile.PL,v 1.8 2002/02/18 16:51:41 gbarr Exp $
 
 use 5.004;
 use ExtUtils::MakeMaker;
@@ -69,6 +69,10 @@ EDQ
 
 check_module('MIME::Base64') or print <<"EDQ","\n";
 The MIME::Base64 module is needed ONLY IF you intend to read/write LDIF files
+EDQ
+
+check_module('Authen::SASL', 2.00) or print <<"EDQ","\n";
+If you intend to use SASL authentication you need at least version 2.00
 EDQ
 
 print "\n",<<"EDQ","\n" if $missing;

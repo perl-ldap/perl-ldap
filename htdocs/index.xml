@@ -49,7 +49,6 @@
   <section>
     <title>Other</title>
     <group>
-      <module>Authen::SASL</module>
       <module>Bundle::Net::LDAP</module>
     </group>
   </section>
