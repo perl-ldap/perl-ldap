@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.06";
+$VERSION = "0.07";
 
 
 sub first_entry { # compat
@@ -110,7 +110,6 @@ sub pop_entry {
 
 sub sorted {
   my $self = shift;
-  my @at;
 
   $self->sync unless exists $self->{resultCode};
 
@@ -118,26 +117,25 @@ sub sorted {
 
   return @{$self->{entries}} unless @{$self->{entries}} > 1;
 
-  if (@_) {
-    my $attr = shift;
+  require Net::LDAP::Util;
 
-    @at = map {
-      my $x = $_->get_value($attr, asref => 1);
-      $x ? lc(join("\001",@$x)) : "";
-    } @{$self->{entries}};
-  }
-  else {
-    # Sort by dn:
-    @at = map {
-      my $x = $_->dn;
-      $x =~ s/(^|,)\s*\w+=/\001/sog;
-      lc($x)
-    } @{$self->{entries}};
-  }
+  map { $_->[0] }
+    sort {
+      my $v;
+      my $i = 2;
+      foreach my $attr (@_) {
+	$v = ($a->[$i] ||= join("\000", @{$a->[0]->get_value($attr, asref => 1) || []}))
+	      cmp
+	     ($b->[$i] ||= join("\000", @{$b->[0]->get_value($attr, asref => 1) || []}))
+	  and last;
+	$i++;
+      }
 
-  my @order = sort { $at[$a] cmp $at[$b] } 0..$#at;
-
-  @{$self->{entries}}[@order];
+      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, 1))
+		cmp
+	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, 1));
+    }
+    map { [ $_ ] } @{$self->{entries}};
 }
 
 sub references {
