@@ -49,7 +49,7 @@ ends with a C<|> then C<FILE> will be passed directly to C<open>.
 
 =item encode =E<gt> 'none' | 'canonical' | 'base64'
 
-Some values in LDIF cannot be written verbatim and have to be encoded
+Some DN values in LDIF cannot be written verbatim and have to be encoded
 in some way:
 
 =over 4
