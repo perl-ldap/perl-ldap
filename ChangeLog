@@ -1,3 +1,564 @@
+2003-05-09 13:05  Graham Barr
+
+	* MANIFEST, lib/Net/LDAP.pm, lib/Net/LDAP.pod, t/54dse.t:
+
+	Change root_dse to return a RootDSE object instead of an Entry
+	Remove supported_* methods from Net::LDAP as they are now
+	methods in the RootDSE class
+	
+2003-05-09 13:03  Graham Barr
+
+	* lib/Net/LDAP/RootDSE.pm:
+
+	New class for a RootDSE object
+	
+2003-05-09 12:58  Graham Barr
+
+	* test.cfg, data/slapd2-conf.in, t/common.pl:
+
+	Some tweaks to the test harnes so we can use OpenLDAP 2.1
+	
+2003-05-09 12:56  Graham Barr
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Don't print a dn: line if there is not DN (ie RootDSE)
+	
+2003-05-08 20:46  Graham Barr
+
+	* MANIFEST, test.cfg, lib/Net/LDAP.pm, lib/Net/LDAPI.pm,
+	lib/Net/LDAPS.pm, t/56ipc.t, t/57url.t, t/common.pl:
+
+	Add support for URIs to be passed to ->new. ldap: ldaps: and ldapi:
+	are supported.
+	Change Net::LDAPS and Net::LDAPI to be very thin wrappers over new URI code
+	Tests added for ldapi and URIs based on code from Ziya Suzen
+	
+2003-05-08 20:41  Graham Barr
+
+	* mkmanf:
+
+	New script to create MANIFEST from CVS files
+	
+2003-05-08 20:41  Graham Barr
+
+	* .cvsignore:
+
+	Add .cvsignore file
+	
+2003-05-08 20:40  Graham Barr
+
+	* t/70sortctrl.t:
+
+	Say why we are skipping the test when we do
+	
+2003-05-08 13:53  Graham Barr
+
+	* lib/Net/LDAP/Constant.pm:
+
+	Add into the pod all the constants that were defined as subs before
+	
+2003-05-08 13:52  Graham Barr
+
+	* lib/Net/LDAP/Control.pm:
+
+	Name the constants we want explicitly as ::Constant is no
+	longer based on Exporter
+	
+2003-05-08 10:27  Graham Barr
+
+	* lib/Net/LDAP/: Constant.pm, Constant.pod, Util.pm:
+
+	Change Net::LDAP::Constant to define subs on demand from thier
+	definition in the POD
+	
+2003-05-07 15:25  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Support "Notice of Disconnection"
+	
+2003-05-07 14:51  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Added supported_* methods
+	
+2003-05-07 14:49  Chris Ridd
+
+	* lib/Net/LDAP/: Constant.pm, Constant.pod:
+
+	Added LDAP Extensions section
+	
+2003-05-07 13:01  Chris Ridd
+
+	* lib/Net/LDAP/Filter.pod:
+
+	Updated URL
+	
+2003-05-07 12:59  Chris Ridd
+
+	* lib/Net/LDAP/Control/VLVResponse.pm:
+
+	Changed literal < and >s, removed URL, updated mailing list
+	
+2003-05-07 12:57  Chris Ridd
+
+	* lib/Net/LDAP/Control/VLV.pm:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 12:55  Chris Ridd
+
+	* lib/Net/LDAP/Control/: Sort.pm, SortResult.pm:
+
+	Changed literal < and >s, updated URL, updated mailing list
+	
+2003-05-07 12:53  Chris Ridd
+
+	* lib/Net/LDAP/Control/ProxyAuth.pm:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 12:51  Chris Ridd
+
+	* lib/Net/LDAP/Control/Paged.pm:
+
+	Changed literal < and >s, updated URL, updated mailing list
+	
+2003-05-07 12:49  Chris Ridd
+
+	* lib/Net/LDAP/Util.pm:
+
+	Changed literal < and >s, fixed indentation (missing =back), updated mailing list
+	
+2003-05-07 12:19  Chris Ridd
+
+	* lib/Net/LDAP/Security.pod:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 12:15  Chris Ridd
+
+	* lib/Net/LDAP/: Schema.pod, Search.pod:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 12:14  Chris Ridd
+
+	* lib/Net/LDAP/Reference.pod:
+
+	Changed literal < and >s, updated mailing list, added description
+	
+2003-05-07 12:09  Chris Ridd
+
+	* lib/Net/LDAP/: LDIF.pod, Message.pod:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 12:07  Chris Ridd
+
+	* lib/Net/LDAP/Filter.pod:
+
+	Changed literal < and >s, updated mailing list, added description
+	
+2003-05-07 12:03  Chris Ridd
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Changed literal < and >s, updated mailing list
+	
+2003-05-07 11:59  Chris Ridd
+
+	* lib/Net/LDAP/Examples.pod:
+
+	Changed literal < and >s
+	
+2003-05-07 11:57  Chris Ridd
+
+	* lib/Net/LDAP/Entry.pod:
+
+	Updated mailing list, changed literal < and >s
+	
+2003-05-07 11:54  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Update website homepage URL
+	
+2003-05-07 11:53  Chris Ridd
+
+	* lib/Net/LDAP/DSML.pm:
+
+	Fixed pod error
+	
+2003-05-07 11:50  Chris Ridd
+
+	* lib/Net/LDAP/: Constant.pod, Control.pm:
+
+	Updated mailing list info, changed literal < and >s
+	
+2003-05-07 11:48  Chris Ridd
+
+	* lib/Net/LDAPI.pm:
+
+	Changed literal < and >s, updated copyrights
+	
+2003-05-07 11:45  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Changed literal < and >s, adding a caveat about TLS support, emphasized that PEM format files are needed
+	
+2003-05-07 11:39  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Updated copyright, changed literal < and > to E<lt> and E<gt>, changed mailing list info
+	
+2003-05-06 22:20  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Move =back to correct position
+	
+2003-05-06 17:58  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Fix method names in examples
+	
+2003-05-06 17:46  Graham Barr
+
+	* lib/Net/LDAP/Message.pm:
+
+	Call the callback, if any, for a message when its
+	error is explicitly set
+	
+2003-05-06 17:45  Graham Barr
+
+	* lib/Net/LDAP/Bind.pm:
+
+	Check result of client_step is defined or cause SASL auth to terminate
+	
+2003-05-06 17:39  Chris Ridd
+
+	* CREDITS:
+
+	Added Derik Pates
+	
+2003-05-06 17:38  Chris Ridd
+
+	* MANIFEST:
+
+	Added LDAPI.pm
+	
+2003-05-06 17:36  Chris Ridd
+
+	* lib/Net/LDAPI.pm:
+
+	New file from Derrik Pates
+	
+2003-05-06 17:32  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Check client_start return value
+	
+2003-05-06 17:28  Chris Ridd
+
+	* CREDITS:
+
+	Added Peter Marschall and Paul David Fardy
+	
+2003-05-06 17:26  Chris Ridd
+
+	* lib/Net/LDAP/Entry.pm:
+
+	changes now returns an empty array if there were no changes.
+	
+2003-05-06 17:18  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Peter's net_ldap_host fix
+	
+2003-05-06 17:09  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix ->modify to not require the value in ->modify( add => [ attr => value ] )
+	to be an array reference
+	
+2003-05-06 16:54  Chris Ridd
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Major updates to terminology section, misc fixes, and updated books
+	
+2003-05-06 16:47  Graham Barr
+
+	* lib/Net/: LDAP.pm, LDAP.pod:
+
+	Added ->disconnect to do explicit disconnects from the server
+	
+2003-05-06 16:37  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Better handling on IO errors
+	
+2003-05-06 13:20  Chris Ridd
+
+	* CREDITS:
+
+	Added Ziya Suzen and Damon Brodie
+	
+2003-05-06 13:16  Chris Ridd
+
+	* lib/Net/LDAP/Examples.pod:
+
+	Fixed schema examples
+	
+2003-05-06 12:58  Chris Ridd
+
+	* lib/Net/LDAP/Schema.pm:
+
+	Return schema parse errors
+	
+2003-05-06 12:55  Chris Ridd
+
+	* lib/Net/LDAP/Message.pm:
+
+	Ziya Suzen's fix for insecure dependencies
+	
+2003-05-06 12:52  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Typo fixes from Damon Brodie
+	
+2003-04-07 16:05  Graham Barr
+
+	* lib/Net/LDAP/: ASN.pm, Control/VLVResponse.pm:
+
+	Fix VLV response extraction. Patch from Paul Connolly
+	
+2003-03-14 10:04  Chris Ridd
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	Changed MessagingDirect URL to point to Isode.
+	Fixed some spelling mistakes.
+	Modified RFC section to point at our RFC page instead of OpenLDAP.
+	Modified ACI/ACL section to note they are proprietary.
+	Updated AUTHORS section.
+	
+2003-03-12 02:19  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected the error in the ldif modify code.
+	
+2003-03-11 02:52  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected an error where the window Unbusy method was not being
+	called when there was a filter error;
+	
+2003-03-10 05:00  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added information about perl-ldap installation in ActiveState Perl.
+	Changed Messaging Direct to Isode.
+	Added some information about the ResourcePool perl module.
+	Replaced XML::Parse with XML::SAX.
+	
+2003-03-09 11:00  Chris Ridd
+
+	* lib/Net/LDAP/DSML.pm, Makefile.PL:
+
+	Change XML::Parser to XML::SAX::Base
+	
+2003-03-09 10:57  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Document the LDAPv3 special attribute 1.1
+	
+2003-03-09 10:54  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Changed decryptkey to keydecrypt for consistency
+	
+2003-03-03 18:00  Kartik Subbarao
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Fixed clone(): update $clone->{changetype} and $clone->{changes}.
+	(patch from David Faltermier)
+	
+2003-03-01 22:23  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to manually create a directory entry.
+	Tklkup is now a full featured LDAP tool.
+	Tidied up the code.
+	Updated the pod documentation.
+	
+2003-02-25 16:03  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added the ablitiy to save entry information in xml or ldif format.
+	Added the ablitiy to modify entry information by reading a ldif file. This
+	requires the patch that I submitted for LDAP.pm.
+	
+2003-02-22 18:31  Kartik Subbarao
+
+	* CREDITS:
+
+	Added David Faltermier
+	
+2003-02-22 18:26  Kartik Subbarao
+
+	* lib/Net/LDAP/: Entry.pm, Entry.pod:
+
+	Added clone() function to copy an Entry object.
+	(patch from David Faltermier)
+	
+2003-02-21 02:31  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added LDAPS new connection code to comprehend that Microsoft systems and
+	ActiveState perl may not have the software installed to do SSL connections.
+	SSL connections are currently disabled for Microsoft systems.
+	
+2003-02-19 02:22  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added more documentation.
+	Added more SSL options.
+	Added more Menu items.
+	Added toggling to the info panel when switching directory servers.
+	Changed the text of several labels to better match their functions.
+	
+2003-02-14 05:20  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Returned to the DISPLAY button to its original position at the top
+	of the ldap action buttons.
+	Made the DELETE button text turn red when the button has focus, let's the
+	user know pressing this button is dangerous.
+	Made the x character the hot key for the EXIT PROGRAM menu.
+	
+2003-02-14 04:46  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Rearranged the Search panel to group controls better.
+	Renamed the Search Results panel to Info.  It is now a
+	general purpose panel.
+	Updated documentation to reflect the changes.
+	
+2003-02-13 02:18  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected an error in the resetting of the Global max variable
+	when a new schema is pulled.
+	
+2003-02-11 03:41  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added code to prevent a race condition when automatically pulling the
+	directory's schema.
+	General clean up of code; removed commented out code, excessive white
+	space, etc.
+	
+2003-02-10 04:06  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Almost a total rewrite of tklkup and almost total change up of GUI.
+	The changes are to numerous to mention, but a few major items are the
+	use of notebook panes, saving information to ldif files, limited entry
+	modification with ldif files, limited entry creation from ldif files,
+	auto lookup of schema information.
+	
+	CVS number was increased to 2.0.
+	
+2003-02-05 04:57  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Removed an unused label in the ldapAction window.
+	Added state checking before calling deiconify method, if needed then call
+	deiconify method.
+	Added raise method to the display search window.
+	Moved startup location of ldapAction window, causes a slight overlap
+	between the ldapAction window and the displaySearch window, and this is
+	used to play a trick on the displaySearch window raising.
+	
+2003-02-01 05:46  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Made numerous changes, and corrected several errors, to error display
+	code.
+	Condensed all connect (new) and bind calls to one subroutine.
+	Removed all calls to the perl function "die".  If the program terminates
+	now it is due to a software crash or the user hit the EXIT button.
+	
+2003-01-27 18:24  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Release 0.2701
+	
+2003-01-27 17:46  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected default numbers for gui height and width.
+	Corrected error in gui height and width geometry initialization.
+	
+2003-01-27 17:43  Clif Harden
+
+	* contrib/dot.tklkup:
+
+	
+	Corrected default numbers for width and height.
+	
+2003-01-27 16:33  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.27
+	
 2003-01-27 14:19  Graham Barr
 
 	* lib/Net/LDAP.pod:
