@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.25 2002/05/25 05:05:55 charden Exp $
+# $Id: tklkup,v 1.26 2002/05/28 01:54:13 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.26  2002/05/28 01:54:13  charden
+# Made several code corrections to the code that stores xml formatted
+# schema information in a file.  This is due to the new DSML.pm module.
+#
 # Revision 1.25  2002/05/25 05:05:55  charden
+#
 # Change schema code to comprehend the new Schema.pm file.
 # Added code to determine new x and y position when the main window moves.
 #
@@ -189,6 +194,7 @@
 #
 
 use Carp;
+use Data::Dumper;
 use MIME::Base64;
 use Net::LDAP qw(:all);
 use Net::LDAP::Filter;
@@ -1667,19 +1673,19 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
   #
   # write XML text to file instead of text box
   #
-  $dsml = Net::LDAP::DSML->new();
-  open(FXML, ">$Global{'fdata'}");  
-  $dsml->open(*FXML);
-  $dsml->write($schemaHash{'schema'});
-  $dsml->finish();
-  close(FXML);
+#    @xml_data = ();
+#    $dsml = Net::LDAP::DSML->new( output => \@xml_data, pretty_print => 1 );
+    open(FXML, ">$Global{'fdata'}");  
+    $dsml = Net::LDAP::DSML->new( output => *FXML, pretty_print => 1 );
+    $dsml->write_schema($schemaHash{'schema'});
+    close(FXML);
   }
   else
   {
-  #
-  # write straight text to file instead of text box
-  #
-  $schemaHash{'schema'}->dump( $Global{'fdata'} );
+    #
+    # write straight text to file instead of text box
+    #
+    $schemaHash{'schema'}->dump( $Global{'fdata'} );
   }
  
   $schema_list->insert("end",
@@ -2088,8 +2094,7 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
                # Get the various other items associated with
                # this objectclass.
                #
-               my $ahash = $schema->objectclass( "$var" );
-
+               my $ahash = $schema->objectclass( "$oid" );
                my @hkeys = sort(keys(%$ahash));
                #
                # Get and display the objectclass name.
