@@ -225,7 +225,7 @@ sub _read_one_cmd {
     chomp(@ldif = split(/^/, $ln));
   }
   shift @ldif if @ldif && $ldif[0] !~ /\D/;
-  return unless @ldif > 1 && $ldif[0] =~ s/^dn:(:?) //;
+  return unless @ldif > 1 && $ldif[0] =~ s/^dn:(:?) *//;
 
   my $dn = shift @ldif;
 
