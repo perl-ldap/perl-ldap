@@ -1,10 +1,19 @@
 package Net::LDAP::DSML;
 
-# For schema parsing,  add ability to Net::LDAP::Schema to accecpt a Net::LDAP::Entry object. First
-# we'll convert XML into Net::LDAP::Entry with schema attributes and then pass to schema object constructor
+# For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
+# a Net::LDAP::Entry object. First
+# we'll convert XML into Net::LDAP::Entry with schema attributes and 
+# then pass to schema object constructor
 # 
 # move XML::DSML to Net::LDAP::DSML::Parser
 # change parser so that it uses callbacks
+#
+# 12/18/01 Clif Harden
+# Changed code to allow and comprehend the passing of an array
+# reference instead of a file handle.  This touched all of the
+# methods that wrote to a file.
+#
+
 
 use strict;
 use Net::LDAP::Entry;
@@ -29,7 +38,7 @@ sub open {
   $self->finish
     if $self->{net_ldap_fh};
 
-  if (ref($file) or ref(\$file) eq "GLOB") {
+  if (ref($file) or ref(\$file) eq "GLOB" or ref($file) eq "ARRAY") {
     $close = 0;
     $fh = $file;
   }
@@ -46,7 +55,14 @@ sub open {
   $self->{net_ldap_fh} = $fh;
   $self->{net_ldap_close} = $close;
 
-  print $fh $self->start_dsml;
+  if ( ref($fh) eq "ARRAY" )
+  {
+    push(@$fh, $self->start_dsml);
+  }
+  else
+  {
+    print $fh $self->start_dsml;
+  }
   1;
 }
 
@@ -55,8 +71,15 @@ sub finish {
   my $fh = $self->{net_ldap_fh};
 
   if ($fh) {
-    print $fh $self->end_dsml;
-    close($fh) if $self->{net_ldap_close};
+    if ( ref($fh) eq "ARRAY" )
+    {
+      push(@$fh, $self->end_dsml);
+    }
+    else
+    {
+      print $fh $self->end_dsml;
+      close($fh) if $self->{net_ldap_close};
+    }
   }
 }
 
@@ -102,7 +125,19 @@ sub write {
  
 #coming soon! ;)
 sub _print_schema {
-  my $self = shift;
+  my ($self,$entry) = @_;
+  
+  my $fh = $self->{'net_ldap_fh'} or return;
+  return undef unless ($entry->isa('Net::LDAP::Schema')); 
+
+  if ( ref($fh) eq "ARRAY" )
+  {
+    push(@$fh, "<dsml:directory-entries>\n");
+  }
+  else
+  {
+  print  $fh  "<dsml:directory-entries>\n";
+  }
 
   @_;
 }
@@ -116,9 +151,25 @@ sub _print_entry {
   my $fh = $self->{'net_ldap_fh'} or return;
   return undef unless ($entry->isa('Net::LDAP::Entry')); 
 
+  if ( ref($fh) eq "ARRAY" )
+  {
+    push(@$fh, "<dsml:directory-entries>\n");
+  }
+  else
+  {
   print  $fh  "<dsml:directory-entries>\n";
+  }
 
+  if ( ref($fh) eq "ARRAY" )
+  {
+    push(@$fh, "<dsml:entry dn=\"");
+    push(@$fh, _normalize($entry->dn));
+    push(@$fh, "\">\n");
+  }
+  else
+  {
   print $fh "<dsml:entry dn=\"",_normalize($entry->dn),"\">\n";
+  }
   
   my @attributes = $entry->attributes();
   
@@ -133,43 +184,108 @@ sub _print_entry {
     }
     
     if ($isOC) {
+     if ( ref($fh) eq "ARRAY" )
+     {
+       push(@$fh, "<dsml:objectclass>\n");
+     }
+     else
+     {
       print $fh "<dsml:objectclass>\n";
+     }
     }
     else { 
+      if ( ref($fh) eq "ARRAY" )
+      {
+       push(@$fh, "<dsml:attr name=\"");
+       push(@$fh, _normalize($attr));
+       push(@$fh, "\">\n");
+      }
+      else
+      {
       print $fh "<dsml:attr name=\"",_normalize($attr),"\">\n";
+      }
     }
     
     my @values = $entry->get_value($attr);
     
     for my $value (@values) {
        if ($isOC) {
+         if ( ref($fh) eq "ARRAY" )
+         {
+          push(@$fh, "<dsml:oc-value>");
+          push(@$fh, _normalize($value));
+          push(@$fh, "</dsml:oc-value>\n");
+         }
+         else
+         {
          print $fh "<dsml:oc-value>",_normalize($value),"</dsml:oc-value>\n";
+         }
        }
        else {
         #at some point we'll use schema object to determine 
         #this but until then we'll borrow this from Net::LDAP::LDIF
         if ($value=~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
           require MIME::Base64;
+         if ( ref($fh) eq "ARRAY" )
+         {
+          push(@$fh, qq!<dsml:value  encoding="base64">!);
+          push(@$fh, MIME::Base64::encode($value));
+          push(@$fh, "</dsml:value>\n");
+         }
+         else
+         {
           print $fh qq!<dsml:value  encoding="base64">!,
        	     MIME::Base64::encode($value),
        	     "</dsml:value>\n";
+          }
         }
         else {
+         if ( ref($fh) eq "ARRAY" )
+         {
+          push(@$fh, "<dsml:value>");
+          push(@$fh, _normalize($value));
+          push(@$fh, "</dsml:value>\n");
+         }
+         else
+         {
           print $fh "<dsml:value>",_normalize($value),"</dsml:value>\n";
+         }
         }
       }
     }
 
     if ($isOC) {
-      print $fh "</dsml:objectclass>\n";
+      if ( ref($fh) eq "ARRAY" )
+      {
+       push(@$fh, "</dsml:objectclass>\n");
+      }
+      else
+      {
+       print $fh "</dsml:objectclass>\n";
+      }
     }
     else {
-      print $fh "</dsml:attr>\n";
+      if ( ref($fh) eq "ARRAY" )
+      {
+       push(@$fh, "</dsml:attr>\n");
+      }
+      else
+      {
+       print $fh "</dsml:attr>\n";
+      }
     }
   }
 
-  print $fh "</dsml:entry>\n";
-  print $fh "</dsml:directory-entries>\n";
+  if ( ref($fh) eq "ARRAY" )
+  {
+   push(@$fh, "</dsml:entry>\n");
+   push(@$fh, "</dsml:directory-entries>\n");
+  }
+  else
+  {
+   print $fh "</dsml:entry>\n";
+   print $fh "</dsml:directory-entries>\n";
+  }
 
   1;
 }
@@ -272,6 +388,12 @@ Net::LDAP::DSML -- A DSML Writer and Reader for Net::LDAP
 
  $dsml->open(*IO) or die ("DSML problems opening $file.$!\n");
 
+ #or
+
+ my @data = ();
+ $dsml->open(\@data) or die ("DSML problems opening with an array.$!\n");
+
+
   my $mesg = $ldap->search(
                            base     => 'o=airius.com',
                            scope    => 'sub',
@@ -319,6 +441,60 @@ of improving performance ;) and to reduce the amount of memory required to
 parse large DSML files. Every time a single entry or schema is processed
 we pass the Net::LDAP object (either an Entry or Schema object) to the
 callback routine.
+
+=head1 CONSTRUCTOR 
+
+new ()
+Creates a new Net::LDAP::DSML object.  There are no options
+to this method.
+
+B<Example>
+
+  my $dsml = Net::LDAP::DSML->new();
+
+=head1 METHODS
+
+=over 4
+
+=item open ( OUTPUT )
+
+OUTPUT is a referrence to either a file handle that has already
+been opened or to an array.
+
+B<Example>
+
+  For a file.
+
+  my $io = IO::File->new($file,"w");
+  my $dsml = Net::LDAP::DSML->new();
+  $dsml->open($io) or die ("DSML problems opening $file.$!\n");
+
+  For an array.
+
+  my @data = ();
+  my $dsml = Net::LDAP::DSML->new();
+  $dsml->open(\@data) or die ("DSML opening problems.$!\n"); 
+
+=item write( ENTRY )
+
+Entry is a Net::LDAP::Entry object. The write method will parse
+the LDAP data in the Entry object and put it into DSML XML
+format.
+
+B<Example>
+
+  my $entry = $mesg->entry();
+  $dsml->write($entry);
+
+=item finish ()
+
+This method writes the closing DSML XML statements to the file or
+array.  
+
+B<Example>
+
+  $dsml->finish();
+
 
 =head1 AUTHOR
 
