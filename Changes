@@ -1,3 +1,8 @@
+perl-ldap 0.3202 -- Mon Jul 19 11:44:08 BST 2004
+
+Bug Fixes
+  * Fixed case typo in Makefile.PL
+
 perl-ldap 0.3201 -- Wed Jul 14 21:52:59 BST 2004
 
 Bug Fixes
