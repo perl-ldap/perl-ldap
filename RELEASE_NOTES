@@ -1,3 +1,10 @@
+perl-ldap 0.30 17 Oct 2003
+==========================
+
+* Documentation updates
+* Fixed bug checking return value of client_step in bind()
+* Fixed bug in Entry.pm causing method calls on unblessed references
+
 perl-ldap 0.29 24 Jun 2003
 ==========================
 

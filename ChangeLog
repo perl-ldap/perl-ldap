@@ -1,3 +1,100 @@
+2003-10-17 22:22  Graham Barr
+
+	* lib/Net/LDAP/Bind.pm:
+
+	Fix error checking on client_step to check for an empty list, not undef
+	
+2003-10-17 22:19  Graham Barr
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Avoid cannot call method on unbless reference error
+	
+2003-10-12 09:32  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Added note about escaping filters
+	
+2003-09-11 11:44  Chris Ridd
+
+	* lib/Net/LDAP/Filter.pod:
+
+	Remove leftover documentation for asn()
+	
+2003-08-16 09:44  Chris Ridd
+
+	* lib/Net/LDAP/Schema.pod:
+
+	Rearranged description of HASHes
+	
+2003-08-05 15:09  Chris Ridd
+
+	* lib/Net/LDAP/Examples.pod:
+
+	Updated documentation style, corrected schema code etc
+	
+2003-08-05 14:33  Chris Ridd
+
+	* lib/Net/LDAP/Schema.pod:
+
+	Updated documentation style, corrected return type of all_attributes etc
+	
+2003-08-02 19:50  Chris Ridd
+
+	* lib/Net/LDAP/Search.pod:
+
+	Fix typo
+	
+2003-08-02 11:03  Chris Ridd
+
+	* lib/Net/LDAP/LDIF.pod:
+
+	Updated documentation style.
+	
+2003-08-01 20:00  Chris Ridd
+
+	* lib/Net/LDAP/Entry.pod:
+
+	Updated documentation style.
+	
+2003-08-01 19:42  Chris Ridd
+
+	* lib/Net/LDAP/Message.pod:
+
+	Updated documentation style.
+	
+2003-08-01 17:34  Chris Ridd
+
+	* lib/Net/LDAP/Search.pod:
+
+	Updated documentation style.
+	
+2003-07-09 21:27  Graham Barr
+
+	* lib/Net/LDAP/: Control/SortResult.pm, Extension/SetPassword.pm:
+
+	Add $VERSION
+	
+2003-06-24 22:58  Kartik Subbarao
+
+	* contrib/ldifdiff.pl:
+
+	Added options to specify DN attributes, as well as "shared" attributes.
+	Converted to Getopt::Long.
+	
+2003-06-24 22:58  Kartik Subbarao
+
+	* contrib/ldifsort.pl:
+
+	Added option to sort attributes within each entry.
+	
+2003-06-24 11:18  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.29
+	
 2003-06-23 13:52  Chris Ridd
 
 	* lib/Net/LDAP.pod:
