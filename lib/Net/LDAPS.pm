@@ -31,7 +31,7 @@ sub SSL_context_init_args {
 
   my $verify = 0;
   my ($clientcert,$clientkey);
-  
+
   if (exists $arg->{'verify'}) {
       my $v = lc $arg->{'verify'};
       $verify = 0 + (exists $verify{$v} ? $verify{$v} : $verify);
@@ -58,12 +58,11 @@ sub SSL_context_init_args {
   );
 }
 
-sub cipher {
-    $_[0]->{'net_ldap_socket'}->get_cipher;
-}
-
-sub certificate {
-    $_[0]->{'net_ldap_socket'}->get_peer_certificate;
+# Override this Net::LDAP method because using it doesn't make any sense
+# with LDAPS.
+sub start_tls {
+    require Carp;
+    Carp::croak("StartTLS doesn't make sense with LDAPS");
 }
 
 1;
@@ -93,6 +92,12 @@ methods can be used with a Net::LDAPS object; see the documentation
 for Net::LDAP to find out how to query a directory server using the
 LDAP protocol.
 
+Note that the use of LDAPS is not recommended, because it is not
+described by any IETF documents. Instead, you should consider using
+LDAPv3 with the TLS extension defined in RFC 2830. This will give you
+the same functionality as LDAPS, but using recognized standards. See
+L<Net::LDAP/start_tls>.
+
 =head1 CONSTRUCTOR
 
 =over 4
@@ -108,17 +113,19 @@ Net::LDAP::new are:
 =item verify
 
 How to verify the server's certificate, either 'none' (the server may
-provide a cert but don't verify it - this may mean you are be
-connected to the wrong server), 'optional' (verify if the server
-offers a cert), or 'require' (the server must provide a cert, and it
-must be valid.) If you set verify to optional or require, you must
-also set either cafile or capath.
+provide a certificate but it will not be checked - this may mean you
+are be connected to the wrong server), 'optional' (verify if the
+server offers a certificate), or 'require' (the server must provide a
+certificate, and it must be valid.) If you set verify to optional or
+require, you must also set either cafile or capath. The most secure
+option is 'require'.
 
 =item ciphers
 
 Specify which subset of cipher suites are permissible for this
-connection, using the standard OpenSSL string format. The default value
-for ciphers is 'ALL', which permits all ciphers.
+connection, using the standard OpenSSL string format. The default
+value for ciphers is 'ALL', which permits all ciphers, even those that
+don't encrypt!
 
 =item clientcert
 
@@ -127,7 +134,8 @@ for ciphers is 'ALL', which permits all ciphers.
 If you want to use the client to offer a certificate to the server for
 SSL authentication (which is not the same as for the LDAP Bind
 operation) then set clientcert to the user's certificate file, and
-clientkey to the user's private key file.
+clientkey to the user's private key file. These files must be in PEM
+format.
 
 =item capath
 
@@ -136,10 +144,11 @@ clientkey to the user's private key file.
 When verifying the server's certificate, either set capath to the
 pathname of the directory containing CA certificates, or set cafile to
 the filename containing the certificate of the CA who signed the
-server's certificate.
+server's certificate. These certificates must all be in PEM format.
 
 The directory in 'capath' must contain certificates named using the
-hash value of themselves. To generate these names, use OpenSSL thusly:
+hash value of themselves. To generate these names, use OpenSSL like
+this in Unix:
 
     ln -s cacert.pem `openssl x509 -hash -noout < cacert.pem`.0
 
