@@ -109,6 +109,7 @@ lib/Net/LDAP/Schema.pm
 lib/Net/LDAP/Schema.pod
 lib/Net/LDAP/Search.pm
 lib/Net/LDAP/Search.pod
+lib/Net/LDAP/Security.pod
 lib/Net/LDAP/Util.pm
 lib/Net/LDAPS.pm
 mkhtml
