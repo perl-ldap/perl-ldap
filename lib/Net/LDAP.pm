@@ -106,7 +106,6 @@ sub new {
 
   return undef unless $obj->{net_ldap_socket};
 
-  $obj->{net_ldap_host}    = $host;
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
   $obj->{net_ldap_async}   = $arg->{async} ? 1 : 0;
