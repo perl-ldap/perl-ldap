@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.30 2002/11/06 04:27:37 charden Exp $
+# $Id: tklkup,v 1.31 2002/12/30 05:30:45 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,14 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.31  2002/12/30 05:30:45  charden
+# Modified the error checking on ldap modify commands.
+# Corrected all the ldap bind commands.
+# Added CheckError subrountine.
+# Added a few comments at the end of subrountines.
+#
 # Revision 1.30  2002/11/06 04:27:37  charden
+#
 # Corrected a few pod errors that podchecker found.
 #
 # Revision 1.29  2002/10/08 01:41:31  charden
@@ -1702,21 +1709,16 @@ if ( $error == 1 )
 $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
                      dn => "$Global{'binddn'}", 
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
+                   );
 
    
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48 ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
-}
- 
-if ( $error == 1 )
-{
-   $schema_list->insert("end",  "Bind error:  $@\n");
    return;
 }
-
+ 
 #
 # Get the schema, tries to read rootdse, if unable assumes cn=schema.
 # This is NOT always the case.
@@ -2990,6 +2992,7 @@ my $error;
 my $ldap;
 my $mesg;
 my @DNs;
+my $do_it;
 
 if ( !$Global{'ldapActionDN'} )
 {
@@ -3018,45 +3021,58 @@ $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
 
 if ( $error == 1 )
 {
-   $list->insert("end",  "Connect error:  $@\n");
-   return;
    $errstr = "Delete connect error on ldap server $Global{'LDAP_SERVER'}\n";
    ERROR($errstr);
+   return;
 }
 
 $mesg = $ldap->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
-  
+                   );
 
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48 ) 
 {
    $errstr = $mesg->code;
-   ERROR($errstr);
-}
- 
-if ( $error == 1 )
-{
-   $errstr =  "Delete Bind error on ldap server $Global{'LDAP_SERVER'}\n";
-   ERROR($errstr);
-}
-
-$mesg = $ldap->delete($DNs[1]) or $error = 1; 
-
-if ( $error == 1 )
-{
-   $errstr = "Delete error: $object\nOn ldap server $Global{'LDAP_SERVER'}\n";
    ERROR($errstr);
    return;
 }
-   
-if ( $mesg->code ) 
-{
-   $errstr = $mesg->code;
-   ERROR($errstr);
-}
 
+$do_it = 1;
+$Global{loopCount} = 0;
+
+while ($do_it == 1 )
+{ 
+ $mesg = $ldap->delete($DNs[1]); 
+   
+ if ( $mesg->code ) 
+ {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
+   $errstr = $mesg->code;
+   $errstr = ldap_error_text($errstr);
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+    return;
+   } 
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
+
+}
 $ldap->unbind;
 
 } # End of ldapActionDelete subroutine
@@ -3071,6 +3087,7 @@ my $error;
 my $ldap;
 my $mesg;
 $error = 0;
+my $do_it;
 
 if ( $Global{'Rename'} == -1 ) 
 {
@@ -3093,38 +3110,57 @@ if ( $error == 1 )
 $mesg = $ldap->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
+                   );
   
 
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48 ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
 }
  
-if ( $error == 1 )
+ 
+$do_it = 1;
+$Global{loopCount} = 0;
+ 
+while ($do_it == 1 )
 {
-   $errstr =  "Rename Bind error on ldap server $Global{'LDAP_SERVER'}\n";
-   ERROR($errstr);
-}
 
 $mesg = $ldap->moddn($Global{'RenameDN'}, 
                      newrdn => $Global{'newrdn'}, 
                      deleteoldrdn => $Global{'deleteoldrdn'}, 
-                     newsuperior => $Global{'newsuperior'} ) or $error = 1; 
+                     newsuperior => $Global{'newsuperior'} ); 
 
-if ( $error == 1 )
-{
-   $errstr = "Rename error: $Global{'RenameDN'}\nOn ldap server $Global{'LDAP_SERVER'}\n";
-   ERROR($errstr);
-   return;
-}
-   
 if ( $mesg->code ) 
 {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
    $errstr = $mesg->code;
-   ERROR($errstr);
+   $errstr = ldap_error_text($errstr);
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+    return;
+   }
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
+
 }
+
+$ldap->unbind;
 
 }
  
@@ -3497,6 +3533,7 @@ sub changeEntry {
 my $errstr;
 my $mesg;
 my $error = 0;  # initialize error flag.
+my $do_it;
  
 my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
                           timeout => 1,
@@ -3513,17 +3550,11 @@ if ( $error == 1 )
 $mesg = $ldap->bind( password => $Global{'bindpw'},
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
+                   );
 
-if ( $mesg->code )
+if ( $mesg->code && $mesg->code != 48 )
 {
    $errstr = $mesg->code;
-   ERROR($errstr);
-}
- 
-if ( $error == 1 )
-{
-   $errstr = "Bind error:  $@\n";
    ERROR($errstr);
    return;
 }
@@ -3534,22 +3565,41 @@ if ( $error == 1 )
 if ( defined($Global{'add'}) )
 {
 
-$mesg = $ldap->modify( $Global{'entryDN'}, add => $Global{'add'})
-        or $error = 1;
+$do_it = 1;
+$Global{loopCount} = 0;
  
- 
-if ( $error == 1 )
+while ($do_it == 1 )
 {
-   $errstr = "Add modify error:  $@\n";
-   ERROR($errstr);
-   return;
-}
+
+$mesg = $ldap->modify( $Global{'entryDN'}, add => $Global{'add'});
  
 if ( $mesg->code )
 {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
    $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
+   $errstr = ldap_error_text($errstr);
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+    return;
+   }
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
+
 }
 
 delete( $Global{'add'} );
@@ -3561,23 +3611,44 @@ delete( $Global{'add'} );
 #
 if ( defined($Global{'delete'}) )
 {
-$mesg = $ldap->modify( $Global{'entryDN'}, delete => $Global{'delete'})
-        or $error = 1;
+
+$do_it = 1;
+$Global{loopCount} = 0;
  
- 
-if ( $error == 1 )
+while ($do_it == 1 )
 {
-   $errstr = "Delete modify error:  $@\n";
-   ERROR($errstr);
-   return;
-}
+
+$mesg = $ldap->modify( $Global{'entryDN'}, delete => $Global{'delete'});
  
 if ( $mesg->code )
 {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
    $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
+   $errstr = ldap_error_text($errstr);
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+    return;
+   }
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
+
 }
+
 delete( $Global{'delete'} );
 
 }
@@ -3588,23 +3659,44 @@ delete( $Global{'delete'} );
 #
 if ( defined($Global{'replace'}) )
 {
-$mesg = $ldap->modify( $Global{'entryDN'}, replace => $Global{'replace'})
-        or $error = 1;
+
+$do_it = 1;
+$Global{loopCount} = 0;
  
- 
-if ( $error == 1 )
+while ($do_it == 1 )
 {
-   $errstr = "Replace modify error:  $@\n";
-   ERROR($errstr);
-   return;
-}
+
+$mesg = $ldap->modify( $Global{'entryDN'}, replace => $Global{'replace'});
  
 if ( $mesg->code )
 {
+   #
+   # There was an error, check for dsa busy
+   # error.
+   #
+   #
    $errstr = $mesg->code;
-   ERROR($errstr);
-   return;
+   $errstr = ldap_error_text($errstr);
+
+   #
+   # Check for server busy.
+   #
+   if ( !(CheckError($errstr) ) )
+   {
+    $errstr = $mesg->code;
+    ERROR($errstr);
+    return;
+   }
+ }
+ else
+ {
+ #
+ # There was no error
+ #
+ $do_it = 0;
+ }
 }
+
 delete( $Global{'replace'} );
 
 }
@@ -3720,7 +3812,7 @@ $Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
 $Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
 } # End of cancel subroutine
 
-} # End of cancel subroutine
+} # End of subroutine displayDnList
 
 #
 # Search the directory for data
@@ -3833,21 +3925,16 @@ if ( $error == 1 )
 $mesg = $ldap->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
-                   ) or $error = 1;
+                   );
   
 
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48  ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
-}
- 
-if ( $error == 1 )
-{
-   $list->insert("end",  "Bind error:  $@\n");
    return;
 }
-
+ 
 $Global{'searchResults'} = {};  # initialize results hash.
 
 $mesg = $ldap->search(
@@ -4074,7 +4161,7 @@ $mesg = $ldap->bind( password => "$Global{'bindpw'}",
 # Check for an error on bind
 #
    
-if ( $mesg->code ) 
+if ( $mesg->code && $mesg->code != 48 ) 
 {
   $errstr = $mesg->code;
   ERROR($errstr);
@@ -4267,7 +4354,7 @@ foreach $attr (@Attributes)
 
 $ldap->unbind;
 
-}
+} # End of subrountine rootDse
 
 #
 # Determine new mainWindow position.
@@ -4280,12 +4367,50 @@ my @pos;
 $Global{'horz'} = $pos[1];
 $Global{'vert'} = $pos[2];
 
-}
+} # End of subrountine globalPos
 
 sub root_cancel
 {
  $Global{'rootWindow'}->destroy if Tk::Exists($Global{'rootWindow'}); 
+} # End of subrountine root_cancel
+
+#
+# LDAP Error check, some return codes are not really errors.
+# You can retry the ldap action after waiting a while.
+#
+
+sub CheckError {
+ 
+my ( $error ) = @_;
+ 
+#
+# Check for DSA busy or internal error
+#
+ 
+if ( $Global{loopCount} > 61 ) {
+  return 0;  # return an error condition.
 }
+ 
+++$Global{loopCount};    # Increment the loop counter.
+ 
+if ( $error =~ /too busy/ ||
+     $error =~ /Server encountered an internal error/ )
+   {
+   #
+   # DSA Busy.
+   #
+   sleep 1;
+   return 1;  # No error, try again
+   }
+else {
+   #
+   # DSA did not return "DSA busy" message
+   #
+   return 0;  # error
+ 
+   }
+ 
+} # End of subrountine  CheckError 
 
 #----------------------------------------#
 # Usage() - display simple usage message #
@@ -4418,6 +4543,8 @@ hand, attribute, server, limit, and port.
            same search base, there should be little or no delay
            when switching to the new server.
 
+=back
+
  Now a word about directory branch, or search base, detection.  
  There are many things that can prevent this function from working
  properly.  Several version 2 LDAP servers that this was tested 
@@ -4438,8 +4565,6 @@ hand, attribute, server, limit, and port.
 
  If you decide to use auto search base detection you will just have
  to try it and hope it works.
-
-=back
 
 -------------------------------------------------------------------
 
