@@ -34,7 +34,7 @@ sub _connect {
       }
   }
 
-  $ldap->{'net_ldap_socket'} = IO::Socket::INET->new(
+  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $arg->{'port'} || '636',
     Proto    	    => 'tcp',
