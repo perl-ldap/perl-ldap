@@ -1,0 +1,52 @@
+#
+#  Initialization file for tklkup.  This file should reside
+#  in the user home directory as .tklkup.
+#
+#  Set up which side you want the Attributes pane to be displayed
+#  on.
+#
+hand: left
+#
+#  Define what whose base to use, base that is specified by this 
+#  file or a base that is determined by querying the server. 
+#  You must be carefull when allowing the server to determine the 
+#  base, it could take quite sometime to determine all of the bases. 
+#  During this time the script will appear to be doing nothing, with 
+#  a possible error message being displayed when a search limit is 
+#  reached. 
+#  This attribute should be listed before any base or server 
+#  name/base lines are defined. 
+#
+mybase: 1
+#
+#
+#  If mybase is invoked, not commented out, then use the following as
+#  bases
+#
+#  Base statment(s) when mybase is defined.  It will
+#  be the default when mybase is NOT defined but the server does NOT
+#  have a defined base associated with it. 
+#
+base: ou=People,o=ucalgary.ca
+base: o=University of Arkansas, c=US 
+#
+# Set up the search attributes you want listed on
+# the Attribute and Select Additional Attributes button.
+#
+attribute: uid 
+attribute: cn 
+attribute: sn 
+attribute: rfc822mailbox 
+attribute: uidNumber 
+attribute: gidNumber 
+attribute: telephonenumber 
+attribute: facsimiletelephonenumber 
+attribute: givenname 
+attribute: fullname 
+attribute: firstname
+#
+# Set up the Directory Servers you want listed on
+# the Select Directory Server button.
+#
+server: directory.ucalgary.ca: ou=People,o=ucalgary.ca
+server: www.uark.edu: o=University of Arkansas, c=US 

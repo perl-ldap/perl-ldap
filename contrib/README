@@ -1,0 +1,18 @@
+This directory is avaliable via CVS on sourceforge, for more details see
+
+  http://sourceforge.net/cvs/?group_id=5050
+
+The files in this directory are
+
+  schema	  A script to do LDAP directory schema lookups
+  tklkup	  A Perl/Tk script to do LDAP directory lookups
+  dot.tklkup	  Control file for schema and tklkup
+  printMembers.pl Print all members of a group
+  isMember.pl     Determine if a given user is a member of a given group
+
+Each file contains a POD with its full description and author contacts.
+e.g.
+
+  perldoc schema
+
+

@@ -1,0 +1,2093 @@
+#!/usr/bin/perl
+# !/usr/local/bin/perl
+#
+# Copyright (c) 1999 Clif Harden.  All Rights Reserved
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU GENERAL PUBLIC LICENSE.
+#----------------------------------------------------------------------------
+#
+# This program was originally written by Clif Harden.
+# Some of the software in the LDAP search subroutine was orginally
+# written by Graham Barr.  It is based on Graham Barr's PERL LDAP 
+# module and the PERL TK module.
+# Both modules are available from the CPAN.org system.
+#
+# $Id: tklkup,v 1.4 2001/01/29 21:50:30 gbarr Exp $
+#
+# Purpose: This program is designed to retrieve data from a LDAP
+#          directory and display on the graphical user interface
+#          created by this program.
+#
+#
+# Revisions:
+# $Log: tklkup,v $
+# Revision 1.4  2001/01/29 21:50:30  gbarr
+# Moved files back
+#
+# Revision 1.3  2000/12/20 03:15:42  charden
+# Corrected error in the calling of the get_value method so that
+# multi-valued attributes were handled correctly.
+#
+# Revision 1.2  2000/12/13 02:41:59  charden
+# Major rewrite of the tklkup script, many enhancements were made.
+#
+# Combined schema and tklkup scripts, control of both schema and
+# search functions are initiated from a main window.
+# Seperate display windows are generated for both schema and search
+# results.
+# Added ldap bind ability from the main window.
+#
+# Revision 1.1  2000/07/27 14:39:17  gbarr
+# Initial checkin
+#
+# Revision 1.6  2000/06/18 04:08:16  clif
+# Changed several pod commands to enhance the lookup
+# and feel of the pod documentation.
+#
+# Revision 1.5  2000/06/08 01:12:27  clif
+# Correct wording in the pod documentation.
+#
+# Revision 1.4  2000/05/27 21:34:12  clif
+# Added the README.tklkup file as a internal pod document.
+#
+# Revision 1.3  2000/05/27 18:35:38  clif
+# Removed leading dashes form Net::LDAP options.  These dashes had been
+# depricated.
+#
+# Revision 1.2  2000/05/27 18:29:35  clif
+# Added radio button for selection of version 2 or 3 ldap. Version
+# 3 was maded the default version.
+# Added code to make the binary user certificate data base64 encoded
+# for display purposes.
+#
+# Revision 1.1  2000/01/23 03:00:20  clif
+# Initial revision
+#
+#
+#
+#
+#
+#
+
+use Carp;
+use MIME::Base64;
+use Net::LDAP qw(:all);
+use Net::LDAP::Filter;
+use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
+use Net::LDAP::Constant;
+use Getopt::Std;
+
+use Tk;
+use Tk::ErrorDialog;
+use Tk::LabFrame;
+use Tk::ROText;
+
+#
+# Global variables, wish I did not have to use them
+# but Tk forces me to.
+#
+
+my $bindpw = "";
+my $binddn = "";
+my $mybase = 0;
+my $adata = "";
+my $uid = "";
+my $info = "";
+my $slist;
+my $setVersion;
+my $clear;
+my $sfile = 0;
+my $fdata = "";
+my $hand = 'left';
+my $horz = 200;
+my $vert = 20;
+my $Font = "7x5";
+my $CORE_SERVER;
+my $sbbframe;
+my @base       = ();
+my @BaseButton = ();
+
+#--------------------------------------------------------
+# Handle the command line parameter(s)
+#--------------------------------------------------------
+
+getopts( 'hdr' );
+
+Usage() if ( $opt_h );
+
+my $debug  = $opt_d ? 1 : 0;
+
+#
+#
+
+# Fork this process on start up.
+#
+#
+# If not in debug mode;
+# Fork a child process and kill the parent.
+# (That sounds nasty)
+#
+
+if ( !$debug ) {
+
+        FORK: {
+
+                if ( $pid = fork ) {
+                        # this is parent process, so DIE
+                        # 
+                        exit;
+                        } 
+                elsif ( defined $pid) {
+                        # this is the child process, so keep on running
+                        #
+                        &MAIN_PROCESS();                
+
+                        } # End of elsif in FORK.
+
+        } # End of FORK block.
+
+
+} # End of if.
+else {
+        #
+        # in debug mode, so do not fork but continue to run.
+        #
+        &MAIN_PROCESS();
+        } # End of else
+
+
+sub MAIN_PROCESS {
+
+my $rbuid;
+my $rbcn;
+my $rbsn;
+my $rbmail;
+my $rbclear;
+my $mainWindow;
+my $lframe;
+my $sframe;
+my $aframe;
+my $tframe;
+my $bframe;
+#my $sbmenu;
+my @attribute = ();
+my @server    = ();
+
+#
+# Check for dot file, use it to configure program.
+#
+
+my $dotfile = $ENV{"HOME"} . "/.tklkup";
+
+if ( -e $dotfile && -r $dotfile )
+{
+
+open(DOT, "<$dotfile");
+
+@Input = <DOT>;
+
+foreach (@Input)
+{
+
+my @data = ();
+
+if ( /^#/ || /^\s+$/ ) { next; }
+
+chomp();
+@data = split(/:/);
+
+$data[1] =~ s/^\s*//;
+$data[1] =~ s/\s+$//;
+$data[2] =~ s/^\s*// if ( defined($data[2]) );
+$data[2] =~ s/\s+$// if ( defined($data[2]) );
+
+$_ = $data[0];
+
+TYPE: {
+
+    /^hand/i && do {
+                     $hand = $data[1];
+                     last TYPE; };
+
+    /^attribute/i && do {
+                     push(@attribute, $data[1]);
+                     last TYPE; };
+
+    /^server/i && do {
+                     push(@server, $data[1]);
+                     if ( !$mybase && defined($data[2]) )
+                     {
+                     $server{$data[1]} = $data[2];
+                     }
+		     last TYPE; };
+
+    /^base/i && do {
+                     push(@base, $data[1]);
+                     $base = $data[1];
+                     last TYPE; };
+
+    /^mybase/i && do {
+                     $mybase = 1;
+                     last TYPE; };
+
+    /^font/i && do {
+                     $Font = $data[1];
+                     last TYPE; };
+
+                     print "Default found undefine type:  $_";
+
+    } # End of case TYPE
+
+}
+
+close(DOT);
+
+}
+
+#
+# Default is for left hand people!
+# Over ride the dot file if the -r command line
+# option is used.
+#
+
+if ( defined($opt_r) ) {
+
+$hand   = $opt_r ? 'right' : 'left';
+# my $hand   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
+
+}
+
+#
+# Default directory server.
+#
+if ( @server < 1 ) 
+{ 
+$server[0] = "ldap.umich.edu"; 
+}
+$LDAP_SERVER = $server[0];
+$CORE_SERVER = $LDAP_SERVER;
+
+#
+# Default directory search base.
+#
+
+if ( !$mybase && defined($server{$server[0]}) )
+{
+ #
+ # Find and branches the branches of the directory.
+ #
+ 
+ if ( defined($server{$server[0]}) )
+ {
+ @base =  getBases($LDAP_SERVER, $server{$server[0]});
+ }
+ else
+ {
+ @base =  getBases($LDAP_SERVER, $base);
+ }
+
+ if ( @base >= 1)
+ {
+ $LDAP_SEARCH_BASE = $base[0];
+ }
+ else
+ {
+ $LDAP_SEARCH_BASE = $base;
+ }
+
+}
+else
+{
+ $LDAP_SEARCH_BASE = $base[0];
+}
+
+#
+# Default directory search attributes.
+#
+if ( $#attribute < 1 )
+{
+
+@attribute = qw/ uid sn cn rfc822mailbox telephonenumber
+                 facsimiletelephonenumber gidnumber uidnumber/;
+}
+
+#
+# Create Main Window
+#
+
+$mainWindow = MainWindow->new;
+
+$mainWindow->title("Directory Search");
+
+$mainWindow->geometry("+$horz+$vert");
+#
+# Create process Exit button
+#
+
+$mainWindow->Button(-text => "EXIT", 
+                    -command => sub{ exit; }, -font => $Font, 
+                    -borderwidth => 5  ) 
+                    -> pack(-fill => "both", -padx => 5, -pady => 5 ) ;
+
+
+$dsaframe = $mainWindow->Frame()
+      ->pack( -fill => "both", -side => "top" );
+
+
+$sframe = $dsaframe->LabFrame(-label => "DIRECTORY SERVER",
+      -labelside => "acrosstop")
+      ->pack(  -side => "left"  );
+
+$stframe = $sframe->Frame()
+      ->pack( -fill => "x", -side => "top" );
+
+$sbframe = $sframe->Frame()
+      ->pack( -fill => "x", -side => "bottom" );
+
+$slist = $stframe ->Listbox( -height => 1  );
+
+$slist->pack( -side => "left" );
+
+$slist->insert("end", $LDAP_SERVER);
+
+#
+# Create directory server selection button
+# This is where the user will select the directory server to
+# query.
+#
+
+$smenu = $stframe -> Menubutton(-text => "SELECT\nSERVER",
+                 -relief => "raised", -font => $Font, -borderwidth => 3 )
+                 -> pack(-side => "left", -anchor => "center",
+                         -pady => 2 );
+
+#
+# Set up the select directory server radio buttons.
+#
+
+foreach (@server)
+{
+   $smenu->radiobutton( -label => $_, -variable => \$LDAP_SERVER,
+         -value => $_, -command => \&server, -font => $Font );
+
+}
+
+ 
+#
+# Create bind button.
+# This will cause another window to be displayed where
+# the user will enter the bind DN and password.
+#
+ 
+$abind = $stframe -> Button(-text => " BIND TO\n DIRECTORY",
+                 -relief => "raised", -command => \&BIND, -font => $Font,
+                 -borderwidth => 3 )
+                 -> pack( -side => "left", -anchor => "w", -pady => 2);
+#
+# Create a LDAP version Checkbutton that will set up  variable
+# setVersion to set the LDAP version before each directory query.
+#
+ 
+$setVersion = $sbframe -> Checkbutton(
+                       -text => "SET LDAP VERSION, LDAP V3 DEFAULT",
+                       -variable =>  \$setVersion, -onvalue => 1, 
+                       -offvalue => 0, -font => $Font )
+                       -> pack(-side => "left", -anchor => "center" );
+ 
+$setVersion->select();
+
+
+#
+# Create search base list box.
+#
+
+$sbbframe = $dsaframe->LabFrame(-label => "DIRECTORY SEARCH BASE",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "left", -pady => 1 );
+
+$sbblist = $sbbframe ->Listbox( -width => 30, -height => 1  );
+
+$sbblist->pack(-side => "left" );
+
+$sbblist->insert("end", $LDAP_SEARCH_BASE);
+
+#
+# Create directory server search base.
+# This is the point from which the search operation
+# will start from.
+#
+
+$sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
+                 -relief => "raised", -font => $Font, -borderwidth => 3 )
+                 -> pack(-side => "left", -anchor => "w" );
+
+#
+# Set up the select search base radio buttons.
+#
+
+
+foreach (@base)
+{
+   push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
+                     -variable => \$LDAP_SEARCH_BASE,
+                     -value => $_, -command => \&base, -font => $Font ) );
+
+}
+
+#
+# Create bottom Search Directory frame
+#
+
+$bframe = $mainWindow->Frame(-borderwidth => 2, -relief => "raised")->pack(
+      -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
+
+#
+# Create Search Directory button
+#
+
+$bframe -> Button(-text => "SEARCH DIRECTORY", -command =>  \&search, 
+        -font => $Font, -borderwidth => 3 ) -> pack( -fill => "both");
+
+
+$attframe = $mainWindow->Frame()
+      ->pack( -fill => "both", -side => "bottom");
+
+#
+# Create Bottom Attribute frame.
+# This is where the user will enter data to be
+# searched for.
+#
+
+
+$tframe = $attframe->LabFrame(-label => "ATTRIBUTE DATA",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "bottom" );
+
+#
+# Create Text Entry list box.
+#
+
+$tframe->Entry(-textvariable => \$adata, -width => 25 ) 
+      -> pack(-fill => 'x');
+
+
+#
+# Create frame for clear buttons.
+#
+
+$cframe = $attframe->Frame()
+      ->pack( -fill => "both", -side => "bottom" );
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+$cframe -> Button(-text => "CLEAR ATTRIBUTE DATA", -command =>  \&AClear, 
+        -font => $Font, -borderwidth => 3 )
+        -> pack( -side => $hand );
+
+#
+# Create left attribute selection frame
+# This is where the user will select the attribute to be searched.
+#
+
+$aframe = $attframe->LabFrame(-label => "ATTRIBUTES",
+      -labelside => "acrosstop")
+      ->pack( -side => $hand );
+
+#
+# First set up the 4 main Radio buttons.
+#
+#
+# If there are other attribute after the first 4 then set them
+# up inside the select additional attributes button.
+#
+#
+if ( $#attribute > 4 )
+{
+my $sptr = 0;
+while ( $sptr <= 3 )
+{
+$_ = shift(@attribute);
+
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
+         -value => "$_", -font => $Font ) -> pack( -side => "$hand");
+
+if ( !$sptr ) { $rbsn->select(); } # select first attribute
+
+++$sptr;
+}
+
+} # End of if ( $#attribute > 4 )
+else
+{
+#
+# Less than 4 attributes in user create initialization
+# file, this is valid if that is what the user wants.
+#
+my $sptr = 0;
+while ( @attribute )
+{
+$_ = shift(@attribute);
+
+$rbsn   = $aframe -> Radiobutton(-text =>   "$_", -variable => \$info,
+                  -value => "$_", -font => $Font ) 
+                  -> pack( -side => "bottom", -anchor => "w");
+
+if ( !$sptr ) { $rbsn->select(); } # select first attribute
+
+++$sptr;
+}
+
+}
+
+#
+# Create additional attributes selection button
+# This is where the user will select any special attribute to
+# search on.
+#
+
+$amenu = $aframe -> Menubutton(-text => " SELECT\n ADDITIONAL\n ATTRIBUTES",
+                 -relief => "raised", -font => $Font, -borderwidth => 3 )
+                 -> pack( -side => "bottom", -anchor => "w" );
+
+#
+# Create radio buttons in attributes selection box.
+#
+#
+
+foreach (@attribute)
+{
+
+   $amenu->radiobutton( -label => $_, -variable => \$info,
+          -value => $_, -font => $Font);
+
+} # End of foreach (@attribute)
+
+
+$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA SEARCH",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
+
+#
+# Create schema button.
+# This will cause another window to be displayed where
+# the user will be able to display schema information.
+#
+ 
+$abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
+                   -relief => "raised", -command => \&SCHEMA, 
+                   -font => $Font, -borderwidth => 3 )
+                   -> pack( -side => "$hand", -anchor => "w" );
+
+
+#$_ = $mainWindow->geometry();
+
+#/^=?(\d+x\d+)?([+-]\d+[+-]\d+)?$/;
+
+#
+# Run the Main loop looking for events.
+#
+
+MainLoop;
+
+
+
+sub AClear {
+
+#
+# Clear out text in Attribute Box
+#
+
+$adata = "";
+
+} # End of AClear subroutine
+
+sub server {
+my $widget;
+my $ptr;
+
+#
+# Put directory server name in list box
+#
+
+$slist->insert(0 , $LDAP_SERVER);
+$sslist->insert(0 , $LDAP_SERVER) if ( Exists($sslist) ) ;
+
+if ( !$mybase )
+{
+$ptr = 1;
+
+#
+# Delete data from BaseButton array, we are deleteing the 
+# buttons.
+#
+
+while ( @BaseButton >= 1  )
+{
+$widget = pop(@BaseButton);
+$sbmenu->menu->delete($ptr);
+++$ptr;
+}
+
+@base = ();
+
+if ( $CORE_SERVER ne $LDAP_SERVER && defined($server{$LDAP_SERVER} ) )
+{
+
+
+@base = getBases($LDAP_SERVER, $server{$LDAP_SERVER});
+
+}
+else
+{
+$base[0] = $base;
+}
+
+#
+# Set up the select search base radio buttons.
+#
+
+foreach (@base)
+{
+   push(@BaseButton, $sbmenu->radiobutton( -label => $_, 
+                     -variable => \$LDAP_SEARCH_BASE,
+                     -value => $_, -command => \&base, -font => $Font ) );
+
+}
+
+} # End of if ( !$mybase )
+
+$LDAP_SEARCH_BASE = $base[0];
+$sbblist->insert(0 , $LDAP_SEARCH_BASE);
+
+
+$CORE_SERVER = $LDAP_SERVER;
+
+} # End of server subroutine
+
+
+sub attribute {
+
+#
+# Build a correct Filter string from the data
+# passed from the Additional Attributes
+# radiobutton selection.
+#
+
+my $tmp = "(" . $uid . "=";
+
+$info = $tmp;
+
+} # End of attribute subroutine
+
+
+sub base {
+
+#
+# Put directory server search base into the list box.
+#
+
+$sbblist->insert(0 , $LDAP_SEARCH_BASE);
+
+} # End of base subroutine
+
+ 
+#
+# Create Main Bind Window
+#
+ 
+sub BIND {
+ 
+$dn_data = "";
+$pw_data = "";
+my $x = $horz + 150;
+my $y = $vert + 150;
+ 
+#
+# Create Main Bind Window
+#
+ 
+$bindWindow = MainWindow->new;
+ 
+$bindWindow->title("Bind To Directory");
+ 
+$bindWindow->geometry("+$x+$y");
+#
+# Create process accept button
+#
+$bindWindow->Button( -text => "Accept", -command => \&accept, 
+           -font => $Font, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+#
+# Create process cancel button
+#
+$bindWindow->Button(-text => "Cancel", -command => \&cancel, 
+           -font => $Font, -borderwidth => 3)
+           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
+ 
+my $binddnframe = $bindWindow->LabFrame(-label => "DN",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+ 
+#
+# Create DN Entry text box.
+#
+ 
+$binddnframe->Entry(-textvariable => \$dn_data, -width => 25 )
+      -> pack(-fill => 'x');
+ 
+my $bindpwframe = $bindWindow->LabFrame(-label => "PASSWORD",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+ 
+#
+# Create Password Entry text box.
+#
+ 
+$bindpwframe->Entry(-show => '*', -textvariable => \$pw_data, 
+                    -width => 25, -font => $Font )
+                    -> pack(-fill => 'x');
+ 
+sub cancel{
+ 
+$bindWindow->destroy() if Tk::Exists($bindWindow);
+ 
+} # End of cancel subroutine
+ 
+sub accept{ 
+ 
+$binddn = $dn_data;
+$bindpw = $pw_data;
+ 
+$bindWindow->destroy() if Tk::Exists($bindWindow);
+ 
+} # End of accept subroutine
+} # End of BIND subroutine
+
+} # End of MAIN_PROCESS subroutine
+
+
+#
+# Create Schema Display Window
+#
+ 
+sub print_loop()
+{
+my $list = shift;
+my $ocs = shift;
+my $Title = shift;
+
+foreach ( @$ocs)
+{
+   $list->insert("end", "$Title\n");
+
+   #
+   # Get and display the oid number of the objectclass.
+   #
+   my $oid = $schema->name2oid( "$_" );
+   
+   #
+   # Get the various other items associated with
+   # this attribute.
+   #
+   my @items = $schema->items( "$oid" );
+   foreach my $value ( @items )
+   {
+      next if ( $value eq 'type');
+
+      @item = $schema->item( $oid, $value );
+      $value =~ tr/a-z/A-Z/;
+      if ( defined(@item) && $item[0] == 1 )
+      {
+         $list->insert("end", "\t$value\n");
+         next;
+      }
+      if ( defined(@item) && $#item >= 0 )
+      {
+         if ( $value eq 'MAY' || $value eq 'MUST' )
+         {
+         $list->insert("end", "\t$value contain:  @item\n");
+         }
+         else
+         {
+         $list->insert("end", "\t$value:  @item\n");
+         }
+      }                                                                    
+   }
+
+}
+
+} # End of subroutine print_loop
+
+#
+#
+# Search the directory for schema data
+#
+#
+#
+
+sub SCHEMA 
+{
+
+my $srbclear;
+my $srbfile;
+my $srbfilelabel;
+# my $schemaWindow;
+my $slframe;
+my $ssframe;
+my $sbbframe;
+my $aframe;
+my $tframe;
+my $sbframe;
+#my $sslist;
+my $sclear;
+my $x = $horz + 100;
+my $y = $vert + 100;
+#
+# Create Main Window
+#
+if (!  Exists($schemaWindow) )
+{
+$schemaWindow = MainWindow->new;
+
+$schemaWindow->title("Directory Schema Search");
+
+$schemaWindow->geometry("+$x+$y");
+#
+# Create process Exit button
+#
+
+$schemaWindow->Button( -text => "Close Schema Search Window", 
+                       -command => \&schema_cancel, -font => $Font, 
+                       -borderwidth => 5 )
+                       -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+
+$ssframe = $schemaWindow->LabFrame(-label => "DIRECTORY SERVER",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -padx => 2, -pady => 2 );
+
+$sslist = $ssframe ->Listbox( -height => 1  );
+
+$sslist->pack(-fill => "both", -expand => 1 );
+
+$sslist->insert("end", $LDAP_SERVER);
+
+#
+# Create bottom Search Directory frame
+#
+
+$sbframe = $schemaWindow->Frame( -borderwidth => 2, 
+                        -relief => "raised")->pack(
+                        -fill => "both", -side => "bottom", 
+                        -padx => 2, -pady => 2);
+
+#
+# Create Search Directory button
+#
+
+$sbframe -> Button(-text => "Retrieve Directory Schema", 
+         -command =>  \&schema, -font => $Font, -borderwidth => 3 )
+         -> pack( -fill => "both");
+
+$srbfilelabel = $schemaWindow->LabFrame(-label => "SCHEMA DUMP TO FILE",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -anchor => "w", -padx => 2, -pady => 2);
+
+$srbfile = $srbfilelabel -> Checkbutton( 
+          -text => "Write schema data to file, enter file\nname in text box below this line.   ",
+          -variable =>  \$sfile, -onvalue => 1, -offvalue => 0, -font => $Font )
+          -> pack(-anchor => "w" );
+#
+# Create Text Entry list box.
+#
+
+$srbfilelabel->Entry(-textvariable => \$fdata, -width => 25 ) 
+      -> pack(-fill => 'x');
+
+
+#
+# Create list frame.
+#
+
+$slframe = $schemaWindow->LabFrame(-label => "DIRECTORY SCHEMA DATA",
+      -labelside => "acrosstop")
+      ->pack( -fill => "both", -side => "top", -pady => 2,
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+$srbclear = $slframe -> Checkbutton(
+                     -text => "Clear directory data on each query.",
+                     -variable =>  \$sclear, -onvalue => 1, -offvalue => 0,
+                     -font => $Font )
+                     -> pack(-anchor => 'nw' );
+
+$srbclear->select();
+
+$selframe = $slframe -> LabFrame(-label => "DISPLAY SELECTED OBJECTS",
+                                 -labelside => "acrosstop" )
+      ->pack( -side => "top", -expand => 1, -fill => "both" );
+
+$sellAll = $selframe -> Checkbutton(-text => "All",
+      -variable =>  \$selectAll, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "left", -anchor => 'nw' );
+
+$sellAll->select();
+
+$sellObj = $selframe -> Checkbutton(-text => "objectClasses",
+      -variable =>  \$selectObj, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "left", -anchor => 'nw' );
+
+$sellMatch = $selframe -> Checkbutton(-text => "matchingRules",
+      -variable =>  \$selectMatch, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "left", -anchor => 'nw' );
+
+$sellAtt = $selframe -> Checkbutton(-text => "attributeType",
+      -variable =>  \$selectAtt, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-side => "left", -anchor => 'nw' );
+
+#
+# Create Clear Attribute Data and Search Directory buttons
+#
+
+if ( $hand eq 'left' )
+{
+$slframe ->Button(-text => "     Clear Data     ",
+     -command =>  \&schema_clear, -font => $Font, -borderwidth => 3 ) 
+     -> pack(-side => "bottom", -anchor => 'sw', -padx => 5 );
+}
+else
+{
+$slframe ->Button(-text => "     Clear Data     ",
+     -command =>  \&schema_clear, -font => $Font, -borderwidth => 3 )
+     -> pack(-side => "bottom", -anchor => 'se', -padx => 5 );
+}
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 60, -height => 20, -wrap => 'none', -font => $Font  );
+
+$schema_list->pack( -side => "bottom" );
+
+}
+else
+{
+$schemaWindow->deiconify() if Tk::Exists($schemaWindow);
+$schemaWindow->raise() if Tk::Exists($schemaWindow);
+}
+
+sub schema_clear {
+
+#
+# Clear out text in List Box
+#
+
+$schema_list->delete("1.0", "end");
+
+} # End of clear subroutine
+
+ 
+sub schema_cancel{
+ 
+$schemaWindow->withdraw if Tk::Exists($schemaWindow);
+ 
+} # End of cancel subroutine
+ 
+
+#
+#
+# Search the directory for data
+#
+#
+#
+
+sub schema 
+{
+
+my $error;
+my $dt = "/tmp/schema.dat.$$";
+
+if ( $clear ) { &schema_clear(); }
+
+my $version;
+
+if ( $setVersion ) 
+{ 
+$version = 3;
+}
+else
+{
+$version = 2;
+}
+
+#
+# Connect to directory server
+# 
+
+my $ldap = new Net::LDAP($LDAP_SERVER,
+                         timeout => 1,
+                         debug => $opt{'d'},
+                        ) or $error = 1;
+
+if ( $error == 1 )
+{
+   $schema_list->insert("end",  "Connect error:  $@\n");
+   return;
+}
+
+$ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
+
+if ( $error == 1 )
+{
+   $schema_list->insert("end",  "Bind error:  $@\n");
+   return;
+}
+
+#
+# Get the schema, tries to read rootdse, if unable assumes cn=schema.
+# This is NOT always the case.
+#
+
+$schema = undef();
+my @items;
+my @item;
+
+$schema = $ldap->schema();
+
+if ( defined($schema) )
+{
+if ( $sfile && defined($schema) )
+{
+  #
+  # write to file instead of text box
+  #
+  $schema->dump( $fdata );
+  $schema_list->insert("end",  "Schema data written to file: $fdata\n");
+  $sfile = 0;
+  $fdata = "";
+  return;
+}
+
+
+#
+# Get the attributes
+#
+ 
+@atts = $schema->attributes(); 
+
+#
+# Display the attributes
+#
+ 
+if ( $selectAll || $selectAtt  )
+{
+&print_loop($schema_list, \@atts, "attributeType") if ( defined(@atts) );
+}
+
+#
+# Get the schema objectclasses
+#
+@ocs = $schema->objectclasses(); 
+
+#
+# Display the objectclasses
+#
+ 
+if ( $selectAll || $selectObj )
+{
+&print_loop($schema_list, \@ocs, "objectClasses") if ( defined(@ocs) );
+}
+
+#
+# Get the schema matchingrules
+#
+@ocs = $schema->matchingrules(); 
+
+#
+# Display the matchingrules
+#
+ 
+if ( $selectAll || $selectMatch )
+{
+&print_loop($schema_list, \@ocs, "matchingRules" ) if ( defined(@ocs) );
+}
+
+} # End of if ( defined($schema) ) 
+else 
+{
+  $schema_list->insert("end",  "The schema object was return undefined.\n");
+  $schema_list->insert("end",  "There are several problems that can cause\n");
+  $schema_list->insert("end",  "this situation.\n");
+  $schema_list->insert("end",  "1. Your server may require you to be bound\n");
+  $schema_list->insert("end",  "   to the directory as the directory\n");
+  $schema_list->insert("end",  "   administrator.  Bind to the directory\n");
+  $schema_list->insert("end",  "   as the directory administrator and \n");
+  $schema_list->insert("end",  "   retry pulling the schema data.\n");
+  $schema_list->insert("end",  "\n");
+  $schema_list->insert("end",  "2. Your server is a version 2 LDAP server\n");
+  $schema_list->insert("end",  "   or the version 3 LDAP radio button is in\n");
+  $schema_list->insert("end",  "   the version 2 position.  Version 2 LDAP\n");
+  $schema_list->insert("end",  "   servers will not return schema data.\n");
+
+}
+
+} # End of schema subroutine
+
+} # End of SCHEMA subroutine
+
+
+
+sub displaySearch()
+{
+# my $displayWindow;
+my $cframe;
+my $lframe;
+my $rbclear;
+#my $list;
+my $x = $horz + 100;
+my $y = $vert + 100;
+#
+# Create Main Window
+#
+if (!  Exists($displayWindow) )
+{
+$displayWindow = MainWindow->new;
+
+$displayWindow->title("Directory Display Search");
+
+$displayWindow->geometry("+$x+$y");
+
+#
+# Create process Exit button
+#
+
+$displayWindow->Button(-text => "Close Display Search Result Window", 
+              -command => \&display_cancel, -font => $Font, -borderwidth => 5 )
+             -> pack(-fill => "both", -padx => 2, -pady => 2 ) ;
+
+#
+# Create frame for clear buttons.
+#
+
+
+$cframe = $displayWindow->Frame()
+      ->pack( -fill => "both", -side => "bottom", -padx => 5, -pady => 2);
+
+#
+# Create Clear Data
+#
+
+$cframe -> Button(-text => "     CLEAR DATA     ", 
+     -command =>  \&display_clear, -font => $Font, -borderwidth => 3 ) 
+     ->pack( -side => $hand );
+
+#
+# Create list frame.
+#
+
+$lframe = $displayWindow->LabFrame(-label => "DIRECTORY DATA",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 2,
+      -expand => 1);
+
+#
+# Create a Clear Data Radiobutton that will execute subroutine clear
+# to clear the List box before each directory query.
+#
+
+$rbclear = $lframe -> Checkbutton(-text => "CLEAR DIRECTORY DATA ON EACH QUERY",
+      -variable =>  \$display_clear, -onvalue => 1, -offvalue => 0, 
+      -font => $Font )
+      -> pack(-anchor => 'sw' );
+
+$rbclear->select();
+
+#
+# Create a ROText Box that will actually contain the 
+# returned directory data.
+#
+
+$list = $lframe ->Scrolled('ROText', -scrollbars => 'se',
+        -width => 60, -height => 20, -wrap => 'none', -font => $Font  );
+
+$list->pack(-fill => "both", -expand => 1 );
+
+}
+else
+{
+$displayWindow->deiconify() if Tk::Exists($displayWindow);
+$displayWindow->raise() if Tk::Exists($displayWindow);
+}
+
+
+sub display_clear {
+
+#
+# Clear out text in List Box
+#
+
+$list->delete("1.0", "end");
+
+} # End of clear subroutine
+ 
+sub display_cancel{
+ 
+$displayWindow->withdraw if Tk::Exists($displayWindow);
+ 
+} # End of cancel subroutine
+
+} # End of subroutine displaySearch
+ 
+#
+#
+# Search the directory for data
+#
+#
+#
+
+sub search 
+{
+
+my $error;
+my $version;
+
+if ( $setVersion ) 
+{ 
+$version = 3;
+}
+else
+{
+$version = 2;
+}
+
+
+my %opt = (
+  'd' => 0
+);
+
+#
+#
+#
+# Display the search results list box.
+#
+#
+displaySearch();
+
+
+if ( $display_clear ) { &display_clear(); }
+
+#
+# Parameter(s) to return
+#
+# Default to return everything.
+#
+#
+
+my $att_wanted = [ "*", 
+                   "createTimeStamp",
+                   "modifyTimeStamp",
+                   "creatorsName",
+                   "modifiersName" ];
+
+#
+# Set Filter options.
+# 
+
+$match = "(" . $info . '=' . $adata . ")";
+
+$error = 0;  # initialize error flag.
+
+my $f = Net::LDAP::Filter->new($match) or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Bad filter '$match'.\n");
+   return;
+}
+
+my $ldap = new Net::LDAP($LDAP_SERVER,
+                         timeout => 1,
+                        ) or $error = 1; 
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Connect error:  $@\n");
+   return;
+}
+
+$ldap->bind(password => "$bindpw", dn => "$binddn", version => $version )
+    or $error = 1;
+
+if ( $error == 1 )
+{
+   $list->insert("end",  "Bind error:  $@\n");
+   return;
+}
+
+$mesg = $ldap->search(
+  base   => $LDAP_SEARCH_BASE,
+  filter => $f,
+  attrs  => $att_wanted,
+  callback => \&print_entry,
+) or $error = 1; 
+
+
+if ( $error == 1 )
+{
+   $list->insert("end", "Search error:  $@\n");
+   return;
+}
+
+
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   $list->insert("end", "Error code:  $errstr\n");
+   $errstr = ldap_error_text($errstr);
+   $list->insert("end", "$errstr\n");
+   return;
+}
+
+#
+# Get and print out the record attributes.
+#
+
+sub print_entry {
+  my($mesg,$entry) = @_;
+  my @ref;
+
+  if ( !defined($entry) )
+  { 
+    $list->insert("end", "No records found matching filter $match.\n") 
+       if ($mesg->count == 0) ;
+
+    return;
+  }
+ 
+  #
+  #
+  #
+  if ( @ref = $mesg->referrals() )
+  {
+  $list->insert("end", " \n");
+  $list->insert("end", "-----------------------------------------------------------------------------\n");
+  $list->insert("end", " \n");
+  foreach (@ref )
+  {
+    $list->insert("end", "LDAP Referral: $_ \n");
+  }
+
+  }
+  else
+  {
+   
+  #
+  # Get a list of record attributes
+  #
+  
+  my @attrs = sort $entry->attributes;
+  my $max = 0;
+  $list->insert("end", " \n");
+  $list->insert("end", "-----------------------------------------------------------------------------\n");
+
+  #
+  # Get record DN
+  #
+  
+  my $dn = $entry->dn();
+  
+  $list->insert("end", " \n");
+  $list->insert("end", "DN:  $dn\n");
+  $list->insert("end", " \n");
+
+  #
+  # Calculate each attribute`s text length.
+  # We use this to create a pretty print out in the 
+  # List Box
+  #
+  
+  foreach (@attrs) { $max = length($_) if length($_) > $max }
+
+  #
+  # Get attribute`s data
+  #
+  
+  foreach (@attrs) {
+    my $attr = $entry->get_value($_, asref => 1);
+    next unless $attr;
+    if(ref($attr)) {
+      foreach $a (@$attr) {
+      #
+      # Format data and print data into List Box
+      #
+        if ( /;binary$/ )
+        {
+        $encoded = encode_base64($a);
+        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
+        $list->insert("end",  "$dstring");
+        }
+        else
+        {
+        $dstring = sprintf "%${max}s: %s\n",$_,$a;
+        $list->insert("end",  "$dstring");
+        }                                                                       
+
+#        $dstring = sprintf "%${max}s: %s\n",$_,$a;
+#        $list->insert("end",  "$dstring");
+      }
+    }
+    else {
+      #
+      # Format data and print data into List Box
+      #
+        if ( /;binary$/ )
+        {
+        $encoded = encode_base64($attr);
+        $dstring = sprintf "%${max}s: Binary data on next line(s), base64 encoded.\n%s\n\n",$_,$encoded;
+        $list->insert("end",  "$dstring");
+        }
+        else
+        {
+        $dstring = sprintf "%${max}s: %s\n",$_,$attr;
+        $list->insert("end",  "$dstring");
+        }                                                                       
+#      $dstring = sprintf "%${max}s: %s\n",$_,$attr;
+#      $list->insert("end",  "$dstring");
+    }
+  }
+ }
+}
+
+} # End of search subroutine
+
+
+sub getBases()
+{
+my ( $host, $base ) = @_;
+my @base = ();
+my $ptr;
+
+my $match = "(ou=*)";
+
+my $error = 0;  # initialize error flag.
+
+my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
+
+my $ldap = new Net::LDAP($host,
+                         timeout => 30,
+                        ) or $error = 1;
+
+#
+# Check for an error on connect/object creation
+#
+
+if ( $error == 1 )
+{
+   print "Connect error:  $@\n";
+   return @base;
+}
+
+$ldap->bind( password => "$bindpw", dn => "$binddn", version => 3 ) or $error = 1;
+
+#
+# Check for an error on bind
+#
+
+if ( $error == 1 )
+{
+   print "Bind error:  $@\n";
+   return @base;
+}
+
+push(@base,$base);
+$ptr = 0;
+
+while ( $ptr < @base )
+{
+my @new_base = calBase($base, $ldap, $f );
+
+push(@base, @new_base);
+
+$base = $base[++$ptr];
+
+}
+
+return @base;
+
+} # End of subroutine getBases()
+
+
+sub calBase()
+{
+my ( $base, $ldap, $f ) = @_;
+my $mesg;
+my $entry;
+my $errstr;
+my $error = 0;
+my @new_base = ();
+
+$mesg = $ldap->search(
+  base   => $base,
+  filter => $f,
+  attrs  => [ "cn" ],
+  scope  => "one",
+) or $error = 1;
+
+#
+# search for deadly ldap->search call error,
+# not the same as an ldap error.
+#
+if ( $error == 1 )
+{
+   print "Search error:  $@\n";
+   sleep 5;
+   return @new_base;
+}
+
+
+#
+# Check for an error on search
+# Search call work, but there was an ldap error.
+#
+
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   print"Error code:  $errstr\n";
+   print"Error on base:  $base\n";
+   $errstr = ldap_error_text($errstr);
+   print"$errstr\n";
+   return @new_base;
+}
+ else
+ {
+
+ $entry = $mesg->entry;
+
+ return @new_base unless defined($entry);
+ $count = $mesg->count();
+
+ for($i = 0 ; $i < $count ; $i++) 
+ {
+ my $entry = $mesg->entry($i);
+
+ $dn = $entry->dn;
+ $_ = $dn;
+
+ if ( /^ou=/ )
+ {
+  push(@new_base, $dn);
+ }
+
+ }
+return @new_base;
+
+}
+
+} # End of subroutine calBase()
+
+
+#----------------------------------------#
+# Usage() - display simple usage message #
+#----------------------------------------#
+sub Usage
+{
+   print( "Usage: [-h] | [-d]\n" );
+   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
+   print( "\t      Will not fork process.\n" );
+   print( "\t-h    Help.  Display this message.\n" );
+   print( "\n" );
+   print( "\t      Perldoc pod documentation is included in this script.\n" );
+   print( "\t      To read the pod documentation do the following;\n" );
+   print( "\t      perldoc <script name>\n" );
+   print( "\n" );
+   print( "\n" );
+   exit( 1 );
+}
+
+__END__
+
+=head1 NAME
+
+tklkup -  A script to do LDAP directory lookups and displaying directory schema information.
+
+=head1 SYNOPSIS
+
+
+This script is used to lookup information from a LDAP 
+directory server.  It is GUI based with several buttons for 
+selecting directory servers, search bases, attributes and
+for enabling the Directory Schema Search window.
+
+This script has been tested on Solaris, RedHat 6.0 Linux, and
+Mandrake 6.5 but should work with any system that has PERL and the 
+required modules installed in it.
+
+There are 2 files associated with the tklkup program in this 
+tar file; dot.tklkup, and tklkup.
+
+About the files.
+
+=over 4
+
+=item dot.tklkup
+
+dot.tklkup - This is the initialization file that should be put 
+into each users home directory as I<.tklkup>.  
+
+This file will have to be setup properly before the user 
+can expect the tklkup script to work properly.  The odds of this
+initialization file being setup correctly for anyone is I<ZERO>.
+However the script can be run with this file to get a feel 
+for how the script will look.
+
+It allows the user to customize how tklkup will look and 
+work for them.
+If the .tklkup files does not exist in a users home
+directory the program has a set of built-in defaults
+that it will use.
+
+To be used this file must have user read permission.
+
+There are 4 commands that can be used with this file;
+hand, attribute, server, and base.
+ 
+ hand -> values: left or right.  Defines where the 
+                 attribute label box will be place.
+
+ attribute -> attribute upon which the data search will be
+              based.  One attribute per line.
+
+ Server, mybase, and base work together to discribe a directory 
+ setup.
+
+ mybase -> Tells the script to use the base directives for 
+           determining search base(s). This directive should be
+           invoked before the base or server directives.        
+
+ base -> directory search base from which to start the 
+         data search when mybase is defined.
+         Also used when mybase is not defined for servers 
+         that do not have a defined base attached to them. In
+         this case if there is more than base line, the
+         last base line defined will be the one that is used.
+
+ server -> name of the directory server that you wish
+           to conduct the data search. 
+           One server per line.
+           Each line can have one of two formats
+           server: server name
+                  or
+           server: server name: base 
+
+           The I<server: server name> format will use the 
+           base directive(s) to define the base.
+           It has the advantage of speed with no delays, but
+           one base definition may not be suitable for 
+           all your directory servers with different DIT layouts.
+
+           The I<server: server name: base> format will 
+           cause each of the defined servers to have it's 
+           own special initial search base and use this initial
+           search base to find all of the other search bases if
+           the directive mybase is I<not> defined.
+           This is an attempt to do auto search base detection.
+           Using this method has one I<draw back>, when changing
+           to a different directory server there is a possible
+           I<delay> on displaying the new server name and 
+           search base.  This is due to the fact that TK and 
+           it's MainLoop() process are not multi-tasking.
+           The new search base has to be accquired and setup before 
+           MainLoop() takes control of the process.
+           Depending on the number of search bases this time period
+           can be quite a few seconds.  
+
+           When switching between servers with the same base, the 
+           search base will I<not> be updated.  This too can have 
+           a I<draw back> if there are new search bases in the 
+           new server but it saves time.
+
+           None of this is a problem if all of your servers have 
+           the same DIT layouts. Just define them with the 
+           same search base, there should be little or no delay
+           when switching to the new server.          
+           
+           If the directive I<mybase> is defined the base information
+           on each server directive is ignored. 
+
+ Now a word about directory branch, or search base, detection.  There 
+ are many things that can prevent this function from working properly. 
+ Several version 2 LDAP servers that this was tested on required 
+ that you be bound to the server.
+ None of the version 3 LDAP servers required this. 
+ If this function does not work for you, provide a bind DN and 
+ password.  The normal mode of operation for this function is an 
+ anonymous bind situation. 
+ Some of the ldap servers I worked with would never return the 
+ information I expected, auto detection never functioned on these
+ systems.
+ There is one college ldap server on the internet that has so 
+ many bases that it takes over an hour to figure out all the 
+ search bases.  The only way the operator knows that the 
+ script is still working is because search limit exceeded messages
+ are displayed on the console that initiated the tklkup script.
+ Who wants to wait a hour while the script figures this out.
+ 
+ If you decide to use auto search base detection you will just have
+ to try it and hope it works.
+
+=back 4
+-------------------------------------------------------------------
+
+=head1 tklkup
+
+tklkup - PERL executable file.  
+
+You may need to change the first line of the PERL tklkup script 
+to point to your file pathname of perl.
+
+When executed tklkup will display a window on your
+computer.  The graphical user interface, GUI, has 
+several sections to it.  
+
+Exit button.  At the top of the GUI is the "Exit"
+button.  When a mouse click is done on the "Exit" button 
+the program will terminate.
+
+The SET LDAP VERSION "RadioButton" diamond will select the
+LDAP protocol version.  When selected the "RadioButton" 
+diamond will be red in color.  This indicates that the 
+ldap connection will use the version I<3> protocol.  To use 
+ldap version I<2> protocol press the "RadioButton" diamond 
+so that it becomes a gray color.
+ 
+The SELECT SERVER button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the directory server the
+user wishes to use.  When selected the "RadioButton" diamond
+will turn red in color.  This menu is a designed to be a 
+"I<tear off>" menu, selecting the "---------------" line will 
+cause the pull down menu to become a separate window that 
+is still somewhat controlled by the GUI.  The 
+DIRECTORY SERVER text box will display the directory name 
+that is selected.  If the GUI is icon-ed or exited, the tear 
+off window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+
+The BIND TO DIRECTORY button will activate a window 
+that is separate from the main window.  
+
+The new window contains two buttons and two text boxs. 
+For security reasons nothing is initially displayed in the 
+text boxes.  Pressing the accept button with this setup
+will cause the bind DN and password to be set to null
+strings.
+
+At the top of the window is a Cancel button, pressing
+this button will cancel the operation of setting the
+bind DN and password. 
+
+The DN text box is where the user will enter the DN
+to bind with.
+
+The PASSWORD text box is where the user will enter the password
+for the DN.  Star "*" will be shown for the characters
+as they are typed into the text box.  
+
+At the bottom of the window is the Accept button, pressing
+this button will set the bind DN and the password.
+
+The SELECT BASE button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the search base  the
+user wishes to use in the directory search.  When selected 
+the "RadioButton" diamond will turn red in color.  The 
+DIRECTORY SEARCH BASE text box will display the directory 
+search base that is selected.  This menu is a designed to 
+be a "I<tear off>" menu, selecting the "---------------" line 
+will cause the pull down menu to become a separate window 
+that is still somewhat controlled by the GUI.  If the GUI
+is icon-ed or exited, the tear off window will follow the
+actions of the GUI.  All other actions like moving or 
+closing just the torn off window must be done by the 
+user's window manager.
+
+The SELECT ADDITIONAL ATTRIBUTES button will activate a 
+drop down menu.  From the menu the user will select the 
+"RadioButton" that corresponds to the attribute the
+user wishes to use in the directory search.  When selected 
+the "RadioButton" diamond will turn red in color.  This menu 
+is a designed to be a "I<tear off>" menu, selecting the 
+"---------------" line will cause the pull down menu to 
+become a separate window that is still somewhat controlled 
+by the GUI.  If the GUI is icon-ed or exited, the tear off 
+window will follow the actions of the GUI.  All other 
+actions like moving or closing just the torn off window 
+must be done by the user's window manager.
+
+The CLEAR ATTRIBUTE DATA button will clear out the text
+that appears in the Attribute Data text box.
+
+The ATTRIBUTE DATA text box is where the user will enter 
+the data to be searched for.
+
+The EXPLORE DIRECTORY SCHEMA button will activate the 
+Directory Schema Search Window.  For information about
+this window see the Schema section of the manual.
+
+
+-------------------------------------------------------------------
+
+=head1 Display Search Results
+
+When the SEARCH DIRECTORY button is pressed the 
+Display Search Results window will be displayed.
+
+At the top of the window is the Close Display Search Result Window
+button.  Pressing the button will 
+
+At the top of the GUI is the "Close Display Search Result Window" 
+button.  When a mouse click is done on the "Close Display Search Result
+ Window" button the Display Search Result window will be withdrawn.  
+The window is not distroyed, it just made invisiable and disabled.
+
+The Display Search Result window can be destroyed by 
+enabling the proper window manager destroy function.
+
+The Directory Data text box is where the results of the
+directory search will be displayed.  With the cursor
+in the Directory Data text box you have access to additional
+functions when you depress the mouse "action" button.
+When the "action" mouse button is depressed a small text box
+with 4 additional functions will be displayed inside the 
+Directory Data text box.  These 4 functions are;
+
+ File -> This function exits the program.  You can not edit
+         the Directory Data text box because it is created 
+         as a read only text box.
+
+ Edit -> This function gives the user 3 additional functions;
+         Copy -> I do not know what this function does.
+         Select All -> Highlights/Selects all of the text in
+         the Directory Data text box.
+         Unselect All -> Unselects all of the text in 
+         the Directory Data text box.
+         Select/Unselect are used in-conjunction with the 
+         Copy function.
+
+ Search -> This function gives the user 4 additional
+         functions.
+         Find, Find Next, Find Previous -> These functions
+         find text in the Directory Data text box.
+         Replace -> This function allows you to replace the
+         text that is selected.  However this is just 
+         a fake replacement as you can not edit the 
+         Directory Data text box because it is created 
+         as a read only text box.
+
+ View -> This function gives the user 3 additional 
+         functions.
+         Goto Line ->  When selected will prompt the
+         user for a line number, the line number being
+         the line number the user wishes to see.
+         What Line ->  When selected will tell the user
+         what line number the cursor is on.
+         Wrap ->  When selected will prompt the user
+         to choose how to do line wrapping in the 
+         Directory Data text box.
+  
+
+Associated with the Directory Data text box is the "RadioButton"
+that determines how often the data in the directory text
+box is cleared.  If the "CheckButton" is selected, colored
+red, the directory data text box will be cleared out before
+each directory query.  If the "CheckButton" is not selected
+the directory data text box will NOT be cleared out until 
+the Clear Data button in clicked or the CLEAR DIRECTORY DATA
+ON EACH QUERY "RadioButton" is selected.
+
+The CLEAR DATA button will clear out the text that 
+appears in the Directory Data text box.
+
+-------------------------------------------------------------------
+
+=head1 Schema Window.
+
+=head2 Directory Schema Search Window
+
+This function is used to lookup schema information from a LDAP 
+directory server.  The directory server to be searched is 
+selected from the Directory Search window.
+
+=head2 Directory Schema Search Window Operation
+
+When the Explore Directory Schema button is pressed in the
+Directory Search window, the Directory Schema Search window 
+will be displayed on your computer.  The graphical user 
+interface, GUI, has several sections to it.  
+
+At the top of the GUI is the "Close Schema Search Window" button.  
+When a mouse click is done on the "Close Schema Search Window" 
+button the schema window will be withdraw.  The window is not
+distroyed, it just made invisiable and disabled.
+
+The Directory Schema Search window can be destroyed by 
+enabling the proper window manager destroy function.
+
+When the Write Data To File RadioButton is selected the 
+LDAP Schema data will be written to the file listed 
+in the text box below the RadioButton text.  Once the data 
+has been written to the file a message will be written to the
+DIRECTORY SCHEMA DATA text box stating that the data has been
+written to a file and will list the file name. Upon 
+completion of the schema dump operation the RadioButton and 
+text in the file name text box will be reset.
+
+Associated with the Directory Schema Data text box is the "CheckButton"
+that determines how often the data in the directory text
+box is cleared.  If the "CheckButton" is selected, colored
+red, the directory data text box will be cleared out before
+each directory query.  If the "CheckButton" is not selected
+the directory data text box will NOT be cleared out until 
+the Clear Data button in clicked or the CLEAR DIRECTORY DATA
+ON EACH QUERY "CheckButton" is selected.  By default the 
+CheckButton is select to clear out the data in the Directory
+Schema Data text box on each query.
+
+Associated with the Directory Schema Data text box is a series of
+"CheckButtons" that determines what of the schema objects will be
+displayed.  There are 4 Checkbuttons; ALL, objectClass, matchingRules,
+and attributeTypes.  If the "CheckButton" is selected, colored
+red, then schema objects of that type will be displayed in the 
+Directory Schema Data text box. 
+If the "CheckButton" is not selected, gray in color, then schema
+objects of this type will not be displayed in the Directory Schema
+Data text box.  By default the ALL CheckButton is select.
+
+The Directory Schema Data text box is where the results of the
+directory search will be displayed.  With the cursor
+in the Directory Data text box you have access to additional
+functions when you depress the mouse "action" button.
+When the "action" mouse button is depressed a small text box
+with 4 additional functions will be displayed inside the 
+Directory Data text box.  These 4 functions are;
+
+ File -> This function exits the program.  You can not edit
+         the Directory Data text box because it is created 
+         as a read only text box.
+
+ Edit -> This function gives the user 3 additional functions;
+         Copy -> I do not know what this function does.
+         Select All -> Highlights/Selects all of the text in
+         the Directory Data text box.
+         Unselect All -> Unselects all of the text in 
+         the Directory Data text box.
+         Select/Unselect are used in-conjunction with the 
+         Copy function.
+
+ Search -> This function gives the user 4 additional
+         functions.
+         Find, Find Next, Find Previous -> These functions
+         find text in the Directory Data text box.
+         Replace -> This function allows you to replace the
+         text that is selected.  However this is just 
+         a fake replacement as you can not edit the 
+         Directory Data text box because it is created 
+         as a read only text box.
+
+ View -> This function gives the user 3 additional 
+         functions.
+         Goto Line ->  When selected will prompt the
+         user for a line number, the line number being
+         the line number the user wishes to see.
+         What Line ->  When selected will tell the user
+         what line number the cursor is on.
+         Wrap ->  When selected will prompt the user
+         to choose how to do line wrapping in the 
+         Directory Data text box.
+  
+The Clear Data button will clear out the text that 
+appears in the Directory Schema Data text box.
+
+At the bottom of the GUI is the "Retrieve Directory Schema" button.  
+When a mouse click is done on the "Retrieve Directory Schema" 
+button the script will query the directory server for schema information.
+
+-------------------------------------------------------------------
+
+
+=head1 REQUIREMENTS
+
+
+To use this program you will need the following.
+
+
+At least PERL version 5.004.  You can get a stable version of PERL
+from the following URl;
+   http://cpan.org/src/index.html
+
+Perl Tk800.015 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Tk/
+
+Perl LDAP module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Net/
+
+Depending on the modules loaded in your PERL system, you may need to
+load the following 2 PERL modules.
+
+Perl Convert-Berr module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Convert/
+
+Perl Digest-MD5 module.  You can get this from the following URl;
+   ftp://ftp.duke.edu/pub/CPAN/modules/by-module/MD5/
+
+Bundled inside each PERL module is instructions on how to install the 
+module into your PERL system.
+
+-------------------------------------------------------------------
+
+=head1 INSTALLING THE SCRIPT
+
+Install the tklkup script anywhere you wish, I suggest 
+/usr/local/bin/tklkup.
+
+Install the dot.tklkup file in each users home directory
+as .tklkup.  It is possible to use a central copy and
+create a link in the user home directory to the central copy.
+
+-------------------------------------------------------------------
+
+Since the script is in PERL, feel free to modify it if it does not 
+meet your needs.  This is one of the main reasons I did it in PERL.
+If you make an addition to the code that you feel other individuals
+could use let me know about it.  I may incorporate your code
+into my code.
+
+=head1 AUTHOR
+
+Clif Harden <charde@utdallas.edu>
+If you find any errors in the code please let me know at
+charden@utdallas.edu.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999-2000 Clif Harden. All rights reserved. This program is
+free software; you can redistribute it and/or modify it under the same
+terms as Perl itself.
+
+=cut
+
+
