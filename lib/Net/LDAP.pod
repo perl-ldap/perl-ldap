@@ -472,8 +472,8 @@ B<Example>
 
 =item root_dse ( OPTIONS )
 
-The root_dse method retrieves information from the server's
-rootDSE entry.
+The root_dse method retrieves cached information from the server's
+rootDSE.
 
 =over 4
 
@@ -502,6 +502,11 @@ B<Example>
  # get supported LDAP versions
  $root->get_value('supportedLDAPVersion', asref => 1);
 
+As the root DSE may change in certain circumstances - for instance
+when you change the connection using start_tls - you should always use
+the root_dse method to return the most up-to-date copy of the root
+DSE.
+
 =item schema ( OPTIONS )
 
 Request that a schema search be performed.  This can be used to read 
@@ -509,7 +514,7 @@ schema information.
 
 The result is an object of class L<Net::LDAP::Schema>.
 Read this documentation for further information about methods that
-can be preformed with this object.
+can be performed with this object.
 
 =over 4
 
@@ -912,6 +917,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.26 2003/05/09 12:05:10 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.27 2003/05/09 13:32:49 chrisridd Exp $>
 
 =cut
