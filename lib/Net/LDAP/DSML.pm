@@ -1,5 +1,7 @@
 package Net::LDAP::DSML;
 
+# $Id: DSML.pm,v 1.6 2001/12/19 04:37:24 charden Exp $
+
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
 # a Net::LDAP::Entry object. First
 # we'll convert XML into Net::LDAP::Entry with schema attributes and 
@@ -13,6 +15,10 @@ package Net::LDAP::DSML;
 # reference instead of a file handle.  This touched all of the
 # methods that wrote to a file.
 #
+# 12/18/01 Clif Harden
+# Added code to put schema data into DSML XML format.  Data
+# can be stored in an array reference or file.
+# 
 
 
 use strict;
@@ -114,8 +120,8 @@ sub write {
   if (ref $entry eq 'Net::LDAP::Entry') {
     $self->_print_entry($entry)
   }
-  elsif (ref $entry eq 'Net::LDAP::Schem') {
-    _print_schema($entry);
+  elsif (ref $entry eq 'Net::LDAP::Schema') {
+    $self->_print_schema($entry);
   }
   else {
     return undef;
@@ -123,30 +129,385 @@ sub write {
   1;
 }
  
-#coming soon! ;)
 sub _print_schema {
-  my ($self,$entry) = @_;
-  
+  my ($self,$schema) = @_;
+  my @atts;
   my $fh = $self->{'net_ldap_fh'} or return;
-  return undef unless ($entry->isa('Net::LDAP::Schema')); 
+  return undef unless ($schema->isa('Net::LDAP::Schema')); 
 
   if ( ref($fh) eq "ARRAY" )
   {
-    push(@$fh, "<dsml:directory-entries>\n");
+    push(@$fh, "<dsml:directory-schema>\n");
   }
   else
   {
-  print  $fh  "<dsml:directory-entries>\n";
+  print  $fh  "<dsml:directory-schema>\n";
   }
 
-  @_;
+#
+# Get the attributes
+#
+
+#@atts = $schema->attributes();
+#$self->{'net_ldap_title'} = "attribute-type";
+#$self->_print_loop( \@atts, $schema) if ( @atts );
+
+#
+# Get the schema objectclasses
+#
+@atts = $schema->objectclasses();
+$self->{'net_ldap_title'} = "objectclass-type";
+$self->_print_loop( \@atts,$schema) if ( @atts );
+
 }
- 
+
+#
+#  Subroutine to print items from the schema objects.
+#
+
+sub _print_loop()
+{
+my ( $self,$ocs,$schema ) = @_;
+
+my $fh = $self->{'net_ldap_fh'} or return;
+my $title = $self->{'net_ldap_title'} or return;
+my %container;
+my $values;
+my $raData;
+my $dstring;
+
+foreach my $var ( @$ocs)
+{
+   #
+   # Get the oid number of the object.
+   #
+   my $oid = $schema->name2oid( "$var" );
+   $container{'id'} = $var;
+   
+   $container{'oid'} = $oid;
+   #
+   # Get the various other items associated with
+   # this object.
+   #
+   my @items = $schema->items( "$oid" );
+
+   foreach my $value ( @items )
+   {
+      next if ( $value eq 'type');
+      next if ( $value eq 'oid');
+      $values = [];
+      @$values = $schema->item( $oid, $value );
+      
+      if ( @$values && $$values[0] == 1 )
+      {
+         $container{ $value} = $value;
+         next;
+      }
+      if ( @$values )
+      {
+         $container{$value} = $values;
+      }
+   }
+
+#
+# Now comes the real work, parse and configure the
+# data into DSML XML format.
+#
+ my @keys = keys(%container);
+ foreach my $name ( @keys )
+ {
+  if ( ref($fh) eq "ARRAY" )
+  {
+    #
+    # Take care of the attribute-type and objectclass-type
+    # section first.  This part writes to a user supplied array.
+    #
+    if( $container{'id'} )
+    {
+    $dstring ="<dsml:$title  ";
+    $dstring .= "id=\"";
+    $dstring .= $container{'id'};
+    delete($container{'id'} );
+    if ( $container{'sup'} )
+    {
+    $dstring .= "\"  ";
+    $raData = $container{'sup'};
+    $dstring .= "superior=\"#";
+    foreach my $super (@$raData)
+    { 
+    $dstring .= "$super #";
+    }
+    }
+    chop($dstring); # Chop off "\""
+    chop($dstring); # Chop off "#"
+    if ( $container{'single-value'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "single-value=\"true";
+    delete($container{'single-value'} );
+    }
+    if ( $container{'obsolete'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "obsolete=\"true";
+    delete($container{'obsolete'} );
+    }
+    if ( $container{'user-modification'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "user-modification=\"true";
+    delete($container{'user-modification'} );
+    }
+    if ( $container{'structural'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= "$container{'structural'}";
+    delete($container{'structural'} );
+    }
+    if ( $container{'abstract'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= "$container{'abstract'}";
+    delete($container{'abstract'} );
+    }
+    if ( $container{'auxiliary'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= "$container{'auxiliary'}";
+    delete($container{'auxiliary'} );
+    }
+    $dstring .= "\">\n";
+    push(@$fh, $dstring);
+
+    if ( $container{'name'} )
+    {
+     $dstring = "<dsml:name>";
+     $raData = $container{'name'};
+     $dstring .= "@$raData";
+     $dstring .= "</dsml:name>\n";
+     delete($container{'name'} );
+     push(@$fh, $dstring);
+    }
+    $dstring = "<dsml:object-identifier>";
+    $dstring .= $container{'oid'};
+    $dstring .= "</dsml:object-identifier>\n";
+    delete($container{'oid'} );
+    push(@$fh, $dstring);
+    }
+    #
+    # Opening element and attributes are done, 
+    # finish the other elements.
+    #
+    elsif ( $name eq "syntax" )
+    {
+     $dstring = "<dsml:syntax";
+     if ( $container{'max_length'} )
+     {
+      $dstring .= " bound=\""; 
+      $raData = $container{'max_length'};
+      $dstring .= "@$raData"; 
+      $dstring .= "\">"; 
+      delete($container{'max_length'} );
+     }
+     else 
+     {
+      $dstring .= ">"; 
+     }
+     $raData = $container{'syntax'};
+     $dstring .= "@$raData";
+     $dstring .= "</dsml:syntax>\n";
+     push(@$fh, $dstring);
+     delete($container{'syntax'} );
+    }
+    elsif ( $name eq "desc" )
+    {
+     $dstring = "<dsml:description>";
+     $raData = $container{'desc'};
+     $dstring .= "@$raData"; 
+     $dstring .= "</dsml:description>\n";
+     push(@$fh, $dstring);
+     delete($container{'desc'} );
+    }
+    elsif ( $container{'may'} )
+    { 
+      my $data = $container{'may'};
+      foreach my $t1 (@$data )
+      {
+        push(@$fh, "<dsml:attribute ref=\"#$t1\" required=\"false\"/>\n");
+      }
+      delete($container{'may'} );
+    }
+    elsif ( $container{'must'} )
+    { 
+      my $data = $container{'must'};
+      foreach my $t1 (@$data )
+      {
+        push(@$fh, "<dsml:attribute ref=\"#$t1\" required=\"true\"/>\n");
+      }
+      delete($container{'must'} );
+    }
+
+  }
+  else
+  {
+    #
+    # Take care of the attribute-type and objectclass-type
+    # section first.  This part writes to a file.
+    #
+    if( $container{'id'} )
+    {
+    $dstring ="<dsml:$title  ";
+    $dstring .= "id=\"";
+    $dstring .= $container{'id'};
+    delete($container{'id'} );
+    if ( $container{'sup'} )
+    {
+    $dstring .= "\"  ";
+    $raData = $container{'sup'};
+    $dstring .= "superior=\"#";
+    foreach my $super (@$raData)
+    { 
+    $dstring .= "$super #";
+    }
+    }
+    chop($dstring); # Chop off "#"
+    chop($dstring); # Chop off " "
+    if ( $container{'single-value'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "single-value=\"true";
+    delete($container{'single-value'} );
+    }
+    if ( $container{'obsolete'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "obsolete=\"true";
+    delete($container{'obsolete'} );
+    }
+    if ( $container{'user-modification'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "user-modification=\"true";
+    delete($container{'user-modification'} );
+    }
+    if ( $container{'structural'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= $container{'structural'};
+    delete($container{'structural'} );
+    }
+    if ( $container{'abstract'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= "$container{'abstract'}";
+    delete($container{'abstract'} );
+    }
+    if ( $container{'auxiliary'} )
+    {
+    $dstring .= "\"  ";
+    $dstring .= "type=\"";
+    $dstring .= "$container{'auxiliary'}";
+    delete($container{'auxiliary'} );
+    }
+    $dstring .= "\">\n";
+    print  $fh $dstring;  # print to file
+
+    if ( $container{'name'} )
+    {
+     $dstring = "<dsml:name>";
+     $raData = $container{'name'};
+     $dstring .= "@$raData";
+     $dstring .= "</dsml:name>\n";
+     delete($container{'name'} );
+     print $fh $dstring;
+    }
+    $dstring = "<dsml:object-identifier>";
+    $dstring .= $container{'oid'};
+    $dstring .= "</dsml:object-identifier>\n";
+    delete($container{'oid'} );
+    print  $fh $dstring;  # print to file
+    }
+    #
+    # Opening element and attributes are done, 
+    # finish the other elements.
+    #
+    elsif ( $name eq "syntax" )
+    {
+     $dstring = "<dsml:syntax";
+     if ( $container{'max_length'} )
+     {
+      $dstring .= " bound=\""; 
+      $raData = $container{'max_length'};
+      $dstring .= "@$raData"; 
+      $dstring .= "\">"; 
+      delete($container{'max_length'} );
+     }
+     else 
+     {
+      $dstring .= ">"; 
+     }
+     $raData = $container{'syntax'};
+     $dstring .= "@$raData";
+     $dstring .= "</dsml:syntax>\n";
+     print  $fh $dstring;
+     delete($container{'syntax'} );
+    }
+    elsif ( $name eq "desc" )
+    {
+     $dstring = "<dsml:description>";
+     $raData = $container{'desc'};
+     $dstring .= "@$raData"; 
+     $dstring .= "</dsml:description>\n";
+     print  $fh $dstring;
+     delete($container{'desc'} );
+    }
+    elsif ( $container{'may'} )
+    { 
+      my $data = $container{'may'};
+      foreach my $t1 (@$data )
+      {
+        print  $fh "<dsml:attribute ref=\"#$t1\" required=\"false\"/>\n";
+      }
+      delete($container{'may'} );
+    }
+    elsif ( $container{'must'} )
+    { 
+      my $data = $container{'must'};
+      foreach my $t1 (@$data )
+      {
+        print  $fh "<dsml:attribute ref=\"#$t1\" required=\"true\"/>\n";
+      }
+      delete($container{'must'} );
+    }
+  }
+ }
+
+if ( ref($fh) eq "ARRAY" )
+{
+$dstring ="</dsml:$title>\n";
+push(@$fh, $dstring);
+}
+else
+{
+print  $fh "</dsml:$title>\n";
+}
+
+%container = ();
+}
+
+} # End of subroutine print_loop
+
 
 sub _print_entry {
   my ($self,$entry) = @_;
   my @unknown;
   my $count;
+  my $dstring;
   
   my $fh = $self->{'net_ldap_fh'} or return;
   return undef unless ($entry->isa('Net::LDAP::Entry')); 
@@ -162,9 +523,10 @@ sub _print_entry {
 
   if ( ref($fh) eq "ARRAY" )
   {
-    push(@$fh, "<dsml:entry dn=\"");
-    push(@$fh, _normalize($entry->dn));
-    push(@$fh, "\">\n");
+    $dstring = "<dsml:entry dn=\"";
+    $dstring .= _normalize($entry->dn);
+    $dstring .= "\">\n";
+    push(@$fh, $dstring);
   }
   else
   {
@@ -196,9 +558,10 @@ sub _print_entry {
     else { 
       if ( ref($fh) eq "ARRAY" )
       {
-       push(@$fh, "<dsml:attr name=\"");
-       push(@$fh, _normalize($attr));
-       push(@$fh, "\">\n");
+       $dstring = "<dsml:attr name=\"";
+       $dstring .= _normalize($attr);
+       $dstring .= "\">\n";
+       push(@$fh, $dstring);
       }
       else
       {
@@ -212,9 +575,10 @@ sub _print_entry {
        if ($isOC) {
          if ( ref($fh) eq "ARRAY" )
          {
-          push(@$fh, "<dsml:oc-value>");
-          push(@$fh, _normalize($value));
-          push(@$fh, "</dsml:oc-value>\n");
+          $dstring = "<dsml:oc-value>";
+          $dstring .= _normalize($value);
+          $dstring .= "</dsml:oc-value>\n";
+          push(@$fh, $dstring);
          }
          else
          {
@@ -228,9 +592,10 @@ sub _print_entry {
           require MIME::Base64;
          if ( ref($fh) eq "ARRAY" )
          {
-          push(@$fh, qq!<dsml:value  encoding="base64">!);
-          push(@$fh, MIME::Base64::encode($value));
-          push(@$fh, "</dsml:value>\n");
+          $dstring = qq!<dsml:value  encoding="base64">!;
+          $dstring .= MIME::Base64::encode($value);
+          $dstring .= "</dsml:value>\n";
+          push(@$fh, $dstring);
          }
          else
          {
@@ -242,9 +607,10 @@ sub _print_entry {
         else {
          if ( ref($fh) eq "ARRAY" )
          {
-          push(@$fh, "<dsml:value>");
-          push(@$fh, _normalize($value));
-          push(@$fh, "</dsml:value>\n");
+          $dstring = "<dsml:value>";
+          $dstring .= _normalize($value);
+          $dstring .= "</dsml:value>\n";
+          push(@$fh, $dstring);
          }
          else
          {
@@ -278,8 +644,9 @@ sub _print_entry {
 
   if ( ref($fh) eq "ARRAY" )
   {
-   push(@$fh, "</dsml:entry>\n");
-   push(@$fh, "</dsml:directory-entries>\n");
+   $dstring = "</dsml:entry>\n";
+   $dstring .= "</dsml:directory-entries>\n";
+   push(@$fh, $dstring);
   }
   else
   {
