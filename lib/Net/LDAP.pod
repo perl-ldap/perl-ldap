@@ -666,6 +666,85 @@ it will return when B<MESG> has been completed.
 
 Returns an error code defined in L<Net::LDAP::Constant|Net::LDAP::Constant>.
 
+=item start_tls ( [ OPTIONS ] )
+
+Calling this method will convert the connection to using Transport
+Layer Security (TLS), which potentially provides an encrypted
+connection. This is I<only> possible if the connection is using
+LDAPv3. OPTIONS is a number of key-value pairs which describe how to
+configure the security of the connection:
+
+=over 4
+
+=item verify
+
+How to verify the server's certificate, either 'none' (the server may
+provide a certificate but it will not be checked - this may mean you
+are be connected to the wrong server), 'optional' (verify if the
+server offers a certificate), or 'require' (the server must provide a
+certificate, and it must be valid.) If you set verify to optional or
+require, you must also set either cafile or capath. The most secure
+option is 'require'.
+
+=item ciphers
+
+Specify which subset of cipher suites are permissible for this
+connection, using the standard OpenSSL string format. The default
+value for ciphers is 'ALL', which permits all ciphers, even those that
+don't encrypt!
+
+=item clientcert
+
+=item clientkey
+
+If you want to use the client to offer a certificate to the server for
+SSL authentication (which is not the same as for the LDAP Bind
+operation) then set clientcert to the user's certificate file, and
+clientkey to the user's private key file. These files must be in PEM
+format.
+
+=item capath
+
+=item cafile
+
+When verifying the server's certificate, either set capath to the
+pathname of the directory containing CA certificates, or set cafile to
+the filename containing the certificate of the CA who signed the
+server's certificate. These certificates must all be in PEM format.
+
+The directory in 'capath' must contain certificates named using the
+hash value of themselves. To generate these names, use OpenSSL like
+this in Unix:
+
+    ln -s cacert.pem `openssl x509 -hash -noout < cacert.pem`.0
+
+(assuming that the certificate of the CA is in cacert.pem.)
+
+=back
+
+=back
+
+=over 4
+
+=item cipher
+
+Returns the cipher mode being used by the connection, in the string
+format used by OpenSSL.
+
+=item certificate
+
+Returns an X509_Certificate object containing the server's
+certificate. See the IO::Socket::SSL documentation for information
+about this class.
+
+For example, to get the subject name (in a peculiar OpenSSL-specific
+format, different from RFC 1779 and RFC 2253) from the server's
+certificate, do this:
+
+    print "Subject DN: " . $ldaps->certificate->subject_name . "\n";
+
+=back
+
 =item version
 
 Returns the version of the LDAP protocol that is being used.
@@ -764,6 +843,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.8 2001/03/07 15:13:27 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.9 2001/07/06 09:18:52 chrisridd Exp $>
 
 =cut
