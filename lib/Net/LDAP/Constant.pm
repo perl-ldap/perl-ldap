@@ -16,9 +16,13 @@ sub import {
   _find(@_);
   my $oops;
   foreach my $sym (@_) {
-    my $sub = $const{$sym}
-      or ++$oops, carp(qq["$sym" is not exported by the Net::LDAP::Constant module]);
-    *{$callpkg . "::$sym"} = $sub;
+    if (my $sub = $const{$sym}) {
+      *{$callpkg . "::$sym"} = $sub;
+    }
+    else {
+      ++$oops;
+      carp(qq["$sym" is not exported by the Net::LDAP::Constant module]);
+    }
   }
   croak("Can't continue after import errors") if $oops;
 }
@@ -156,6 +160,10 @@ This code is returned when a compare request completes and the attribute value
 given is in the entry specified
 
 =item LDAP_AUTH_METHOD_NOT_SUPPORTED (7)
+
+Unrecognized SASL mechanism name
+
+=item LDAP_STRONG_AUTH_NOT_SUPPORTED (7)
 
 Unrecognized SASL mechanism name
 
@@ -431,6 +439,34 @@ The referral hop limit has been exceeded.
 
 =head2 Control OIDs
 
+=item LDAP_CONTROL_SORTREQUEST (1.2.840.113556.1.4.473)
+
+=item LDAP_CONTROL_SORTRESULT (1.2.840.113556.1.4.474)
+
+=item LDAP_CONTROL_VLVREQUEST (2.16.840.1.113730.3.4.9)
+
+=item LDAP_CONTROL_VLVRESPONSE (2.16.840.1.113730.3.4.10)
+
+=item LDAP_CONTROL_PROXYAUTHENTICATION (2.16.840.1.113730.3.4.12)
+
+=item LDAP_CONTROL_PAGED (1.2.840.113556.1.4.319)
+
+=item LDAP_CONTROL_TREE_DELETE (1.2.840.113556.1.4.805)
+
+=item LDAP_CONTROL_MATCHEDVALS (1.2.826.0.1.3344810.2.2)
+
+=item LDAP_CONTROL_MANAGEDSAIT (2.16.840.1.113730.3.4.2)
+
+=item LDAP_CONTROL_PERSISTENTSEARCH (2.16.840.1.113730.3.4.3)
+
+=item LDAP_CONTROL_ENTRYCHANGE (2.16.840.1.113730.3.4.7)
+
+=item LDAP_CONTROL_PWEXPIRED (2.16.840.1.113730.3.4.4)
+
+=item LDAP_CONTROL_PWEXPIRING (2.16.840.1.113730.3.4.5)
+
+=item LDAP_CONTROL_REFERRALS (1.2.840.113556.1.4.616)
+
 =head2 Extension OIDs
 
 B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
@@ -464,6 +500,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Constant.pm,v 1.6 2003/05/08 09:27:40 gbarr Exp $>
+I<$Id: Constant.pm,v 1.7 2003/05/08 12:53:08 gbarr Exp $>
 
 =cut
