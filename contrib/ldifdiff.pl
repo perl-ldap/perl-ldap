@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 3.6 2004/11/10 19:13:39 subbarao Exp $
+# $Id: ldifdiff.pl,v 3.7 2005/03/15 14:22:45 subbarao Exp $
 
 =head1 NAME
 
@@ -191,9 +191,8 @@ sub diff
 			delete($targetentry->{changetype});
 			
 			$targetentry->dn($sourceentry->dn);
-			$targetentry->{$rdnattr} = $sourceentry->{$rdnattr}
+			$targetentry->replace($rdnattr, $sourceentry->get_value($rdnattr))
 				if $sourceentry->exists($rdnattr);
-
 		}
 
 		# Check for differences and generate LDIF as appropriate
