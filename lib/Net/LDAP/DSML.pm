@@ -1,5 +1,9 @@
 package Net::LDAP::DSML;
 
+#
+# $Id: DSML.pm,v 1.8 2001/12/25 01:05:32 charden Exp $
+#
+
 # For schema parsing,  add ability to Net::LDAP::Schema to accecpt 
 # a Net::LDAP::Entry object. First
 # we'll convert XML into Net::LDAP::Entry with schema attributes and 
@@ -243,9 +247,6 @@ foreach my $var ( @$ocs)
 # Now comes the real work, parse and configure the
 # data into DSML XML format.
 #
- my @keys = keys(%container);
- foreach my $name ( @keys )
- {
     #
     # Take care of the attribute-type and objectclass-type
     # section first.  
@@ -332,7 +333,7 @@ foreach my $var ( @$ocs)
     # Opening element and attributes are done, 
     # finish the other elements.
     #
-    elsif ( $name eq "syntax" )
+    if ( $container{'syntax'} )
     {
      $dstring = "<dsml:syntax";
      if ( $container{'max_length'} )
@@ -353,7 +354,8 @@ foreach my $var ( @$ocs)
      push(@$fh, $dstring);
      delete($container{'syntax'} );
     }
-    elsif ( $name eq "desc" )
+
+    if ( $container{'desc'} )
     {
      $dstring = "<dsml:description>";
      $raData = $container{'desc'};
@@ -362,7 +364,8 @@ foreach my $var ( @$ocs)
      push(@$fh, $dstring);
      delete($container{'desc'} );
     }
-    elsif ( $name eq "ordering" )
+
+    if ( $container{'ordering'} )
     {
      $dstring = "<dsml:ordering>";
      $raData = $container{'ordering'};
@@ -374,7 +377,8 @@ foreach my $var ( @$ocs)
      }
      delete($container{'ordering'} );
     }
-    elsif ( $name eq "equality" )
+
+    if ( $container{'equality'} )
     {
      $dstring = "<dsml:equality>";
      $raData = $container{'equality'};
@@ -386,7 +390,8 @@ foreach my $var ( @$ocs)
      }
      delete($container{'equality'} );
     }
-    elsif ( $name eq "substr" )
+
+    if ( $container{'substr'} )
     {
      $dstring = "<dsml:substring>";
      $raData = $container{'substr'};
@@ -398,7 +403,8 @@ foreach my $var ( @$ocs)
      }
      delete($container{'substr'} );
     }
-    elsif ( $container{'may'} )
+
+    if ( $container{'may'} )
     { 
       my $data = $container{'may'};
       foreach my $t1 (@$data )
@@ -407,7 +413,8 @@ foreach my $var ( @$ocs)
       }
       delete($container{'may'} );
     }
-    elsif ( $container{'must'} )
+
+    if ( $container{'must'} )
     { 
       my $data = $container{'must'};
       foreach my $t1 (@$data )
@@ -416,8 +423,6 @@ foreach my $var ( @$ocs)
       }
       delete($container{'must'} );
     }
-
- }
 
 $dstring ="</dsml:$title>\n";
 push(@$fh, $dstring);
