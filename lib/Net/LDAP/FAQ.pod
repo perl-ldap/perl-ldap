@@ -1031,6 +1031,23 @@ replace the placeholders.
 
   print ldap_error_name($result->code);
 
+=head2 How can I simiulate server failover.
+
+Perl-LDAP does not do server failover, however there are several
+programming options for getting around this situation.
+
+Here is one possible solution.
+
+   unless ( $ldaps =
+            Net::LDAPS->new($ldapserverone,
+                            port=>636,timeout=>5) ) 
+           {
+            $ldaps = Net::LDAPS->new($ldapservertwo,
+                                     port=>636,timeout=>20) || 
+            return 
+            "Can't connect to $ldapserverone or $ldapservertwo via LDAPS: $@";
+           }
+
 =head1 Using X.509 certificates.
 
 =head2 How do I store X.509 certificates in the directory?
