@@ -51,10 +51,30 @@ Returns I<true> if the request has been completed.
 
 =item error
 
-The error message in the result message from the server. If the server did
-not include an error message, then the result of 
-L<ldap_error_desc|Net::LDAP::Util/ldap_error_desc> with the
-error code from the result message.
+Returns the error message in the result message from the server. If
+the server did not include an error message, then the result of
+L<ldap_error_desc|Net::LDAP::Util/ldap_error_desc> with the error code
+from the result message.
+
+=item error_name
+
+Returns the name of the error code in the result message from the
+server. See L<ldap_error_name|Net::LDAP::Util::ldap_error_name> for a
+detailed description of the return value.
+
+=item error_text
+
+Returns the short text description of the error code in the result
+message from the server. See
+L<ldap_error_text|Net::LDAP::Util::ldap_error_text> for a detailed
+description of the return value.
+
+=item error_desc
+
+Returns a long text description of the error code in the result
+message from the server. See
+L<ldap_error_desc|Net::LDAP::Util::ldap_error_desc> for a detailed
+description of the return value.
 
 =item is_error
 
@@ -106,6 +126,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Message.pod,v 1.6 2003/05/07 11:11:04 chrisridd Exp $>
+I<$Id: Message.pod,v 1.7 2003/05/20 14:56:04 chrisridd Exp $>
 
 =cut

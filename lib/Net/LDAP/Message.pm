@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.6 2003/05/06 16:46:02 gbarr Exp $
+# $Id: Message.pm,v 1.7 2003/05/20 14:56:04 chrisridd Exp $
 # Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -99,6 +99,18 @@ sub set_error {
   $self->{callback}->($self)
     if (defined $self->{callback});
   $self;
+}
+
+sub error_name {
+  Net::LDAP::Util::ldap_error_name(shift->code);
+}
+
+sub error_text {
+  Net::LDAP::Util::ldap_error_text(shift->code);
+}
+
+sub error_desc {
+  Net::LDAP::Util::ldap_error_desc(shift->code);
 }
 
 sub sync {
