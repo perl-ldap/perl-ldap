@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.09";
+$VERSION = "0.10";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into 
@@ -21,6 +21,13 @@ sub new {
   return $schema unless @_;
   return $schema->parse( shift ) ? $schema : undef;
 }
+
+sub _error {
+  my $self = shift;
+  $self->{error} = shift;
+  return;
+}
+
 
 sub parse {
   my $schema = shift;
@@ -184,10 +191,10 @@ sub superclass {
    my $oc = shift;
 
    my $oid = $self->is_objectclass( $oc );
-   return undef unless $oid;
+   return scalar _error($self, "Not an objectClass") unless $oid;
 
    my $res = $self->{oid}->{$oid}->{sup};
-   return undef unless $res;
+   return scalar _error($self, "No superclass") unless $res;
    return wantarray ? @$res : $res;
 }
 
@@ -242,11 +249,14 @@ sub item {
   my $arg = shift;
   my $item_name = shift;	# May be undef. If so all are returned
 
-  my $oid = $self->name2oid( $arg ) or return;
+  my @oid = $self->name2oid( $arg );
+  return _error($self, @oid ? "Non-unique name" : "Unknown name")
+    unless @oid == 1;
 
-  my $item_ref = $self->{oid}->{$oid} or return;
+  my $item_ref = $self->{oid}->{$oid[0]} or return _error($self, "Unknown OID");
 
-  my $value = $item_ref->{$item_name} or return;
+  my $value = $item_ref->{$item_name} or return _error($self, "No such property");
+  delete $self->{error};
 
   if( ref $value eq "ARRAY" && wantarray ) {
     return @$value;
@@ -266,9 +276,12 @@ sub items {
   my $self = shift;
   my $arg = shift;
 
-  my $oid = $self->name2oid( $arg ) or return;
+  my @oid = $self->name2oid( $arg );
+  return _error($self, @oid ? "Non-unique name" : "Unknown name")
+    unless @oid == 1;
 
-  my $item_ref = $self->{oid}->{$oid} or return;
+  my $item_ref = $self->{oid}->{$oid[0]} or return _error($self, "Unknown OID");
+  delete $self->{error};
 
   return wantarray ? (keys %$item_ref) : [keys %$item_ref];
 }
@@ -279,10 +292,11 @@ sub items {
 sub name2oid {
   my $self = shift;
   my $name = lc shift;
-  return undef unless $name;
+  return _error($self, "Bad name") unless defined($name) && length($name);
   return $name if exists $self->{oid}->{$name};	# Already an oid
-  my $oid = $self->{name}->{$name} || $self->{aliases}->{$name};
-  return $oid;
+  my $oid = $self->{name}->{$name} || $self->{aliases}->{$name}
+    or return _error($self, "Unknown name");
+  return (wantarray && ref $oid) ? @$oid : $oid;
 }
 
 #
@@ -292,8 +306,9 @@ sub name2oid {
 sub oid2name {
   my $self = shift;
   my $oid = shift;
-  return undef unless $oid;
-  return undef unless $self->{oid}->{$oid};
+  return _error($self, "Bad OID") unless $oid;
+  return _error($self, "Unknown OID") unless $self->{oid}->{$oid};
+  delete $self->{error};
   return $self->{oid}->{$oid}->{name};
 }
 
@@ -349,14 +364,14 @@ sub is_nameform {
 # is of the appropriate type. Else return undef.
 #
 sub _is_type {
-  my $self = shift;
-  my $type = shift or return;
-  my $name = shift or return;
+  my ($self, $type, $name) = @_;
 
-  my $oid = $self->name2oid( $name ) or return;  
-  my $hash = $self->{oid}->{$oid} or return;
+  foreach my $oid ($self->name2oid( $name )) {
+    my $hash = $self->{oid}->{$oid} or next;
+    return $oid if $hash->{type} eq $type;
+  }
 
-  return $hash->{type} eq $type ? $oid : undef;
+  undef;
 }
 
 
@@ -554,9 +569,14 @@ sub _parse_schema {
       $schema->{oid}->{$oid} = \%schema_entry;
       my $uc_name = uc $schema_entry{name};
       push @names, $uc_name;
-      $schema->{name}->{lc $uc_name} = $oid;
-      foreach my $alias ( @{$schema_entry{aliases}} ) {
-	$schema->{aliases}->{lc $alias} = $oid;
+      foreach my $name ( @{$schema_entry{aliases}}, $uc_name ) {
+        if (exists $schema->{name}{lc $name}) {
+	  $schema->{name}{lc $name} = [ $schema->{name}{lc $name} ] unless ref $schema->{name}{lc $name};
+	  push @{$schema->{name}{lc $name}}, $oid;
+        }
+        else {
+	  $schema->{name}{lc $name} = $oid;
+	}
       }
     }
   }
@@ -592,8 +612,9 @@ sub syntax {
 sub name {
   my $self = shift;
   my $arg = shift;
-  my $oid = $self->name2oid( $arg ) or return undef;
-  return $self->oid2name( $oid );
+  my @oid = $self->name2oid( $arg );
+  return undef unless @oid == 1;
+  return $self->oid2name( $oid[0] );
 }
 
 sub error {

@@ -120,6 +120,9 @@ undefined.
 
 Return value is an array or a value depending on calling context.
 
+If the first argument is a name and there is more than one item in the
+schema with that name then undef, or the empty list, will be returned.
+
 =item items
 
 Given an argument which is the name or oid of a known object class or 
@@ -128,7 +131,10 @@ The returned item name may have an undefined value.
 
   @items = $schema->items( $oid );
 
-Return value is an array or array reference depending on calling context.
+Return value is a list or array reference depending on calling context.
+
+If the argument given is a name and there is more than one item in the
+schema with that name then undef, or the empty list, will be returned.
 
 =item matchingrules
 
@@ -164,10 +170,23 @@ the name of the attributes which are mandatory in the class
 
 Return value is an array or array reference depending on calling context.
 
+=item name
+
+Given an argument which is the name or oid of an item,
+returns the items canonical name or undef if the name or oid is not known.
+
+If the argument given is a name and there is more than one item in the
+schema with that name then undef will be returned.
+
 =item name2oid
 
 Given the name of a schema item (object class, attribute or syntax) returns
 the assoicated OID or undef if it is not recognised.
+
+It is possible that two objects, of different types, have the same name.
+In this case C<name2oid> will return a list of OIDs in an array context.
+In a scalar context it will return undef if there is more than one object
+with the given name.
 
 =item nameforms
 
@@ -241,6 +260,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.8 2001/04/23 19:33:43 gbarr Exp $>
+I<$Id: Schema.pod,v 1.9 2001/06/11 16:49:04 gbarr Exp $>
 
 =cut
