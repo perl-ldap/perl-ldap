@@ -39,6 +39,7 @@ htdocs/Net/LDAP.html
 htdocs/Net/LDAP/Constant.html
 htdocs/Net/LDAP/Control.html
 htdocs/Net/LDAP/Control/Paged.html
+htdocs/Net/LDAP/Control/ProxyAuth.html
 htdocs/Net/LDAP/Control/Sort.html
 htdocs/Net/LDAP/Control/SortResult.html
 htdocs/Net/LDAP/Control/VLV.html
