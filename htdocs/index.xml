@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<docindex>
+  <title>perl-ldap - LDAP Client library</title>
+  <section>
+    <title>perl-ldap Documentation</title>
+    <group>
+      <module>Net::LDAP</module>
+      <module>Net::LDAPS</module>
+    </group>
+    <group>
+      <module>Net::LDAP::Message</module>
+      <module>Net::LDAP::Search</module>
+      <module>Net::LDAP::Entry</module>
+      <module>Net::LDAP::Reference</module>
+    </group>
+    <group>
+      <module>Net::LDAP::Filter</module>
+      <module>Net::LDAP::LDIF</module>
+      <module>Net::LDAP::DSML</module>
+      <module>Net::LDAP::Schema</module>
+    </group>
+    <group>
+      <module>Net::LDAP::Constant</module>
+      <module>Net::LDAP::Util</module>
+      <module>Net::LDAP::Extra</module>
+    </group>
+  </section>
+  <section>
+    <title>LDAP v3 Server Controls</title>
+    <group>
+      <module>Net::LDAP::Control</module>
+      <module>Net::LDAP::Control::Paged</module>
+      <module>Net::LDAP::Control::Sort</module>
+      <module>Net::LDAP::Control::SortResult</module>
+      <module>Net::LDAP::Control::VLV</module>
+      <module>Net::LDAP::Control::VLVResponse</module>
+    </group>
+  </section>
+  <section>
+    <title>Help</title>
+    <group>
+      <module>Net::LDAP::FAQ</module>
+      <module>Net::LDAP::Examples</module>
+      <module>Net::LDAP::RFC</module>
+    </group>
+  </section>
+  <section>
+    <title>Other</title>
+    <group>
+      <module>Authen::SASL</module>
+      <module>Bundle::Net::LDAP</module>
+    </group>
+  </section>
+</docindex>
