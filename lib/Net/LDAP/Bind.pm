@@ -34,7 +34,7 @@ sub decode {
 
   my $sasl = $self->{sasl};
   my $ldap = $self->parent;
-  my $resp = $sasl->challenge($result->{saslCred});
+  my $resp = $sasl->challenge($bind->{serverSaslCreds});
 
   $self->encode(
     bindRequest => {
