@@ -636,9 +636,14 @@ operational attributes may also be available for the asking:
 
   $ldap->search( ... , attrs => ['createtimestamp'] , ... );
 
-To retreive the default attributes and additional ones, use '*'.
+To retrieve the default attributes and additional ones, use '*'.
 
   $ldap->search( ... , attrs => ['*', 'createtimestamp'] , ... );
+
+To retrieve no attributes (the server only returns the DNs of matching
+entries), use '1.1':
+
+  $ldap->search( ... , attrs => ['1.1'] , ... );
 
 =item control
 
@@ -903,6 +908,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.18 2003/01/27 14:19:39 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.19 2003/03/09 10:57:19 chrisridd Exp $>
 
 =cut
