@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into 
@@ -413,8 +413,10 @@ sub _parse_schema {
       my %schema_entry = ( type => $type, aliases => [] );
 
       my @tokens;
+      pos($val) = 0;
+
       push @tokens, $+
-        while $val =~ /(?:^|\G)\s*(?:
+        while $val =~ /\G\s*(?:
                        ([()])
                       |
                        ([^"'\s()]+)
