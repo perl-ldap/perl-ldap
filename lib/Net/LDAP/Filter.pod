@@ -32,11 +32,6 @@ Create a new object and parse FILTER.
 
 Parse FILTER. The next call to ber will return this filter encoded.
 
-=item asn
-
-Return the data structure suitable for passing directly to L<Convert::ASN1>
-to encode a filter object.
-
 =item as_string
 
 Return the filter in text form.
@@ -111,6 +106,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Filter.pod,v 1.5 2003/05/07 12:01:41 chrisridd Exp $>
+I<$Id: Filter.pod,v 1.6 2003/09/11 10:44:54 chrisridd Exp $>
 
 =cut
