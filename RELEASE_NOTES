@@ -1,3 +1,12 @@
+perl-ldap 0.29 24 Jun 2003
+==========================
+
+* Workaround bug in IO::Socket::SSL when startTLS fails
+* Fix reference loop memory leak problem
+* Add a SIGNATURE to the distribution
+* Re-added support for :all in the import list to get all constants
+* New methods error_name, error_text, error_desc added to Message.pm
+
 perl-ldap 0.28 19 May 2003
 ==========================
 
