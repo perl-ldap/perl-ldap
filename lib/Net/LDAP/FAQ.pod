@@ -222,6 +222,19 @@ For example:
 is not permitted by the directory, because jpegPhotos may only contain
 JPEG-formatted images.
 
+Most syntaxes used in LDAP however describe text strings rather than
+binary objects (like JPEGs or certificates.)
+
+In LDAPv3 most of these syntaxes support Unicode encoded using
+UTF-8. Because the Net::LDAP modules do not change the strings that
+you pass in as attribute values (they get sent to the LDAP server
+as-is) to use accented characters you simply need to encode your
+strings in UTF-8. There are modules on CPAN that will help you here.
+
+Note that LDAPv2 servers used something called T.61 instead of Unicode
+and UTF-8. Most servers do not implement T.61 correctly, and it is
+recommended that you use LDAPv3 instead.
+
 Attributes may also be searched.  The algorithms used to perform
 different kinds of searches are described by the attribute's 'matching
 rules'.  Some matching rules are case-sensitive and some are
