@@ -48,7 +48,7 @@ my $isGroup = 0; #checks for group or not
 my $ldap = new Net::LDAP ($opt_h, port=> $opt_p);
 
 #will bind as specific user if specified else will be binded anonymously
-$ldap->bind(DN => $opt_D, password=> $opt_p) || die "failed to bind as $opt_D"; 
+$ldap->bind($opt_D, password=> $opt_p) || die "failed to bind as $opt_D"; 
 
 
 #get the group DN
@@ -102,7 +102,7 @@ sub printMembers
      print "\nMembers of group: $dn\n";
 
      #returns an array reference
-     my $values = $entry->get("uniquemember");
+     my $values = $entry->get_value("uniquemember", asref => 1);
 
      foreach my $val (@{$values})
      {
@@ -133,7 +133,7 @@ sub printMembers
 
         if ($attr)
 	{
-          my  $values = $entry->get($attr);
+          my  $values = $entry->get_value($attr, asref => 1);
 
            foreach my $vals (@{$values})
            {
@@ -145,7 +145,7 @@ sub printMembers
            print "$val\n";
 	}
 
-        my $values = $entry->get("objectclass");
+        my $values = $entry->get_value("objectclass", asref => 1);
 
         # This value is also a group, print the members of it as well  
 
@@ -153,7 +153,7 @@ sub printMembers
         &printMembers($entry->dn(),$attr) if (grep /groupOfUniqueNames/i, @{$values});
      };
    } 
-        my $urls = $entry->get("memberurl");
+        my $urls = $entry->get_value("memberurl", asref => 1);
 	&printDynamicMembers($entry->dn(),$urls,$attr) if ($urls); 
  };
     return 0;
@@ -211,7 +211,7 @@ sub printDynamicMembers
 
         if ($attr)
 	{
-          my  $values = $entry->get($attr);
+          my  $values = $entry->get_value($attr, asref => 1);
 
            foreach my $vals (@{$values})
            {

@@ -4,7 +4,7 @@
 #pass the common name of a group entry (assuming groupOfUniqueNames objectclass) and 
 #a uid, the script will tell you if the uid is a member of the group or not.
 
-$version = 3.0;
+$version = 3.0_01;
 
 #in this version, the uid is a member of the given group if:
 #are a member of the given group
@@ -52,7 +52,7 @@ my $isMember = 0; # by default you are not a member
 my $ldap = new Net::LDAP ($opt_h, port=> $opt_p);
 
 #will bind as specific user if specified else will be binded anonymously
-$ldap->bind(DN => $opt_D, password=> $opt_p) || die "failed to bind as $opt_D"; 
+$ldap->bind($opt_D, password=> $opt_p) || die "failed to bind as $opt_D"; 
 
 
 #get user DN first
@@ -149,7 +149,7 @@ sub getIsMember
 
       #check to see if our entry matches the search filter
 
-      my $urlvalues = $entry->get("memberurl");
+      my $urlvalues = $entry->get_value("memberurl", asref => 1);
 
       foreach my $urlval (@{$urlvalues})
       {
@@ -184,7 +184,7 @@ sub getIsMember
       } #end foreach
 
 
-      my $membervalues = $entry->get("uniquemember");
+      my $membervalues = $entry->get_value("uniquemember", asref => 1);
     
      foreach my $val (@{$membervalues})
      {
