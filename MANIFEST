@@ -18,6 +18,7 @@ contrib/jpegLoad.pl
 contrib/ldapmodify.pl
 contrib/ldifdiff.pl
 contrib/ldifsort.pl
+contrib/ldifuniq.pl
 contrib/printMembers.pl
 contrib/tklkup
 data/00-cmp.ldif
