@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.14_01";
+$VERSION = "0.14_02";
 
 my %mode = qw(w > r < a >>);
 
