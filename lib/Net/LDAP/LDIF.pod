@@ -22,7 +22,7 @@ Net::LDAP::LDIF - LDIF reading and writing
 =head1 DESCRIPTION
 
 B<Net::LDAP::LDIF> provides a means to convert between
-L<Net::LDAP::Entry|Net::LDAP::Entry> objects and LDAP entries represented
+L<Net::LDAP::Entry> objects and LDAP entries represented
 in LDIF format files. Reading and writing are supported and may manipulate
 single entries or lists of entries.
 

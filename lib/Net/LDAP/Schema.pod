@@ -241,8 +241,8 @@ Return value is an array or array reference depending on calling context.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Other online documentation|Net::LDAP::RFC>
+L<Net::LDAP>,
+L<Net::LDAP::RFC>
 
 =head1 AUTHORS
 
@@ -260,6 +260,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.9 2001/06/11 16:49:04 gbarr Exp $>
+I<$Id: Schema.pod,v 1.10 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

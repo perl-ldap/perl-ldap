@@ -49,7 +49,7 @@ server.
 The other is where a new object is created locally and then a single
 command is sent to the directory server to add, modify or replace an
 entry. Entries for this purpose can also be created by reading an
-LDIF file with the L<Net::LDAP::LDIF|Net::LDAP::LDIF> module.
+LDIF file with the L<Net::LDAP::LDIF> module.
 
 =head1 CONSTRUCTOR
 
@@ -252,20 +252,20 @@ made to add, replace or delete since the last call to changetype or
 update was made.
 
 This method B<cannot> be used to modify the DN of the entry on the server,
-for that see the C<moddn> method in L<Net::LDAP|Net::LDAP>.
+for that see the C<moddn> method in L<Net::LDAP>.
 
 CLIENT is a C<Net::LDAP> object where the update will be sent to.
 
 The result will be an object of type
-L<Net::LDAP::Message|Net::LDAP::Message> as returned by the add, modify
+L<Net::LDAP::Message> as returned by the add, modify
 or delete method called on CLIENT.
 
 =back
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::LDIF|Net::LDAP::LDIF>
+L<Net::LDAP>,
+L<Net::LDAP::LDIF>
 
 =head1 AUTHOR
 
@@ -282,6 +282,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.6 2001/01/29 21:09:37 gbarr Exp $>
+I<$Id: Entry.pod,v 1.7 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

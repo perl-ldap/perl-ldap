@@ -1,4 +1,4 @@
-# $Id: Paged.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $
+# $Id: Paged.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -113,7 +113,7 @@ of objects that represent the C<pagedResultsControl> as described by RFC-2696.
 =head1 CONSTRUCTOR ARGUMENTS
 
 In addition to the constructor arguments described in
-L<Net::LDAP::Control|Net::LDAP::Control> the following are provided.
+L<Net::LDAP::Control> the following are provided.
 
 =over 4
 
@@ -133,15 +133,15 @@ server will return to the search request.
 
 =head1 METHODS
 
-As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+As with L<Net::LDAP::Control> each constructor argument
 described above is also avaliable as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
+L<Net::LDAP>,
+L<Net::LDAP::Control>,
 http://info.internet.isi.edu/in-notes/rfc/files/rfc2696.txt
 
 =head1 AUTHOR
@@ -159,7 +159,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Paged.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: Paged.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut
 

@@ -1,4 +1,4 @@
-# $Id: Control.pm,v 1.5 2001/04/10 16:30:27 gbarr Exp $
+# $Id: Control.pm,v 1.6 2001/08/24 19:31:14 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -252,7 +252,7 @@ blessed into the package which was registered to handle the OID in the ASN.
 =item to_asn
 
 Returns a structure suitable for passing to Convert::ASN1 for
-encoding. This method will be called by L<Net::LDAP|Net::LDAP> when the
+encoding. This method will be called by L<Net::LDAP> when the
 control is used.
 
 The base class implementation of this method will call the C<value> method
@@ -268,7 +268,7 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>
+L<Net::LDAP>
 
 =head1 AUTHOR
 
@@ -285,6 +285,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Control.pm,v 1.5 2001/04/10 16:30:27 gbarr Exp $>
+I<$Id: Control.pm,v 1.6 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

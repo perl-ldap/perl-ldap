@@ -69,7 +69,7 @@ Port to connect to on the remote server.
 
 =item timeout
 
-Timeout passed to L<IO::Socket|IO::Socket> when connecting the remote server.
+Timeout passed to L<IO::Socket> when connecting the remote server.
 (Default: 120)
 
 =item debug
@@ -138,7 +138,7 @@ fashion, for example
   $mesg = $ldap->bind( "me", password => "mypasswd");
 
 The return value from these methods is an object derived from the
-L<Net::LDAP::Message|Net::LDAP::Message> class. The methods of this class allow
+L<Net::LDAP::Message> class. The methods of this class allow
 you to examine the status of request.
 
 
@@ -148,7 +148,7 @@ you to examine the status of request.
 
 Request server to abandon a request. The id to abandon may be passed as the
 first parameter or as part of the options list. The B<ID> may be a number
-or a object which is a sub-class of L<Net::LDAP::Message|Net::LDAP::Message>, returned from
+or a object which is a sub-class of L<Net::LDAP::Message>, returned from
 a previous method call.
 
 =over 4
@@ -178,7 +178,7 @@ B<Example>
 =item add ( DN [, OPTIONS ] )
 
 Add an entry to the directory. The B<DN> argument can be either a
-L<Net::LDAP::Entry|Net::LDAP::Entry> object or a string.
+L<Net::LDAP::Entry> object or a string.
 
 =over 4
 
@@ -193,7 +193,7 @@ This argument is a reference to a list of attribute-value pairs. Attributes
 with multiple values can be added as either multiple entries or the value
 could be a reference to a list of values.
 
-This argument is not used if B<DN> is a L<Net::LDAP::Entry|Net::LDAP::Entry> object.
+This argument is not used if B<DN> is a L<Net::LDAP::Entry> object.
 
 =item control
 
@@ -268,7 +268,7 @@ Bind using Kerberos V4.2 B<I<not supported>>.
 =item sasl
 
 Bind using a SASL mechanism. The argument given should be a sub-class
-of L<Authen::SASL|Authen::SASL>.
+of L<Authen::SASL>.
 
 =back
 
@@ -285,7 +285,7 @@ B<Example>
 =item compare ( DN, OPTIONS )
 
 Perform a comparison on the server.  B<DN> is the DN which the comparison is
-to be performed. B<DN> May be a string or a L<Net::LDAP::Entry|Net::LDAP::Entry>
+to be performed. B<DN> May be a string or a L<Net::LDAP::Entry>
 object.
 
 =over 4
@@ -322,7 +322,7 @@ B<Example>
 
 =item delete ( DN [, OPTIONS ] )
 
-Delete B<DN> from the server. B<DN> May be a string or a L<Net::LDAP::Entry|Net::LDAP::Entry>
+Delete B<DN> from the server. B<DN> May be a string or a L<Net::LDAP::Entry>
 object.
 
 =over 4
@@ -349,7 +349,7 @@ B<Example>
 =item moddn ( DN, OPTIONS )
 
 Modify the DN for B<DN> on the server. B<DN> May be a string or a
-L<Net::LDAP::Entry|Net::LDAP::Entry> object.
+L<Net::LDAP::Entry> object.
 
 =over 4
 
@@ -387,7 +387,7 @@ B<Example>
 =item modify ( DN, OPTIONS )
 
 Modify the contents of B<DN> on the server. B<DN> May be a string or a
-L<Net::LDAP::Entry|Net::LDAP::Entry> object.
+L<Net::LDAP::Entry> object.
 
 =over 4
 
@@ -466,7 +466,7 @@ B<Example>
 The root_dse method retrieves information from the server's
 rootDSE entry.
 
-The result is an object of class L<Net::LDAP::Search|Net::LDAP::Search>.
+The result is an object of class L<Net::LDAP::Search>.
 
 B<Example>
 
@@ -481,7 +481,7 @@ B<Example>
 Request that a schema search be performed.  This can be used to read 
 schema information.
 
-The result is an object of class L<Net::LDAP::Schema|Net::LDAP::Schema>.
+The result is an object of class L<Net::LDAP::Schema>.
 Read this documentation for further information about methods that
 can be preformed with this object.
 
@@ -508,7 +508,7 @@ Request that a search be performed.  This can be used to read attributes
 from a single entry, from entries immediately below a particular entry,
 or a whole subtree of entries.
 
-The result is an object of class L<Net::LDAP::Search|Net::LDAP::Search>.
+The result is an object of class L<Net::LDAP::Search>.
 
 =over 4
 
@@ -595,7 +595,7 @@ to be returned. The default is to return both attribute types and values.
 
 A filter that defines the conditions an entry in the directory must meet
 in order for it to be returned by the search. This may be a string or a
-L<Net::LDAP::Filter|Net::LDAP::Filter> object. See L<Net::LDAP::Filter|Net::LDAP::Filter> for a defintion of
+L<Net::LDAP::Filter> object. See L<Net::LDAP::Filter> for a defintion of
 the filter format.
 
 =item attrs
@@ -670,7 +670,7 @@ Calling this method will synchronize the client with the server. It will
 not return until all requests have been completed, or id B<MESG> is given
 it will return when B<MESG> has been completed.
 
-Returns an error code defined in L<Net::LDAP::Constant|Net::LDAP::Constant>.
+Returns an error code defined in L<Net::LDAP::Constant>.
 
 =item start_tls ( [ OPTIONS ] )
 
@@ -796,32 +796,32 @@ for each packet received from the server as a response to the request
 sent.
 
 When the subroutine is called the first argument will be the
-L<Net::LDAP::Message|Net::LDAP::Message> object which was returned from the method.
+L<Net::LDAP::Message> object which was returned from the method.
 
 If the request is a search then multiple packets can be received from
 the server. Each entry is received as a separate packet. For each of these
-the subroutine will be called with a L<Net::LDAP::Entry|Net::LDAP::Entry> object as the second
+the subroutine will be called with a L<Net::LDAP::Entry> object as the second
 argument.
 
 During a search the server may also send a list of references. When such
 a list is received then the subroutine will be called with a
-L<Net::LDAP::Reference|Net::LDAP::Reference> object as the second argument.
+L<Net::LDAP::Reference> object as the second argument.
 
 =head1 LDAP ERROR CODES
 
 B<Net::LDAP> also exports constants for the error codes that can be received
-from the server, see L<Net::LDAP::Constant|Net::LDAP::Constant>.
+from the server, see L<Net::LDAP::Constant>.
 
 =head1 SEE ALSO
 
-L<Net::LDAP::Constant|Net::LDAP::Constant>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
-L<Net::LDAP::Entry|Net::LDAP::Entry>,
-L<Net::LDAP::Filter|Net::LDAP::Filter>,
-L<Net::LDAP::Message|Net::LDAP::Message>,
-L<Net::LDAP::Reference|Net::LDAP::Reference>,
-L<Net::LDAP::Search|Net::LDAP::Search>,
-L<Other online documentation|Net::LDAP::RFC>
+L<Net::LDAP::Constant>,
+L<Net::LDAP::Control>,
+L<Net::LDAP::Entry>,
+L<Net::LDAP::Filter>,
+L<Net::LDAP::Message>,
+L<Net::LDAP::Reference>,
+L<Net::LDAP::Search>,
+L<Net::LDAP::RFC>
 
 The homepage for the perl-ldap modules can be found at 
 http://www.pobox.com/~gbarr/perl-ldap/.
@@ -849,6 +849,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.10 2001/07/06 12:17:35 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.11 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

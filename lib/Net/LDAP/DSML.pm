@@ -326,8 +326,8 @@ Mark Wilcox mark@mwjilcox.com
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<XML::Parser|XML::Parser>
+L<Net::LDAP>,
+L<XML::Parser>
 
 =head1 COPYRIGHT
 

@@ -9,7 +9,7 @@ Net::LDAP::Message - Message response from LDAP server
 =head1 DESCRIPTION
 
 B<Net::LDAP::Message> is a base class for the objects returned by the
-L<Net::LDAP|Net::LDAP> methods
+L<Net::LDAP> methods
 L<abandon|Net::LDAP/item_abandon>,
 L<add|Net::LDAP/item_add>,
 L<bind|Net::LDAP/item_bind>,
@@ -20,10 +20,10 @@ L<moddn|Net::LDAP/item_moddn>,
 L<search|Net::LDAP/item_search> and
 L<unbind|Net::LDAP/item_unbind>.
 
-The sub-class L<Net::LDAP::Search|Net::LDAP::Search> returned by L<search|Net::LDAP/item_search> also
+The sub-class L<Net::LDAP::Search> returned by L<search|Net::LDAP/item_search> also
 defines many methods.
 
-If the L<Net::LDAP|Net::LDAP> object is in async mode then all these methods, except
+If the L<Net::LDAP> object is in async mode then all these methods, except
 C<done>, will cause a wait until the request is completed.
 
 =head1 METHODS
@@ -33,8 +33,8 @@ C<done>, will cause a wait until the request is completed.
 =item code
 
 The code value in the result message from the server. Normally for
-a success zero will be returned. L<Constants|Net::LDAP::Constant> for the result codes
-can be imported from the L<Net::LDAP|Net::LDAP> module.
+a success zero will be returned. Constants for the result codes
+can be imported from the L<Net::LDAP> or L<Net::LDAP::Constant> module.
 
 =item control [ OID ]
 
@@ -81,10 +81,10 @@ Wait for the server to complete the request.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Search|Net::LDAP::Search>,
-L<Net::LDAP::Constant|Net::LDAP::Constant>,
-L<Net::LDAP::Util|Net::LDAP::Util>
+L<Net::LDAP>,
+L<Net::LDAP::Search>,
+L<Net::LDAP::Constant>,
+L<Net::LDAP::Util>
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -106,6 +106,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Message.pod,v 1.4 2000/09/12 09:17:09 gbarr Exp $>
+I<$Id: Message.pod,v 1.5 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

@@ -1,4 +1,4 @@
-# $Id: VLV.pm,v 1.4 2001/06/11 16:20:32 gbarr Exp $
+# $Id: VLV.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $
 # Copyright (c) 2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -276,7 +276,7 @@ manipulation of objects that represent the Virtual List View as described
 by draft-ietf-ldapext-ldapv3-vlv-03.txt.
 
 When using a Virtual List View control in a search, it must be accompanied by a sort
-control. See L<Net::LDAP::Control::Sort|Net::LDAP::Control::Sort>
+control. See L<Net::LDAP::Control::Sort>
 
 =cut
 
@@ -288,7 +288,7 @@ control. See L<Net::LDAP::Control::Sort|Net::LDAP::Control::Sort>
 =head1 CONSTRUCTOR ARGUMENTS
 
 In addition to the constructor arguments described in
-L<Net::LDAP::Control|Net::LDAP::Control> the following are provided.
+L<Net::LDAP::Control> the following are provided.
 
 =over 4
 
@@ -329,7 +329,7 @@ Set the offset of the target entry.
 
 =head2 METHODS
 
-As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+As with L<Net::LDAP::Control> each constructor argument
 described above is also avaliable as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
@@ -350,7 +350,7 @@ and C<after> attributes so that the target entry is the last in the page.
 =item response VLV_RESPONSE
 
 Set the attributes in the control as per VLV_RESPONSE. VLV_RESPONSE should be a control
-of type L<Net::LDAP::Control::VLVResponse|Net::LDAP::Control::VLVResponse> returned
+of type L<Net::LDAP::Control::VLVResponse> returned
 from the server. C<response> will populate the C<context>, C<offset> and C<content>
 attibutes of the control with the values from VLV_RESPONSE. Because this sets the
 C<offset> attribute, any previous setting of the C<assert> attribute will be forgotten.
@@ -379,10 +379,10 @@ attributes to the the target entry is the first entry in the page.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
-L<Net::LDAP::Control::Sort|Net::LDAP::Control::Sort>,
-L<Net::LDAP::Control::VLVResponse|Net::LDAP::Control::VLVResponse>
+L<Net::LDAP>,
+L<Net::LDAP::Control>,
+L<Net::LDAP::Control::Sort>,
+L<Net::LDAP::Control::VLVResponse>
 
 =head1 AUTHOR
 
@@ -399,5 +399,5 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: VLV.pm,v 1.4 2001/06/11 16:20:32 gbarr Exp $>
+I<$Id: VLV.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $>
 

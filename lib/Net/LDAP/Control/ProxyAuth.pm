@@ -1,4 +1,4 @@
-# $Id: ProxyAuth.pm,v 1.1 2001/04/10 16:30:27 gbarr Exp $
+# $Id: ProxyAuth.pm,v 1.2 2001/08/24 19:31:14 gbarr Exp $
 # Copyright (c) 2001 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,7 +9,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = do { my @r=(q$Revision: 1.1 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r};
+$VERSION = do { my @r=(q$Revision: 1.2 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r};
 
 use Net::LDAP::ASN qw(proxyAuthValue);
 use strict;
@@ -90,7 +90,7 @@ of objects that represent the C<proxyauthorisationControl> as described by draft
 =head1 CONSTRUCTOR ARGUMENTS
 
 In addition to the constructor arguments described in
-L<Net::LDAP::Control|Net::LDAP::Control> the following are provided.
+L<Net::LDAP::Control> the following are provided.
 
 =over 4
 
@@ -102,15 +102,15 @@ The proxyDN that is required. This is the identity we are requesting operations 
 
 =head1 METHODS
 
-As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+As with L<Net::LDAP::Control> each constructor argument
 described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
+L<Net::LDAP>,
+L<Net::LDAP::Control>,
 http://info.internet.isi.edu/in-notes/rfc/files/rfc2696.txt
 
 =head1 AUTHOR
@@ -128,7 +128,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: ProxyAuth.pm,v 1.1 2001/04/10 16:30:27 gbarr Exp $>
+I<$Id: ProxyAuth.pm,v 1.2 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut
 

@@ -94,11 +94,11 @@ Net::LDAP::Control::VLVResponse -- LDAPv3 Virtual List View server response
 
 =head1 SYNOPSIS
 
-See L<Net::LDAP::Control::VLV|Net::LDAP::Control::VLV>
+See L<Net::LDAP::Control::VLV>
 
 =head1 DESCRIPTION
 
-C<Net::LDAP::Control::VLVResponse> is a sub-class of L<Net::LDAP::Control|Net::LDAP::Control>.
+C<Net::LDAP::Control::VLVResponse> is a sub-class of L<Net::LDAP::Control>.
 It provides a class for manipulating the LDAP Virtual List View Response control
 C<>
 
@@ -108,7 +108,7 @@ include a VLVResponse control.
 =head1 CONSTRUCTOR ARGUMENTS
 
 In addition to the constructor arguments described in
-L<Net::LDAP::Control|Net::LDAP::Control> the following are provided.
+L<Net::LDAP::Control> the following are provided.
 
 =over 4
 
@@ -137,14 +137,14 @@ The list offset of the target entry.
 
 =head1 METHODS
 
-As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+As with L<Net::LDAP::Control> each constructor argument
 described above is also avaliable as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
 =head1 RESULT CODES
 
-Possible results from a sort request are listed below. See L<Net::LDAP::Constant|Net::LDAP::Constant> for
+Possible results from a sort request are listed below. See L<Net::LDAP::Constant> for
 a definition of each.
 
 =over 4
@@ -173,8 +173,8 @@ a definition of each.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
+L<Net::LDAP>,
+L<Net::LDAP::Control>,
 http://info.internet.isi.edu/in-notes/rfc/files/rfc2696.txt
 
 =head1 AUTHOR
@@ -192,7 +192,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: VLVResponse.pm,v 1.3 2000/07/30 21:03:50 gbarr Exp $>
+I<$Id: VLVResponse.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut
 

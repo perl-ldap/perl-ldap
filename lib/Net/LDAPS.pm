@@ -177,8 +177,8 @@ certificate, do this:
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<IO::Socket::SSL|IO::Socket::SSL>
+L<Net::LDAP>,
+L<IO::Socket::SSL>
 
 =head1 BUGS
 

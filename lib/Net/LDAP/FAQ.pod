@@ -396,7 +396,7 @@ You can obtain the latest release from
 =item URI::ldap
 
 This module is optional. You only need to install URI::ldap if you are
-going to need to parse ldap referrals. L<Net::LDAP|Net::LDAP> does not do this
+going to need to parse ldap referrals. L<Net::LDAP> does not do this
 automatically yet, so this module is not used by perl-ldap.
 
 You can obtain the latest release from
@@ -443,7 +443,7 @@ to the specified server. Any error message will be available in $@
 =head2 How can I tell when the server returns an error, bind() always returns
 true ?
 
-Most methods in Net::LDAP return a L<Net::LDAP::Message|Net::LDAP::Message> 
+Most methods in Net::LDAP return a L<Net::LDAP::Message> 
 object, or a sub-class of that. This object will hold the results 
 from the server, including the result code.
 
@@ -481,7 +481,7 @@ Consider the following:
                       );
 
 $mesg is a search object container. It is a reference blessed into the
-L<Net::LDAP::Search|Net::LDAP::Search> package. By calling methods on 
+L<Net::LDAP::Search> package. By calling methods on 
 this object you can obtain information about the result and also the 
 individual entries.
 
@@ -489,7 +489,7 @@ The first thing to check is if the search was successful. This is done with
 with the method $mesg->code. This method will return the status code
 that the server returned. A success will yield a zero value, but there are
 other values, some of which could also be considered a success.
-See L<Net::LDAP::Constant|Net::LDAP::Constant>
+See L<Net::LDAP::Constant>
 
   use Net::LDAP::Util qw(ldap_error_text);
 
@@ -517,7 +517,7 @@ shift each entry in turn. For example
   }
 
 In each case $entry is an entry object container. It is a reference blessed
-into the L<Net::LDAP::Entry|Net::LDAP::Entry> package. By calling methods on this object
+into the L<Net::LDAP::Entry> package. By calling methods on this object
 you can obtain information about the entry.
 
 For example, to obtain the DN for the entry

@@ -40,8 +40,8 @@ Returns a list of references from the server.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Search|Net::LDAP::Search>
+L<Net::LDAP>,
+L<Net::LDAP::Search>
 
 =head1 AUTHOR
 
@@ -58,6 +58,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Reference.pod,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: Reference.pod,v 1.3 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut

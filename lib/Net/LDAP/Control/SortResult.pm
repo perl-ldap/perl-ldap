@@ -1,4 +1,4 @@
-# $Id: SortResult.pm,v 1.4 2000/09/12 09:17:10 gbarr Exp $
+# $Id: SortResult.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $
 # Copyright (c) 1999-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -86,7 +86,7 @@ Net::LDAP::Control::SortResult - Server Side Sort (SSS) result control object
 =head1 DESCRIPTION
 
 C<Net::LDAP::Control::SortResult> is a sub-class of
-L<Net::LDAP::Control|Net::LDAP::Control>.  It provides a class for
+L<Net::LDAP::Control>.  It provides a class for
 manipulating the LDAP sort request control C<1.2.840.113556.1.4.474>
 as defined in RFC-2891
 
@@ -115,14 +115,14 @@ be one of the result codes describes below.
 
 =head1 METHODS
 
-As with L<Net::LDAP::Control|Net::LDAP::Control> each constructor argument
+As with L<Net::LDAP::Control> each constructor argument
 described above is also avaliable as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
 =head1 RESULT CODES
 
-Possible results from a sort request are listed below. See L<Net::LDAP::Constant|Net::LDAP::Constant> for
+Possible results from a sort request are listed below. See L<Net::LDAP::Constant> for
 a definition of each.
 
 =over 4
@@ -153,9 +153,9 @@ a definition of each.
 
 =head1 SEE ALSO
 
-L<Net::LDAP|Net::LDAP>,
-L<Net::LDAP::Control::Sort|Net::LDAP::Control::Sort>,
-L<Net::LDAP::Control|Net::LDAP::Control>,
+L<Net::LDAP>,
+L<Net::LDAP::Control::Sort>,
+L<Net::LDAP::Control>,
 http://info.internet.isi.edu/in-notes/rfc/files/rfc2891.txt
 
 =head1 AUTHOR
@@ -173,6 +173,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: SortResult.pm,v 1.4 2000/09/12 09:17:10 gbarr Exp $>
+I<$Id: SortResult.pm,v 1.5 2001/08/24 19:31:14 gbarr Exp $>
 
 =cut
