@@ -103,7 +103,7 @@ sub new {
     my $scheme = $arg->{scheme} || 'ldap';
     (my $h = $uri) =~ s,^(\w+)://,, and $scheme = $1;
     my $meth = $obj->can("connect_$scheme") or next;
-    $h =~ s,^//([^/]*).*,$1,; # Extract host
+    $h =~ s,/.*,,; # remove path part
     $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
     if (&$meth($obj, $h, $arg)) {
       $obj->{net_ldap_uri} = $uri;
