@@ -810,6 +810,18 @@ The code required will look similiar to the following code snippet.
   $mesg =  $ldap->delete("ref=\"ldap://acme/c=us,o=bricks\",o=clay",
                   control => {type => "2.16.840.1.113730.3.4.2"} ); 
 
+=head2 How do I add an ACI/ACL entry to a directory server with
+Perl-LDAp
+
+The following code snippet works with a Netscape directory server and 
+should work with any other LDAP directory server.  You will need the
+specify the correct DN (-DN-) and correct attribute(s) (-nom attr-).
+
+  my $aci = '(target="ldap:///-DN-")(targetattr="-nom attr-")(version 3.0;
+              acl "-nom acl-"; deny(all) userdn = "ldap:///self";)' ;
+
+  $ldap->modify($dn_modif, add => {'aci' => $aci });
+
 =head2 How do I avoid file type and data type miss-matching when loading
 data from a Win32 system.
 
@@ -981,6 +993,9 @@ http://developer.netscape.com/directory/
 
 Nexor's X.500 and Internet Directories
 http://www.nexor.com/info/directory.htm/
+
+Novell's LDAPzone
+http://ldapzone.com/
 
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
