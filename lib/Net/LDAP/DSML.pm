@@ -806,9 +806,19 @@ callback routine.
 
 =head1 CONSTRUCTOR 
 
-new ()
-Creates a new Net::LDAP::DSML object.  There are 3 options
+=over 4
+
+=item new ()
+
+Creates a new Net::LDAP::DSML object.  There are 2 options
 to this method.
+
+OUTPUT is a referrence to either a file handle that has already
+been opened or to an array.
+
+PRETTY_PRINT is an option to print a new line at the end of
+each element sequence.  It makes the reading of the XML output
+easier for a human.
 
 B<Example>
 
@@ -823,28 +833,22 @@ B<Example>
   my $dsml = Net::LDAP::DSML->new(output => *FILE, pretty_print => 1);  
   Prints xml data to a file or array in pretty print style.
 
-
-OUTPUT is a referrence to either a file handle that has already
-been opened or to an array.
-
-PRETTY_PRINT is an option to print a new line at the end of
-each element sequence.  It makes the reading of the XML output
-easier for a human.
+=back
 
 
 =head1 METHODS
 
 =over 4
 
-=item start_dsml( )
+=item start_dsml ()
 
 Start a DSML file.
 
-= item end_dsml( )
+=item end_dsml ()
 
 End a DSML file.
 
-=item write_entry( ENTRY )
+=item write_entry ( ENTRY )
 
 Entry is a Net::LDAP::Entry object. The write method will parse
 the LDAP data in the Entry object and put it into DSML XML
@@ -855,7 +859,7 @@ B<Example>
   my $entry = $mesg->entry();
   $dsml->write_entry($entry);
 
-=item write_schema( SCHEMA )
+=item write_schema ( SCHEMA )
 
 Schema is a Net::LDAP::Schema object. The write_schema method will 
 parse the LDAP data in the Schema object and put it into DSML XML
