@@ -1,7 +1,7 @@
 package Net::LDAP::DSML;
 
 #
-# $Id: DSML.pm,v 1.15 2002/07/18 18:19:43 gbarr Exp $
+# $Id: DSML.pm,v 1.16 2002/07/18 20:04:07 gbarr Exp $
 # 
 
 use strict;
@@ -516,6 +516,8 @@ sub write_schema {
       $handler->characters({Data => $syn});
       $handler->end_element(\%data);
     }
+    @data{qw(Name LocalName)} = qw(dsml:attribute-type attribute-type);
+    $handler->end_element(\%data);
   }
 
   foreach my $oc ($schema->all_objectclasses) {
