@@ -1,9 +1,0 @@
-Documentation for the scripts schema and tklkup
-are setup as internal pod documentation inside 
-each script.
-
-To view tklkup documentation execute the following
-command;  perldoc ./tklkup
-
-To view schema documentation execute the following
-command;  perldoc ./schema
