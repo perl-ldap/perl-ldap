@@ -395,7 +395,7 @@ is
    gunzip perl-ldap-0.27.tar.gz
    tar xvf perl-ldap-0.27.tar       
    cd perl-ldap-0.27
-   
+
    perl Makefile.PL
    make
    make test
@@ -529,7 +529,7 @@ object, e.g.
 
   $ldap = Net::LDAP->new($server);
 
-=head2 Net::LDAP->new sometimes returns undef, why ?
+=head2 Net::LDAP-E<gt>new sometimes returns undef, why ?
 
 The constructor will return undef if there was a problem connecting
 to the specified server. Any error message will be available in $@
@@ -561,7 +561,7 @@ from the server, including the result code.
 So, for example, to determine the result of the bind operation.
 
   $mesg = $ldap->bind( $dn, password => $passwd );
-  
+
   if ( $mesg->code ) {
     # Handle error codes here
   }
@@ -596,11 +596,11 @@ L<Net::LDAP::Search> package. By calling methods on this object you
 can obtain information about the result and also the individual
 entries.
 
-The first thing to check is if the search was successful. This is done with
-with the method $mesg->code. This method will return the status code
-that the server returned. A success will yield a zero value, but there are
-other values, some of which could also be considered a success.
-See L<Net::LDAP::Constant>
+The first thing to check is if the search was successful. This is done
+with with the method $mesg-E<gt>code. This method will return the
+status code that the server returned. A success will yield a zero
+value, but there are other values, some of which could also be
+considered a success.  See L<Net::LDAP::Constant>
 
   use Net::LDAP::Util qw(ldap_error_text);
 
@@ -622,7 +622,7 @@ shift each entry in turn. For example
   }
 
   # or as a stack
-  
+
   while( my $entry = $mesg->shift_entry) {
     # ...
   }
@@ -901,8 +901,8 @@ schema entities are processed differently than elements.
  
 Eventually this module will be a full level 2 consumer and
 producer enabling you to give you full DSML conformance.
-                                                                                
-The specification for DSML is at http://www.dsml.org
+
+The specification for DSML is at http://www.dsml.org/
 
 For further information and code examples read the DSML
 module documentation;  perldoc Net::LDAP::DSML
@@ -984,7 +984,7 @@ whatever is relevant to your setup.
   use Net::LDAP;
   use Net::LDAP::Util qw(ldap_error_text);
   use CGI;
-  
+
   local $/ = undef;
   my $jpeg = <$filename>;
 
@@ -1324,14 +1324,13 @@ Any good FAQ is made up of many authors, everyone that contributes
 information to the perl-ldap mail list is a potential author.
 
 An attempt to maintain this FAQ is being done by Chris Ridd
- <chrisridd@mac.com>. It was previously updated by Clif Harden 
- <charden@pobox.com>.
+ E<lt>chris.ridd@isode.comE<gt>. It was previously updated by Clif Harden 
+ E<lt>charden@pobox.comE<gt>.
 
-The original author of this FAQ was Graham Barr <gbarr@pobox.com>
+The original author of this FAQ was Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 Please report any bugs, or post any suggestions, to the 
-perl-ldap mailing list 
- <perl-ldap-dev@lists.sourceforge.net>.
+perl-ldap mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
