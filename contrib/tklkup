@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.10 2001/08/05 04:06:09 charden Exp $
+# $Id: tklkup,v 1.11 2001/08/12 02:13:16 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,7 +21,13 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.11  2001/08/12 02:13:16  charden
+# Added the Filter attribute and change ldap filter creation code to
+# not change the filter data when the Filter attribute is selected.
+# Added documentation to pod about this change.
+#
 # Revision 1.10  2001/08/05 04:06:09  charden
+#
 # Change several lines of code so that Carp and warn would not
 # throw un-initialized variable warnings.
 #
@@ -406,6 +412,8 @@ if ( $#attribute < 1 )
 @attribute = qw/ uid sn cn rfc822mailbox telephonenumber
                  facsimiletelephonenumber gidnumber uidnumber/;
 }
+
+push(@attribute,"Filter");  # put roll your on filter at the end
 
 #
 # Create Main Window
@@ -2095,8 +2103,14 @@ my $att_wanted = [ "*",
 #
 # Set Filter options.
 # 
-
+if (  $Global{'info'} eq "Filter" )
+{
+$match = $Global{'adata'};
+}
+else
+{
 $match = "(" . $Global{'info'} . '=' . $Global{'adata'} . ")";
+}
 
 $error = 0;  # initialize error flag.
 
@@ -2655,7 +2669,11 @@ hand, attribute, server, limit, and port.
                  to match their needs.
 
  attribute -> attribute upon which the data search will be
-              based.  One attribute per line.
+              based.  One attribute per line.  There is one
+              additional attribute that is always listed without
+              any action by the user; Filter.  This attribute
+              allows the user to enter the I<COMPLETE> filter
+              that will used to search for data.  
 
  server -> name of the directory server that you wish
            to conduct the data search. 
@@ -2828,7 +2846,11 @@ If the root dse entry can not be obtained then an error message
 window will be displayed.
 
 The I<ATTRIBUTE DATA> text box is where the user will enter 
-the data to be searched for.
+the data to be searched for.  The program will automatically
+put the beginning and ending parenthesis around the data.
+If the I<Filter> attribute is selected this is where the 
+I<COMPLETE> filter is entered, the program will not modify this
+string in any way.
 
 The I<DIRECTORY PORT> button will activate a window 
 that is separate from the main window.  
