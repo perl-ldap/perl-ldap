@@ -1,4 +1,4 @@
-# Copyright (c) 2000 Chris Ridd <chris.ridd@messagingdirect.com> and
+# Copyright (c) 2000-2001 Chris Ridd <chris.ridd@messagingdirect.com> and
 # Graham Barr <gbarr@pobox.com>. All rights reserved.  This program is
 # free software; you can redistribute it and/or modify it under the
 # same terms as Perl itself.
@@ -202,7 +202,7 @@ server's certificate.
 The directory in 'capath' must contain certificates named using the
 hash value of themselves. To generate these names, use OpenSSL thusly:
 
-    ln -s cacert.pem `openssl x509 -hash -nout < cacert.pem`.0
+    ln -s cacert.pem `openssl x509 -hash -noout < cacert.pem`.0
 
 (assuming that the certificate of the CA is in cacert.pem.)
 
@@ -263,7 +263,7 @@ Chris Ridd <chris.ridd@messagingdirect.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000, Chris Ridd and Graham Barr. All rights reserved. This
+Copyright (c) 2000-2001, Chris Ridd and Graham Barr. All rights reserved. This
 library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
