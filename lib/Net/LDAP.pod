@@ -24,13 +24,12 @@ Net::LDAP - Lightweight Directory Access Protocol
  
  $ldap = Net::LDAP->new('ldap.umich.edu');
  
- $ldap->bind (   # bind to a directory with dn and password
-              dn       => 'cn=root, o=University of Michigan, c=us',
+ # bind to a directory with dn and password
+ $ldap->bind ( 'cn=root, o=University of Michigan, c=us',
               password => 'secret'
              );
  
- $result = $ldap->add (
-               dn   => 'cn = Barbara Jensen, o=University of Michigan, c=us',
+ $result = $ldap->add ( 'cn = Barbara Jensen, o=University of Michigan, c=us',
                attr => [ 'cn'   => ['Barbara Jensen', 'Barbs Jensen'],
                 	 'sn    => 'Jensen',
                 	 'mail' => 'b.jensen@umich.edu',
@@ -871,6 +870,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.13 2001/10/05 14:33:26 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.14 2001/10/24 12:37:14 gbarr Exp $>
 
 =cut
