@@ -876,6 +876,12 @@ http://bostonlight.com/ldap/
 Directory Services Mark Language (DSML)
 http://www.dsml.org/
 
+eMailman LDAP information
+http://www.emailman.com/ldap/
+
+LDAPS, also known as LDAPGURU
+http://www.ldaps.com
+
 Jeff Hodges's Kings Mountain LDAP 
 http://www.kingsmountain.com/ldapRoadmap.shtml
 
