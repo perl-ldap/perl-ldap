@@ -1,6 +1,8 @@
-# $Id: ASN.pm,v 1.5 2001/06/11 16:20:32 gbarr Exp $
+# $Id: ASN.pm,v 1.6 2003/04/07 15:05:12 gbarr Exp $
 
 package Net::LDAP::ASN;
+
+$VERSION = "0.02";
 
 use Convert::ASN1;
 
@@ -312,7 +314,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	       adminLimitExceeded (11),
 	       sortControlMissing (60),
 	       indexRangeError (61),
-	       other (80) }  }
+	       other (80) }  
+	   contextID     OCTET STRING OPTIONAL     }
 
 
     LDAPEntry ::= COMPONENTS OF AddRequest

@@ -8,7 +8,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(VirtualListViewResponse);
 use strict;
@@ -22,10 +22,10 @@ sub init {
   else {
     my $asn = $self->{asn} = {};
 
-    $asn->{targetPosition}        = $self->{target}  || 0;
-    $asn->{contentCount}          = $self->{content} || 0;
-    $asn->{virtualListViewResult} = $self->{result}  || 0;
-    $asn->{context}               = $self->{context} || undef;
+    $asn->{targetPosition}        = $self->{target}    || 0;
+    $asn->{contentCount}          = $self->{content}   || 0;
+    $asn->{virtualListViewResult} = $self->{result}    || 0;
+    $asn->{contextID}             = $self->{contextID} || undef;
   }
 
   $self;
@@ -63,9 +63,9 @@ sub context {
   my $self = shift;
   if (@_) {
     delete $self->{value};
-    return $self->{asn}{context} = shift;
+    return $self->{asn}{contextID} = shift;
   }
-  $self->{asn}{context};
+  $self->{asn}{contextID};
 }
 
 sub value {
@@ -192,7 +192,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: VLVResponse.pm,v 1.4 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: VLVResponse.pm,v 1.5 2003/04/07 15:05:14 gbarr Exp $>
 
 =cut
 
