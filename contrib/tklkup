@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.34 2003/01/21 01:45:51 charden Exp $
+# $Id: tklkup,v 1.35 2003/01/24 04:47:38 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -96,6 +96,7 @@ $Global{'platform'} = ($^O eq 'MSWin32') ? $^O : 'unix' ;
 $Global{'max'} = 0;
 $Global{'infoFilter'} = "equal";
 $Global{'nismapname'} = 0;
+$Global{'records'} = 0;
 
 my $sbbframe;
 my @base       = ();
@@ -512,17 +513,6 @@ foreach (@server)
 
 }
 
- 
-#
-# Create bind button.
-# This will cause another window to be displayed where
-# the user will enter the bind DN and password.
-#
- 
-##$abind = $stframe -> Button(-text => " SET BIND\n CREDENTIALS",
-##                 -relief => "raised", -command => \&BIND, 
-##                 -font => $Global{'Font'}, -borderwidth => 3 )
-##                 -> pack( -side => $Global{'hand'}, -anchor => "w", -pady => 2);
 #
 # Create a LDAP version Checkbutton that will set up  variable
 # setVersion to set the LDAP version before each directory query.
@@ -789,25 +779,18 @@ foreach (@attribute)
 
 } # End of foreach (@attribute)
 
+$msgframe = $attframe->LabFrame(-label => "Process Messages",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
 
-##$schframe = $attframe->LabFrame(-label => "DIRECTORY SCHEMA",
-##      -labelside => "acrosstop" )
-##      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
+$msgbox = $msgframe ->Scrolled('Listbox', -scrollbars => 's',
+        -width => 50, -height => 2 );
 
-#
-# Create schema button.
-# This will cause another window to be displayed where
-# the user will be able to display schema information.
-#
- 
-##$abind = $schframe -> Button(-text => " EXPLORE DIRECTORY\n SCHEMA",
-##                   -relief => "raised", -command => \&SCHEMA, 
-##                   -font => $Global{'Font'}, -borderwidth => 3 )
-##                   -> pack( -side => "$Global{'hand'}", -anchor => "w" );
-
+$msgbox->pack( -side => "bottom" );
 
 $splash->Destroy() if ( $Global{splash} );
 
+$splash = undef();
 #
 # Run the Main loop looking for events.
 #
@@ -860,6 +843,8 @@ $Global{ldap} = undef if ( defined($Global{ldap}) );
 $Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
 $sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
 
+$Global{mainWindow} -> update;  # Allow Tk to update
+
 $ptr = 1;
 
 #
@@ -897,6 +882,9 @@ $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
                          debug => $opt{'d'},
                         ) or $error = 1;
 }
+
+$msgbox->delete("0.0", "end");
+$msgbox->update();
 
 if ( !$error )
 {
@@ -937,6 +925,7 @@ else
    {
      foreach my $ncbase ( @$attr )
      {
+       $Global{mainWindow}->update;
        my $t1 = [];
        ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
        ${$NC{$ncbase}}[1] = $t1;      #
@@ -990,6 +979,11 @@ $sbmenu->cascade(-label => "$Nclabel");
 $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
 }
 
+
+}
+else
+{
+$msgbox->insert("1", "Connection error.");
 
 }
 
@@ -1454,6 +1448,11 @@ $srbfilelabel -> Checkbutton(
 $srbfilelabel->Entry(-textvariable => \$Global{'fdata'}, -width => 25 ) 
       -> pack(-fill => 'x');
 
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
 
 #
 # Create list frame.
@@ -1559,6 +1558,13 @@ $schema_list = $slframe ->Scrolled('ROText', -scrollbars => 'se',
         -font => $Global{'Font'}  );
 
 $schema_list->pack( -side => "bottom" );
+
+
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
 
 &schema;
 
@@ -1709,6 +1715,13 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
   return;
 
 }
+
+
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
 
 $ra_atts = [];
 #
@@ -2019,6 +2032,13 @@ $$tree{$Path} = [0, "$name"];
 
 }
 
+
+#
+# Allow mainWindow to update
+#
+
+$Global{'mainWindow'}->update;
+
 #
 # Set up the Tk windows.
 #
@@ -2098,7 +2118,8 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
             $Global{'list'}->insert("end", " \n");
 
             foreach my $var (@objectclasses)
-            {
+            { 
+               $Global{mainWindow}->update;
                $oid = $$obj{$var}->[0];
                #
                # Get the various other items associated with
@@ -2391,8 +2412,6 @@ delete($Global{'ldapActionDN'});
 $Global{'ldapActionWindow'}->destroy() 
        if Tk::Exists($Global{'ldapActionWindow'});
 delete($Global{'ldapActionWindow'}); 
-
-&displaySearch();
 
 &displaySearch();  # create the entry data display window.
 
@@ -3817,11 +3836,6 @@ my %opt = (
 $Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
 
 #
-# Display the DN search results list box.
-#
-displayDnList();
-
-#
 # Parameter(s) to return
 #
 
@@ -3891,7 +3905,7 @@ my $f = Net::LDAP::Filter->new($match) or $error = 1;
 
 if ( $error == 1 )
 {
-   $list->insert("end",  "Bad filter '$match'.\n");
+   ERROR("Bad filter $match.");
    return;
 }
 
@@ -3916,7 +3930,7 @@ else
 
 if ( $error == 1 )
 {
-   $list->insert("end",  "Connect error:  $@\n");
+   ERROR("Connect error:  $@");
    return;
 }
 
@@ -3935,6 +3949,14 @@ if ( $mesg->code && $mesg->code != 48  )
 
 }
  
+#
+# Display the DN search results list box.
+#
+displayDnList();
+
+$msgbox->delete("0.0", "end");
+$msgbox->update;
+$Global{'records'} = 0;  # initialize record count.
 $Global{'searchResults'} = {};  # initialize results hash.
 
 $mesg = $Global{ldap}->search(
@@ -3946,11 +3968,7 @@ $mesg = $Global{ldap}->search(
    
 if ( $mesg->code && $mesg->code != 48 ) 
 {
-   $errstr = $mesg->code;
-   $list->insert("end", "Error code:  $errstr\n");
-   $errstr = ldap_error_text($errstr);
-   $list->insert("end", "$errstr\n");
-   return;
+   ERROR($mesg->code);
 }
 
 
@@ -4000,13 +4018,17 @@ sub print_entry {
 
   if ( !defined($entry) )
   { 
-#    $list->insert("end", "No records found matching filter $match.\n") 
-#       if ($mesg->count == 0) ;
-
     return;
   }
  
   $dn = $entry->dn;           # store the entry dn
+  ++$Global{'records'};
+  $msgbox->delete("0.0", "end") 
+           if ( !($Global{'records'} % 10 ));
+  $msgbox->update if ( !($Global{'records'} % 10 ));
+  $msgbox->insert("0.0", "Entries found: $Global{'records'}") 
+           if ( !($Global{'records'} % 10 ));
+  $msgbox->update if ( !($Global{'records'} % 10 ));
   #
   #
   #
@@ -4015,7 +4037,7 @@ sub print_entry {
   {
   foreach (@ref )
   {
-    $list->insert("end", "LDAP Referral: $_ \n");
+    ERROR("LDAP Referral: $_");
   }
 
   }
@@ -4040,7 +4062,9 @@ sub print_entry {
   #
   
   foreach (@attrs) {
-    my $attr = $entry->get_value($_, asref => 1);
+#    my $attr = $entry->get_value($_, asref => 1);
+     my $attr = [];
+    @$attr = $entry->get_value($_);
     next unless $attr;
 
     if ( /^jpegPhoto/i )
@@ -4142,6 +4166,14 @@ while ( $ptr < @base )
 {
  if ( @base < $Global{'limit'} )
  { 
+     $splashList->insert("1", "Searching $base") 
+        if ( defined( $splash) );
+     $splash->update() 
+        if ( defined( $splash) );
+     $msgbox->insert("0", "Searching $base") 
+        if ( defined( $msgbox) );
+     $msgbox->update() 
+        if ( defined( $msgbox) );
   my @new_base = calBase($base, $f );
   push(@base, @new_base);
  }
@@ -4196,14 +4228,14 @@ if ( $mesg->code && $mesg->code != 11 )
  $_ = $dn;
 
 #
-# Record only dn that start with ou=, o=, or in some cases nismapname.
+# Record only dn that start with ou=, or in some cases nismapname.
 # Normal entrys can be mixed in with these objects.
 #
- if ( $Global{'nismapname'} && ( /^ou=/ || /^o=/ || /^nismapname/i ) )
+ if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i ) )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
- elsif ( /^ou=/ || /^o=/ )
+ elsif ( /^ou=/ )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
