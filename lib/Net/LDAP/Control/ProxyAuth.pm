@@ -8,7 +8,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = do { my @r=(q$Revision: 1.3 $=~/\d+/g); sprintf "%d."."%02d"x$#r,@r};
+$VERSION = "1.03_01";
 
 use Net::LDAP::ASN qw(proxyAuthValue);
 use strict;

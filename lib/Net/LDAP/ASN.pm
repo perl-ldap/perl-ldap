@@ -24,7 +24,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     -- We have split LDAPMessage into LDAPResponse and LDAPRequest
     -- The purpose of this is two fold
     -- 1) for encode we don't want the protocolOp
-    --    in the hierarchy as it is not really neede
+    --    in the hierarchy as it is not really needed
     -- 2) For decode we do want it, this allows Net::LDAP::Message::decode
     --    to be much simpler. Decode will also be faster due to
     --    less elements in the CHOICE
@@ -358,9 +358,30 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 		      -- result set size estimate from server
 	cookie          OCTET STRING }
 
-     proxyAuthValue ::= SEQUENCE {
-         proxyDN LDAPDN
-     }
+    proxyAuthValue ::= SEQUENCE {
+        proxyDN LDAPDN
+    }
+
+    ManageDsaIT ::= SEQUENCE {
+        dummy INTEGER OPTIONAL   -- it really is unused
+    }
+
+    PersistentSearch ::= SEQUENCE {
+        changeTypes INTEGER,
+        changesOnly BOOLEAN,
+        returnECs BOOLEAN
+    }
+
+    EntryChangeNotification ::= SEQUENCE {
+        changeType ENUMERATED {
+            add         (1),
+            delete      (2),
+            modify      (4),
+            modDN       (8)
+        }
+        previousDN   LDAPDN OPTIONAL,     -- modifyDN ops. only
+        changeNumber INTEGER OPTIONAL     -- if supported
+    }
 
 LDAP_ASN
 
