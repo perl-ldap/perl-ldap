@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.36 2003/01/24 13:11:21 charden Exp $
+# $Id: tklkup,v 1.37 2003/01/25 03:38:24 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -28,7 +28,6 @@ use Carp;
 use Data::Dumper;
 use MIME::Base64;
 use Net::LDAP qw(:all);
-use Net::LDAPS qw(:all);
 use Net::LDAP::Filter;
 use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
 use Net::LDAP::Constant;
@@ -97,6 +96,8 @@ $Global{'max'} = 0;
 $Global{'infoFilter'} = "equal";
 $Global{'nismapname'} = 0;
 $Global{'records'} = 0;
+$Global{'mwwidth'} = 00;
+$Global{'mwheight'} = 40;
 
 my $sbbframe;
 my @base       = ();
@@ -176,7 +177,6 @@ my @server    = ();
 #
 
 $Global{'mainWindow'} = MainWindow->new;
-$Global{'mainWindow'}->geometry("520x320+$Global{'horz'}+$Global{'vert'}");
 $splash = $Global{'mainWindow'}->Splashscreen(-milliseconds => 0) 
         if ( $Global{splash} );
 $splframe = $splash->LabFrame(-label => "DIRECTORY SEARCH SPLASH SCREEN",
@@ -286,6 +286,14 @@ TYPE: {
                      $Global{'nismapname'} = 1;
                      last TYPE; };
 
+    /^mwwidth/i && do {
+                     $Global{'mwwidth'} = $data[1];
+                     last TYPE; };
+
+    /^mwheight/i && do {
+                     $Global{'mwheight'} = $data[1];
+                     last TYPE; };
+
                      my $error =  "Parsing configuration file found an undefined type:  $_";
                      ERROR(\$error);
 
@@ -309,6 +317,9 @@ $Global{'hand'}   = $opt_r ? 'right' : 'left';
 # my $Global{'hand'}   = $opt_r ? 'left' : 'right'; # uncomment this for right hand def.
 
 }
+
+$Global{'mainWindow'}->geometry("$Global{'mwheight'}x$Global{'mwwidth'}+$Global{'horz'}+$Global{'vert'}");
+#$Global{'mainWindow'}->geometry("+$Global{'horz'}+$Global{'vert'}");
 
 $splashList->insert("0", "Determining search bases.") 
         if ( $Global{splash} );
@@ -336,6 +347,17 @@ $error = 0;
 
 if ( $Global{port} == 636 )
 {
+
+eval 
+{
+  require Net::LDAPS;
+};
+if ($@)
+{
+$msgbox->insert("0.0", $@) if ($@);
+return;
+}
+
 $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
@@ -612,6 +634,10 @@ $bframe -> Button(-text => "SEARCH DIRECTORY", -command =>  \&search,
 $attframe = $Global{'mainWindow'}->Frame()
       ->pack( -fill => "both", -side => "bottom");
 
+$msgframe = $attframe->LabFrame(-label => "Process Messages",
+      -labelside => "acrosstop" )
+      ->pack( -fill => "both", -side => "top", -padx => 1, -pady => 1 );
+
 #
 # Create Bottom Attribute frame.
 # This is where the user will enter data to be
@@ -779,14 +805,10 @@ foreach (@attribute)
 
 } # End of foreach (@attribute)
 
-$msgframe = $attframe->LabFrame(-label => "Process Messages",
-      -labelside => "acrosstop" )
-      ->pack( -fill => "both", -side => "right", -padx => 1, -pady => 1 );
-
 $msgbox = $msgframe ->Scrolled('Listbox', -scrollbars => 's',
         -width => 50, -height => 2 );
 
-$msgbox->pack( -side => "bottom" );
+$msgbox->pack( -side => "left" );
 
 $splash->Destroy() if ( $Global{splash} );
 
@@ -843,6 +865,7 @@ $Global{ldap} = undef if ( defined($Global{ldap}) );
 $Global{'slist'}->insert(0 , $Global{'LDAP_SERVER'});
 $sslist->insert(0 , $Global{'LDAP_SERVER'}) if ( Exists($sslist) ) ;
 
+$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 $Global{mainWindow} -> update;  # Allow Tk to update
 
 $ptr = 1;
@@ -1000,6 +1023,7 @@ $sbblist->insert(0 , $LDAP_SEARCH_BASE);
 
 $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
+$Global{mainWindow} -> Unbusy;  # window is not busy
 } # End of server subroutine
 
 
@@ -1376,6 +1400,7 @@ my $aframe;
 my $tframe;
 my $sbframe;
 #my $sslist;
+$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 &globalPos();
 my $x = $Global{'horz'} + 100;
 my $y = $Global{'vert'} + 100;
@@ -1899,6 +1924,7 @@ else
 
 } # End of schema subroutine
 
+$Global{mainWindow} -> Unbusy;  # window is not busy
 } # End of SCHEMA subroutine
 
 sub init_schemaHash
@@ -3830,6 +3856,7 @@ my %opt = (
   'd' => 0
 );
 
+$Global{mainWindow} -> Busy(-recurse => 1);  # window is busy
 #
 # Destroy the dn history list if it exists.
 #
@@ -4089,6 +4116,7 @@ push(@$data, $information);
 ${$Global{'searchResults'}}{$dn} = $data;
 }
 
+$Global{mainWindow} -> Unbusy;  # window is not busy
 } # End of search subroutine
 
 #
@@ -4485,6 +4513,12 @@ To be used this file must have user read permission.
 
 There are 5 commands that can be used with this file;
 hand, attribute, server, limit, and port.
+
+mwwidth -> numeric value:  Default 400 main window width in
+                           pixels, user may need to adjust this.
+
+mwheight -> numeric value: Default is 540 main window height in
+                           pixels, user may need to adjust this.
 
  hand -> values: left or right.  Defines where the 
                  attribute label box will be place.
