@@ -877,7 +877,7 @@ L<Net::LDAP::Search>,
 L<Net::LDAP::RFC>
 
 The homepage for the perl-ldap modules can be found at 
-http://www.pobox.com/~gbarr/perl-ldap/.
+http://perl-ldap.sourceforge.net/
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -912,6 +912,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.24 2003/05/07 10:39:10 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.25 2003/05/07 10:54:57 gbarr Exp $>
 
 =cut
