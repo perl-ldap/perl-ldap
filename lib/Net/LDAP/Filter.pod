@@ -5,10 +5,14 @@ Net::LDAP::Filter - representation of LDAP filters
 =head1 SYNOPSIS
 
   use Net::LDAP::Filter;
-  
+
   $filter = Net::LDAP::Filter->new( $filter_str );
 
 =head1 DESCRIPTION
+
+The B<Net::LDAP::Filter> object lets you directly manipulate LDAP
+filters without worrying about the string representation and all the
+associated escaping mechanisms.
 
 =head1 CONSTRUCTOR
 
@@ -90,14 +94,14 @@ L<Other online documentation|Net::LDAP::RFC>
 =head1 ACKNOWLEDGEMENTS
 
 This document is based on a document originally written by Russell Fulton
-<r.fulton@auckland.ac.nz>.
+E<lt>r.fulton@auckland.ac.nzE<gt>.
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>gbarr@pobox.comE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>.
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
@@ -107,6 +111,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Filter.pod,v 1.3 2001/08/24 19:31:14 gbarr Exp $>
+I<$Id: Filter.pod,v 1.4 2003/05/07 11:07:01 chrisridd Exp $>
 
 =cut
