@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 my %mode = qw(w > r < a >>);
 
@@ -109,6 +109,8 @@ sub _read_entry {
   if (@ldif and $ldif[0] =~ /^version:\s+(\d+)/) {
     $self->{version} = $1;
     shift @ldif;
+    return $self->_read_entry
+      unless @ldif;
   }
 
   if (@ldif <= 1) {
