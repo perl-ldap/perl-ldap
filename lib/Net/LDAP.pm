@@ -158,7 +158,7 @@ sub unbind {
   my $mesg = $ldap->message('Net::LDAP::Unbind' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   $mesg->encode(
@@ -200,7 +200,7 @@ sub bind {
 
   my $dn      = delete $arg->{dn} || '';
   my $control = delete $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my %stash = (
@@ -226,7 +226,7 @@ sub bind {
   if ($auth_type eq 'sasl') {
 
     return _error($ldap, $mesg, LDAP_PARAM_ERROR, "SASL requires LDAPv3")
-      if $ldap->{version} < 3;
+      if $ldap->{net_ldap_version} < 3;
 
     my $sasl = $passwd;
     # Tell the SASL object our user identifier
@@ -264,7 +264,7 @@ sub search {
   my $mesg = $ldap->message('Net::LDAP::Search' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $base = $arg->{base} || '';
@@ -315,7 +315,7 @@ sub add {
   my $mesg = $ldap->message('Net::LDAP::Add' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $entry = $arg->{dn}
@@ -346,7 +346,7 @@ sub modify {
   my $mesg = $ldap->message('Net::LDAP::Modify' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $dn = $arg->{dn}
@@ -443,7 +443,7 @@ sub delete {
   my $mesg = $ldap->message('Net::LDAP::Delete' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $dn = $arg->{dn}
@@ -466,7 +466,7 @@ sub moddn {
   my $mesg = $ldap->message('Net::LDAP::ModDN' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $dn = $arg->{dn}
@@ -498,7 +498,7 @@ sub compare {
   my $mesg = $ldap->message('Net::LDAP::Compare' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   my $dn = $arg->{dn}
@@ -541,7 +541,7 @@ sub abandon {
   my $mesg = $ldap->message('Net::LDAP::Abandon' => $arg);
 
   my $control = $arg->{control}
-    and $ldap->{version} < 3
+    and $ldap->{net_ldap_version} < 3
     and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
 
   $mesg->encode(
@@ -560,7 +560,7 @@ sub extension {
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
 
   return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "ExtendedRequest requires LDAPv3")
-    if $ldap->{version} < 3;
+    if $ldap->{net_ldap_version} < 3;
 
   $mesg->encode(
     extendedRequest => {
