@@ -1,3 +1,12 @@
+Change 512 on 2000/05/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Change to use asn_read (needs patch to Convert::ASN::IO)
+
+Change 511 on 2000/05/09 by <gbarr@pobox.com> (Graham Barr)
+
+	Change email/url's to point to sourceforge
+
 Change 507 on 2000/05/03 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP

@@ -41,7 +41,7 @@ L<Authen::SASL::CRAM_MD5|Authen::SASL::CRAM_MD5>
 Graham Barr <gbarr@pobox.com>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap@mail.med.cornell.edu>
+<perl-ldap-dev@lists.sourceforge.net>
 
 =head1 COPYRIGHT
 
@@ -51,7 +51,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: SASL.pod,v 1.1 2000/05/03 12:28:58 gbarr Exp $>
+I<$Id: SASL.pod,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
 
 =cut
 

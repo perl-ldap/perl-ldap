@@ -1,28 +1,32 @@
 perl-ldap - A Client interface to LDAP servers
 
 *******************************************************************************
-This release is a development release to obtain feedback. Any part of this
-release could be subject to change.
+This code should be considered very much as work-in-progress.
+Any part of this release could be subject to change.
 
 The development of the distribution is discussed on a mailing list at
-perl-ldap@mail.med.cornell.edu. to subscribe send a message to
-perl-ldap-request@mail.med.cornell.edu. with the word subscribe in the subject
-and body. 
+
+  perl-ldap-dev@lists.sourceforge.net.
+
+To subscribe goto
+
+  http://lists.sourceforge.net/mailman/listinfo/perl-ldap-dev
+
 *******************************************************************************
 
 Copyright (c) 1997-2000 Graham Barr. All rights reserved.
 This package is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-For the latest information see http://www.pobox.com/~gbarr/perl-ldap/
+For the latest information see http://perl-ldap.sourceforge.net/
 
 QUICK START GUIDE:
 
     perl-ldap uses the following modules/distributions.
 
-	Convert::BER - required
-	libwww-perl  - optional, needed for URL parsing
-	Digest::MD5  - optional, needed for SASL CRAM-MD5 auth
+	Convert::ASN1 - required
+	URI::ldap     - optional, needed for URL parsing
+	Digest::MD5   - optional, needed for SASL CRAM-MD5 auth
 
     First ensure the above modules/distributions are installed then
     build/test/install Net::LDAP by doing
@@ -36,20 +40,6 @@ QUICK START GUIDE:
     you can use the 'perldoc Net::LDAP' command to obtain the documentation.
     This documentation will contain pointers to the other modules.
 
-Many things from the previous release have been depricated in this release.
-These are
-
-  ->ldapbind() is now ->bind()
-  
-  Error constants now start with LDAP_ instead of ldap, this is for
-  consistency with other libraries
-  
-  ->read_ldif and ->ldif methods on Net::LDAP::Entry objects has been replaced
-  by the Net::LDAP::LDIF module
-
-  option names to methods are now passed in all lowercase without the leading -
-  
-  ->get_attribute in Net::LDAP::Entry has been replaced by ->get
 
 *******************************************************************************
 NOTE: Everything that has been depricated will be removed when V1.00 is

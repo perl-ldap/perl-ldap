@@ -8,7 +8,7 @@ use strict;
 use IO::Socket;
 use IO::Select;
 use vars qw($VERSION $LDAP_VERSION);
-use Convert::ASN1 qw(asn_recv);
+use Convert::ASN1 qw(asn_read);
 use Net::LDAP::Message;
 use Net::LDAP::ASN qw(LDAPResponse);
 use Net::LDAP::Constant qw(LDAP_SUCCESS
@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.16_01";
+$VERSION = "0.16_02";
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -568,7 +568,7 @@ sub _recvresp {
 
   for( $ready = 1 ; $ready ; $ready = $sel->can_read(0)) {
     my $pdu;
-    defined asn_recv($sock, $pdu, 0)
+    asn_read($sock, $pdu)
       or return LDAP_OPERATIONS_ERROR;
 
     my $debug;

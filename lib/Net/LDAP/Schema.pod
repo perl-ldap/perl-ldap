@@ -126,7 +126,7 @@ Graham Barr <gbarr@pobox.com>
 John Berthels <jjb@nexor.co.uk>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap@mail.med.cornell.edu>.
+<perl-ldap-dev@lists.sourceforge.net>.
 
 =head1 COPYRIGHT
 
@@ -136,6 +136,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.2 2000/05/04 08:42:45 gbarr Exp $>
+I<$Id: Schema.pod,v 1.3 2000/05/09 16:09:49 gbarr Exp $>
 
 =cut

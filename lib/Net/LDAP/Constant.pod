@@ -332,7 +332,7 @@ L<Net::LDAP::Message|Net::LDAP::Message>
 Graham Barr <gbarr@pobox.com>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap@mail.med.cornell.edu>
+<perl-ldap-dev@lists.sourceforge.net>
 
 =head1 COPYRIGHT
 
@@ -342,6 +342,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Constant.pod,v 1.1 2000/05/03 12:29:06 gbarr Exp $>
+I<$Id: Constant.pod,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
 
 =cut

@@ -33,18 +33,22 @@ the latest version from http://www.cpan.org/search?dist=perl-ldap
 
 =head2 Is there a mailing list ?
 
-Yes there is at <perl-ldap@mail.med.cornell.edu>
+Yes there is at <perl-ldap-dev@lists.sourceforge.net>
 
-You can subscribe to this list by sending the word subscribe in the body
-of a message to <perl-ldap-request@mail.med.cornell.edu>
-
-If you want to unsubscribe, send a message with the word unsubscribe
-in the body to the same address
+You can subscribe to this list at
+http://lists.sourceforge.net/mailman/listinfo/perl-ldap-dev
 
 =head2 Is the mailing list archived ?
 
-There is an archive of the perl-ldap mailing list at
+Archives of messages since we switched to using sourceforge can be
+found at
+
+http://www.geocrawler.com/lists/3/SourceForge/3482/0/
+
+
+There is also an archive of the perl-ldap mailing list at
 http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
+which also has messages from before the move to sourceforge.
 
 =head2 Is there any online documentation ?
 
@@ -264,7 +268,7 @@ can do
 Graham Barr <gbarr@pobox.com>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap@mail.med.cornell.edu>.
+<perl-ldap-dev@lists.sourceforge.net>.
 
 =head1 COPYRIGHT
 
@@ -273,7 +277,7 @@ distributed, and may be redistributed, under the same terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: FAQ.pod,v 1.1 2000/05/03 12:29:11 gbarr Exp $>
+I<$Id: FAQ.pod,v 1.2 2000/05/09 16:09:49 gbarr Exp $>
 
 =cut
 
