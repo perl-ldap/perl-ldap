@@ -52,7 +52,7 @@ B<What is not covered in these examples at this time:>
 
 =head2 PACKAGE - Definitions
 
-   use Net::LDAP qw(:all);			# use for all code
+   use Net::LDAP;
 
    use Net::LDAP::Util qw(ldap_error_name	
                           ldap_error_text) ; 	# use for Error handling
@@ -528,7 +528,7 @@ All rights to this document are hereby relinquished to Graham Barr.
 
 =for html <hr>
 
-I<$Id: Examples.pod,v 1.6 2003/05/07 10:59:12 chrisridd Exp $>
+I<$Id: Examples.pod,v 1.7 2003/06/18 18:23:31 gbarr Exp $>
 
 =cut
 

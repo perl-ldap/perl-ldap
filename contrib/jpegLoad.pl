@@ -11,10 +11,13 @@
 #          directory entry.
 #
 #
-# $Id: jpegLoad.pl,v 1.1 2001/03/12 14:01:46 gbarr Exp $
+# $Id: jpegLoad.pl,v 1.2 2003/06/18 18:23:31 gbarr Exp $
 #
 # Revisions:
 # $Log: jpegLoad.pl,v $
+# Revision 1.2  2003/06/18 18:23:31  gbarr
+# Remove all references to :all as it is not recomended
+#
 # Revision 1.1  2001/03/12 14:01:46  gbarr
 # New contrib scripts from Clif Harden
 #
@@ -26,7 +29,7 @@ use strict;
 use Getopt::Std;
 use Net::LDAP;
 use Net::LDAP::Filter;
-use Net::LDAP qw(:all);
+use Net::LDAP;
 use Net::LDAP::Util qw( ldap_error_name ldap_error_text );
 use Net::LDAP::Constant;
 

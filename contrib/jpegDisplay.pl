@@ -7,7 +7,7 @@
 # These modules are available from the PERL CPAN
 # system.
 #
-# $Id: jpegDisplay.pl,v 1.1 2001/03/12 14:01:46 gbarr Exp $
+# $Id: jpegDisplay.pl,v 1.2 2003/06/18 18:23:31 gbarr Exp $
 #
 # Purpose: This program is designed to retrieve jpeg photo data
 #          from a LDAP directory.
@@ -15,6 +15,9 @@
 #
 # Revisions:
 # $Log: jpegDisplay.pl,v $
+# Revision 1.2  2003/06/18 18:23:31  gbarr
+# Remove all references to :all as it is not recomended
+#
 # Revision 1.1  2001/03/12 14:01:46  gbarr
 # New contrib scripts from Clif Harden
 #
@@ -25,7 +28,7 @@
 use Getopt::Std;
 use Net::LDAP;
 use Net::LDAP::Filter;
-use Net::LDAP qw(:all);
+use Net::LDAP;
 use Net::LDAP::Util qw(ldap_error_name ldap_error_text); 
 use Tk;
 use Tk::JPEG;

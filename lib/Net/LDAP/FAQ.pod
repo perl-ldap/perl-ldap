@@ -1106,7 +1106,7 @@ This code works with ActiveState Perl running on WinNT 4. Please note that
 this requires the Win32::Perms module, and needs valid NT account info to
 replace the placeholders. 
 
-  use Net::LDAP qw(:all);
+  use Net::LDAP;
   use Net::LDAP::Util;
   use Win32::Perms;
 
