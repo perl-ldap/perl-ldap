@@ -1,5 +1,5 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 1.4 2004/02/09 20:10:55 kartik_subbarao Exp $
+# $Id: ldifdiff.pl,v 1.5 2004/02/09 21:01:46 kartik_subbarao Exp $
 
 =head1 NAME
 
@@ -71,10 +71,10 @@ my @sourceattrs;
 my (%ciscmp, %dnattrs, %sharedattrs);
 my $keyattr;
 GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
-	'c|ciscmp=s' => sub { my @a = split(/,/,$_[1]); @ciscmp{@a} = (1) x @a },
-	'dnattrs=s' => sub { my @a = split(/,/,$_[1]); @dnattrs{@a} = (1) x @a },
+	'c|ciscmp=s' => sub { my @a = split(/,/,lc $_[1]); @ciscmp{@a} = (1) x @a },
+	'dnattrs=s' => sub { my @a = split(/,/,lc $_[1]); @dnattrs{@a} = (1) x @a },
 	'k|keyattr=s' => \$keyattr,
-	'sharedattrs=s' => sub { my @a=split(/,/,$_[1]); @sharedattrs{@a}=(1)x @a }
+	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a}
 	);
 %ciscmp = (objectclass => 1, manager => 1, member => 1, owner => 1,
 		   uniquemember => 1)
@@ -88,11 +88,11 @@ GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 my ($sourcefile, $targetfile);
 $sourcefile = shift; $targetfile = shift;
 
-die "usage: $0 -k keyattr [-a attr1,attr2,...] sourcefile targetfile\n"
+die "usage: $0 -k|--keyattr keyattr [-a|--sourceattrs attr1,attr2,...] [-c|--ciscmp attr1,...] [--dnattrs attr1,...] [--sharedattrs attr1,...] sourcefile targetfile\n"
 	unless $keyattr && $sourcefile && $targetfile;
 
 my $source = Net::LDAP::LDIF->new($sourcefile)
-	or die "Can't open LDIF file $sourcefile\n: $!\n";
+	or die "Can't open LDIF file $sourcefile: $!\n";
 
 my $target = Net::LDAP::LDIF->new($targetfile)
 	or die "Can't open LDIF file $targetfile: $!\n";
