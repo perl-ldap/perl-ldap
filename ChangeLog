@@ -1,11 +1,190 @@
-2001-10-08  Chris Ridd  <chris.ridd@messagingdirect.com>
+2001-10-29 17:29  Graham Barr
 
-	* Added Authen::SASL::EXTERNAL
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
 
-2001-10-01  Chris Ridd  <chris.ridd@messagingdirect.com>
+	Release 0.25
+	
+2001-10-29 16:48  Graham Barr
 
-	* Added sslversion to LDAPS constructor and start_tls method
+	* data/00-cmp2.ldif, lib/Net/LDAP/LDIF.pm, t/00ldif-entry.t:
 
+	Ensure dashes are only output between parts of an LDAP update entry
+	
+2001-10-24 15:37  Graham Barr
+
+	* htdocs/: index.html, index.xml:
+
+	Add the new Security pod to the index page
+	
+2001-10-24 15:08  Chris Ridd
+
+	* lib/Net/LDAP/RFC.pod:
+
+	LDIF is now an RFC.
+	
+2001-10-24 14:49  Chris Ridd
+
+	* lib/Net/LDAP/Security.pod:
+
+	Discussion of security issues
+	
+2001-10-24 13:37  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Fix SYNOPSIS to match the method descriptions
+	
+2001-10-23 16:07  Graham Barr
+
+	* contrib/ldapmodify.pl:
+
+	Added contrib/ldapmodify.pl from Kartik Subbarao
+	
+2001-10-22 14:34  Graham Barr
+
+	* contrib/ldifdiff.pl:
+
+	ldapdiff.pl script from Kartik Subbarao
+	
+2001-10-22 13:32  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Don't overwrite teh sasl user if the caller already provided one.
+	
+2001-10-08 19:03  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	Output LDIF change commands correctly
+	
+2001-10-08 08:49  Chris Ridd
+
+	* lib/Authen/SASL/EXTERNAL.pm:
+
+	New module
+	
+2001-10-05 15:36  Graham Barr
+
+	* lib/Net/LDAP/: Entry.pm, Entry.pod:
+
+	Allow Net::LDAP::Entry to be able to do a moddn
+	(patch from Kartik Subbarao)
+	
+2001-10-05 15:33  Graham Barr
+
+	* lib/Net/: LDAP.pm, LDAP.pod:
+
+	Allow the caller to specify the list of attributes retrieved by root_dse
+	
+2001-10-01 11:28  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Added documentation for sslversion.
+	
+2001-10-01 11:27  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Added documention of sslversion in start_tls
+	
+2001-10-01 11:23  Chris Ridd
+
+	* lib/Net/LDAP.pm:
+
+	Added sslversion in start_tls, defaulted to tlsv1
+	
+2001-10-01 11:23  Chris Ridd
+
+	* lib/Net/LDAPS.pm:
+
+	Added sslversion argument, defaulted to sslv2/3
+	
+2001-09-24 18:09  Graham Barr
+
+	* lib/Net/LDAP/LDIF.pm:
+
+	andle comments in LDIF
+	
+2001-09-09 05:50  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Corrected several errors regarding how the ldap version information was
+	set.  All ldap bind commands use the Global{setVersion} hash.
+	Added the nismapname option for detecting Solaris Native LDAP automounter
+	directory branches.
+	
+2001-09-09 05:46  Clif Harden
+
+	* contrib/dot.tklkup:
+
+	
+	Added nismapname option.  This enables detection of Solaris Native
+	LDAP automounter directory branches.
+	
+2001-09-07 02:13  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added attributes subschemaSubentry and supportedSASLMechanisms to the
+	root_dse display list.
+	
+2001-09-05 13:13  Graham Barr
+
+	* t/70sortctrl.t:
+
+	Avoid Name "main::sortctrl" used only once warning
+	
+2001-09-05 03:57  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Made major modifications to the way the code operates.  When searchs
+	are done the DN of the returned entry(s) is displayed in a semi-hierarchial
+	list.  Selecting a DN will result in another window being displayed
+	that has the data for the selected DN.
+	
+2001-08-31 15:31  Graham Barr
+
+	* lib/Net/LDAP/Entry.pm:
+
+	Catch the case where deleting a specific attribute value causes the
+	whole attribute to be deleted
+	
+2001-08-27 04:11  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Change code to retrieve schema information when Explore Schema
+	button is pressed. The Retrieve Schema button can still be used
+	to retrieve schema data.
+	Added code to detect objectclass string length and used this to set
+	Hierarchial objectclass display window size.
+	
+2001-08-27 00:58  Clif Harden
+
+	* contrib/tklkup:
+
+	
+	Added setFilter subroutine.
+	Added Set Filter Condition menu button.
+	Added code to allow setting of 4 different search filter combinations;
+	equal, begins with, ends with, and contains.
+	Added pod documentation for Set Filter Condition.
+	
+2001-08-26 23:16  Clif Harden
+
+	* lib/Net/LDAP/FAQ.pod:
+
+	
+	Added a link to a german LDAP website.
+	
 2001-08-25 09:08  Graham Barr
 
 	* lib/Net/LDAP.pm:

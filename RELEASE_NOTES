@@ -1,3 +1,12 @@
+perl-ldap 0.25 29 Oct 2001
+==========================
+
+* Added support for EXTERNAL SASL authentication
+* Caller can now specify attributes to return from root_dse
+* More scripts added to contrib
+* Various bug fixes
+* Caller can now specify sslversion for LDAPS and start_tls
+
 perl-ldap 0.24 17 July 2001
 ===========================
 
