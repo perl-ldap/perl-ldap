@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.27 2002/06/15 02:47:34 charden Exp $
+# $Id: tklkup,v 1.28 2002/07/19 02:44:19 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.28  2002/07/19 02:44:19  charden
+# Added the calling of the DSML end_dsml function when schema XML information
+# is writen to a file.
+#
 # Revision 1.27  2002/06/15 02:47:34  charden
+#
 # Added code to close windows after ldap actions are taken.  This is to force
 # a new search after data has been changed.
 #
@@ -1683,6 +1688,7 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
     open(FXML, ">$Global{'fdata'}");  
     $dsml = Net::LDAP::DSML->new( output => *FXML, pretty_print => 1 );
     $dsml->write_schema($schemaHash{'schema'});
+    $dsml->end_dsml;
     close(FXML);
   }
   else
