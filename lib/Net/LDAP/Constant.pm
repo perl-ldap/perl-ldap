@@ -53,12 +53,12 @@ sub AUTOLOAD {
 }
 
 # These subs are really in Net::LDAP::Util, but need to access <DATA>
-# so its esier for them to be here.
+# so its easier for them to be here.
 
 my @err2name;
 
 sub Net::LDAP::Util::ldap_error_name {
-  my $code = 0 + shift;
+  my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
 
   unless (@err2name) {
     seek(DATA,0,0);
@@ -76,7 +76,7 @@ sub Net::LDAP::Util::ldap_error_name {
 
 
 sub Net::LDAP::Util::ldap_error_text {
-  my $code = 0 + shift;
+  my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
   my $text;
 
   seek(DATA,0,0);
@@ -500,6 +500,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Constant.pm,v 1.7 2003/05/08 12:53:08 gbarr Exp $>
+I<$Id: Constant.pm,v 1.8 2003/05/20 14:58:49 chrisridd Exp $>
 
 =cut

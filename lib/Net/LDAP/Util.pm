@@ -18,7 +18,7 @@ Net::LDAP::Util - Utility functions
 
   $mesg = $ldap->search( .... );
 
-  die "Error ",ldap_error_name($mesg->code) if $mesg->code;
+  die "Error ",ldap_error_name($mesg) if $mesg->code;
 
 =head1 DESCRIPTION
 
@@ -44,28 +44,33 @@ require Net::LDAP::Constant;
 );
 $VERSION = "0.10";
 
-=item ldap_error_name ( NUM )
+=item ldap_error_name ( ERR )
 
-Returns the name corresponding with the error number passed in. If the
-error is not known the a string in the form C<"LDAP error code %d(0x%02X)">
-is returned.
-
-=cut
-
-# Defined in Constant.pm
-
-=item ldap_error_text ( NUM )
-
-Returns the text from the POD description for the given error. If the
-error code given is unknown then C<undef> is returned.
+Returns the name corresponding with ERR. ERR can either be an LDAP
+error number, or a C<Net::LDAP::Message> object containing an error
+code. If the error is not known the a string in the form C<"LDAP error
+code %d(0x%02X)"> is returned.
 
 =cut
 
 # Defined in Constant.pm
 
-=item ldap_error_desc ( NUM )
+=item ldap_error_text ( ERR )
 
-Returns a short text description of the error.
+Returns the text from the POD description for the given error. ERR can
+either be an LDAP error code, or a C<Net::LDAP::Message> object
+containing an LDAP error code. If the error code given is unknown then
+C<undef> is returned.
+
+=cut
+
+# Defined in Constant.pm
+
+=item ldap_error_desc ( ERR )
+
+Returns a short text description of the error. ERR can either be an
+LDAP error code or a C<Net::LDAP::Message> object containing an LDAP
+error code.
 
 =cut
 
@@ -171,7 +176,7 @@ my @err2desc = (
 );
 
 sub ldap_error_desc {
-  my $code = shift;
+  my $code = (ref($_[0]) ? $_[0]->code : $_[0]);
   $err2desc[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
 }
 
@@ -485,7 +490,7 @@ ldap_explode_dn and canonical_dn also
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.17 2003/05/08 09:27:41 gbarr Exp $>
+I<$Id: Util.pm,v 1.18 2003/05/20 14:58:49 chrisridd Exp $>
 
 =cut
 
