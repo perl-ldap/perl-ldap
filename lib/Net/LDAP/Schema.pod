@@ -48,6 +48,22 @@ returns a list of the attributes which may (or must) be present in the OC.
 Return value is an array or array reference depending on calling context, or
 empty list on error.
 
+=item ditstructurerules
+
+Returns a list of the names of all ditstructurerules in the schema.
+
+  @dts = $schema->ditstructurerules();
+
+Return value is an array or array reference depending on calling context.
+
+=item ditcontentrules
+
+Returns a list of the names of all ditcontentrules in the schema.
+
+  @dtc = $schema->ditcontentrules();
+
+Return value is an array or array reference depending on calling context.
+
 =item dump
 
 Given an argument which is the name of a file, and the file or
@@ -81,6 +97,18 @@ or undef if the name or oid is not of the appropriate type.
   # Yes...so we can do this
   @must = $schema->must( $oid );
 
+
+=item is_matchingruleuse, is_ditstructurerule, is_ditcontentrule, is_nameform
+
+Given the name or oid of a schema item (matchingruleuse, ditstructurerule, 
+ditcontentrule or nameform respectively) returns the assoicated OID 
+or undef if the name or oid is not of the appropriate type.
+
+  # Is foo a known OC?
+  $oid = $schema->is_nameform( "foo" );
+  # No? Bale out.
+  die( "Not a nameform" ) unless $oid;
+
 =item item
 
 Given two arguments, first of which is the name or oid of a known
@@ -110,6 +138,14 @@ Returns a list of the names of all matchingrules in the schema.
 
 Return value is an array or array reference depending on calling context.
 
+=item matchingruleuse
+
+Returns a list of the names of all matchingruleuse in the schema.
+
+  @mru = $schema->matchingruleuse();
+
+Return value is an array or array reference depending on calling context.
+
 =item may
 
 Given an argument which is the name or oid of a known object class, returns
@@ -132,6 +168,14 @@ Return value is an array or array reference depending on calling context.
 
 Given the name of a schema item (object class, attribute or syntax) returns
 the assoicated OID or undef if it is not recognised.
+
+=item nameforms
+
+Returns a list of the names of all nameforms in the schema.
+
+  @nfm = $schema->nameforms();
+
+Return value is an array or array reference depending on calling context.
 
 =item objectclasses
 
@@ -167,7 +211,7 @@ if the syntax is inherited).
 
 =item syntaxes
 
-Returns a list of the names of all objectclasses in the schema. (The name of
+Returns a list of the names of all ldapSyntaxes in the schema. (The name of
 a syntax is not well defined. It may be an OID or abbreviated description).
 
   @syns = $schema->syntaxes();
@@ -197,6 +241,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.6 2000/08/16 11:07:34 gbarr Exp $>
+I<$Id: Schema.pod,v 1.7 2001/02/12 14:17:38 gbarr Exp $>
 
 =cut

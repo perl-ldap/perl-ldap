@@ -655,6 +655,16 @@ sub _forgetmesg {
 #Mark Wilcox 3-20-2000
 #now accepts named parameters
 #dn => "dn of subschema entry"
+#
+#
+# Clif Harden 2-4-2001.
+# corrected filter for subschema search.
+# added attributes to retrieve on subschema search.
+# added attributes to retrieve on rootDSE search.
+# changed several double qoute character to single quote
+# character, just to be consistent throughout the schema
+# and root_dse functions.
+#
 
 sub schema {
   require Net::LDAP::Schema;
@@ -670,13 +680,22 @@ sub schema {
     my $root = $self->root_dse
       or return undef;
 
-    $base = $root->get_value('subschemasubentry') || 'cn=schema';
+    $base = $root->get_value('subschemaSubentry') || 'cn=schema';
   }
 
   $mesg = $self->search(
     base   => $base,
     scope  => 'base',
-    filter => '(objectClass=*)',
+    filter => '(objectClass=subschema)',
+    attrs  => [ "objectClasses", 
+                "attributeTypes", 
+                "matchingRules",
+                "matchingRuleUse",
+                "dITStructureRules",
+                "dITContentRules",
+                "nameForms",
+                "ldapSyntaxes",
+              ],
   );
 
   $mesg->code
@@ -690,9 +709,17 @@ sub root_dse {
   
   unless ($ldap->{net_ldap_rootdse}) {
     $mesg = $ldap->search(
-      base   => "",
+      base   => '',
       scope  => 'base',
-      filter => "(objectClass=*)",
+      filter => '(objectClass=*)',
+      attrs => [ "subschemaSubentry",
+                 "namingContexts",
+                 "altServer",
+                 "supportedExtension",
+                 "supportedControl",
+                 "supportedSASLMechanisms",
+                 "supportedLDAPVersion",
+               ],
     );
     $ldap->{net_ldap_rootdse} = $mesg->entry;
   }

@@ -455,6 +455,47 @@ B<Example>
    ]
  );
 
+=item root_dse
+
+The root_dse method retrieves information from the server's
+rootDSE entry.
+
+The result is an object of class L<Net::LDAP::Search|Net::LDAP::Search>.
+
+B<Example>
+
+ my $root = $ldap->root_dse();
+ # get naming Context
+ $root->get_value('namingContext', asref => 1); 
+ # get supported LDAP versions
+ $root->get_value('supportedLDAPVersion', asref => 1);
+
+=item schema ( OPTIONS )
+
+Request that a schema search be performed.  This can be used to read 
+schema information.
+
+The result is an object of class L<Net::LDAP::Schema|Net::LDAP::Schema>.
+Read this documentation for further information about methods that
+can be preformed with this object.
+
+=over 4
+
+=item dn
+
+If a DN is supplied, it will become the base object entry from 
+which the search for schema information will be conducted.  If
+no DN is supplied the base object entry will be determined from
+the rootDSE entry.
+
+B<Example>
+
+ my $schema = $ldap->schema();
+ # get objectClasses
+ @ocs = $schema->objectclasses();
+ # Get the attributes
+ @atts = $schema->attributes();
+
 =item search ( OPTIONS )
 
 Request that a search be performed.  This can be used to read attributes
@@ -723,6 +764,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.6 2000/08/16 11:07:33 gbarr Exp $>
+I<$Id: LDAP.pod,v 1.7 2001/02/12 14:17:38 gbarr Exp $>
 
 =cut

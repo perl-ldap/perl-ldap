@@ -158,6 +158,38 @@ sub matchingrules {
   return wantarray ? @$res : $res;
 }
 
+# The names of all the matchingruleuse
+
+sub matchingruleuse {
+  my $self = shift;
+  my $res = $self->{mru};
+  return wantarray ? @$res : $res;
+}
+
+# The names of all the ditstructurerules
+
+sub ditstructurerules {
+  my $self = shift;
+  my $res = $self->{dts};
+  return wantarray ? @$res : $res;
+}
+
+# The names of all the ditcontentrules
+
+sub ditcontentrules {
+  my $self = shift;
+  my $res = $self->{dtc};
+  return wantarray ? @$res : $res;
+}
+
+# The names of all the nameforms
+
+sub nameforms {
+  my $self = shift;
+  my $res = $self->{nfm};
+  return wantarray ? @$res : $res;
+}
+
 sub superclass {
    my $self = shift;
    my $oc = shift;
@@ -299,6 +331,26 @@ sub is_matchingrule {
   return $self->_is_type( "mr", @_ );
 }
 
+sub is_matchingruleuse {
+  my $self = shift;
+  return $self->_is_type( "mru", @_ );
+}
+
+sub is_ditstructurerule {
+  my $self = shift;
+  return $self->_is_type( "dts", @_ );
+}
+
+sub is_ditcontentrule {
+  my $self = shift;
+  return $self->_is_type( "dtc", @_ );
+}
+
+sub is_nameform {
+  my $self = shift;
+  return $self->_is_type( "nfm", @_ );
+}
+
 # --------------------------------------------------
 # Internal functions
 # --------------------------------------------------
@@ -348,6 +400,10 @@ sub _is_type {
 # ->{oc}  = [ list of can. names of objectclasses ]
 # ->{syn} = [ list of can. names of syntaxes (we make names from descripts) ]
 # ->{mr}  = [ list of can. names of matchingrules ]
+# ->{mru} = [ list of can. names of matchingruleuse ]
+# ->{dts} = [ list of can. names of ditstructurerules ]
+# ->{dtc} = [ list of can. names of ditcontentrules ]
+# ->{nfm} = [ list of can. names of nameForms ]
 #
 # This is used to optimise name => oid lookups (to avoid searching).
 # This could be removed or made into a cache to reduce memory usage.
@@ -382,6 +438,10 @@ my %type2attr = ( at	=> "attributetypes",
 		  oc	=> "objectclasses",
 		  syn	=> "ldapsyntaxes",
 		  mr	=> "matchingrules",
+		  mru	=> "matchingruleuse",
+		  dts	=> "ditstructurerules",
+		  dtc	=> "ditcontentrules",
+		  nfm	=> "nameforms",
 		  );
 
 #
@@ -405,6 +465,12 @@ sub _parse_schema {
 
     foreach my $val (@$vals) {
       #
+      # The following statement takes care of defined attributes
+      # that have no data associated with them.
+      #
+      next if $val eq '';
+
+      #
       # We assume that each value can be turned into an OID, a canonical
       # name and a 'schema_entry' which is a hash ref containing the items
       # present in the value.
@@ -424,7 +490,7 @@ sub _parse_schema {
                       |
                        '([^']*)'
                       )\s*/xcg;
-      die "Cannot parse [$val]" unless @tokens and pos($val) == length($val);
+      die "Cannot parse [$val] ",substr($val,pos($val)) unless @tokens and pos($val) == length($val);
 
       # remove () from start/end
       shift @tokens if $tokens[0]  eq '(';
