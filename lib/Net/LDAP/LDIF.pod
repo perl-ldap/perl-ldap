@@ -98,6 +98,11 @@ I.e. write LDAP operations acting on the entries to the file instead of the entr
 
 Convert attribute names to lowercase when writing.
 
+=item sort =E<gt> 1
+
+Sort attribute names when writing entries according to the rule:
+objectclass first then all other attributes alphabetically sorted
+
 =item version =E<gt> '1'
 
 Set the LDIF version to write to the resulting LDIF file.

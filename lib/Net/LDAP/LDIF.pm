@@ -52,6 +52,7 @@ sub new {
 
   $opt{'lowercase'} ||= 0;
   $opt{'change'} ||= 0;
+  $opt{'sort'} ||= 0;
 
   my $self = {
     changetype => "modify",
@@ -305,10 +306,18 @@ sub _write_attr {
   }
 }
 
+# helper function to compare attribute names (sort objectClass first)
+sub _cmpAttrs {
+  ($a =~ /^objectclass$/io)
+  ? -1 : (($b =~ /^objectclass$/io) ? 1 : ($a cmp $b));
+}
+
 sub _write_attrs {
-  my($entry,$wrap,$lower) = @_;
+  my($entry,$wrap,$lower,$sort) = @_;
+  my @attributes = $entry->attributes();
   my $attr;
-  foreach $attr ($entry->attributes) {
+  @attributes = sort _cmpAttrs @attributes  if ($sort);
+  foreach $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
     _write_attr($attr,$val,$wrap,$lower);
   }
@@ -350,6 +359,7 @@ sub write_entry {
   my $change = $self->{change};
   my $wrap = int($self->{'wrap'});
   my $lower = $self->{'lowercase'};
+  my $sort = $self->{'sort'};
   local($\,$,); # output field and record separators
 
   unless ($self->{'fh'}) {
@@ -386,7 +396,7 @@ sub write_entry {
         next;
       }
       elsif ($type eq 'add') {
-        _write_attrs($entry,$wrap,$lower);
+        _write_attrs($entry,$wrap,$lower,$sort);
         next;
       }
       elsif ($type =~ /modr?dn/o) {
@@ -423,7 +433,7 @@ sub write_entry {
         print "version: $self->{version}\n\n" if defined $self->{version};
       }
       _write_dn($entry->dn,$self->{'encode'},$wrap);
-      _write_attrs($entry,$wrap,$lower);
+      _write_attrs($entry,$wrap,$lower,$sort);
     }
   }
 
