@@ -49,12 +49,13 @@ sub SSL_context_init_args {
 
   (
     SSL_cipher_list => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
-    SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : undef,
-    SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : undef,
+    SSL_ca_file     => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
+    SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
     SSL_key_file    => $clientcert ? $clientkey : undef,
     SSL_use_cert    => $clientcert ? 1 : 0,
     SSL_cert_file   => $clientcert,
     SSL_verify_mode => $verify,
+    SSL_version     => 'sslv2/3',
   );
 }
 
