@@ -1,3 +1,9 @@
+2004-01-01 10:43  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.31
+	
 2004-01-01 09:49  Graham Barr
 
 	* data/00-in.ldif:
