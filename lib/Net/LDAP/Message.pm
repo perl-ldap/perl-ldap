@@ -1,5 +1,4 @@
-# $Id: Message.pm,v 1.8 2003/06/06 22:47:14 gbarr Exp $
-# Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1997-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -10,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.07";
+$VERSION = "1.07_01";
 
 my $MsgID = 0;
 
@@ -136,10 +135,7 @@ sub decode { # $self, $pdu, $control
 
   @{$self}{keys %$data} = values %$data;
 
-  # Should the controls be associated with the whole request, or in
-  # the case of a search the entry in this packet ? -- GMB
-  $self->{controls} = $result->{controls}
-    if exists $result->{controls};
+  @{$self}{qw(controls ctrl_hash)} = ($result->{controls}, undef);
 
   # free up memory as we have a result so we will not need to re-send it
   delete $self->{pdu};
@@ -187,7 +183,7 @@ sub encode {
 sub control {
   my $self = shift;
 
-  if (exists $self->{controls}) {
+  if ($self->{controls}) {
     require Net::LDAP::Control;
     my $hash = $self->{ctrl_hash} = {};
     foreach my $asn (@{delete $self->{controls}}) {
@@ -196,7 +192,7 @@ sub control {
     }
   }
 
-  return unless exists $self->{ctrl_hash};
+  return unless $self->{ctrl_hash};
 
   @_ ?  exists $self->{ctrl_hash}{$_[0]}
          ? @{$self->{ctrl_hash}{$_[0]}}
