@@ -91,6 +91,10 @@ in effect.  The method that was called will return C<undef>.
 
 =back
 
+=item change =E<gt> 1
+
+Write out LDIF change records instead of plain entries.
+
 =back
 
 =head1 METHODS
