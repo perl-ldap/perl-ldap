@@ -1,3 +1,17 @@
+Change 537 on 2000/06/08 by <gbarr@pobox.com> (Graham Barr)
+
+	Release 0.19
+
+Change 533 on 2000/05/31 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Reset hash iterator for each call
+
+Change 532 on 2000/05/30 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Fix asn1 name from modifyDNRequest to modDNRequest
+
 Change 529 on 2000/05/22 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::Search

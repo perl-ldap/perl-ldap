@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.18";
+$VERSION = "0.19";
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -168,6 +168,7 @@ sub bind {
 
   my($auth_type,$passwd) = (simple => "");
 
+  keys %ptype; # Reset iterator
   while(my($param,$type) = each %ptype) {
     if (exists $arg->{$param}) {
       ($auth_type,$passwd) = ($type,$arg->{$param});
@@ -410,7 +411,7 @@ sub moddn {
   my $dn;
 
   $mesg->encode(
-    modifyDNRequest => {
+    modDNRequest => {
       entry        => ref($dn = $arg->{dn}) ? $dn->dn : $dn,
       newrdn       => ref($new) ? $new->dn : $new,
       deleteoldrdn => $del,

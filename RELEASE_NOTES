@@ -1,3 +1,11 @@
+perl-ldap 0.19 June 8 2000
+============================
+
+* Fixed bug which caused 2nd and subsequent binds to be anonymous.
+* Fixed bug in moddn.
+* Fix bug which caused a call to ->pop_entry or ->shift_entry
+  to hang forever.
+
 perl-ldap 0.18 May 22 2000
 ============================
 
