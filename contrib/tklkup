@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.33 2003/01/20 00:33:42 charden Exp $
+# $Id: tklkup,v 1.34 2003/01/21 01:45:51 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -50,7 +50,6 @@ use subs qw/ops_items/;
 my %Global = ();
 my %NC     = ();
 
-my $programVersion = "$Id\$";
 
 $Global{'jpeg'}   = 1;
 eval { use Tk::JPEG; }; 
@@ -177,15 +176,6 @@ my @server    = ();
 
 $Global{'mainWindow'} = MainWindow->new;
 $Global{'mainWindow'}->geometry("520x320+$Global{'horz'}+$Global{'vert'}");
-$Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
-
-$Global{'menubar'}->cascade(-label => "~Directory OPS",
-                  -menuitems => ops_items);
-$Global{'menubar'}->command(-label => "Set ~Bind Credentials", 
-                  -command => \&BIND );
-$Global{'menubar'}->command(-label => "Set DSA ~Port", 
-                  -command => \&PORT );
-
 $splash = $Global{'mainWindow'}->Splashscreen(-milliseconds => 0) 
         if ( $Global{splash} );
 $splframe = $splash->LabFrame(-label => "DIRECTORY SEARCH SPLASH SCREEN",
@@ -454,6 +444,19 @@ if ( $#attribute < 1 )
 }
 
 push(@attribute,"Filter");  # put roll your on filter at the end
+
+#
+# Create the Menubar
+# 
+
+$Global{'mainWindow'}->configure(-menu => $Global{'menubar'} = $Global{'mainWindow'}->Menu);
+
+$Global{'menubar'}->cascade(-label => "~Directory OPS",
+                  -menuitems => ops_items);
+$Global{'menubar'}->command(-label => "Set ~Bind Credentials", 
+                  -command => \&BIND );
+$Global{'menubar'}->command(-label => "Set DSA ~Port", 
+                  -command => \&PORT );
 
 #
 # Create process Exit button
@@ -1703,7 +1706,6 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
   $Global{'sfile'} = 0;
   $Global{'fdata'} = "";
   $Global{'xml'} = 0;
-  #$ldap->unbind if ( defined($ldap));
   return;
 
 }
@@ -2929,7 +2931,6 @@ $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
 sub ldapActionDelete
 {
 my $error;
-my $ldap;
 my $mesg;
 my @DNs;
 my $do_it;
@@ -3029,7 +3030,6 @@ while ($do_it == 1 )
  }
 
 }
-#$ldap->unbind;
 
 } # End of ldapActionDelete subroutine
 
@@ -3040,7 +3040,6 @@ while ($do_it == 1 )
 sub ldapActionRename
 {
 my $error;
-my $ldap;
 my $mesg;
 $error = 0;
 my $do_it;
@@ -3098,7 +3097,7 @@ $Global{loopCount} = 0;
 while ($do_it == 1 )
 {
 
-$mesg = $ldap->moddn($Global{'RenameDN'}, 
+$mesg = $Global{ldap}->moddn($Global{'RenameDN'}, 
                      newrdn => $Global{'newrdn'}, 
                      deleteoldrdn => $Global{'deleteoldrdn'}, 
                      newsuperior => $Global{'newsuperior'} ); 
