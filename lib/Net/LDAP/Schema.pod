@@ -17,7 +17,8 @@ Net::LDAP::Schema - Load and manipulate an LDAP v3 Schema
  #
  # Load from LDIF
  #
- $schema = Net::LDAP->new( "schema.ldif" );
+ $schema = Net::LDAP->new;
+ $schema->parse( "schema.ldif" ) or die $schema->error;
 
 =head1 DESCRIPTION
 
@@ -32,6 +33,21 @@ or raw oid (object identifier, in dotted numeric string form, e.g. 2.5.4.0)
 may be supplied.
 
 =over 4
+
+=item parse
+
+Takes a single argument which can be any of, A message objected returned from
+an LDAP search, a Net::LDAP::Entry object or the name of a file containing
+an LDIF form of the schema.
+
+If the argument is a message result from a search, Net::LDAP::Schema will parse
+the schema from the first entry returned.
+
+Returns true on success and C<undef> on error.
+
+=item error
+
+Returns the last error encountered.
 
 =item attributes
 
@@ -136,6 +152,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.3 2000/05/09 16:09:49 gbarr Exp $>
+I<$Id: Schema.pod,v 1.4 2000/06/13 21:03:00 gbarr Exp $>
 
 =cut

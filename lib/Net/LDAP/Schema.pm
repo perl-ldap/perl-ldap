@@ -16,45 +16,82 @@ $VERSION = "0.05";
 sub new {
   my $self = shift;
   my $type = ref($self) || $self;
+  my $schema = bless {}, $type;
 
+  return $schema unless @_;
+  return $schema->parse( shift ) ? $schema : undef;
+}
+
+sub parse {
+  my $schema = shift;
   my $arg = shift;
 
-  # XXX - Throw error?
-  return undef unless $arg;
+  unless ($arg) {
+    $schema->{error} = "Bad argument";
+    return undef;
+  }
   
+  %$schema = ();
+
   my $entry;
   if( ref $arg ) {
-    $entry = $arg->entry or return undef;
+    if (UNIVERSAL::isa($arg, 'Net::LDAP::Entry')) {
+      $entry = $arg;
+    }
+    elsif (UNIVERSAL::isa($arg, 'Net::LDAP::Search')) {
+      unless ($entry = $arg->entry) {
+	$schema->{error} = 'Bad Argument';
+	return undef;
+      }
+    }
+    else {
+      $schema->{error} = 'Bad Argument';
+      return undef;
+    }
   }
   elsif( -f $arg ) {
     require Net::LDAP::LDIF;
     my $ldif = Net::LDAP::LDIF->new( $arg, "r" );
     $entry = $ldif->read();
     unless( $entry ) {
-      warn( "Cannot parse LDIF from file [$arg]" );
+      $schema->{error} = "Cannot parse LDIF from file [$arg]";
       return undef;
     }
   }
   else {
-    warn( "Can't load schema" );
+    $schema->{error} = "Can't load schema from [$arg]: $!";
     return undef;
   }
   
-  my $schema = _parse_schema( $entry );
-  $schema->{entry} = $entry;
-  bless $schema, $type;
+  eval {
+    local $SIG{__DIE__} = sub {};
+    _parse_schema( $schema, $entry );
+  };
+
+  if ($@) {
+    $schema->{error} = $@;
+    return undef;
+  }
+
+  return $schema;
+}
+
+sub error {
+  $_[0]->{error};
 }
 
 #
 # Return base entry
 #
 sub entry {
-  $_[0]->{'entry'};
+  $_[0]->{entry};
 }
 
 #
 # Dump as LDIF
 #
+# XXX - We should really dump from the internal structure. That way we can
+#       have methods to modify the schema and write a new one -- GMB
 sub dump {
   my $self = shift;
   my $fh = @_ ? shift : \*STDOUT;
@@ -68,8 +105,7 @@ sub dump {
 # Given another Net::LDAP::Schema, merge the contents together.
 # XXX - todo
 #
-sub merge
-{
+sub merge {
   my $self = shift;
   my $new = shift;
 
@@ -84,19 +120,17 @@ sub merge
 sub attributes {
   my $self = shift;
   my @oc = @_;
-  my $res = [];
+  my %res;
 
   if( @oc ) {
-    push @$res, $self->must( @oc );
-    push @$res, $self->may( @oc );
-    my %res = map { $_ => 1 } @$res;		# Get uniqueness
-    my @res = keys %res;
-    $res = \@res;
-            }
-            else {
-    $res = $self->{at} || [];
+    @res{ $self->must( @oc ) } = ();
+    @res{ $self->may( @oc ) } = ();
   }
-  return wantarray() ? @$res : $res;
+  else {
+    @res{ @{ $self->{at} } } = () if $self->{at};
+  }
+
+  return wantarray ? (keys %res) : [keys %res];
 }
 
 # The names of all the object classes
@@ -104,7 +138,7 @@ sub attributes {
 sub objectclasses {
   my $self = shift;
   my $res = $self->{oc};
-  return wantarray() ? @$res : $res;
+  return wantarray ? @$res : $res;
 }
 
 # Return all syntaxes
@@ -112,12 +146,11 @@ sub objectclasses {
 sub syntaxes {
   my $self = shift;
   my $res = $self->{syn};
-  return wantarray() ? @$res : $res;
+  return wantarray ? @$res : $res;
 }
 
 
-sub superclass
-{
+sub superclass {
    my $self = shift;
    my $oc = shift;
 
@@ -126,17 +159,15 @@ sub superclass
 
    my $res = $self->{oid}->{$oid}->{sup};
    return undef unless $res;
-   return wantarray() ? @$res : $res;
+   return wantarray ? @$res : $res;
 }
 
-sub must
-{
+sub must {
   my $self = shift;
   $self->_must_or_may( "must", @_ );
 }
 
-sub may
-{
+sub may {
   my $self = shift;
   $self->_must_or_may( "may", @_ );
 }
@@ -145,12 +176,10 @@ sub may
 # Return must or may attributes for this OC. [As array or array ref]
 # return empty array/undef on error
 #
-sub _must_or_may
-{
+sub _must_or_may {
   my $self = shift;
   my $must_or_may = shift;
   my @oc = shift;
-  my %res = ();		# Use hash to get uniqueness
   
   #
   # If called with an entry, get the OC names and continue
@@ -160,18 +189,19 @@ sub _must_or_may
     @oc = $entry->get( "objectclass" );
   }
 
-  return (wantarray() ? () : undef) unless @oc;
+  return unless @oc;
+
+  my %res;		# Use hash to get uniqueness
 
   foreach my $oc ( @oc ) {
     my $oid = $self->is_objectclass( $oc );
     if( $oid ) {
       my $res = $self->{oid}->{$oid}->{$must_or_may};
-      %res = map { $_ => 1 } @$res; 	# Add in, getting uniqueness
+      @res{ @$res } = (); 	# Add in, getting uniqueness
     }
   }
-  my @res = keys %res;
 
-  return wantarray() ? @res : \@res;
+  return wantarray ? (keys %res) : [ keys %res ];
 }
 
 
@@ -179,30 +209,23 @@ sub _must_or_may
 # Return the value of an item, e.g. 'desc'. If item is array ref and we
 # are called from array context, return an array, else scalar
 #
-sub item
-{
+sub item {
   my $self = shift;
   my $arg = shift;
   my $item_name = shift;	# May be undef. If so all are returned
 
-  my $oid = $self->name2oid( $arg );
-  goto ERROR unless $oid;
+  my $oid = $self->name2oid( $arg ) or return;
 
-  my $item_ref = $self->{oid}->{$oid};
-  goto ERROR unless $item_ref;
+  my $item_ref = $self->{oid}->{$oid} or return;
 
-  my $value = $item_ref->{$item_name};
-  goto ERROR unless $value;
+  my $value = $item_ref->{$item_name} or return;
 
-  if( ref $value eq "ARRAY" && wantarray() ) {
+  if( ref $value eq "ARRAY" && wantarray ) {
     return @$value;
   }
   else {
     return $value;
   }
-
- ERROR:
-  return wantarray() ? () : undef;
 }
 
 #
@@ -211,29 +234,21 @@ sub item
 # BUG:Dumps internal representation rather than real info. E.g. shows
 # the alias/name distinction we create and the 'type' field.
 #
-sub items
-{
+sub items {
   my $self = shift;
   my $arg = shift;
 
-  my $oid = $self->name2oid( $arg );
-  goto ERROR unless $oid;
+  my $oid = $self->name2oid( $arg ) or return;
 
-  my $item_ref = $self->{oid}->{$oid};
-  goto ERROR unless $item_ref;
+  my $item_ref = $self->{oid}->{$oid} or return;
 
-  my @items = keys %$item_ref;
-  return wantarray() ? @items : \@items;
-  
- ERROR:
-  return wantarray() ? () : undef;
+  return wantarray ? (keys %$item_ref) : [keys %$item_ref];
 }
 
 #
 # Given a name, alias or oid, return oid or undef. Undef if not known.
 #
-sub name2oid
-{
+sub name2oid {
   my $self = shift;
   my $name = lc shift;
   return undef unless $name;
@@ -246,8 +261,7 @@ sub name2oid
 # Given an an OID (not a name) return the canonical name. Undef if not
 # an OID
 #
-sub oid2name
-{
+sub oid2name {
   my $self = shift;
   my $oid = shift;
   return undef unless $oid;
@@ -258,20 +272,17 @@ sub oid2name
 #
 # Given name or oid, return oid or undef if not of appropriate type
 #
-sub is_attribute
-{
+sub is_attribute {
   my $self = shift;
   return $self->_is_type( "at", @_ );
 }
 
-sub is_objectclass
-{
+sub is_objectclass {
   my $self = shift;
   return $self->_is_type( "oc", @_ );
 }
 
-sub is_syntax
-{
+sub is_syntax {
   my $self = shift;
   return $self->_is_type( "syn", @_ );
 }
@@ -284,18 +295,15 @@ sub is_syntax
 # Given a type and a name_or_oid, return true (the oid) if the name_or_oid
 # is of the appropriate type. Else return undef.
 #
-sub _is_type
-{
+sub _is_type {
   my $self = shift;
-  my $type = shift;
-  my $name = shift;
-  return undef unless( $type && $name );
+  my $type = shift or return;
+  my $name = shift or return;
 
-  my $oid = $self->name2oid( $name );  
-  return undef unless $oid;
-  my $hash = $self->{oid}->{$oid};
-  return $oid if $hash->{type} eq $type;
-  return undef;
+  my $oid = $self->name2oid( $name ) or return;  
+  my $hash = $self->{oid}->{$oid} or return;
+
+  return $hash->{type} eq $type ? $oid : undef;
 }
 
 
@@ -348,9 +356,7 @@ my %flags = map { ($_,1) } qw(
 			      auxiliary
 			      );
 
-sub _parse_item
-{
-  my $value = shift;
+sub _parse_item {
   my( $item_name, $item_value );
 
   #
@@ -367,40 +373,37 @@ sub _parse_item
   # And it seems that exchange server is happy to miss out white space, so
   # we work to that. Also try and be forgiving on quoting (i.e. not require it)
   #
-  ( $item_name, $value ) = _get_one_word( $value );
-  return () unless $item_name;
-
+  $item_name = _get_one_word( $_[0] );
+  return unless defined $item_name;
   $item_name = lc $item_name;
 
   #
   # Catch flags here
   #
-  if( exists $flags{$item_name} ) {
-    $item_value = 1;
-    return( $item_name, $item_value, $value );
+  if ( exists $flags{$item_name} ) {
+    return ($item_name, 1);
   }
 
   #
   # Now a bracketed list or one word. No nested brackets.
   # Values optionally seperated by '$'.
   #
-  if( $value =~ s/^\s*\(// ) {   	# Strip bracket as well as detecting
+  if ( $_[0] =~ s/^\s*\(// ) {   	# Strip bracket as well as detecting
     $item_value = [];
     my $one_val;
-    while( ! ($value =~ s/^\s*\)// ) ) {       	# Until we hit end bracket
-      ( $one_val, $value ) = _get_one_word( $value );
-      next if $one_val eq "\$";			# Drop dollars
-      push @$item_value, $one_val;
+    until ( $_[0] =~ s/^\s*\)// ) {       	# Until we hit end bracket
+      $one_val = _get_one_word( $_[0] ) or die "Cannot parse value [$_[0]]";
+      push @$item_value, $one_val unless $one_val eq '$';  # Drop dollars
     }
   }
   else {
     #
     # Single value
     #
-    ( $item_value, $value ) = _get_one_word( $value );
+    $item_value = _get_one_word( $_[0] );
   }
 
-  return( $item_name, $item_value, $value );
+  return( $item_name, $item_value );
 }
 
 #
@@ -419,27 +422,10 @@ sub _parse_item
 # Note: escaped quotes, escaped w/s and mixed quotes aren't supported.
 # Life is hard enough.
 #
-sub _get_one_word
-{
-  my $value = shift;
-
-#  ( $word, $value ) = $value =~ /^\s*,?\s*["' ]?([^"' ]+)["' ]?\s*,?\s*(.*)$/;
-  my $word = "";	# Return value
-  my $token;		# Chunk at a time
-  my @quotes;
-
-  do {
-    ( $token, $value ) = $value =~ /^[\s,]*(["']?[^"'\s()]+["']?[,\s]*)(.*)$/;
-    die( "Failed to parse token from value [$value]" ) unless $token;
-    $word .= $token;
-    @quotes = $word =~ /(["'])/g; 		# broken emacs '"])/;
-  }
-  while( @quotes &1 );				# Until even num of quotes
-
-  # Clean up word & return
-  $word =~ s/^["'\s]*//;
-  $word =~ s/['"\s]*$//;
-  return ( $word, $value );
+sub _get_one_word {
+  return "$+" if $_[0] =~ s/^[\s,]*(?:([^"'\s()]+)|"([^"]*)"|'([^']*)')\s*//;
+  die "Failed to parse token from value [$_[0]]" unless $_[0] =~ s/^[\s,]*$//;
+  return;
 }
 
 
@@ -447,8 +433,7 @@ sub _get_one_word
 # Given one value of an attribute of type objectclasses, ldapsyntaxes
 # or attributetypes - break it into a 'schema entry'
 #
-sub _parse_value
-{
+sub _parse_value {
   my $value = shift;
   my $schema_entry;
   my $oid;
@@ -458,19 +443,14 @@ sub _parse_value
   #
   # Netscape doesn't always use numeric OIDs. Bad Netscape.
   #
-#  ( $oid, $value ) = $value =~ /([0-9.]+)\s+(.*)$/;
-  ( $oid, $value ) = _get_one_word( $value );
-  $oid = lc $oid;
-#  unless( $oid && $oid =~ /^[0-9.]+$/ ) {
-#    warn( "Non-numeric OID [$oid]" );
-#  }
-  return undef unless $oid;
-  $schema_entry->{oid} = $oid;
+  $oid = _get_one_word( $value );
+  return undef unless defined $oid;
+
+  $schema_entry->{oid} = lc $oid;
 
   while( $value ) {
-    my ( $item_name, $item_value );
-    ( $item_name, $item_value, $value ) = _parse_item( $value );
-    $value =~ s/^\s*\)\s*// if $value;	# Eat trailing bracket if it is there
+    my ( $item_name, $item_value ) = _parse_item( $value );
+    $value =~ s/^\s*\)\s*//;	# Eat trailing bracket if it is there
     unless( $item_name ) {
       warn( "Failed to parse item [$value]" );
       next;
@@ -486,8 +466,8 @@ sub _parse_value
 # Return ref to hash containing schema data - undef on failure
 #
 sub _parse_schema {
+  my $schema = shift;
   my $entry = shift;
-  my $schema;
   
   return undef unless defined($entry);
 
@@ -516,7 +496,7 @@ sub _parse_schema {
       #
       my $schema_entry = _parse_value( $val );
       unless( $schema_entry ) {
-	warn( "Unable to parse value [$val]" );
+	die "Unable to parse value [$val]";
 	next;
       }
       my $oid = $schema_entry->{oid};
@@ -555,6 +535,7 @@ sub _parse_schema {
   #
 #  _fixup_schema( $schema );
 
+  $schema->{entry} = $entry;
   return $schema;
 }
 
@@ -562,8 +543,7 @@ sub _parse_schema {
 #
 # Process schema entry - return undef if it is not good
 #
-sub _fixup_entry
-{
+sub _fixup_entry {
   my $schema_entry = shift;
   my $type = shift;
 
@@ -575,7 +555,7 @@ sub _fixup_entry
     my $item = $schema_entry->{$item_type};
     if( $item && !ref $item ) {
       $schema_entry->{$item_type} = [ $item ];
-	}
+    }
   }
 
   #
@@ -618,7 +598,7 @@ sub _fixup_entry
   #
   $name = shift @{$schema_entry->{name}};
   $schema_entry->{aliases} = $schema_entry->{name};  	# Aliases are array
-  $schema_entry->{name} = $name;						# Name is scalar
+  $schema_entry->{name} = $name;			# Name is scalar
 
   return 1;		# Entry OK
 }
@@ -627,13 +607,11 @@ sub _fixup_entry
 #
 # Get the syntax of an attribute
 #
-sub syntax
-{
+sub syntax {
   my $self = shift;
   my $attr = shift;
 
-  my $oid = $self->is_attribute( $attr );
-  return undef unless $oid;
+  my $oid = $self->is_attribute( $attr ) or return undef;
 
   my $syntax = $self->{oid}->{$oid}->{syntax};
   unless( $syntax ) {
@@ -647,12 +625,10 @@ sub syntax
 #
 # Given an OID or name (or alias), return the canonical name
 #
-sub name
-{
+sub name {
   my $self = shift;
   my $arg = shift;
-  my $oid = $self->name2oid( $arg );
-  return undef unless $oid;
+  my $oid = $self->name2oid( $arg ) or return undef;
   return $self->oid2name( $oid );
 }
 

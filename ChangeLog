@@ -1,3 +1,10 @@
+Change 538 on 2000/06/13 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::Schema
+	- A few profiling/performance tweaks
+	- ->new() now accepts an ::Entry object
+	- separated ->parse() from ->new(), parse errors can now be obtained via ->error()
+
 Change 537 on 2000/06/08 by <gbarr@pobox.com> (Graham Barr)
 
 	Release 0.19

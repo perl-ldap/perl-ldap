@@ -21,7 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			);
 
-$VERSION = "0.19";
+$VERSION = 0.19_01;
 
 $LDAP_VERSION = 2;      # default LDAP protocol version
 
@@ -633,7 +633,7 @@ sub schema {
 
   $mesg->code
     ? undef
-    : Net::LDAP::Schema->new($mesg);
+    : Net::LDAP::Schema->new($mesg->entry);
 }
 
 sub root_dse {
