@@ -1,4 +1,4 @@
-# $Id: Message.pm,v 1.4 2000/09/12 09:17:09 gbarr Exp $
+# $Id: Message.pm,v 1.5 2003/05/06 11:55:05 chrisridd Exp $
 # Copyright (c) 1997-2000 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -83,9 +83,14 @@ sub server_error {
 
 sub error {
   my $self = shift;
-  $self->server_error
-    or require Net::LDAP::Util
-    and Net::LDAP::Util::ldap_error_desc( $self->code );
+  my $return;
+
+  unless ($return = $self->server_error) {
+    require Net::LDAP::Util and
+    $return = Net::LDAP::Util::ldap_error_desc( $self->code );
+  }
+
+  $return;
 }
 
 sub set_error {
