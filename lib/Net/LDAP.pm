@@ -22,7 +22,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_INAPPROPRIATE_AUTH
 			);
 
-$VERSION 	= 0.2401;
+$VERSION 	= 0.2402;
 @ISA     	= qw(Net::LDAP::Extra);
 $LDAP_VERSION 	= 2;      # default LDAP protocol version
 
@@ -711,7 +711,7 @@ sub schema {
     $base = $arg{'dn'};
   }
   else {
-    my $root = $self->root_dse
+    my $root = $self->root_dse( attrs => ['subschemaSubentry'] )
       or return undef;
 
     $base = $root->get_value('subschemaSubentry') || 'cn=schema';
@@ -721,15 +721,16 @@ sub schema {
     base   => $base,
     scope  => 'base',
     filter => '(objectClass=subschema)',
-    attrs  => [ "objectClasses", 
-                "attributeTypes", 
-                "matchingRules",
-                "matchingRuleUse",
-                "dITStructureRules",
-                "dITContentRules",
-                "nameForms",
-                "ldapSyntaxes",
-              ],
+    attrs  => [qw(
+		objectClasses
+		attributeTypes
+		matchingRules
+		matchingRuleUse
+		dITStructureRules
+		dITContentRules
+		nameForms
+		ldapSyntaxes
+              )],
   );
 
   $mesg->code
@@ -739,26 +740,25 @@ sub schema {
 
 sub root_dse {
   my $ldap = shift;
-  my $mesg;
-  
-  unless ($ldap->{net_ldap_rootdse}) {
-    $mesg = $ldap->search(
-      base   => '',
-      scope  => 'base',
-      filter => '(objectClass=*)',
-      attrs => [ "subschemaSubentry",
-                 "namingContexts",
-                 "altServer",
-                 "supportedExtension",
-                 "supportedControl",
-                 "supportedSASLMechanisms",
-                 "supportedLDAPVersion",
-               ],
-    );
-    $ldap->{net_ldap_rootdse} = $mesg->entry;
-  }
+  my %arg  = @_;
+  my $attrs = $arg{attrs} || [qw(
+		  subschemaSubentry
+		  namingContexts
+		  altServer
+		  supportedExtension
+		  supportedControl
+		  supportedSASLMechanisms
+		  supportedLDAPVersion
+		)];
 
-  return $ldap->{net_ldap_rootdse};
+  my $mesg = $ldap->search(
+    base   => '',
+    scope  => 'base',
+    filter => '(objectClass=*)',
+    attrs  => $attrs,
+  );
+
+  $mesg->entry;
 }
 
 sub start_tls {
