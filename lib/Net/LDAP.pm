@@ -21,6 +21,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_PARAM_ERROR
 			   LDAP_INAPPROPRIATE_AUTH
 			   LDAP_SERVER_DOWN
+			   LDAP_EXTENSION_START_TLS
 			);
 
 $VERSION 	= "0.2701";
@@ -781,6 +782,34 @@ sub schema {
     : Net::LDAP::Schema->new($mesg->entry);
 }
 
+sub supported_extension {
+  return _supported_feature( 'supportedExtension', @_ );
+}
+
+sub supported_version {
+  return _supported_feature( 'supportedLDAPVersion', @_ );
+}
+
+sub supported_control {
+  return _supported_feature( 'supportedControl', @_ );
+}
+
+sub supported_sasl_mechanism {
+  return _supported_feature( 'supportedSASLMechanisms', @_ );
+}
+
+sub _supported_feature {
+  my $attr = shift;
+  my $root = $shift->root_dse( attrs => [$attr] )
+    or return undef;
+  my %ext;
+  map { $ext{$_} = 1 } $root->get_value( $attr );
+  foreach (@_) {
+    return 0 unless exists $ext{$_};
+  }
+  return 1;
+}
+
 sub root_dse {
   my $ldap = shift;
   my %arg  = @_;
@@ -820,7 +849,7 @@ sub start_tls {
 
   $mesg->encode(
     extendedReq => {
-      requestName => "1.3.6.1.4.1.1466.20037",
+      requestName => LDAP_EXTENSION_START_TLS,
     }
   );
 
