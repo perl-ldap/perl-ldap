@@ -1,6 +1,5 @@
 #! /usr/bin/perl
-
-# $Id: ldifsort.pl,v 1.6 2004/09/30 20:13:59 subbarao Exp $
+# $Id: ldifsort.pl,v 1.9 2005/04/03 20:20:24 subbarao Exp $
 
 =head1 NAME
 
@@ -42,7 +41,8 @@ behavior if 'dn' is passed as the argument to B<-k>.
 
 =item B<-c>
 
-Specifies case-insensitive comparisons on the key attribute.
+Specifies case-insensitive comparisons on the key attribute. This is the
+default behavior if 'dn' is passed as the argument to B<-k>.
 
 =back
 
@@ -84,7 +84,7 @@ while (<LDIFH>) {
 		$value = $2;
 		$value = decode_base64($value) if $1 eq '::';
 	}
-	$value = lc($value) if $args{c};
+	$value = lc($value) if $ciscmp;
 	push @valuepos, [ $value, $pos ];
 	$pos = tell;
 }
@@ -93,8 +93,8 @@ sub cmpattr { $a->[0] cmp $b->[0] }
 sub cmpattrnum { $a->[0] <=> $b->[0] }
 my %canonicaldns;
 sub cmpdn { 
-	my $cadn = ($canonicaldns{$a->[0]} ||= canonical_dn($a->[0]));
-	my $cbdn = ($canonicaldns{$b->[0]} ||= canonical_dn($b->[0]));
+	my $cadn = ($canonicaldns{$a->[0]} ||= lc(canonical_dn($a->[0])));
+	my $cbdn = ($canonicaldns{$b->[0]} ||= lc(canonical_dn($b->[0])));
 	$cadn cmp $cbdn;
 }
 
