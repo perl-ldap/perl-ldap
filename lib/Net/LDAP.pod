@@ -868,21 +868,32 @@ This document is based on a document originally written by Russell Fulton
 Chris Ridd <chris.ridd@messagingdirect.com> for the many hours spent
 testing and contribution of the ldap* command line utilities.
 
+=head1 MAILING LIST
+
+A discussion mailing list is hosted by sourceforge at
+<perl-ldap-dev@lists.sourceforge.net> Don't be put off by the -dev
+in the name, the list is open for all questions.
+
+=head1 BUGS
+
+We hope you do not find any, but if you do please report them to
+the mailing list.
+
+If you have a patch, please send it as an attachment to the mailing
+list.
+
 =head1 AUTHOR
 
 Graham Barr <gbarr@pobox.com>
 
-Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-<perl-ldap-dev@lists.sourceforge.net>
-
 =head1 COPYRIGHT
 
-Copyright (c) 1997-2000 Graham Barr. All rights reserved. This program is
+Copyright (c) 1997-2002 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: LDAP.pod,v 1.15 2002/05/28 11:16:05 chrisridd Exp $>
+I<$Id: LDAP.pod,v 1.16 2002/06/03 15:35:52 gbarr Exp $>
 
 =cut
