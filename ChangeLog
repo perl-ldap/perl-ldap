@@ -1,3 +1,61 @@
+2003-05-19 23:36  Graham Barr
+
+	* RELEASE_NOTES, lib/Net/LDAP.pm:
+
+	Release 0.28
+	
+2003-05-19 23:28  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix url host extraction
+	
+2003-05-19 22:50  Graham Barr
+
+	* t/common.pl:
+
+	change \1 to $1 in substitution
+	
+2003-05-19 16:08  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	pass undef instead of '' for initial SASL credentials
+	
+2003-05-09 19:19  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Minor typos fixed
+	
+2003-05-09 17:56  Graham Barr
+
+	* lib/Net/LDAP.pod:
+
+	Add docs about new URLs passing to ->new
+	Patch from Ziya Suzen
+	
+2003-05-09 17:56  Graham Barr
+
+	* lib/Net/LDAP.pm:
+
+	Fix bug in URL parsing when the host contains a port.
+	Patch from Ziya Suzen
+	
+2003-05-09 15:58  Graham Barr
+
+	* data/50-cmp.ldif, data/51b-cmp.ldif, data/51c-cmp.ldif,
+	data/51d-cmp.ldif, data/52-cmp.ldif, t/common.pl:
+
+	Testcase tweaks to cope with differences between different openldap
+	server versions. Tested with 1.2.11 2.0.27 and 2.1.19
+	
+2003-05-09 14:32  Chris Ridd
+
+	* lib/Net/LDAP.pod:
+
+	Added note about root DSE getting uncached
+	
 2003-05-09 13:05  Graham Barr
 
 	* MANIFEST, lib/Net/LDAP.pm, lib/Net/LDAP.pod, t/54dse.t:
