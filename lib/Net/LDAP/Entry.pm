@@ -310,7 +310,8 @@ sub asn {
 }
 
 sub changes {
-  @{shift->{'changes'}}
+  my $ref = shift->{'changes'};
+  $ref ? @$ref : ();
 }
 
 1;
