@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.5 2001/03/31 05:04:33 charden Exp $
+# $Id: tklkup,v 1.6 2001/05/19 02:48:00 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -21,15 +21,11 @@
 #
 # Revisions:
 # $Log: tklkup,v $
-# Revision 1.5  2001/03/31 05:04:33  charden
-# Removed base and mybase options.
-# Added button and code to allow changing of server port number.
-# Added code to limit the number of search bases detected.
-# Change code that does auto base detection.
-# Added code to query rootDSE for namingContexts when a base was
-# not specified on a server line in the .tklkup file.
-# Changed layout of schema GUI.  Added code to handle additional
-# schema objects.
+# Revision 1.6  2001/05/19 02:48:00  charden
+# Corrected code that uses the nameContext to determine branches,
+# or bases, in the directory.
+# Added code to create an error window for error message display. This
+# is for use by rountines that do not have a list window.
 #
 # Revision 1.3  2000/12/20 03:15:42  charden
 # Corrected error in the calling of the get_value method so that
@@ -300,18 +296,28 @@ $CORE_SERVER = $LDAP_SERVER;
  {
  my $error;
  my $entry;
+ my $mesg;
 
- my $ldap = new Net::LDAP($LDAP_SERVER,
-                         timeout => 1,
-                         port => $port,
-                         debug => $opt{'d'},
-                        ) or $error = 1;
+ my $ldap = new Net::LDAP( $LDAP_SERVER,
+                           timeout => 1,
+                           port => $port,
+                           debug => $opt{'d'},
+                         ) or $error = 1;
 
     if ( !$error )
     {
 
-    $ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
-
+    $mesg = $ldap->bind( password => "$bindpw", 
+                         dn => "$binddn", 
+                         version => $version,
+                       ) or $error = 1;
+   
+   if ( $mesg->code ) 
+   {
+      $errstr = $mesg->code;
+      ERROR($errstr);
+   }
+ 
     if ( !$error  )
     {
       $entry = $ldap->root_dse();
@@ -320,7 +326,10 @@ $CORE_SERVER = $LDAP_SERVER;
         my $attr = $entry->get_value('namingContexts', asref => 1);
         if ( defined($attr) )
         {
-        @base =  getBases($LDAP_SERVER, @$attr[0]);
+         foreach my $ncbase ( @$attr )
+         {
+          push(@base, getBases($LDAP_SERVER, $ncbase));
+         }
         }
         else 
         {
@@ -333,6 +342,7 @@ $CORE_SERVER = $LDAP_SERVER;
     {
     @base = ();
     }
+  $ldap->unbind;
  }
 
  if ( @base >= 1)
@@ -704,17 +714,26 @@ else
  my $mesg;
  my $entry;
 
- my $ldap = new Net::LDAP($LDAP_SERVER,
-                         timeout => 1,
-                         port => $port,
-                         debug => $opt{'d'},
-                        ) or $error = 1;
+ my $ldap = new Net::LDAP( $LDAP_SERVER,
+                           timeout => 1,
+                           port => $port,
+                           debug => $opt{'d'},
+                         ) or $error = 1;
 
     if ( !$error )
     {
 
-    $ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
+    $mesg = $ldap->bind( password => "$bindpw", 
+                         dn => "$binddn", 
+                         version => $version,
+                       ) or $error = 1;
 
+   if ( $mesg->code ) 
+   {
+      $errstr = $mesg->code;
+      ERROR($errstr);
+   }
+ 
     if ( !$error  )
     {
       $entry = $ldap->root_dse();
@@ -723,7 +742,10 @@ else
         my $attr = $entry->get_value('namingContexts', asref => 1);
         if ( defined($attr) )
         {
-        @base =  getBases($LDAP_SERVER, @$attr[0]);
+          foreach my $ncbase ( @$attr )
+          {
+            push( @base, getBases($LDAP_SERVER, $ncbase));
+          }
         }
         else 
         {
@@ -736,6 +758,8 @@ else
     {
     @base = ();
     }
+  $ldap->unbind;
+
 }
 
  if ( @base >= 1)
@@ -870,15 +894,58 @@ $bindWindow->destroy() if Tk::Exists($bindWindow);
 } # End of BIND subroutine
 
 
-
-
-
-
-
-
-
-
  
+#
+# Create Main Error Window
+#
+ 
+sub ERROR {
+my ($errcode ) = @_;
+
+return if ($errcode == 48 ); # Anonymous bind error, not really an error.
+
+my $x = $horz + 150;
+my $y = $vert + 150;
+ 
+my $errmsg = ldap_error_text($errstr);
+
+my @errmsg = split(/\n/,$errmsg);
+
+#
+# Create Main Error Window
+#
+ 
+$errorWindow = MainWindow->new;
+ 
+$errorWindow->title("Error Messages");
+ 
+$errorWindow->geometry("+$x+$y");
+#
+# Create process dismiss button
+#
+$errorWindow->Button( -text => "DISMISS", -command => \&dismiss, 
+           -font => $Font, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+$errlist = $errorWindow ->Listbox( -width => 70, -height => 10  );
+
+$errlist->pack(-fill => "both", -expand => 1 );
+
+$errlist->insert("end", "Error Code: $errcode");
+$errlist->insert("end", "");
+
+foreach my $msg ( @errmsg )
+{
+$errlist->insert("end", $msg);
+}
+sub dismiss{ 
+ 
+$errorWindow->destroy() if Tk::Exists($errorWindow);
+ 
+} # End of accept subroutine
+} # End of ERROR subroutine
+
+
 #
 # Create Main Port Window
 #
@@ -1220,7 +1287,7 @@ $schemaWindow->destroy if Tk::Exists($schemaWindow);
 
 sub schema 
 {
-
+my $mesg;
 my $error;
 my $dt = "/tmp/schema.dat.$$";
 
@@ -1241,10 +1308,10 @@ $version = 2;
 # Connect to directory server
 # 
 
-my $ldap = new Net::LDAP($LDAP_SERVER,
-                         timeout => 1,
-                         port => $port,
-                         debug => $opt{'d'},
+my $ldap = new Net::LDAP( $LDAP_SERVER,
+                          timeout => 1,
+                          port => $port,
+                          debug => $opt{'d'},
                         ) or $error = 1;
 
 if ( $error == 1 )
@@ -1253,8 +1320,18 @@ if ( $error == 1 )
    return;
 }
 
-$ldap->bind( password => "$bindpw", dn => "$binddn", version => $version ) or $error = 1;
+$mesg = $ldap->bind( password => "$bindpw", 
+                     dn => "$binddn", 
+                     version => $version,
+                   ) or $error = 1;
 
+   
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+}
+ 
 if ( $error == 1 )
 {
    $schema_list->insert("end",  "Bind error:  $@\n");
@@ -1539,7 +1616,7 @@ $displayWindow->destroy if Tk::Exists($displayWindow);
 
 sub search 
 {
-
+my $mesg;
 my $error;
 my $version;
 
@@ -1597,9 +1674,9 @@ if ( $error == 1 )
    return;
 }
 
-my $ldap = new Net::LDAP($LDAP_SERVER,
-                         timeout => 1,
-                         port => $port,
+my $ldap = new Net::LDAP( $LDAP_SERVER,
+                          timeout => 1,
+                          port => $port,
                         ) or $error = 1; 
 
 if ( $error == 1 )
@@ -1608,9 +1685,17 @@ if ( $error == 1 )
    return;
 }
 
-$ldap->bind(password => "$bindpw", dn => "$binddn", version => $version )
-    or $error = 1;
-
+$mesg = $ldap->bind( password => "$bindpw", 
+                     dn => "$binddn",
+                     version => $version,
+                   ) or $error = 1;
+   
+if ( $mesg->code ) 
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+}
+ 
 if ( $error == 1 )
 {
    $list->insert("end",  "Bind error:  $@\n");
@@ -1630,8 +1715,7 @@ if ( $error == 1 )
    $list->insert("end", "Search error:  $@\n");
    return;
 }
-
-
+   
 if ( $mesg->code ) 
 {
    $errstr = $mesg->code;
@@ -1755,22 +1839,26 @@ sub print_entry {
 
 } # End of search subroutine
 
+#
+# Detect and record the sub-bases, or branches, of the directory.
+#
 
 sub getBases()
 {
+my $mesg;
 my ( $host, $base ) = @_;
 my @base = ();
 my $ptr;
 
-my $match = "(ou=*)";
+my $match = "(ou=*)";  #search for ou entries.
 
 my $error = 0;  # initialize error flag.
 
 my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
 
-my $ldap = new Net::LDAP($host,
-                         timeout => 30,
-                         port => $port,
+my $ldap = new Net::LDAP( $host,
+                          timeout => 30,
+                          port => $port,
                         ) or $error = 1;
 
 #
@@ -1783,12 +1871,21 @@ if ( $error == 1 )
    return @base;
 }
 
-$ldap->bind( password => "$bindpw", dn => "$binddn", version => 3 ) or $error = 1;
+$mesg = $ldap->bind( password => "$bindpw", 
+                     dn => "$binddn", 
+                     version => 3,
+                   ) or $error = 1;
 
 #
 # Check for an error on bind
 #
-
+   
+if ( $mesg->code ) 
+{
+  $errstr = $mesg->code;
+  ERROR($errstr);
+}
+ 
 if ( $error == 1 )
 {
    print "Bind error:  $@\n";
@@ -1872,9 +1969,14 @@ if ( $mesg->code )
  $dn = $entry->dn;
  $_ = $dn;
 
+#
+# Record only dn that start with ou=
+# Normal entrys can be mixed in with these objects.
+#
+
  if ( /^ou=/ )
  {
-  push(@new_base, $dn);
+  push(@new_base, $dn);  # record only dn that start with ou=
  }
 
  }
