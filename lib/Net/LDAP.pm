@@ -721,7 +721,8 @@ sub _sendmesg {
       if $debug & 4;
   }
 
-  my $socket = $ldap->socket or return LDAP_SERVER_DOWN;
+  my $socket = $ldap->socket
+      or return _error($ldap, $mesg, LDAP_SERVER_DOWN, "$!");
 
   syswrite($socket, $mesg->pdu, length($mesg->pdu))
     or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
