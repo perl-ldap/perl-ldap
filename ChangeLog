@@ -1,3 +1,7 @@
+2001-10-08  Chris Ridd  <chris.ridd@messagingdirect.com>
+
+	* Added Authen::SASL::EXTERNAL
+
 2001-10-01  Chris Ridd  <chris.ridd@messagingdirect.com>
 
 	* Added sslversion to LDAPS constructor and start_tls method
