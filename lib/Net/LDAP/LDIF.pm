@@ -348,6 +348,7 @@ sub _wrap {
 sub _write_attr {
   my($attr,$val,$wrap,$lower) = @_;
   my $v;
+  my $res = 1;	# result value
   foreach $v (@$val) {
     my $ln = $lower ? lc $attr : $attr;
     if ($v =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
@@ -357,8 +358,9 @@ sub _write_attr {
     else {
       $ln .= ": " . $v;
     }
-    print _wrap($ln,$wrap),"\n";
+    $res &&= print _wrap($ln,$wrap),"\n";
   }
+  $res;
 }
 
 # helper function to compare attribute names (sort objectClass first)
@@ -371,11 +373,13 @@ sub _write_attrs {
   my($entry,$wrap,$lower,$sort) = @_;
   my @attributes = $entry->attributes();
   my $attr;
+  my $res = 1;	# result value
   @attributes = sort _cmpAttrs @attributes  if ($sort);
   foreach $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
-    _write_attr($attr,$val,$wrap,$lower);
+    $res &&= _write_attr($attr,$val,$wrap,$lower);
   }
+  $res;
 }
 
 sub _write_dn {
@@ -415,6 +419,7 @@ sub write_entry {
   my $wrap = int($self->{'wrap'});
   my $lower = $self->{'lowercase'};
   my $sort = $self->{'sort'};
+  my $res = 1;	# result value
   local($\,$,); # output field and record separators
 
   unless ($self->{'fh'}) {
@@ -427,6 +432,7 @@ sub write_entry {
   foreach $entry (@_) {
     unless (ref $entry) {
        $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
+       $res = 0;
        next;
     }
 
@@ -438,28 +444,29 @@ sub write_entry {
       next if $type eq 'modify' and !@changes;
 
       if ($self->{write_count}++) {
-	print "\n";
+	$res &&= print "\n";
       }
       else {
-        print "version: $self->{version}\n\n" if defined $self->{version};
+        $res &&= print "version: $self->{version}\n\n"
+          if defined $self->{version};
       }
-      _write_dn($entry->dn,$self->{'encode'},$wrap);
+      $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
 
-      print "changetype: $type\n";
+      $res &&= print "changetype: $type\n";
 
       if ($type eq 'delete') {
         next;
       }
       elsif ($type eq 'add') {
-        _write_attrs($entry,$wrap,$lower,$sort);
+        $res &&= _write_attrs($entry,$wrap,$lower,$sort);
         next;
       }
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        print _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
-        print 'deleteoldrdn: ', $deleteoldrdn,"\n";
+        $res &&= print _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
+        $res &&= print 'deleteoldrdn: ', $deleteoldrdn,"\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
+        $res &&= print _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
         next;
       }
 
@@ -471,28 +478,29 @@ sub write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
-	  print "-\n" if $dash++;
+	  $res &&= print "-\n" if $dash++;
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
-          print $type,": ",$attr,"\n";
-          _write_attr($attr,$val,$wrap,$lower);
+          $res &&= print $type,": ",$attr,"\n";
+          $res &&= _write_attr($attr,$val,$wrap,$lower);
         }
       }
     }
 
     else {
       if ($self->{write_count}++) {
-	print "\n";
+	$res &&= print "\n";
       }
       else {
-        print "version: $self->{version}\n\n" if defined $self->{version};
+        $res &&= print "version: $self->{version}\n\n"
+          if defined $self->{version};
       }
-      _write_dn($entry->dn,$self->{'encode'},$wrap);
-      _write_attrs($entry,$wrap,$lower,$sort);
+      $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
+      $res &&= _write_attrs($entry,$wrap,$lower,$sort);
     }
   }
 
-  1;
+  $res;
 }
 
 # read_cmd() is deprecated in favor of read_entry() 
@@ -523,14 +531,15 @@ sub write_cmd {
 
 sub done {
   my $self = shift;
+  my $res = 1;	# result value
   if ($self->{fh}) {
      if ($self->{opened_fh}) {
-       close $self->{fh};
+       $res = close $self->{fh};
        undef $self->{opened_fh};
      }
      delete $self->{fh};
   }
-  1;
+  $res;
 }
 
 my %onerror = (
