@@ -322,6 +322,17 @@ The referral hop limit has been exceeded.
 
 =back
 
+B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
+extension OIDs.
+
+=over 4
+
+=item LDAP_EXTENSION_START_TLS
+
+Indicates if the server supports the Start TLS extension (RFC-2830)
+
+=back
+
 =head1 SEE ALSO
 
 L<Net::LDAP>,
@@ -342,6 +353,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Constant.pod,v 1.4 2003/05/07 10:50:31 chrisridd Exp $>
+I<$Id: Constant.pod,v 1.5 2003/05/07 13:49:55 chrisridd Exp $>
 
 =cut

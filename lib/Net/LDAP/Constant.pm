@@ -106,4 +106,8 @@ sub LDAP_CONTROL_PWEXPIRING        () {	"2.16.840.1.113730.3.4.5"  }
 # Client controls we know about
 sub LDAP_CONTROL_REFERRALS         () {	"1.2.840.113556.1.4.616"   }
 
+# LDAP Extensions
+
+sub LDAP_EXTENSION_START_TLS       () { "1.3.6.1.4.1.1466.20037"   }
+
 1;
