@@ -9,10 +9,17 @@ version_from	('lib/Net/LDAP.pm');
 license		('perl');
 abstract	('LDAP client library');
 
+version(version() . "01" ); # Fix for Makefile.PL in 0.32
+
 check_nmake();      # check and download nmake.exe for Win32
 
-requires( perl => 5.004);
-include_deps('Test::More');
+requires(
+  perl => 5.004,
+  'Convert::ASN1' => 0.07,
+);
+
+include_deps	('Test::More');
+include 	('Extutils::AutoInstall');
 
 features(
   'SASL authentication' => [
