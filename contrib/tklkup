@@ -1,5 +1,4 @@
-#!/usr/bin/perl
-# !/usr/local/bin/perl
+#!/usr/local/bin/perl
 #
 # Copyright (c) 1999 - 2001 Clif Harden.  All Rights Reserved
 # This program is free software; you can redistribute it and/or
@@ -12,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.31 2002/12/30 05:30:45 charden Exp $
+# $Id: tklkup,v 1.32 2003/01/17 02:55:56 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -20,210 +19,16 @@
 #          retrieved from the directory.
 #
 #
-# Revisions:
-# $Log: tklkup,v $
-# Revision 1.31  2002/12/30 05:30:45  charden
-# Modified the error checking on ldap modify commands.
-# Corrected all the ldap bind commands.
-# Added CheckError subrountine.
-# Added a few comments at the end of subrountines.
-#
-# Revision 1.30  2002/11/06 04:27:37  charden
-#
-# Corrected a few pod errors that podchecker found.
-#
-# Revision 1.29  2002/10/08 01:41:31  charden
-#
-# Change the way search base(s) are displayed.  Instead of one big list,
-# the base list has been setup as a cascading menu based on the
-# namingContext(s) of the directory server.
-#
-# Revision 1.28  2002/07/19 02:44:19  charden
-#
-# Added the calling of the DSML end_dsml function when schema XML information
-# is writen to a file.
-#
-# Revision 1.27  2002/06/15 02:47:34  charden
-#
-# Added code to close windows after ldap actions are taken.  This is to force
-# a new search after data has been changed.
-#
-# Revision 1.26  2002/05/28 01:54:13  charden
-#
-# Made several code corrections to the code that stores xml formatted
-# schema information in a file.  This is due to the new DSML.pm module.
-#
-# Revision 1.25  2002/05/25 05:05:55  charden
-#
-# Change schema code to comprehend the new Schema.pm file.
-# Added code to determine new x and y position when the main window moves.
-#
-# Revision 1.24  2002/01/03 02:53:53  charden
-#
-# Corrected schema parse and display code to comprehend that a multi-valued
-# oid number could be returned from name2oid method. Now use the
-# is_attribute, is_objectclass, ...,  methods to determine oid number.
-#
-# Revision 1.23  2001/12/29 22:53:47  charden
-#
-# Added code to allow the schema information to be stored in a file as
-# DSML XML data.  User can now select to store the data as text or XML.
-#
-# Revision 1.22  2001/12/29 01:50:27  charden
-#
-# Added code to allow editing of a entry's attributes.
-# This makes this software a full featured LDAP directory interface.
-# Added pod documentation about new windows and features.
-#
-# Revision 1.21  2001/12/17 01:35:45  charden
-#
-# Added fail safe code to the DELETE entry operation.  This forces the
-# user to confirm the delete entry request.
-# Added pod documentation for the DELETE fail safe window.
-#
-# Revision 1.20  2001/12/15 05:06:43  charden
-#
-# Corrected pod documentation error.
-#
-# Revision 1.19  2001/12/15 04:57:15  charden
-#
-# Added code to allow various entry modifications.
-# Added code to delete an entry.
-# Added code to do a mod RDN on an entry.
-# Changed search code to display in a ROText box.
-# Started code for entry data modification, this code is not complete
-# but will not break anything if used.  It will just display the data
-# in the Text box that will be used of modification.
-# Updated pod documentation to reflect the code changes.
-#
-# Revision 1.18  2001/09/09 04:50:31  charden
-#
-# Corrected several errors regarding how the ldap version information was
-# set.  All ldap bind commands use the Global{setVersion} hash.
-# Added the nismapname option for detecting Solaris Native LDAP automounter
-# directory branches.
-#
-# Revision 1.17  2001/09/07 01:13:31  charden
-#
-# Added attributes subschemaSubentry and supportedSASLMechanisms to the
-# root_dse display list.
-#
-# Revision 1.15  2001/08/27 03:11:33  charden
-#
-# Change code to retrieve schema information when Explore Schema
-# button is pressed. The Retrieve Schema button can still be used
-# to retrieve schema data.
-# Added code to detect objectclass string length and used this to set
-# Hierarchial objectclass display window size.
-#
-# Revision 1.14  2001/08/26 23:58:56  charden
-#
-# Added setFilter subroutine.
-# Added Set Filter Condition menu button.
-# Added code to allow setting of 4 different search filter combinations;
-# equal, begins with, ends with, and contains.
-# Added pod documentation for Set Filter Condition.
-#
-# Revision 1.13  2001/08/24 03:03:55  charden
-#
-# Added code to set the environment variable HOME if it is not set.
-# ActiveState perl does not seem to have this variable set up like the
-# Unix version of perl.
-#
-# Revision 1.12  2001/08/24 02:43:36  charden
-#
-# Change the way a Unix or Microsoft system is detected.  Used the
-# Perl special variable that knows what platform the perl code was
-# compiled on.
-#
-# Revision 1.11  2001/08/12 02:13:16  charden
-#
-# Added the Filter attribute and change ldap filter creation code to
-# not change the filter data when the Filter attribute is selected.
-# Added documentation to pod about this change.
-#
-# Revision 1.10  2001/08/05 04:06:09  charden
-#
-# Change several lines of code so that Carp and warn would not
-# throw un-initialized variable warnings.
-#
-# Revision 1.9  2001/07/29 18:54:12  charden
-#
-# Corrected major stupid error on defining hashes Global and schemaHash.
-# Change the way that forking of tklkup takes place, will now only fork on
-# HPUX, Sun, and Linux.  It should not fork on Windows systems.
-#
-# Revision 1.8  2001/06/16 03:57:24  charden
-# Made attribute jpegPhoto detection case insenitive.
-# Corrected error in window creation in subroutine ERROR.
-# Changed the way general error messages are submitted to subroutine
-# ERROR.
-#
-# Revision 1.7  2001/06/15 02:48:46  charden
-# Added many enhancements.
-# Added the ability to display jpegPhoto attributes when they are encountered
-# if the Tk::JPEG module is installed.
-# Added the ability to do a hierarchical tree graph of objectclasses.  When a
-# branch of the tree is selected, a listing of the objectclasses and their
-# attributes is displayed in a list box.
-# Added the ability to display the ROOT DSE entry if it can be  obtained.
-# Changed several look and feel items, made everything more consistent.
-#
-# Revision 1.6  2001/05/19 02:48:00  charden
-# Corrected code that uses the nameContext to determine branches,
-# or bases, in the directory.
-# Added code to create an error window for error message display. This
-# is for use by rountines that do not have a list window.
-#
-# Revision 1.3  2000/12/20 03:15:42  charden
-# Corrected error in the calling of the get_value method so that
-# multi-valued attributes were handled correctly.
-#
-# Revision 1.2  2000/12/13 02:41:59  charden
-# Major rewrite of the tklkup script, many enhancements were made.
-#
-# Combined schema and tklkup scripts, control of both schema and
-# search functions are initiated from a main window.
-# Seperate display windows are generated for both schema and search
-# results.
-# Added ldap bind ability from the main window.
-#
-# Revision 1.1  2000/07/27 14:39:17  gbarr
-# Initial checkin
-#
-# Revision 1.6  2000/06/18 04:08:16  clif
-# Changed several pod commands to enhance the lookup
-# and feel of the pod documentation.
-#
-# Revision 1.5  2000/06/08 01:12:27  clif
-# Correct wording in the pod documentation.
-#
-# Revision 1.4  2000/05/27 21:34:12  clif
-# Added the README.tklkup file as a internal pod document.
-#
-# Revision 1.3  2000/05/27 18:35:38  clif
-# Removed leading dashes form Net::LDAP options.  These dashes had been
-# depricated.
-#
-# Revision 1.2  2000/05/27 18:29:35  clif
-# Added radio button for selection of version 2 or 3 ldap. Version
-# 3 was maded the default version.
-# Added code to make the binary user certificate data base64 encoded
-# for display purposes.
-#
-# Revision 1.1  2000/01/23 03:00:20  clif
-# Initial revision
 #
 #
-#
-#
-#
+#----------------------------------------------------------------------------
 #
 
 use Carp;
 use Data::Dumper;
 use MIME::Base64;
 use Net::LDAP qw(:all);
+use Net::LDAPS qw(:all);
 use Net::LDAP::Filter;
 use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
 use Net::LDAP::Constant;
@@ -261,6 +66,7 @@ my %schemaHash = ();
 &init_schemaHash;
 
 $Global{'LDAP_SERVER'} = "";
+$Global{'ldap'} = undef;
 $Global{'bindpw'} = "";
 $Global{'binddn'} = "";
 $Global{'adata'} = "";
@@ -484,6 +290,41 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
  #
  # Find the branches of the directory.
  #
+
+$error = 0;
+
+if ( $Global{port} == 636 )
+{
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
+
+if ( !$error )
+{
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
+                       dn => "$Global{'binddn'}", 
+                       version => $Global{'setVersion'},
+                       );
+   
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+  $errstr = $mesg->code;
+  ERROR($errstr);
+  print $mesg->code,"\n";
+}
+if ( $mesg->code || $Global{setVersion} )
+{ 
  
  if ( defined($server{$server[0]}) )
  {
@@ -491,7 +332,7 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
  my $t1 = [];
  $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
  ${$NC{$server{$server[0]}}}[1] = $t1;      # 
- print "server == ", $server{$server[0]}, "\n";
+# print "server == ", $server{$server[0]}, "\n";
 
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
  @base =  getBases($Global{'LDAP_SERVER'}, $server{$server[0]});
@@ -505,48 +346,33 @@ $Global{'CORE_SERVER'} = $Global{'LDAP_SERVER'};
 
  @base = ();
 
- my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
-                           timeout => 1,
-                           port => $Global{'port'},
-                           debug => $opt{'d'},
-                         ) or $error = 1;
-
-    if ( !$error )
+ $entry = $Global{ldap}->root_dse();
+ if ( defined($entry) )
+ {
+   my $attr = $entry->get_value('namingContexts', asref => 1);
+   if ( defined($attr) )
+   {
+    foreach my $ncbase ( @$attr )
     {
-
-    $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
-                         dn => "$Global{'binddn'}", 
-                         version => $Global{'setVersion'},
-                       );
-   
-   if ( $mesg->code && $mesg->code != 48 ) 
-   {
-      $errstr = $mesg->code;
-      ERROR($errstr);
-      print $mesg->code,"\n";
+     my $t1 = [];
+     ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
+     ${$NC{$ncbase}}[1] = $t1;      # 
+     push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
+     push(@base, getBases($Global{'LDAP_SERVER'}, $ncbase));
+    }
    }
-   else
-   {
-      $entry = $ldap->root_dse();
-      if ( defined($entry) )
-      {
-        my $attr = $entry->get_value('namingContexts', asref => 1);
-        if ( defined($attr) )
-        {
-         foreach my $ncbase ( @$attr )
-         {
-          my $t1 = [];
-          ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-          ${$NC{$ncbase}}[1] = $t1;      # 
-          push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
-          push(@base, getBases($Global{'LDAP_SERVER'}, $ncbase));
-         }
-        }
-      }
-    }
-    }
-  $ldap->unbind if ( defined($ldap));
  }
+
+  #$Global{ldap}->unbind if ( defined($Global{ldap}) );
+  #$Global{ldap} = undef if ( defined($Global{ldap}) );
+ }
+ }
+}
+else
+{
+  print "Error:  $@\n";
+
+}
 
  if ( @base >= 1)
  {
@@ -640,7 +466,7 @@ foreach (@server)
 # the user will enter the bind DN and password.
 #
  
-$abind = $stframe -> Button(-text => " BIND TO\n DIRECTORY",
+$abind = $stframe -> Button(-text => " SET BIND\n CREDENTIALS",
                  -relief => "raised", -command => \&BIND, 
                  -font => $Global{'Font'}, -borderwidth => 3 )
                  -> pack( -side => $Global{'hand'}, -anchor => "w", -pady => 2);
@@ -956,10 +782,21 @@ $Global{'adata'} = "";
 
 } # End of AClear subroutine
 
-sub server {
+#
+# Change to a new directory server.
+#
+
+sub server 
+{
 my $widget;
 my $ptr;
+my $mesg;
+my $error;
 
+$error = 0;
+
+$Global{ldap}->unbind if ( defined($Global{ldap}) );
+$Global{ldap} = undef if ( defined($Global{ldap}) );
 #
 # Put directory server name in list box
 #
@@ -981,6 +818,41 @@ while ( @BaseButton >= 1  )
   ++$ptr;
 }
 
+
+if ( $Global{port} == 636 )
+{
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+                         timeout => 1,
+                         port => $Global{'port'},
+                         debug => $opt{'d'},
+                        ) or $error = 1;
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                         timeout => 1,
+                         port => $Global{'port'},
+                         debug => $opt{'d'},
+                        ) or $error = 1;
+}
+
+if ( !$error )
+{
+
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
+                    dn => "$Global{'binddn'}", 
+                    version => $Global{'setVersion'},
+                    );
+
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+$errstr = $mesg->code;
+ERROR($errstr);
+}
+
+if ( !$mesg->code || $Global{setVersion} == 3 )
+{
+
 if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global{'LDAP_SERVER'}} ) )
 {
  # user defined base
@@ -993,52 +865,32 @@ if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global
 }
 else
 {
- my $error;
- my $mesg;
  my $entry;
  # use root_dse to find the bases
 
- my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
-                           timeout => 1,
-                           port => $Global{'port'},
-                           debug => $opt{'d'},
-                         ) or $error = 1;
-
-    if ( !$error )
-    {
-
-    $mesg = $ldap->bind( password => "$Global{'bindpw'}", 
-                         dn => "$Global{'binddn'}", 
-                         version => $Global{'setVersion'},
-                       );
-
-   if ( $mesg->code && $mesg->code != 48 ) 
+ %NC = ();  # Delete the old stuff.
+ $entry = $Global{ldap}->root_dse();
+ if ( defined($entry) )
+ {
+   my $attr = $entry->get_value('namingContexts', asref => 1);
+   if ( defined($attr) )
    {
-      $errstr = $mesg->code;
-      ERROR($errstr);
+     foreach my $ncbase ( @$attr )
+     {
+       my $t1 = [];
+       ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
+       ${$NC{$ncbase}}[1] = $t1;      #
+       push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
+     }
    }
-   else
-   {
-      %NC = ();  # Delete the old stuff.
-      $entry = $ldap->root_dse();
-      if ( defined($entry) )
-      {
-        my $attr = $entry->get_value('namingContexts', asref => 1);
-        if ( defined($attr) )
-        {
-          foreach my $ncbase ( @$attr )
-          {
-            my $t1 = [];
-            ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-            ${$NC{$ncbase}}[1] = $t1;      #
-            push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
-          }
-        }
-      }
-    }
-    }
+ }
 
-  $ldap->unbind if ( defined($ldap));
+#  $Global{ldap}->unbind if ( defined($Global{ldap}));
+#  $Global{ldap} = undef if ( defined($Global{ldap}));
+
+}
+
+}
 
 }
 
@@ -1151,7 +1003,7 @@ my $y = $Global{'vert'} + 150;
  
 $Global{'bindWindow'} = MainWindow->new;
  
-$Global{'bindWindow'}->title("BIND TO DIRECTORY");
+$Global{'bindWindow'}->title("SET BIND CREDENTIALS");
  
 $Global{'bindWindow'}->geometry("+$x+$y");
 #
@@ -1198,10 +1050,34 @@ $Global{'bindWindow'} = undef();
 } # End of cancel subroutine
  
 sub accept{ 
+my $mesg;
  
+ 
+if (defined($Global{ldap}) )
+{
+#
+# Connect to directory server
+# 
+
+$mesg = $Global{ldap}->bind( password => "$pw_data", 
+                     dn => "$dn_data", 
+                     version => $Global{'setVersion'},
+                   );
+   
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+}
+else
+{
 $Global{'binddn'} = $dn_data;
 $Global{'bindpw'} = $pw_data;
- 
+&server;
+}
+
+} 
+
 $Global{'bindWindow'}->destroy() if Tk::Exists($Global{'bindWindow'});
 $Global{'bindWindow'} = undef(); 
  
@@ -1330,8 +1206,62 @@ $Global{'portWindow'} = undef();
  
 sub portAccept{ 
  
+my $error;
+
+$error = 0;
+
+$Global{ldap}->unbind if ( defined($Global{ldap}) );
+$Global{ldap} = undef if ( defined($Global{ldap}) );
+
 $Global{'port'} = $port_data;
- 
+
+#
+# Connect to directory server
+# 
+
+if ( $Global{port} == 636 )
+{
+ $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
+else
+{
+ $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
+
+if ( $error == 1 )
+{
+   ERROR("Connect error:  $@\n");
+    
+  # $schema_list->insert("end",  "Connect error:  $@\n");
+   return;
+}
+
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
+                     dn => "$Global{'binddn'}", 
+                     version => $Global{'setVersion'},
+                   );
+
+   
+if ( $mesg->code && $mesg->code != 48 ) 
+{
+   $errstr = $mesg->code;
+   ERROR($errstr);
+   return;
+}
+
+#
+# New server setup
+# 
+&server;
+
 $Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
 $Global{'portWindow'} = undef(); 
  
@@ -1651,12 +1581,6 @@ $Global{'schemaWindow'}->destroy if Tk::Exists($Global{'schemaWindow'});
 $Global{'schemaWindow'} = undef(); 
 } # End of cancel subroutine
  
-
-
-
-
-
-
 #
 #
 # Get the directory schema
@@ -1690,15 +1614,28 @@ my $dt = "/tmp/schema.dat.$$";
 
 if ( $Global{'sclear'} ) { &schema_clear(); }
 
+if ( ! defined($Global{ldap}) )
+{
 #
 # Connect to directory server
 # 
 
-my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+if ( $Global{port} == 636 )
+{
+ $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
                           debug => $opt{'d'},
                         ) or $error = 1;
+}
+else
+{
+ $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
 
 if ( $error == 1 )
 {
@@ -1706,7 +1643,7 @@ if ( $error == 1 )
    return;
 }
 
-$mesg = $ldap->bind( password => "$Global{'bindpw'}", 
+$mesg = $Global{ldap}->bind( password => "$Global{'bindpw'}", 
                      dn => "$Global{'binddn'}", 
                      version => $Global{'setVersion'},
                    );
@@ -1718,7 +1655,9 @@ if ( $mesg->code && $mesg->code != 48 )
    ERROR($errstr);
    return;
 }
- 
+
+} 
+
 #
 # Get the schema, tries to read rootdse, if unable assumes cn=schema.
 # This is NOT always the case.
@@ -1729,7 +1668,7 @@ my @items;
 my @item;
 my $dsml;
 
-$schemaHash{'schema'} = $ldap->schema();
+$schemaHash{'schema'} = $Global{ldap}->schema();
 
 if ( defined($schemaHash{'schema'}) )
 {
@@ -1761,7 +1700,7 @@ if ( $Global{'sfile'} && defined($schemaHash{'schema'}) )
   $Global{'sfile'} = 0;
   $Global{'fdata'} = "";
   $Global{'xml'} = 0;
-  $ldap->unbind if ( defined($ldap));
+  #$ldap->unbind if ( defined($ldap));
   return;
 
 }
@@ -1939,8 +1878,6 @@ else
   $schema_list->insert("end",  "   servers will not return schema data.\n");
 
 }
-
-$ldap->unbind if ( defined($ldap));
 
 } # End of schema subroutine
 
@@ -2307,7 +2244,7 @@ my $y = $Global{'vert'} + 50;
  
 $Global{'answerWindow'} = MainWindow->new;
  
-$Global{'answerWindow'}->title("BIND TO DIRECTORY");
+$Global{'answerWindow'}->title("CONFIRM DECISION");
  
 $Global{'answerWindow'}->geometry("+$x+$y");
 #
@@ -3014,10 +2951,24 @@ delete($Global{'ldapActionWindow'});
 @DNs = split(/\//,$objects); # split base from dn.
 $error = 0;
 
-$ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+if ( !defined($Global{ldap}) )
+{
+if ( $Global{port} == 636 )
+{
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
+                          debug => $opt{'d'},
                         ) or $error = 1; 
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1; 
+}
 
 if ( $error == 1 )
 {
@@ -3026,16 +2977,18 @@ if ( $error == 1 )
    return;
 }
 
-$mesg = $ldap->bind( password => $Global{'bindpw'}, 
+$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
                    );
 
-if ( $mesg->code && $mesg->code != 48 ) 
+if ( $mesg->code ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
    return;
+}
+
 }
 
 $do_it = 1;
@@ -3043,7 +2996,7 @@ $Global{loopCount} = 0;
 
 while ($do_it == 1 )
 { 
- $mesg = $ldap->delete($DNs[1]); 
+ $mesg = $Global{ldap}->delete($DNs[1]); 
    
  if ( $mesg->code ) 
  {
@@ -3073,7 +3026,7 @@ while ($do_it == 1 )
  }
 
 }
-$ldap->unbind;
+#$ldap->unbind;
 
 } # End of ldapActionDelete subroutine
 
@@ -3094,10 +3047,24 @@ if ( $Global{'Rename'} == -1 )
 return;
 }
 
-$ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+if ( !defined($Global{ldap}) )
+{
+if ( $Global{port} == 636 )
+{
+$Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
+                          debug => $opt{'d'},
                         ) or $error = 1; 
+}
+else
+{
+$Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1; 
+}
 
 if ( $error == 1 )
 {
@@ -3107,18 +3074,20 @@ if ( $error == 1 )
    ERROR($errstr);
 }
 
-$mesg = $ldap->bind( password => $Global{'bindpw'}, 
+$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
                    );
   
 
-if ( $mesg->code && $mesg->code != 48 ) 
+if ( $mesg->code ) 
 {
    $errstr = $mesg->code;
    ERROR($errstr);
+   return;
 }
- 
+
+} 
  
 $do_it = 1;
 $Global{loopCount} = 0;
@@ -3159,8 +3128,6 @@ if ( $mesg->code )
  }
 
 }
-
-$ldap->unbind;
 
 }
  
@@ -3534,11 +3501,25 @@ my $errstr;
 my $mesg;
 my $error = 0;  # initialize error flag.
 my $do_it;
- 
-my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+
+if ( !defined($Global{ldap}) )
+{
+if ( $Global{port} == 636 )
+{
+ $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
+                          debug => $opt{'d'},
                         ) or $error = 1;
+}
+else
+{
+ $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1;
+}
  
 if ( $error == 1 )
 {
@@ -3547,18 +3528,19 @@ if ( $error == 1 )
    return;
 }
  
-$mesg = $ldap->bind( password => $Global{'bindpw'},
+$mesg = $Global{ldap}->bind( password => $Global{'bindpw'},
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
                    );
 
-if ( $mesg->code && $mesg->code != 48 )
+if ( $mesg->code )
 {
    $errstr = $mesg->code;
    ERROR($errstr);
    return;
 }
 
+}
 #
 # Execute any LDAP add changes.
 #
@@ -3571,7 +3553,7 @@ $Global{loopCount} = 0;
 while ($do_it == 1 )
 {
 
-$mesg = $ldap->modify( $Global{'entryDN'}, add => $Global{'add'});
+$mesg = $Global{ldap}->modify( $Global{'entryDN'}, add => $Global{'add'});
  
 if ( $mesg->code )
 {
@@ -3618,7 +3600,7 @@ $Global{loopCount} = 0;
 while ($do_it == 1 )
 {
 
-$mesg = $ldap->modify( $Global{'entryDN'}, delete => $Global{'delete'});
+$mesg = $Global{ldap}->modify( $Global{'entryDN'}, delete => $Global{'delete'});
  
 if ( $mesg->code )
 {
@@ -3666,7 +3648,7 @@ $Global{loopCount} = 0;
 while ($do_it == 1 )
 {
 
-$mesg = $ldap->modify( $Global{'entryDN'}, replace => $Global{'replace'});
+$mesg = $Global{ldap}->modify( $Global{'entryDN'}, replace => $Global{'replace'});
  
 if ( $mesg->code )
 {
@@ -3911,10 +3893,24 @@ if ( $error == 1 )
    return;
 }
 
-my $ldap = new Net::LDAP( $Global{'LDAP_SERVER'},
+if ( !defined($Global{ldap}) )
+{
+if ( $Global{port} == 636 )
+{
+ $Global{ldap} = new Net::LDAPS( $Global{'LDAP_SERVER'},
                           timeout => 1,
                           port => $Global{'port'},
+                          debug => $opt{'d'},
                         ) or $error = 1; 
+}
+else
+{
+ $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
+                          timeout => 1,
+                          port => $Global{'port'},
+                          debug => $opt{'d'},
+                        ) or $error = 1; 
+}
 
 if ( $error == 1 )
 {
@@ -3922,7 +3918,7 @@ if ( $error == 1 )
    return;
 }
 
-$mesg = $ldap->bind( password => $Global{'bindpw'}, 
+$mesg = $Global{ldap}->bind( password => $Global{'bindpw'}, 
                      dn => $Global{'binddn'},
                      version => $Global{'setVersion'},
                    );
@@ -3934,10 +3930,12 @@ if ( $mesg->code && $mesg->code != 48  )
    ERROR($errstr);
    return;
 }
+
+}
  
 $Global{'searchResults'} = {};  # initialize results hash.
 
-$mesg = $ldap->search(
+$mesg = $Global{ldap}->search(
   base   => $LDAP_SEARCH_BASE,
   filter => $f,
   attrs  => $att_wanted,
@@ -3960,7 +3958,8 @@ if ( $mesg->code && $mesg->code != 48 )
 #
 
 
-eval{
+eval
+{
 #
 # Create the base point.
 #
@@ -3980,12 +3979,10 @@ foreach my $dnvar ( @dnKeys )
  $Global{'searchHList'}->add($shbase, -text => $$var[0]); # add leaf to tree.
 }
 $Global{'searchHList'}->pack(-side => "right");
-};
+};  # End of eval
 
 print "$@" if ( defined($@));
 
-
-$ldap->unbind if ( defined($ldap));
 
 #
 # Get and print out the record attributes.
@@ -4136,37 +4133,6 @@ my $error = 0;  # initialize error flag.
 
 my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
 
-my $ldap = new Net::LDAP( $host,
-                          timeout => 30,
-                          port => $Global{'port'},
-                        ) or $error = 1;
-
-#
-# Check for an error on connect/object creation
-#
-
-if ( $error == 1 )
-{
-   my $error = "getBases LDAP connect error.";
-   ERROR(\$error);
-   return @base;
-}
-
-$mesg = $ldap->bind( password => "$Global{'bindpw'}", 
-                     dn => "$Global{'binddn'}", 
-                     version => $Global{'setVersion'},
-                   );
-
-#
-# Check for an error on bind
-#
-   
-if ( $mesg->code && $mesg->code != 48 ) 
-{
-  $errstr = $mesg->code;
-  ERROR($errstr);
-}
- 
 push(@base,$base);
 $ptr = 0;
 
@@ -4174,13 +4140,12 @@ while ( $ptr < @base )
 {
  if ( @base < $Global{'limit'} )
  { 
-  my @new_base = calBase($base, $ldap, $f );
+  my @new_base = calBase($base, $f );
   push(@base, @new_base);
  }
  $base = $base[++$ptr];
 }
 
-$ldap->unbind if ( defined($ldap));
 return @base;
 
 } # End of subroutine getBases()
@@ -4188,14 +4153,14 @@ return @base;
 
 sub calBase()
 {
-my ( $base, $ldap, $f ) = @_;
+my ( $base, $f ) = @_;
 my $mesg;
 my $entry;
 my $errstr;
 my $error = 0;
 my @new_base = ();
 
-$mesg = $ldap->search(
+$mesg = $Global{ldap}->search(
   base   => $base,
   filter => $f,
   attrs  => [ "cn" ],
@@ -4259,6 +4224,7 @@ my $base;
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
 my $error;
+my $mesg;
 
 #if ( $Global{'setVersion'} != 3 )
 #{
@@ -4267,8 +4233,17 @@ my $error;
 # return;
 #}
 
-my $ldap = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
-my $mesg = $ldap->bind( version => $Global{'setVersion'} ) or die;
+if ( !defined($Global{ldap} ) )
+{
+if ( $Global{port} == 636 )
+{
+$Global{ldap} = new Net::LDAPS($Global{'LDAP_SERVER'}) or die;
+}
+else
+{
+$Global{ldap} = new Net::LDAP($Global{'LDAP_SERVER'}) or die;
+}
+$mesg = $Global{ldap}->bind( version => $Global{'setVersion'} ) or die;
 
 if ( $mesg->code  )
 {
@@ -4277,7 +4252,8 @@ if ( $mesg->code  )
     return if ( $mesg->code != 48 );
 
 }
-my $root = $ldap->root_dse();
+}
+my $root = $Global{ldap}->root_dse();
 
 my @Attributes = ( qw(subschemaSubentry namingContexts supportedLDAPVersion 
                     supportedControl supportedExtension altServer supportedSASLMechanisms) );
@@ -4351,8 +4327,6 @@ foreach $attr (@Attributes)
  }
 
 }
-
-$ldap->unbind;
 
 } # End of subrountine rootDse
 
@@ -4610,7 +4584,7 @@ off window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The I<BIND TO DIRECTORY> button will activate a window 
+The I<SET BIND CREDENTIALS> button will activate a window 
 that is separate from the main window.  
 
 The new window contains two buttons and two text boxes. 
