@@ -7,7 +7,7 @@ perl-ldap 0.21 September 12 2000
 ================================
 
 * Change ->get back to return what 0.19 returned
-* Depricate ->get in favor of ->get_value
+* Deprecate ->get in favor of ->get_value
 * Net::LDAP::Schema now supports matchingRules
 * Added experimental onerror option to ->new
 * New FAQ by Clif Harden

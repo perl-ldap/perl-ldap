@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.05";
+$VERSION = "0.06";
 
 my %mode = qw(w > r < a >>);
 
@@ -288,7 +288,12 @@ sub write_cmd {
   my $saver = SelectSaver->new($self->{'fh'});
   
   foreach $entry (grep { defined } @_) {
+    my @changes = $entry->changes or next;
     my $type = $entry->changetype;
+
+    # Skip entry if there is nothing to write
+    next if $type eq 'modify' and !@changes;
+
     my $dn = "dn: " . $entry->dn;
 
     print "\n" if tell($self->{'fh'});
@@ -304,7 +309,7 @@ sub write_cmd {
 
     my $change;
     my $first = 0;
-    foreach $change ($entry->changes) {
+    foreach $change (@changes) {
       unless (ref($change)) {
         $type = $change;
 	next;

@@ -100,7 +100,18 @@ If TRUE, return a list of the attribute names excluding any options. For example
   name;en-us: Bob
   jpeg;binary: **binary data**
 
-the return list would be C<( 'name', 'jpeg' )>.
+then
+
+  @values = $entry->attributes()
+  print "default: @values\n";
+
+  @values = $entry->attributes( nooptions => 1);
+  print "nooptions: @values\n";
+
+will output
+
+  default: name name;en-us jpeg;binary
+  nooptions: name jpeg
 
 =back
 
@@ -187,7 +198,11 @@ For example if an entry had
   name: Graham Barr
   name;en-us: Bob
 
-Then a get for attribute "name" with alloptions set would return 
+Then a get for attribute "name" with alloptions set to a true value
+
+  $ref = $entry->get_value( 'name', alloptions => 1);
+
+will return a hash reference that would be like
 
   {
     ''       => [ 'Graham Barr' ],
@@ -198,6 +213,17 @@ Then a get for attribute "name" with alloptions set would return
 
 If TRUE then the result will be a reference to an array containing all the
 values for the attribute, or undef if the attribute does not exist.
+
+  $scalar = $entry->get_value('name');
+  
+$scalar will be the first value for the C<name> attribute, or C<undef> if the
+entry does not contain a C<name> attribute.
+
+  $ref    = $entry->get_value('name', asref => 1);
+
+$ref will be a reference to an array, which will have all the values for
+the C<name> attribute. If the entry does not have an attribute called C<name>
+then $ref will be C<undef>
 
 =back
 
@@ -256,6 +282,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Entry.pod,v 1.5 2000/09/12 09:17:09 gbarr Exp $>
+I<$Id: Entry.pod,v 1.6 2001/01/29 21:09:37 gbarr Exp $>
 
 =cut

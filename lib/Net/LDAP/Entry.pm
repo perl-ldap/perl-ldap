@@ -9,13 +9,13 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 sub new {
   my $self = shift;
   my $type = ref($self) || $self;
 
-  my $entry = bless { 'changetype' => 'add' }, $type;
+  my $entry = bless { 'changetype' => 'add', changes => [] }, $type;
 
   $entry;
 }
@@ -33,7 +33,7 @@ sub decode {
   my $result = ref($_[0]) ? shift : $LDAPEntry->decode(shift)
     or return;
 
-  %{$self} = ( asn => $result, changetype => 'modify');
+  %{$self} = ( asn => $result, changetype => 'modify', changes => []);
 
   $self;
 }
@@ -52,13 +52,13 @@ sub dn {
 
 sub get_attribute {
   require Carp;
-  Carp::carp("->get_attribute depricated, use ->get_value") if $^W;
+  Carp::carp("->get_attribute deprecated, use ->get_value") if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
 sub get {
   require Carp;
-  Carp::carp("->get depricated, use ->get_value") if $^W;
+  Carp::carp("->get deprecated, use ->get_value") if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
@@ -210,7 +210,7 @@ sub update {
   elsif ($self->{'changetype'} eq 'delete') {
     $mesg = $ldap->delete($self, 'callback' => $cb);
   }
-  elsif (defined $self->{'changes'}) {
+  elsif (@{$self->{'changes'}}) {
     $mesg = $ldap->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb);
   }
   else {

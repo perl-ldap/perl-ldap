@@ -13,7 +13,6 @@ contrib/README
 contrib/dot.tklkup
 contrib/isMember.pl
 contrib/printMembers.pl
-contrib/schema
 contrib/tklkup
 data/00-cmp2.ldif
 data/00-in.ldif

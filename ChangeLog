@@ -1,3 +1,30 @@
+Change 611 on 2001/01/29 by <gbarr@pobox.com> (Graham Barr)
+
+	Documentation updates
+
+Change 610 on 2000/12/20 by <gbarr@pobox.com> (Graham Barr)
+
+	Add new ::Extra module for user loaded extensions
+
+Change 609 on 2000/12/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP
+	- Ignore unexpected PDUs
+
+Change 608 on 2000/12/18 by <gbarr@pobox.com> (Graham Barr)
+
+	Deleted schema script at Clif's request. It's functionality is in the
+	tklkup script
+
+Change 605 on 2000/10/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Net::LDAP::LDIF, Net::LDAP::Entry
+	- Fix for attempting to write_cmd on an entry with no changes
+
+Change 604 on 2000/10/12 by <gbarr@pobox.com> (Graham Barr)
+
+	Fix spelling typos
+
 Change 599 on 2000/09/14 by <gbarr@pobox.com> (Graham Barr)
 
 	Release 0.22
@@ -75,7 +102,7 @@ Change 567 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
 Change 566 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
 
 	Net::LDAP::Entry
-	- added ->get_value() and depricated ->get()
+	- added ->get_value() and deprecated ->get()
 
 Change 565 on 2000/08/16 by <gbarr@pobox.com> (Graham Barr)
 
@@ -736,7 +763,7 @@ Change 223 on 1998/10/31 by <gbarr@pobox.com> (Graham Barr)
 	
 	Net::LDAP::Entry
 	- decode sets changetype to modify
-	- depricated ->ldif & ->ldif_read
+	- deprecated ->ldif & ->ldif_read
 	
 	Net::LDAP::LDIF
 	- added ->done
@@ -865,7 +892,7 @@ Change 200 on 1998/10/17 by <gbarr@pobox.com> (Graham Barr)
 	- Fixed decode problem for references
 	- Renamed all_entries as entries
 	- Renamed all_references as references
-	- first_entry and next_entry depricated
+	- first_entry and next_entry deprecated
 	- entry now only waits until the requested entry has arrived, not
 	  until the whole search has completed.
 	
