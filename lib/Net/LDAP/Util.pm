@@ -40,7 +40,7 @@ require Exporter;
   canonical_dn
   ldap_explode_dn
 );
-$VERSION = "0.07";
+$VERSION = "0.08";
 
 =item ldap_error_name ( NUM )
 
@@ -286,13 +286,7 @@ sub canonical_dn {
       my @t = sort keys %$h;
       join($plus,
  	map {
-	  my $val = $h->{$_};  
-	  if ($val !~ /^#/) {
-	    $val =~ s/([\\",=+<>#;])/\\$1/g;
-	    $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
-	    $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
-	  }
-	  "$_=$val";
+	  "$_=$h->{$_}";
 	} $rev ? reverse(@t) : @t)
     } $rev ? reverse(@dn) : @dn);
   
@@ -325,6 +319,16 @@ Uppercases type names.
 
 Removes the leading OID. characters if the type is an OID instead
 of a name.
+
+=item *
+
+Escapes all RFC 2253 special characters, and any other character
+where the ASCII code is <32 or >= 127, with a backslash and a two
+digit hex code.
+
+=item *
+
+Converts all leading and trailing spaces in values to be \20.
 
 =back
 
@@ -365,6 +369,9 @@ sub ldap_explode_dn {
       $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2})
                /length($1)==1 ? $1 : chr(hex($1))
                /xeg;
+      $val =~ s/([\\",=+<>#;])/\\$1/g;
+      $val =~ s/([\x00-\x1f\x7f-\xff])/sprintf("\\%02x",ord($1))/eg;
+      $val =~ s/(^\s+|\s+$)/"\\20" x length $1/ge;
     }
 
     $rdn{uc $type} = $val;
@@ -394,7 +401,7 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Util.pm,v 1.13 2001/11/10 06:29:54 gbarr Exp $>
+I<$Id: Util.pm,v 1.14 2002/01/31 15:25:52 gbarr Exp $>
 
 =cut
 
