@@ -17,7 +17,7 @@ Net::LDAP::Schema - Load and manipulate an LDAP v3 Schema
  #
  # Load from LDIF
  #
- $schema = Net::LDAP->new;
+ $schema = Net::LDAP::Schema->new;
  $schema->parse( "schema.ldif" ) or die $schema->error;
 
 =head1 DESCRIPTION
@@ -241,6 +241,6 @@ terms as Perl itself.
 
 =for html <hr>
 
-I<$Id: Schema.pod,v 1.7 2001/02/12 14:17:38 gbarr Exp $>
+I<$Id: Schema.pod,v 1.8 2001/04/23 19:33:43 gbarr Exp $>
 
 =cut
