@@ -12,7 +12,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 1.26 2002/05/28 01:54:13 charden Exp $
+# $Id: tklkup,v 1.27 2002/06/15 02:47:34 charden Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -22,7 +22,12 @@
 #
 # Revisions:
 # $Log: tklkup,v $
+# Revision 1.27  2002/06/15 02:47:34  charden
+# Added code to close windows after ldap actions are taken.  This is to force
+# a new search after data has been changed.
+#
 # Revision 1.26  2002/05/28 01:54:13  charden
+#
 # Made several code corrections to the code that stores xml formatted
 # schema information in a file.  This is due to the new DSML.pm module.
 #
@@ -2266,7 +2271,10 @@ sub doAction{
  
 $Global{'answerWindow'}->destroy() if Tk::Exists($Global{'answerWindow'});
 delete($Global{'answerWindow'}); 
-&ldapActionDelete;
+$Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
+$Global{'searchHistWindow'} = undef(); 
+
+&ldapActionDelete;   # Delete the entry from the directory
  
 } # End of accept subroutine
 } # End of questionAction subroutine
@@ -2990,7 +2998,7 @@ if ( $mesg->code )
 
 $ldap->unbind;
 
-}
+} # End of ldapActionDelete subroutine
 
 #
 # Do LDAP entry rename.
@@ -3184,17 +3192,28 @@ delete( $Global{'RenameDN'} );
  
 sub rdnAccept{ 
  
+#
+# Clean up data and close windows, forces another search to
+# get valid new data.
+#
+
 $Global{'renameWindow'}->destroy() if Tk::Exists($Global{'renameWindow'});
+$Global{'searchHistWindow'}->destroy if Tk::Exists($Global{'searchHistWindow'});
 $Global{'renameWindow'} = undef(); 
-&ldapActionRename();
+$Global{'searchHistWindow'} = undef(); 
+
+&ldapActionRename();  # Rename the entry in the directory
  
 delete( $Global{'newsuperior'});
 delete( $Global{'newrdn'});
 delete( $Global{'deleteoldrdn'} );
 delete( $Global{'RenameDN'} );
+
+delete($Global{'index'}) if ( defined($Global{'index'}));
+
 } # End of accept subroutine
 
-} # End of BIND subroutine
+} # End of getRenameData subroutine
 
 
 sub displaySearch()
