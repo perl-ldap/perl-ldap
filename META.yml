@@ -1,0 +1,16 @@
+name: perl-ldap
+module_name: Net::LDAP
+version: 0.33
+abstract: LDAP client library
+author: Graham Barr <gbarr@cpan.org>
+license: perl
+distribution_type: module
+requires:
+  perl: 5.004
+  Convert::ASN1: 0.07
+recommends:
+  Digest::MD5: 0
+no_index:
+  directory:
+    - inc
+generated_by: Module::Install version 0.36
