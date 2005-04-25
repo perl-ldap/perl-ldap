@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.15_05";
+$VERSION = "0.16";
 
 my %mode = qw(w > r < a >>);
 
@@ -466,7 +466,7 @@ sub _write_entry {
       # Skip entry if there is nothing to write
       next if $type eq 'modify' and !@changes;
 
-      $res &&= write_version()  if (!$self->{write_count}++);
+      $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
 
@@ -507,7 +507,7 @@ sub _write_entry {
     }
 
     else {
-      $res &&= write_version()  if (!$self->{write_count}++);
+      $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
       $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
       $res &&= _write_attrs($entry,$wrap,$lower,$sort);
@@ -558,7 +558,7 @@ sub done {
 sub handle {
   my $self = shift;
 
-  return $self->{$fh};
+  return $self->{fh};
 }
 
 my %onerror = (

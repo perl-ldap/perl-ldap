@@ -37,7 +37,7 @@ $e->add('counting',[qw(one two three)]);
 $e->add('first',[qw(1 2 3)], 'second',[qw(a b c)]);
 $e->replace('telephonenumber' => ['911']);
 
-$outfile = "$TEMPDIR/00-out2.ldif";
+$outfile = "$TEMPDIR/00-out3.ldif";
 $cmpfile = "data/00-cmp2.ldif";
 
 $ldif = Net::LDAP::LDIF->new($outfile,"w");

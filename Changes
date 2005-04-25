@@ -1,4 +1,22 @@
+perl-ldap 0.33 -- Mon Apr 25 08:02:26 CDT 2005
+==============================================
+
+Bug Fixes
+  * Removed superfluous "print" in Net::LDAP::LDIF before _write_attr on writing
+  * Base64 encode any value starting with < in Net::LDAP::LDIF
+  * Documentation updates
+  * Fix case insensitivity issues in contrib/ldifdiff.pl
+
+Enhancements
+  * Added Net::LDAP::Extension::WhoAmI
+  * Added write_version() and handle() methods to Net::LDAP::LDIF
+  * Updated Net::LDAP::Control::ProxyAuth to support new OID from latest rfc-draft
+  * Added contrib/recursive-ldap-delete.pl
+  * Added ability to do case in comparisons to contrib/ldifsort.pl
+  
+
 perl-ldap 0.3202 -- Mon Jul 19 11:44:08 BST 2004
+================================================
 
 Bug Fixes
   * Fixed case typo in Makefile.PL
