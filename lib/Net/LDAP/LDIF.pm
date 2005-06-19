@@ -9,7 +9,7 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.16";
+$VERSION = "0.16_01";
 
 my %mode = qw(w > r < a >>);
 
@@ -82,7 +82,7 @@ sub _read_lines {
   my @ldif;
 
   {
-    local $/ = "";
+    local $/ = "";	# paragraph mode
     my $fh = $self->{'fh'};
     my $ln;
     do {	# allow comments separated by blank lines
@@ -177,7 +177,7 @@ sub _read_entry {
 
   my $dn = shift @ldif;
 
-  if (length($1)) {
+  if (length($1)) {	# $1 is the optional colon from above
     eval { require MIME::Base64 };
     if ($@) {
       $self->_error($@, @ldif);
