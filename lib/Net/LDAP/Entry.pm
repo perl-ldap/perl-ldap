@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.22";
+$VERSION = "0.22_01";
 
 sub new {
   my $self = shift;
@@ -132,12 +132,12 @@ sub add {
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while (my($type,$val) = splice(@_,0,2)) {
-    $type = lc $type;
+    my $lc_type = lc $type;
 
-    push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$type}=[])}
-      unless exists $attrs->{$type};
+    push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
+      unless exists $attrs->{$lc_type};
 
-    push @{$attrs->{$type}}, ref($val) ? @$val : $val;
+    push @{$attrs->{$lc_type}}, ref($val) ? @$val : $val;
 
     push @$cmd, $type, [ ref($val) ? @$val : $val ]
       if $cmd;
@@ -154,24 +154,24 @@ sub replace {
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type, $val) = splice(@_,0,2)) {
-    $type = lc $type;
+    my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
 
-      push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$type}=[])}
-	unless exists $attrs->{$type};
+      push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
+	unless exists $attrs->{$lc_type};
 
-      @{$attrs->{$type}} = ref($val) ? @$val : ($val);
+      @{$attrs->{$lc_type}} = ref($val) ? @$val : ($val);
 
       push @$cmd, $type, [ ref($val) ? @$val : $val ]
 	if $cmd;
 
     }
     else {
-      delete $attrs->{$type};
+      delete $attrs->{$lc_type};
 
       @{$self->{asn}{attributes}}
-	= grep { $type ne lc($_->{type}) } @{$self->{asn}{attributes}};
+	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
       push @$cmd, $type, []
 	if $cmd;
@@ -195,28 +195,28 @@ sub delete {
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type,$val) = splice(@_,0,2)) {
-    $type = lc $type;
+    my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
       my %values;
       @values{@$val} = ();
 
-      unless( @{$attrs->{$type}}
-        = grep { !exists $values{$_} } @{$attrs->{$type}})
+      unless( @{$attrs->{$lc_type}}
+        = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
       {
-	delete $attrs->{$type};
+	delete $attrs->{$lc_type};
 	@{$self->{asn}{attributes}}
-	  = grep { $type ne lc($_->{type}) } @{$self->{asn}{attributes}};
+	  = grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
       }
 
       push @$cmd, $type, [ ref($val) ? @$val : $val ]
 	if $cmd;
     }
     else {
-      delete $attrs->{$type};
+      delete $attrs->{$lc_type};
 
       @{$self->{asn}{attributes}}
-	= grep { $type ne lc($_->{type}) } @{$self->{asn}{attributes}};
+	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
       push @$cmd, $type, [] if $cmd;
     }
