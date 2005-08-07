@@ -79,35 +79,49 @@ sub new {
   
 sub _read_lines {
   my $self = shift;
-  my @ldif;
+  my $fh = $self->{'fh'};
+  my @ldif = ();
+  my $entry = '';
+  my $in_comment = 0;
+  my $entry_completed = 0;
+  my $ln;
 
-  {
-    local $/ = "";	# paragraph mode
-    my $fh = $self->{'fh'};
-    my $ln;
-    do {	# allow comments separated by blank lines
-      $ln = $self->{_next_lines} || scalar <$fh>;
-      unless ($ln) {
-         $self->{_next_lines} = '';
-         $self->{_current_lines} = '';
-         $self->eof(1);
-         return;
+  return @ldif  if ($self->eof());
+  
+  while (defined($ln = $self->{_buffered_line} || scalar <$fh>)) {
+    delete($self->{_buffered_line});
+    if ($ln =~ /^#/o) {		# ignore 1st line of comments
+      $in_comment = 1;
+    }
+    else {
+      if ($ln =~ /^[ \t]/o) {	# append wrapped line (if not in a comment)
+        $entry .= $ln  if (!$in_comment);
       }
-      $ln =~ s/\n //sg;
-      $ln =~ s/^#.*\n//mg;
-      chomp($ln);
-      $self->{_current_lines} = $ln;
-    } until ($self->{_current_lines} || $self->eof());
-    chomp(@ldif = split(/^/, $ln));
-    do {
-      $ln = scalar <$fh> || '';
-      $self->eof(1) unless $ln;
-      $ln =~ s/\n //sg;
-      $ln =~ s/^#.*\n//mg;
-      chomp($ln);
-      $self->{_next_lines} = $ln;
-    } until ($self->{_next_lines} || $self->eof());
+      else {
+        $in_comment = 0;
+        if ($ln =~ /^\r?\n$/o) {
+          # ignore empty line on start of entry
+          # empty line at non-empty entry indicate entry completion
+          $entry_completed++  if (length($entry));
+	}
+        else {
+	  if ($entry_completed) {
+	    $self->{_buffered_line} = $ln;
+	    last;
+	  }
+	  else {
+            # append non-empty line
+            $entry .= $ln;
+	  }  
+        }	
+      }
+    }
   }
+  $self->eof(1)  if (!defined($ln));
+  $entry =~ s/\r?\n //sgo;	# un-wrap wrapped lines
+  $entry =~ s/\r?\n\t/ /sgo;	# OpenLDAP extension !!!
+  @ldif = split(/^/, $entry);
+  map { s/\r?\n$//; } @ldif;
 
   @ldif;
 }
