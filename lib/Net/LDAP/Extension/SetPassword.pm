@@ -61,7 +61,7 @@ Net::LDAP::Extension::SetPassword - LDAPv3 Modify Password extension object
 
  die "error: ", $mesg->code(), ": ", $mesg->error()  if ($mesg->code());
  
- print "changed your password to", $mesg->gen_passwd() , "\n";
+ print "changed your password to", $mesg->gen_password() , "\n";
 
 
 =head1 DESCRIPTION
