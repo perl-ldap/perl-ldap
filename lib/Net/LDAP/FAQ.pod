@@ -1003,6 +1003,22 @@ There is user contributed software in the contrib directory
 that is supplied with the PERL-LDAP distribution.  This is an
 excellent source of information on how to use the PERL-LDAP module.
 
+=head2 Are there any performance issues with perl-ldap ?
+ 
+In the vast majority of use cases (one user has suggested 9 out of 10)
+there are no performance issues with perl-ldap.
+
+Where you may wish to use perl-ldap to perform, for example, a very
+large number of queries (e.g. 10,000) in succession you may find a
+noticeable performance difference between perl-ldap and non pure-perl
+modules. This is not because of perl-ldap itself but because of the
+pure-perl Convert::ASN1 module that it depends on.
+
+You should make up your own mind, based upon your own situation
+(performance requirements, hardware etc.) as to whether you should use
+perl-ldap or not. The figures quoted in this answer are only
+indicative, and will differ for different people.
+
 =head2 Can I contribute perl scripts that use perl-ldap
 to the contrib section? 
 
