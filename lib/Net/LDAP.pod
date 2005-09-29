@@ -147,7 +147,7 @@ LDAPv2.
 
 =back
 
-Example
+B<Example>
 
   $ldap = Net::LDAP->new( 'remote.host', async => 1 );
 
