@@ -110,6 +110,7 @@ sub new {
     $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
     if (&$meth($obj, $h, $arg)) {
       $obj->{net_ldap_uri} = $uri;
+      $obj->{net_ldap_scheme} = $scheme;
       last;
     }
   }
