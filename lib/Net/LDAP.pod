@@ -84,6 +84,11 @@ returned.
 
 Port to connect to on the remote server. May be overridden by C<HOST>.
 
+=item scheme =E<gt> 'ldap' | 'ldaps' | 'ldapi'
+
+Connection scheme to use when not using an URI as C<HOST>.
+(Default: ldap)
+
 =item timeout =E<gt> N
 
 Timeout passed to L<IO::Socket> when connecting the remote server.
