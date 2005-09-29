@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.33";
+$VERSION 	= "0.33_01";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -331,7 +331,13 @@ sub bind {
       if $ldap->{net_ldap_version} < 3;
 
     my $sasl = $passwd;
-    my $sasl_conn = $sasl->client_new("ldap",$ldap->{net_ldap_host});
+    my $sasl_conn = eval {
+      local($SIG{__DIE__});
+      $sasl->client_new("ldap",$ldap->{net_ldap_host});
+    };
+
+    return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$@")
+      unless defined($sasl_conn);
 
     # Tell SASL the local and server IP addresses
     $sasl_conn->property(
