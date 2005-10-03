@@ -703,7 +703,7 @@ NET::LDAP::DSML -- A DSML Writer for Net::LDAP
  my $server = "localhost";
  my $file = "testdsml.xml";
  my $ldap = Net::LDAP->new($server);
- 
+
  $ldap->bind();
 
 
@@ -759,7 +759,7 @@ NET::LDAP::DSML -- A DSML Writer for Net::LDAP
  my @data = ();
  my $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1 )
       or die ("DSML object creation problem using an output array.\n");
- 
+
  $dsml->write_schema($schema);
 
  print "Finished printing DSML\n";

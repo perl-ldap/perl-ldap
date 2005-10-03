@@ -5730,7 +5730,7 @@ SAVE FORMAT frame.
 -------------------------------------------------------------------
 
 =head1 SEARCH DISPLAY PANEL
- 
+
 The I<SEARCH DISPLAY> is the panel where data for the
 selected DN is displayed. Data is displayed in the read only
 Directory Data text box.  Associated with the Directory Data 

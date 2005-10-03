@@ -5,30 +5,30 @@ Net::LDAP - Lightweight Directory Access Protocol
 =head1 SYNOPSIS
 
  use Net::LDAP;
- 
+
  $ldap = Net::LDAP->new( 'ldap.bigfoot.com' ) or die "$@";
- 
+
  $mesg = $ldap->bind ;    # an anonymous bind
- 
+
  $mesg = $ldap->search( # perform a search
                         base   => "c=US",
                         filter => "(&(sn=Barr) (o=Texas Instruments))"
                       );
- 
+
  $mesg->code && die $mesg->error;
- 
+
  foreach $entry ($mesg->entries) { $entry->dump; }
- 
+
  $mesg = $ldap->unbind;   # take down session
- 
- 
+
+
  $ldap = Net::LDAP->new( 'ldap.umich.edu' );
- 
+
  # bind to a directory with dn and password
  $mesg = $ldap->bind( 'cn=root, o=University of Michigan, c=us',
                       password => 'secret'
                     );
- 
+
  $result = $ldap->add( 'cn=Barbara Jensen, o=University of Michigan, c=US',
                        attr => [
                          'cn'   => ['Barbara Jensen', 'Barbs Jensen'],
@@ -39,7 +39,7 @@ Net::LDAP - Lightweight Directory Access Protocol
                                            'inetOrgPerson' ],
                        ]
                      );
- 
+
  $result->code && warn "failed to add entry: ", $result->error ;
  $mesg = $ldap->unbind;  # take down session
 
@@ -434,13 +434,13 @@ See L</CALLBACKS> below.
 B<Example>
 
  $mesg = $ldap->modify( $dn, add => { sn => 'Barr' } );
- 
+
  $mesg = $ldap->modify( $dn, delete => [qw(faxNumber)] );
- 
+
  $mesg = $ldap->modify( $dn, delete => { 'telephoneNumber' => '911' } );
- 
+
  $mesg = $ldap->modify( $dn, replace => { 'mail' => 'gbarr@pobox.com' } );
- 
+
  $mesg = $ldap->modify( $dn,
                         changes => [
                             # add sn=Barr
@@ -596,7 +596,7 @@ B<Example>
                         scope  => 'sub',
                         filter => '(|(objectclass=rfc822mailgroup)(sn=jones))'
                       );
- 
+
  Net::LDAP::LDIF->new( \*STDOUT,"w" )->write( $mesg->entries );
 
 =item start_tls ( OPTIONS )

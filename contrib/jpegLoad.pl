@@ -260,26 +260,26 @@ input options on the command line.
 =head1 REQUIREMENTS
 
 To use this program you will need the following.
- 
+
 At least PERL version 5.004.  You can get a stable version of PERL
 from the following URL;
    http://cpan.org/src/index.html
- 
+
 Perl LDAP module.  You can get this from the following URL;
    ftp://ftp.duke.edu/pub/CPAN/modules/by-module/Net/
- 
+
 Bundled inside each PERL module is instructions on how to install the
 module into your PERL system.
- 
+
 -------------------------------------------------------------------
 
 =head1 INSTALLING THE SCRIPT
 
 Install the jpegLoad.pl script anywhere you wish, I suggest
 /usr/local/bin/jpegLoad.pl.
- 
+
 -------------------------------------------------------------------
- 
+
 Since the script is in PERL, feel free to modify it if it does not
 meet your needs.  This is one of the main reasons I did it in PERL.
 If you make an addition to the code that you feel other individuals

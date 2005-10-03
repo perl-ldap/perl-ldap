@@ -265,7 +265,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
  $vlv->before(9);	# Change page to show 9 before
  $vlv->after(10);	# Change page to show 10 after
  $vlv->assert("B");	# assert "B"
- 
+
  $mesg = $ldap->search( @args );
 
 =head1 DESCRIPTION

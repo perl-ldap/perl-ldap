@@ -283,8 +283,6 @@ sub updateFromEntry
 }
 
 
-=back
-
 =head1 AUTHOR
 
 Kartik Subbarao E<lt>subbarao@computer.orgE<gt>

@@ -234,7 +234,6 @@ sub printDynamicMembers
 
 printMembers.pl
 
-
 =head1 DESCRIPTION
 
 Prints out the members of a given group, including members of groups that are also members of the given group.

@@ -60,7 +60,7 @@ Net::LDAP::Extension::SetPassword - LDAPv3 Modify Password extension object
  $mesg = $ldap->set_password( oldpasswd => 'oldPassword' );
 
  die "error: ", $mesg->code(), ": ", $mesg->error()  if ($mesg->code());
- 
+
  print "changed your password to", $mesg->gen_password() , "\n";
 
 

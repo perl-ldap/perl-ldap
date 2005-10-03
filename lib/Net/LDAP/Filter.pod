@@ -71,8 +71,8 @@ RFC-2254 http://www.ietf.org/rfc/rfc2254.txt
  attr         = AttributeDescription from Section 4.1.5 of RFC-2251
  matchingrule = MatchingRuleId from Section 4.1.9 of RFC-2251
  value        = AttributeValue from Section 4.1.6 of RFC-2251
- 
- 
+
+
  Special Character encodings
  ---------------------------
     *               \2a, \*

@@ -62,7 +62,7 @@ Archives with messages before we switched to using perl.org can be
 found at
 
  http://marc.theaimsgroup.com/?l=perl-ldap-dev
- 
+
 There is also an archive of the perl-ldap mailing list at
 
  http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
@@ -997,7 +997,7 @@ that is supplied with the PERL-LDAP distribution.  This is an
 excellent source of information on how to use the PERL-LDAP module.
 
 =head2 Are there any performance issues with perl-ldap ?
- 
+
 In the vast majority of use cases (one user has suggested 9 out of 10)
 there are no performance issues with perl-ldap.
 
@@ -1222,7 +1222,7 @@ replace the placeholders.
 
 =head2 Ho do I reset a user's password ...
 
-=head2 Z<>... in most LDAP servers ?
+=head3 Z<>... in most LDAP servers ?
 
 Most LDAP servers use the standard userPassword attribute as the
 attribute to set when you want to change a user's password.
@@ -1298,7 +1298,7 @@ sake error checking is left out):
 
   $ldap->unbind();
 
-=head2 Z<>... in MS Active Directory ?
+=head3 Z<>... in MS Active Directory ?
 
 With Active Directory a user's password is stored in the unicodePwd
 attribute and changed using the regular modify operation.

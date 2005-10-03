@@ -35,7 +35,7 @@ Net::LDAP::Extension::WhoAmI - LDAP "Who am I?" Operation
  $mesg = $ldap->who_am_i();
 
  die "error: ", $mesg->code(), ": ", $mesg->error()  if ($mesg->code());
- 
+
  print "you are bound with authzId ", $mesg->response(), "\n";
 
 

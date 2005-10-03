@@ -238,7 +238,7 @@ B<OPTIONS> is a list of name/value pairs, valid options are:
 
 Controls case folding of attribute type names. Attribute values are not
 affected by this option. The default is to uppercase. Valid values are:
-	
+
 =over 4
 
 =item lower
@@ -395,7 +395,7 @@ B<OPTIONS> is a list of name/value pairs, valid options are:
 
 Controls case folding of attribute types names. Attribute values are not
 affected by this option. The default is to uppercase. Valid values are:
-	
+
 =over 4
 
 =item lower
