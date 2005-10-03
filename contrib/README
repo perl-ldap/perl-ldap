@@ -1,21 +1,25 @@
-This directory is avaliable via CVS on sourceforge, for more details see
+This directory is avaliable in the perl-ldap SVN repository at
 
-  http://sourceforge.net/cvs/?group_id=5050
+  http://svn.mutatus.co.uk/
 
 The files in this directory are
 
-  schema	  A script to do LDAP directory schema lookups
   tklkup	  A Perl/Tk script to do LDAP directory lookups
-  dot.tklkup	  Control file for schema and tklkup
-  printMembers.pl Print all members of a group
+  dot.tklkup	  Control file for tklkup
+  printMembers.pl Print all members of a group (does recursive evaluation)
   isMember.pl     Determine if a given user is a member of a given group
-  ldifsort.pl	  Sorts an LDIF file by the specified key attribute. 
-  ldifuniq.pl	  Culls unique entries from a reference file with
+  jpegDisplay.pl  Display JPEG photos from an LDAP directory
+  jpegLoad.pl     Load JPEG photos into an LDAP directory entry
+  ldapmodify.pl   A (simplified) ldapmodify clone written in Perl
+  ldifdiff.pl     Generate LDIF change diff between two sorted LDIF files
+  ldifsort.pl	  Sort an LDIF file by the specified key attribute. 
+  ldifuniq.pl	  Cull unique entries from a reference file with
                   respect to a comparison file.
+  recursive-ldap-delete.pl  Recursively delete a branch in an LDAP directory
 
-Each file contains a POD with its full description and author contacts.
+Most files contain a POD with full description and author contacts.
 e.g.
 
-  perldoc schema
+  perldoc tkllkup
 
 

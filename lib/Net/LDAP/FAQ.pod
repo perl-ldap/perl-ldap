@@ -58,23 +58,16 @@ You can subscribe to this list by mailing perl-ldap-subscribe@perl.org
 
 Yes, at http://nntp.perl.org/group/perl.ldap
 
-Archives of messages since we switched to using sourceforge can be
+Archives with messages before we switched to using perl.org can be
 found at
 
- http://www.geocrawler.com/lists/3/SourceForge/3482/0/
-
-Please be aware that the geocrawler system munges
-code that is in the email messages.  In particular, 
-apostrophes (') are turned into back ticks (`) and 
-newlines escapes (\n) are removed (and probably other 
-escapes as well).  
-
+ http://marc.theaimsgroup.com/?l=perl-ldap-dev
+ 
 There is also an archive of the perl-ldap mailing list at
 
  http://www.xray.mpe.mpg.de/mailing-lists/perl-ldap/
-dd
-which also has messages from before the move to sourceforge.
-The xray archive does not munge email messages.
+
+which also has messages from before the move.
 
 =head2 Is there any online documentation ?
 

@@ -896,7 +896,7 @@ L<Net::LDAP::Search>,
 L<Net::LDAP::RFC>
 
 The homepage for the perl-ldap modules can be found at 
-http://perl-ldap.sourceforge.net/
+http://ldap.perl.org/.
 
 =head1 ACKNOWLEDGEMENTS
 
@@ -908,7 +908,7 @@ testing and contribution of the ldap* command line utilities.
 
 =head1 MAILING LIST
 
-A discussion mailing list is hosted by sourceforge at
+A discussion mailing list is hosted by the Perl Foundation at
 E<lt>perl-ldap@perl.orgE<gt> No subscription is necessary!
 
 =head1 BUGS
