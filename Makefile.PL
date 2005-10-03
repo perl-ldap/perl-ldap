@@ -23,7 +23,8 @@ features(
   'SASL authentication' => [
     -default => 0,
     'Authen::SASL'  => 2.00,
-    recommends('Digest::MD5'),
+    recommends('Digest::MD5'),		# for DIGEST-MD5 SASL mech
+    recommends('Digest::HMAC_MD5'),	# for CRAM-MD5 SASL mech
   ],
   'LDAP URLs' => [
     -default => 0,
@@ -35,7 +36,14 @@ features(
   ],
   'Read/Write DSML files' => [
     -default => 0,
-    'XML::SAX::Base' => 0,
+    'MIME::Base64'  => 0,
+    'XML::SAX::Writer' => 0,
+    # dependencies of XML::SAX::Writer:
+    #'Text::Iconv' => 0,
+    #'XML::Filter::BufferText' => 0,
+    #'XML::SAX' => 0,
+    #'XML::NamespaceSupport' => 0,
+    #'File::Temp' => 0
   ],
   'Read/Write LDIF files' => [
     -default => 0,
@@ -123,19 +131,23 @@ The URI::ldap module is needed ONLY IF you want to parse LDAP URLs
 EDQ
 
 check_module('Digest::MD5') or print <<"EDQ","\n";
-The Digest::MD5 module is needed ONLY IF intend to use CRAM-MD5 SASL authentication
+The Digest::MD5 module is needed ONLY IF you intend to use DIGEST-MD5 SASL authentication
 EDQ
 
 check_module('IO::Socket::SSL',0.81) or print <<"EDQ","\n";
 The IO::Socket::SSL module is needed ONLY IF you intend to use LDAPS
 EDQ
 
-check_module('XML::SAX::Base') or print <<"EDQ","\n";
-The XML::SAX::Base module is needed ONLY IF you intend to read/write DSML files
+check_module('XML::SAX') or print <<"EDQ","\n";
+The XML::SAX module is needed ONLY IF you intend to read DSML files
+EDQ
+
+check_module('XML::SAX::Writer') or print <<"EDQ","\n";
+The XML::SAX::Writer module is needed ONLY IF you intend to write DSML files
 EDQ
 
 check_module('MIME::Base64') or print <<"EDQ","\n";
-The MIME::Base64 module is needed ONLY IF you intend to read/write LDIF files
+The MIME::Base64 module is needed ONLY IF you intend to read/write LDIF or DSML files
 EDQ
 
 check_module('Authen::SASL', 2.00) or print <<"EDQ","\n";
