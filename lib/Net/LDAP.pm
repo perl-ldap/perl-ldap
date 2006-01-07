@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.33_01";
+$VERSION 	= "0.33_02";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -189,6 +189,11 @@ sub _SSL_context_init_args {
       }
   }
 
+  if ($arg->{'checkcrl'} && !$arg->{'capath'}) {
+      require Carp;
+      Carp::croak("Setting client public key but not client private key");
+  }
+
   if (exists $arg->{'keydecrypt'}) {
       $passwdcb = $arg->{'keydecrypt'};
   }
@@ -199,6 +204,7 @@ sub _SSL_context_init_args {
     SSL_ca_path     => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
     SSL_key_file    => $clientcert ? $clientkey : undef,
     SSL_passwd_cb   => $passwdcb,
+    SSL_check_crl   => $arg->{'checkcrl'} ? 1 : 0,
     SSL_use_cert    => $clientcert ? 1 : 0,
     SSL_cert_file   => $clientcert,
     SSL_verify_mode => $verify,
