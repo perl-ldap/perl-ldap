@@ -687,6 +687,12 @@ names, use OpenSSL like this in Unix:
 
 (assuming that the certificate of the CA is in cacert.pem.)
 
+=item checkcrl =E<gt> 1
+
+If capath has been configured, then it will also be searched for
+certificate revocation lists (CRLs) when verifying the server's
+certificate.
+
 =back
 
 =item unbind ( )
