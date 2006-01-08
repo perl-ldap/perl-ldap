@@ -191,7 +191,7 @@ sub _SSL_context_init_args {
 
   if ($arg->{'checkcrl'} && !$arg->{'capath'}) {
       require Carp;
-      Carp::croak("Setting client public key but not client private key");
+      Carp::croak("Cannot check CRL without having CA certificates");
   }
 
   if (exists $arg->{'keydecrypt'}) {
