@@ -55,7 +55,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.10";
+$VERSION = "0.10_01";
 
 =item ldap_error_name ( ERR )
 
@@ -280,7 +280,7 @@ sub canonical_dn($%) {
   # create array of hash representation
   my $rdns = ref($dn) eq 'ARRAY'
 		? $dn
-		: ldap_explode_dn( $dn )
+		: ldap_explode_dn( $dn, casefold => $opt{casefold} || 'upper')
     or return undef; #error condition
   
   # assign specified or default separator value
@@ -334,42 +334,42 @@ sub canonical_dn($%) {
 Explodes the given B<DN> into an array of hashes and returns a reference to this 
 array. Returns undef if B<DN> is not a valid Distinguished Name.
 
-A Distinguished Name is a sequence of Relative Distingushed Names (RDNs), which 
+A Distinguished Name is a sequence of Relative Distinguished Names (RDNs), which 
 themselves are sets of Attributes. For each RDN a hash is constructed with the 
 attribute type names as keys and the attribute values as corresponding values. 
 These hashes are then strored in an array in the order in which they appear 
 in the DN.
 
 For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
-[
-  {
-    'OU' =E<gt> 'Sales',
-    'CN' =E<gt> 'J. Smith'
-  },
-  {
-    'DC' =E<gt> 'example'
-  },
-  {
-    'DC' =E<gt> 'net'
-  }
-]
+ [
+   {
+     'OU' =E<gt> 'Sales',
+     'CN' =E<gt> 'J. Smith'
+   },
+   {
+     'DC' =E<gt> 'example'
+   },
+   {
+     'DC' =E<gt> 'net'
+   }
+ ]
 
 (RFC2253 string) DNs might also contain values, which are the bytes of the 
 BER encoding of the X.500 AttributeValue rather than some LDAP string syntax. 
-These values are hex-encoded and prefixed with a #. To distingush such BER 
+These values are hex-encoded and prefixed with a #. To distinguish such BER 
 values, ldap_explode_dn uses references to the actual values, 
 e.g. '1.3.6.1.4.1.1466.0=#04024869,DC=example,DC=com' is exploded to:
-[
-  {
-    '1.3.6.1.4.1.1466.0' =E<gt> \"\004\002Hi"
-  },
-  {
-    'DC' =E<gt> 'example'
-  },
-  {
-    'DC' =E<gt> 'com'
-  }
-];
+ [
+   {
+     '1.3.6.1.4.1.1466.0' =E<gt> "\004\002Hi"
+   },
+   {
+     'DC' =E<gt> 'example'
+   },
+   {
+     'DC' =E<gt> 'com'
+   }
+ ];
 
 It also performs the following operations on the given DN:
 
@@ -382,7 +382,7 @@ Unescape "\" followed by ",", "+", """, "\", "E<lt>", "E<gt>", ";",
 
 =item *
 
-Removes the leading OID. characters if the type is an OID instead
+Removes the leading 'OID.' characters if the type is an OID instead
 of a name.
 
 =back
