@@ -337,7 +337,7 @@ array. Returns undef if B<DN> is not a valid Distinguished Name.
 A Distinguished Name is a sequence of Relative Distinguished Names (RDNs), which 
 themselves are sets of Attributes. For each RDN a hash is constructed with the 
 attribute type names as keys and the attribute values as corresponding values. 
-These hashes are then strored in an array in the order in which they appear 
+These hashes are then stored in an array in the order in which they appear 
 in the DN.
 
 For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
