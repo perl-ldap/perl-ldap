@@ -157,6 +157,12 @@ Returns true on success and C<undef> on error.
 Given an argument which is the name or oid of a known objectclass,
 returns the list of names of the immediate superclasses.
 
+=item matchingrule_for_attribute ( NAME, RULE )
+
+Given an attribute name and a matching rule (C<equality>,
+C<substr>, etc), return the actual rule taking into account attribute
+supertypes.
+
 =back
 
 =head1 SEE ALSO

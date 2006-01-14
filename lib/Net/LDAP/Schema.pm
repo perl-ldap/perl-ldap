@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.9903";
+$VERSION = "0.9904";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -399,31 +399,48 @@ sub _parse_schema {
 # Get the syntax of an attribute
 #
 sub attribute_syntax {
-  my $self = shift;
-  my $attr = shift;
-  my $syntax;
+    my $self = shift;
+    my $attr = shift;
+    my $syntax;
 
-  while ($attr) {
-    my $elem = $self->attribute( $attr ) or return undef;
+    while ($attr) {
+	my $elem = $self->attribute( $attr ) or return undef;
 
-    $syntax = $elem->{syntax} and return $self->syntax($syntax);
+	$syntax = $elem->{syntax} and return $self->syntax($syntax);
 
-    $attr = ${$elem->{sup} || []}[0];
-  }
+	$attr = ${$elem->{sup} || []}[0];
+    }
 
-  return undef
+    return undef;
 }
 
 
 sub error {
-  $_[0]->{error};
+    $_[0]->{error};
 }
 
 #
 # Return base entry
 #
 sub entry {
-  $_[0]->{entry};
+    $_[0]->{entry};
+}
+
+sub matchingrule_for_attribute {
+    my $schema = shift;
+    my $attr = shift;
+    my $matchtype = shift;
+
+    my $attrtype = $schema->attribute( $attr );
+    if (exists $attrtype->{$matchtype}){
+	return $attrtype->{$matchtype};
+    } elsif (exists $attrtype->{'sup'}) {
+	# the assumption is that all superiors result in the same ruleset
+	return matchingruleforattribute( $schema,
+					 $attrtype->{'sup'}[0],
+					 $matchtype);
+    }
+    return undef;
 }
 
 1;
