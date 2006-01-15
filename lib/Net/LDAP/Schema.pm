@@ -427,17 +427,17 @@ sub entry {
 }
 
 sub matchingrule_for_attribute {
-    my $schema = shift;
+    my $self = shift;
     my $attr = shift;
     my $matchtype = shift;
 
-    my $attrtype = $schema->attribute( $attr );
-    if (exists $attrtype->{$matchtype}){
+    my $attrtype = $self->attribute( $attr );
+    if (exists $attrtype->{$matchtype}) {
 	return $attrtype->{$matchtype};
     } elsif (exists $attrtype->{'sup'}) {
 	# the assumption is that all superiors result in the same ruleset
-	return matchingruleforattribute( $schema,
-					 $attrtype->{'sup'}[0],
+	return $self->matchingrule_for_attribute(
+				 	 $attrtype->{'sup'}[0],
 					 $matchtype);
     }
     return undef;
