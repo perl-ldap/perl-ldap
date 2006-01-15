@@ -692,6 +692,10 @@ names, use OpenSSL like this in Unix:
 If capath has been configured, then it will also be searched for
 certificate revocation lists (CRLs) when verifying the server's
 certificate.
+The CRLs' names must follow the form B<hash>.rB<num> where B<hash>
+is the hash over the issuer's DN and B<num> is a number starting with 0.
+
+See L<IO::Socket::SSL/SSL_check_crl> for further information.
 
 =back
 
