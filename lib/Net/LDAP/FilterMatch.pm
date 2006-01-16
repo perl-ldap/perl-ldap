@@ -15,23 +15,55 @@ use Net::LDAP::Schema;
 
 package Net::LDAP::Filter;
 
-use strict;
-use vars qw(@ISA @EXPORT_OK);
+$VERSION   = '0.14';
 
-require Exporter;
-@ISA       = qw(Exporter);
-@EXPORT_OK = qw(filterMatch);
-$VERSION   = '0.13';
+sub _filterMatch($@);
 
-sub filterMatch($@);
 sub _cis_equalityMatch($@);
+sub _exact_equalityMatch($@);
+sub _numeric_equalityMatch($@);
+sub _cis_orderingMatch($@);
+sub _numeric_orderingMatch($@);
 sub _cis_greaterOrEqual($@);
 sub _cis_lessOrEqual($@);
 sub _cis_approxMatch($@);
-sub _cis_substrings;
+sub _cis_substrings($@);
+sub _exact_substrings($@);
 
-sub _caseIgnoreMatch { return _cis_equalityMatch(@_)};
-sub _caseIgnoreSubstringsMatch { return _cis_substrings(@_) };
+# all known matches from the OL 2.2 schema,
+*_bitStringMatch = \&_exact_equalityMatch;
+*_booleanMatch = \&_cis_equalityMatch;             # this might need to be reworked
+*_caseExactIA5Match = \&_exact_equalityMatch;
+*_caseExactIA5SubstringsMatch = \&_exact_substrings;
+*_caseExactMatch = \&_exact_equalityMatch;
+*_caseExactOrderingMatch = \&_exact_orderingMatch;
+*_caseExactSubstringsMatch = \&_exact_substrings;
+*_caseIgnoreIA5Match = \&_cis_equalityMatch;
+*_caseIgnoreIA5SubstringsMatch = \&_cis_substrings;
+*_caseIgnoreMatch = \&_cis_equalityMatch;
+*_caseIgnoreOrderingMatch = \&_cis_orderingMatch;
+*_caseIgnoreSubstringsMatch = \&_cis_substrings;
+*_certificateExactMatch = \&_exact_equalityMatch;
+*_certificateMatch = \&_exact_equalityMatch;
+*_distinguishedNameMatch = \&_exact_equalityMatch;
+*_generalizedTimeMatch = \&_exact_equalityMatch;
+*_generalizedTimeOrderingMatch = \&_exact_orderingMatch;
+*_integerBitAndMatch = \&_exact_equalityMatch;      # this needs to be reworked
+*_integerBitOrMatch = \&_exact_equalityMatch;       # this needs to be reworked
+*_integerFirstComponentMatch = \&_exact_equalityMatch;
+*_integerMatch = \&_numeric_equalityMatch;
+*_integerOrderingMatch = \&_numeric_orderingMatch;
+*_numericStringMatch = \&_numeric_equalityMatch;
+*_numericStringOrderingMatch = \&_numeric_orderingMatch;
+*_numericStringSubstringsMatch = \&_numeric_substrings;
+*_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch; # this needs to be reworked
+*_objectIdentifierMatch = \&_exact_equalityMatch;
+*_octetStringMatch = \&_exact_equalityMatch;
+*_octetStringOrderingMatch = \&_exact_orderingMatch;
+*_octetStringSubstringsMatch = \&_exact_substrings;
+*_telephoneNumberMatch = \&_exact_equalityMatch;
+*_telephoneNumberSubstringsMatch = \&_exact_substrings;
+*_uniqueMemberMatch = \&_cis_equalityMatch;          # this needs to be reworked
 
 sub match
 {
@@ -39,19 +71,19 @@ sub match
   my $entry = shift;
   my $schema =shift;
 
-  return filterMatch($self, $entry, $schema);
+  return _filterMatch($self, $entry, $schema);
 }
 
 # map Ops to schema matches 
 my %op2schema = qw(
-	equalityMatch  equality
-	greaterOrEqual equality
-	lessOrEqual	   ordering
-	approxMatch	   ordering
-	substrings	   substr
+	equalityMatch	equality
+	greaterOrEqual	equality
+	lessOrEqual	ordering
+	approxMatch	approx
+	substring	substr
 );
 
-sub filterMatch($@)
+sub _filterMatch($@)
 {
   my $filter = shift;
   my $entry = shift;
@@ -63,18 +95,18 @@ sub filterMatch($@)
   # handle combined filters
   if ($op eq 'and') {	# '(&()...)' => fail on 1st mismatch
     foreach my $subfilter (@{$args}) {
-      return 0  if (!filterMatch($subfilter, $entry));
+      return 0  if (!_filterMatch($subfilter, $entry));
     }  
     return 1;	# all matched or '(&)' => succeed
   }  
   if ($op eq 'or') {	# '(|()...)' => succeed on 1st match
     foreach my $subfilter (@{$args}) {
-      return 1  if (filterMatch($subfilter, $entry));
+      return 1  if (_filterMatch($subfilter, $entry));
     }  
     return 0;	# none matched or '(|)' => fail
   }  
   if ($op eq 'not') {
-    return (! filterMatch($args, $entry));
+    return (! _filterMatch($args, $entry));
   }  
   if ($op eq 'present') {
     #return 1  if (lc($args) eq 'objectclass');	# "all match" filter
@@ -83,21 +115,36 @@ sub filterMatch($@)
 
   # handle basic filters
   if ($op =~ /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch|substrings)/o) {
-    my $attr=($op eq 'substrings') ? $args->{'type'} : $args->{'attributeDesc'} ;
-    my @values = $entry->get_value($attr);
+    my $attr;
+    my $assertion;
     my $match;
-    
-    # approx match is not standardized in schema
-    if ($schema and ($op ne 'approxMatch') ){
-	     # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
-	      $match='_' . $schema->matchingrule_for_attribute( $attr, $op2schema{$op}) or return undef;
+
+    if ($op eq 'substrings') {
+      $attr = $args->{'type'};
+      # build a regexp as assertion value
+      $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
+      $assertion =  '^'. $assertion if (exists $args->{'substrings'}[0]{'initial'});
+      $assertion .= '$'     if (exists $args->{'substrings'}[-1]{'final'});
     }
-    else{
-       # fall back on build-in logic
-       $match='_cis_' . $op;
+    else {
+      $attr = $args->{'attributeDesc'};
+      $assertion = $args->{'assertionValue'}
     }
 
-    return &$match($args, @values);
+    my @values = $entry->get_value($attr);
+
+    # approx match is not standardized in schema
+    if ($schema and ($op ne 'approxMatch') ) {
+      # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
+      $match='_' . $schema->matchingrule_for_attribute( $attr, $op2schema{$op})
+        or return undef;
+    }
+    else {
+      # fall back on build-in logic
+      $match='_cis_' . $op;
+    }
+
+    return &$match($assertion,$op,@values);
   }
   
   return undef;	# all other filters => fail with error
@@ -105,67 +152,114 @@ sub filterMatch($@)
 
 sub _cis_equalityMatch($@)
 {
-my $args=shift;
-my $assertion = $args->{'assertionValue'};
+my $assertion = shift;
+my $op = shift;
 
   return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
 }
 
-
-sub _cis_greaterOrEqual($@)
+sub _exact_equalityMatch($@)
 {
-my $args=shift;
-my $assertion = $args->{'assertionValue'};
+my $assertion = shift;
+my $op = shift;
 
-  if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
-    return (grep { $_ ge $assertion } @_) ? 1 : 0;
-  }
-  else {
-    return (grep { lc($_) >= lc($assertion) } @_) ? 1 : 0;
-  }  
+  return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
-
-sub _cis_lessOrEqual($@)
+sub _numeric_equalityMatch($@)
 {
-my $args=shift;
-my $assertion = $args->{'assertionValue'};
+my $assertion = shift;
+my $op = shift;
 
-  if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
+  return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
+}
+
+sub _cis_orderingMatch($@)
+{
+my $assertion = shift;
+my $op = shift;
+
+  if ($op eq 'greaterOrEqual') {
+    return (grep { lc($_) ge lc($assertion) } @_) ? 1 : 0;
+  }
+  elsif ($op eq 'lessOrEqual') {
+    return (grep { lc($_) le lc($assertion) } @_) ? 1 : 0;
+  }
+  else {
+    return undef;   #something went wrong
+  };
+}
+
+sub _exact_orderingMatch($@)
+{
+my $assertion = shift;
+my $op = shift;
+
+  if ($op eq 'greaterOrEqual') {
+    return (grep { $_ ge $assertion } @_) ? 1 : 0;
+  }
+  elsif ($op eq 'lessOrEqual') {
     return (grep { $_ le $assertion } @_) ? 1 : 0;
   }
   else {
-    return (grep { lc($_) <= lc($assertion) } @_) ? 1 : 0;
+    return undef;   #something went wrong
+  };
+}
+
+sub _numeric_orderingMatch($@)
+{
+my $assertion = shift;
+my $op = shift;
+
+  if ($op eq 'greaterOrEqual') {
+    return (grep { $_ >= $assertion } @_) ? 1 : 0;
+  }
+  elsif ($op eq 'lessOrEqual') {
+    return (grep { $_ <= $assertion } @_) ? 1 : 0;
+  }
+  else {
+    return undef;   #something went wrong
+  };
+}
+
+sub _cis_substrings($@)
+{
+  my $regex=shift;
+  return grep(/$regex/i, @_) ? 1 : 0;
+}
+
+sub _exact_substrings($@)
+{
+  my $regex=shift;
+  return grep(/$regex/, @_) ? 1 : 0;
+}
+
+# this one is here in case we don't use schema
+
+sub _cis_greaterOrEqual($@)
+{
+my $assertion=shift;
+my $op=shift;
+
+  if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
+      return _cis_orderingMatch($assertion,$op,@_);
+  }
+  else {
+      return _numeric_orderingMatch($assertion,$op,@_);
   }  
 }
 
+*_cis_lessOrEqual = \&_cis_greaterOrEqual;
 
 sub _cis_approxMatch($@)
 {
-my $args=shift;
-my $assertion = $args->{'assertionValue'};
+my $assertion=shift;
+my $op=shift;
 
-  # kludge: treat assertion as regex
-  $assertion =~ s/\./\\./go;
-  $assertion =~ s/\*/.*/go;
-  #print "$assertion\n";  
+  #print "approx assertion '". $assertion ."'\n";  
 
   return grep(/^$assertion$/i, @_) ? 1 : 0;
   # better: by use String::Approx or similar
-}
-
-
-sub _cis_substrings
-{
-  my $args=shift;
-  my $regex = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
-
-  $regex =  '^'.$regex  if (exists $args->{'substrings'}[0]{initial});
-  $regex .= '$'         if (exists $args->{'substrings'}[-1]{final});
-      
-  #print "RegEx: ".$regex."\n";
-
-  return grep(/$regex/i, @_) ? 1 : 0;
 }
 
 1;
@@ -240,4 +334,3 @@ Peter Marschall E<lt>peter@adpm.deE<gt>
 =cut
 
 # EOF
-  
