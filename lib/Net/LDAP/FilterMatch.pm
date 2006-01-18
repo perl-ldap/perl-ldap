@@ -10,12 +10,14 @@
 # See below for documentation.
 # 
 
+package Net::LDAP::FilterMatch;
+
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-package Net::LDAP::Filter;
-
 $VERSION   = '0.15';
+
+package Net::LDAP::Filter;
 
 sub _filterMatch($@);
 
@@ -152,32 +154,32 @@ sub _filterMatch($@)
 
 sub _cis_equalityMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
 }
 
 sub _exact_equalityMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
 sub _numeric_equalityMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
 sub _cis_orderingMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   if ($op eq 'greaterOrEqual') {
     return (grep { lc($_) ge lc($assertion) } @_) ? 1 : 0;
@@ -192,8 +194,8 @@ my $op = shift;
 
 sub _exact_orderingMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   if ($op eq 'greaterOrEqual') {
     return (grep { $_ ge $assertion } @_) ? 1 : 0;
@@ -208,8 +210,8 @@ my $op = shift;
 
 sub _numeric_orderingMatch($@)
 {
-my $assertion = shift;
-my $op = shift;
+  my $assertion = shift;
+  my $op = shift;
 
   if ($op eq 'greaterOrEqual') {
     return (grep { $_ >= $assertion } @_) ? 1 : 0;
@@ -238,8 +240,8 @@ sub _exact_substrings($@)
 
 sub _cis_greaterOrEqual($@)
 {
-my $assertion=shift;
-my $op=shift;
+  my $assertion=shift;
+  my $op=shift;
 
   if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
       return _cis_orderingMatch($assertion,$op,@_);
@@ -253,8 +255,8 @@ my $op=shift;
 
 sub _cis_approxMatch($@)
 {
-my $assertion=shift;
-my $op=shift;
+  my $assertion=shift;
+  my $op=shift;
 
   if (eval ("require String::Approx")){
     #print "using String::Approx\n";
