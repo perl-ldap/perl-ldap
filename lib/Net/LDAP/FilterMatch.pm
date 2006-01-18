@@ -15,7 +15,7 @@ use Net::LDAP::Schema;
 
 package Net::LDAP::Filter;
 
-$VERSION   = '0.14';
+$VERSION   = '0.15';
 
 sub _filterMatch($@);
 
@@ -80,7 +80,7 @@ my %op2schema = qw(
 	greaterOrEqual	equality
 	lessOrEqual	ordering
 	approxMatch	approx
-	substring	substr
+	substrings	substr
 );
 
 sub _filterMatch($@)
@@ -256,10 +256,25 @@ sub _cis_approxMatch($@)
 my $assertion=shift;
 my $op=shift;
 
-  #print "approx assertion '". $assertion ."'\n";  
+  if (eval ("require String::Approx")){
+    #print "using String::Approx\n";
+    return String::Approx::amatch($assertion, @_) ? 1 : 0;
 
-  return grep(/^$assertion$/i, @_) ? 1 : 0;
-  # better: by use String::Approx or similar
+  }
+  elsif (eval ("require Text::Metaphone")){
+    #print "using Text::Metaphone\n";
+    my $metamatch = Text::Metaphone::Metaphone($assertion);
+    return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @_) ? 1 : 0;
+  }
+  elsif (eval ("require Text::Soundex")){
+    #print "using Text::Soundex\n";
+    my $smatch = Text::Soundex::soundex($assertion);
+    return grep((Text::Soundex::soundex($_) eq $smatch), @_) ? 1 : 0;
+  }
+  else{
+     #we really have nothing, use plain regexp
+     return grep(/^$assertion$/i, @_) ? 1 : 0;
+  }
 }
 
 1;
