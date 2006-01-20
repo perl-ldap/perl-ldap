@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.03";
+$VERSION = "0.03_01";
 
 use Convert::ASN1;
 
@@ -57,7 +57,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    delResponse     DelResponse,
 	    modDNResponse   ModifyDNResponse,
 	    compareResponse CompareResponse,
-	    extendedResp    ExtendedResponse }
+	    extendedResp    ExtendedResponse,
+	    intermediateResponse IntermediateResponse }
 	 controls       [0] Controls OPTIONAL }
 
     MessageID ::= INTEGER -- (0 .. maxInt)
@@ -287,6 +288,10 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	COMPONENTS OF LDAPResult,
 	responseName     [10] LDAPOID OPTIONAL,
 	response         [11] OCTET STRING OPTIONAL }
+
+    IntermediateResponse ::= [APPLICATION 25] SEQUENCE {
+	responseName     [0] LDAPOID OPTIONAL,
+	responseValue    [1] OCTET STRING OPTIONAL }
 
 
        VirtualListViewRequest ::= SEQUENCE {
