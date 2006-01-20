@@ -15,9 +15,25 @@ package Net::LDAP::FilterMatch;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-$VERSION   = '0.15';
+use vars qw($VERSION);
+$VERSION   = '0.16';
 
 package Net::LDAP::Filter;
+
+use vars qw(@approxMatchers);
+@approxMatchers = qw(
+  String::Approx
+  Text::Metaphone
+  Text::Soundex
+);
+
+sub import {
+  shift;
+
+  push(@_, @Net::LDAP::Filter::approxMatchers) unless @_;
+  @Net::LDAP::Filter::approxMatchers = grep { eval "require $_" } @_ ;
+}
+
 
 sub _filterMatch($@);
 
@@ -258,25 +274,22 @@ sub _cis_approxMatch($@)
   my $assertion=shift;
   my $op=shift;
 
-  if (eval ("require String::Approx")){
-    #print "using String::Approx\n";
-    return String::Approx::amatch($assertion, @_) ? 1 : 0;
-
+  foreach (@approxMatchers) {
+    # print "using $_\n";
+    if (/String::Approx/){
+      return String::Approx::amatch($assertion, @_) ? 1 : 0;
+    }
+    elsif (/Text::Metaphone/){
+      my $metamatch = Text::Metaphone::Metaphone($assertion);
+      return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @_) ? 1 : 0;
+    }
+    elsif (/Text::Soundex/){
+      my $smatch = Text::Soundex::soundex($assertion);
+      return grep((Text::Soundex::soundex($_) eq $smatch), @_) ? 1 : 0;
+    }
   }
-  elsif (eval ("require Text::Metaphone")){
-    #print "using Text::Metaphone\n";
-    my $metamatch = Text::Metaphone::Metaphone($assertion);
-    return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @_) ? 1 : 0;
-  }
-  elsif (eval ("require Text::Soundex")){
-    #print "using Text::Soundex\n";
-    my $smatch = Text::Soundex::soundex($assertion);
-    return grep((Text::Soundex::soundex($_) eq $smatch), @_) ? 1 : 0;
-  }
-  else{
-     #we really have nothing, use plain regexp
-     return grep(/^$assertion$/i, @_) ? 1 : 0;
-  }
+  #we really have nothing, use plain regexp
+  return grep(/^$assertion$/i, @_) ? 1 : 0;
 }
 
 1;
@@ -333,6 +346,18 @@ In case of error undef is returned.
 
 =back
 
+For approximate matching like (cn~=Schmidt) there are several modules that can
+be used. By default the following modules will be tried in this order:
+
+  String::Approx
+  Text::Metaphone
+  Text::Soundex
+
+If none of these modules is found it will fall back on a simple regexp algorithm.
+
+If you want to specifically use one implementation only, simply do
+
+  use Net::LDAP::FilterMatch qw(Text::Soundex);
 
 =head1 SEE ALSO
 
