@@ -9,7 +9,15 @@ use SelectSaver;
 require Net::LDAP::Entry;
 use vars qw($VERSION);
 
-$VERSION = "0.16_01";
+use constant CHECK_UTF8 => $] > 5.007;
+
+BEGIN {
+  require Encode
+    if (CHECK_UTF8);
+}  
+
+
+$VERSION = "0.16_02";
 
 my %mode = qw(w > r < a >>);
 
@@ -170,8 +178,6 @@ sub _read_entry {
     $self->_error("illegal empty LDIF entry")  if (!$self->eof());
     return;
   }
-  # What does that mean ???
-  #shift @ldif if @ldif && $ldif[0] !~ /\D/;
 
   if (@ldif and $ldif[0] =~ /^version:\s+(\d+)/) {
     $self->{'version'} = $1;
@@ -201,6 +207,8 @@ sub _read_entry {
   }
 
   my $entry = Net::LDAP::Entry->new;
+  $dn = Encode::decode_utf8($dn)
+    if (CHECK_UTF8 && $self->{binary} && ('dn' !~ /$self->{binary}/));
   $entry->dn($dn);
 
   if ($ldif[0] =~ /^changetype:\s*/) {
@@ -234,8 +242,13 @@ sub _read_entry {
 	my $xattr;
   
         if ($line eq "-") {
-          $entry->$modify($lastattr, \@values)
-            if defined $lastattr;
+          if (defined $lastattr) {
+	    if (CHECK_UTF8 && $self->{binary}) {
+  	      map { $_ = Encode::decode_utf8($_) } @values
+	        if ($lastattr !~ /$self->{binary}/);
+	    }  
+            $entry->$modify($lastattr, \@values);
+	  }  
           undef $lastattr;
           @values = ();
           last;
@@ -265,16 +278,26 @@ sub _read_entry {
         }
 
         if(!defined($lastattr) || $lastattr ne $attr) {
-          $entry->$modify($lastattr, \@values)
-            if defined $lastattr;
+          if (defined $lastattr) {
+	    if (CHECK_UTF8 && $self->{binary}) {
+  	      map { $_ = Encode::decode_utf8($_) } @values
+	        if ($lastattr !~ /$self->{binary}/);
+	    }  
+            $entry->$modify($lastattr, \@values);
+	  }  
           $lastattr = $attr;
           @values = ($line);
           next;
         }
         push @values, $line;
       }
-      $entry->$modify($lastattr, \@values)
-       if defined $lastattr;
+      if (defined $lastattr) {
+        if (CHECK_UTF8 && $self->{binary}) {
+  	  map { $_ = Encode::decode_utf8($_) } @values
+	    if ($lastattr !~ /$self->{binary}/);
+        }  
+        $entry->$modify($lastattr, \@values);
+      }  
     }
   }
 
@@ -305,6 +328,11 @@ sub _read_entry {
         return  if !defined($line);
       }
   
+      if (CHECK_UTF8 && $self->{binary}) {
+        $line = Encode::decode_utf8($line)
+          if ($attr !~ /$self->{binary}/);
+      }
+
       if ($attr eq $last) {
         push @$vals, $line;
         next;
@@ -372,6 +400,9 @@ sub _write_attr {
   my $res = 1;	# result value
   foreach $v (@$val) {
     my $ln = $lower ? lc $attr : $attr;
+
+    $v = Encode::encode_utf8($v)
+      if (CHECK_UTF8 and Encode::is_utf8($v));
     if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
       require MIME::Base64;
       $ln .= ":: " . MIME::Base64::encode($v,"");
@@ -405,6 +436,9 @@ sub _write_attrs {
 
 sub _write_dn {
   my($dn,$encode,$wrap) = @_;
+
+  $dn = Encode::encode_utf8($dn)
+    if (CHECK_UTF8 and Encode::is_utf8($dn));
   if ($dn =~ /^[ :<]|[\x00-\x1f\x7f-\xff]/) {
     if ($encode =~ /canonical/i) {
       require Net::LDAP::Util;

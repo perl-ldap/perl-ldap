@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.10";
+$VERSION = "0.10_01";
 
 
 sub first_entry { # compat
@@ -43,7 +43,7 @@ sub decode {
 
     my $entry = Net::LDAP::Entry->new;
 
-    $entry->decode($data)
+    $entry->decode($data, binary => $self->{binary})
       or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
      and return;
 

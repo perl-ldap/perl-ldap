@@ -9,7 +9,15 @@ use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
 use vars qw($VERSION);
 
-$VERSION = "0.22_01";
+use constant CHECK_UTF8 => $] > 5.007;
+
+BEGIN {
+  require Encode
+    if (CHECK_UTF8);
+}
+
+
+$VERSION = "0.22_02";
 
 sub new {
   my $self = shift;
@@ -55,8 +63,19 @@ sub decode {
   my $self = shift;
   my $result = ref($_[0]) ? shift : $LDAPEntry->decode(shift)
     or return;
+  my %arg = @_;
 
   %{$self} = ( asn => $result, changetype => 'modify', changes => []);
+
+  if (CHECK_UTF8 && $arg{binary}) {
+    $result->{objectName} = Encode::decode_utf8($result->{objectName})
+      if ('dn' !~ /$arg{binary}/);
+  
+    foreach my $elem (@{$self->{asn}{attributes}}) {
+      map { $_ = Encode::decode_utf8($_) } @{$elem->{vals}}
+        if ($elem->{type} !~ /$arg{binary}/);
+    }
+  }
 
   $self;
 }
