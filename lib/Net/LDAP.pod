@@ -145,7 +145,7 @@ Set the protocol version being used (default is LDAPv3). This is
 useful if you want to talk to an old server and therefore have to use
 LDAPv2.
 
-=item binary =E<gt> REGEX
+=item raw =E<gt> REGEX
 
 Use REGEX to denote the names of attributes that are to be considered
 binary in search results.
@@ -158,7 +158,7 @@ as one expects even on strings with international characters.
 If this option is not given or the version of Perl Net::LDAP is running on
 is too old strings are encodeed the same as in earlier versions of perl-ldap.
 
-Example: Binary =E<gt> qr/;binary|jpegPhoto/io
+Example: raw =E<gt> qr/;binary|jpegPhoto/io
 
 =back
 
@@ -602,12 +602,12 @@ See L</CONTROLS> below.
 
 See L</CALLBACKS> below.
 
-=item binary =E<gt> REGEX
+=item raw =E<gt> REGEX
 
 Use REGEX to denote the names of attributes that are to be considered
 binary in search results.
 
-When running roin Perl 5.8 and this option is given Net::LDAP converts all
+When running on Perl 5.8 and this option is given Net::LDAP converts all
 values of attributes not matching this REGEX into Perl UTF-8 strings
 so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
@@ -615,9 +615,9 @@ as one expects even on strings with international characters.
 If this option is not given or the version of Perl Net::LDAP is running on
 is too old strings are encodeed the same as in earlier versions of perl-ldap.
 
-The value provided here overwrites the value from the constructor.
+The value provided here overwrites the value inherited from the constructor.
 
-Example: Binary =E<gt> qr/;binary|jpegPhoto/io;
+Example: raw =E<gt> qr/;binary|jpegPhoto/io;
 
 =back
 

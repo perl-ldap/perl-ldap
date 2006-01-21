@@ -208,7 +208,7 @@ sub _read_entry {
 
   my $entry = Net::LDAP::Entry->new;
   $dn = Encode::decode_utf8($dn)
-    if (CHECK_UTF8 && $self->{binary} && ('dn' !~ /$self->{binary}/));
+    if (CHECK_UTF8 && $self->{raw} && ('dn' !~ /$self->{raw}/));
   $entry->dn($dn);
 
   if ($ldif[0] =~ /^changetype:\s*/) {
@@ -243,9 +243,9 @@ sub _read_entry {
   
         if ($line eq "-") {
           if (defined $lastattr) {
-	    if (CHECK_UTF8 && $self->{binary}) {
+	    if (CHECK_UTF8 && $self->{raw}) {
   	      map { $_ = Encode::decode_utf8($_) } @values
-	        if ($lastattr !~ /$self->{binary}/);
+	        if ($lastattr !~ /$self->{raw}/);
 	    }  
             $entry->$modify($lastattr, \@values);
 	  }  
@@ -279,9 +279,9 @@ sub _read_entry {
 
         if(!defined($lastattr) || $lastattr ne $attr) {
           if (defined $lastattr) {
-	    if (CHECK_UTF8 && $self->{binary}) {
+	    if (CHECK_UTF8 && $self->{raw}) {
   	      map { $_ = Encode::decode_utf8($_) } @values
-	        if ($lastattr !~ /$self->{binary}/);
+	        if ($lastattr !~ /$self->{raw}/);
 	    }  
             $entry->$modify($lastattr, \@values);
 	  }  
@@ -292,9 +292,9 @@ sub _read_entry {
         push @values, $line;
       }
       if (defined $lastattr) {
-        if (CHECK_UTF8 && $self->{binary}) {
+        if (CHECK_UTF8 && $self->{raw}) {
   	  map { $_ = Encode::decode_utf8($_) } @values
-	    if ($lastattr !~ /$self->{binary}/);
+	    if ($lastattr !~ /$self->{raw}/);
         }  
         $entry->$modify($lastattr, \@values);
       }  
@@ -328,9 +328,9 @@ sub _read_entry {
         return  if !defined($line);
       }
   
-      if (CHECK_UTF8 && $self->{binary}) {
+      if (CHECK_UTF8 && $self->{raw}) {
         $line = Encode::decode_utf8($line)
-          if ($attr !~ /$self->{binary}/);
+          if ($attr !~ /$self->{raw}/);
       }
 
       if ($attr eq $last) {

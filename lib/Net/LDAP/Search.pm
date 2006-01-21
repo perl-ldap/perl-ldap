@@ -43,7 +43,7 @@ sub decode {
 
     my $entry = Net::LDAP::Entry->new;
 
-    $entry->decode($data, binary => $self->{binary})
+    $entry->decode($data, raw => $self->{raw})
       or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
      and return;
 

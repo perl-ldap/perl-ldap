@@ -386,8 +386,8 @@ sub search {
 
   require Net::LDAP::Search;
 
-  $arg->{binary} = $ldap->{binary}
-    if ($ldap->{binary} && !defined($arg->{binary}));
+  $arg->{raw} = $ldap->{raw}
+    if ($ldap->{raw} && !defined($arg->{raw}));
 
   my $mesg = $ldap->message('Net::LDAP::Search' => $arg);
 

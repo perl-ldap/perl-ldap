@@ -120,7 +120,7 @@ Number of columns where output line wrapping shall occur.
 
 Default is 78. Setting it to 40 or lower inhibits wrapping.
 
-=item binary =E<gt> REGEX
+=item raw =E<gt> REGEX
 
 Use REGEX to denote the names of attributes that are to be considered
 binary in search results.
@@ -133,7 +133,7 @@ as one expects even on strings with international characters.
 If this option is not given or the version of Perl Net::LDAP is running on
 is too old strings are encodeed the same as in earlier versions of perl-ldap.
 
-Example: Binary =E<gt> qr/;binary|jpegPhoto/io
+Example: raw =E<gt> qr/;binary|jpegPhoto/io
 
 =back
 

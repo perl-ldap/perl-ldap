@@ -67,13 +67,13 @@ sub decode {
 
   %{$self} = ( asn => $result, changetype => 'modify', changes => []);
 
-  if (CHECK_UTF8 && $arg{binary}) {
+  if (CHECK_UTF8 && $arg{raw}) {
     $result->{objectName} = Encode::decode_utf8($result->{objectName})
-      if ('dn' !~ /$arg{binary}/);
+      if ('dn' !~ /$arg{raw}/);
   
     foreach my $elem (@{$self->{asn}{attributes}}) {
       map { $_ = Encode::decode_utf8($_) } @{$elem->{vals}}
-        if ($elem->{type} !~ /$arg{binary}/);
+        if ($elem->{type} !~ /$arg{raw}/);
     }
   }
 

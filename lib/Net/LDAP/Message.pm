@@ -29,7 +29,7 @@ sub new {
     parent   => $parent,
     mesgid   => NewMesgID(),
     callback => $arg->{callback} || undef,
-    binary   => $arg->{binary} || undef,
+    raw      => $arg->{raw} || undef,
   }, $type;
 
   $self;
