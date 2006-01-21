@@ -12,11 +12,19 @@
 
 package Net::LDAP::FilterMatch;
 
+use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
 use vars qw($VERSION);
-$VERSION   = '0.16';
+$VERSION   = '0.17';
+
+sub import {
+  shift;
+
+  push(@_, @Net::LDAP::Filter::approxMatchers) unless @_;
+  @Net::LDAP::Filter::approxMatchers = grep { eval "require $_" } @_ ;
+}
 
 package Net::LDAP::Filter;
 
@@ -26,14 +34,6 @@ use vars qw(@approxMatchers);
   Text::Metaphone
   Text::Soundex
 );
-
-sub import {
-  shift;
-
-  push(@_, @Net::LDAP::Filter::approxMatchers) unless @_;
-  @Net::LDAP::Filter::approxMatchers = grep { eval "require $_" } @_ ;
-}
-
 
 sub _filterMatch($@);
 
@@ -162,7 +162,7 @@ sub _filterMatch($@)
       $match='_cis_' . $op;
     }
 
-    return &$match($assertion,$op,@values);
+    return eval( "$match".'($assertion,$op,@values)' ) ;
   }
   
   return undef;	# all other filters => fail with error
