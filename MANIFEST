@@ -73,6 +73,7 @@ lib/Net/LDAP/Extra.pm
 lib/Net/LDAP/FAQ.pod
 lib/Net/LDAP/Filter.pm
 lib/Net/LDAP/Filter.pod
+lib/Net/LDAP/FilterMatch.pm
 lib/Net/LDAP/LDIF.pm
 lib/Net/LDAP/LDIF.pod
 lib/Net/LDAP/Message.pm
