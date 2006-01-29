@@ -25,6 +25,7 @@ features(
     'Authen::SASL'  => 2.00,
     recommends('Digest::MD5'),		# for DIGEST-MD5 SASL mech
     recommends('Digest::HMAC_MD5'),	# for CRAM-MD5 SASL mech
+    recommends('GSSAPI'),		# for GSSAPI SASL mech
   ],
   'LDAP URLs' => [
     -default => 0,
