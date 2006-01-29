@@ -73,7 +73,7 @@ sub run_proxy($$)
   my $listenersock = shift;
   my $targetsock = shift;
 
-  return unless ($listenersock i && $targetsock);
+  return unless ($listenersock && $targetsock);
   
   my $sel = IO::Select->new($listenersock);
   my %Handlers;
