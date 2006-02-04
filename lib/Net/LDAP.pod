@@ -859,6 +859,27 @@ B<Example>
 
 Returns the underlying C<IO::Socket> object being used.
 
+=item host ( )
+
+Returns the host to which he connection was established.
+For LDAPI connections the socket path is returned.
+
+=item port ( )
+
+Returns the the port connected to or C<undef> in case of LDAPI connections.
+
+=item uri ( )
+
+Returns the URI connected to.
+
+As the value returned is that element of the constructor's HOST
+argument with which the connection was established this may or
+may not be a legal URI.
+
+=item scheme ( )
+
+Returns the scheme of the connection. One of I<ldap>, I<ldaps> or I<ldapi>.
+
 =item sync ( MESG )
 
 Wait for a given C<MESG> request to be completed by the server. If no

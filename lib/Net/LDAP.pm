@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.33_04";
+$VERSION 	= "0.33_05";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -133,10 +133,14 @@ sub new {
 
 sub connect_ldap {
   my ($ldap, $host, $arg) = @_;
+  my $port = $arg->{port} || 389;
+
+  # separate port from host overwriting given/default port
+  $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
   $ldap->{net_ldap_socket} = IO::Socket::INET->new(
     PeerAddr   => $host,
-    PeerPort   => $arg->{port} || '389',
+    PeerPort   => $port,
     LocalAddr  => $arg->{localaddr} || undef,
     Proto      => 'tcp',
     MultiHomed => $arg->{multihomed},
@@ -146,6 +150,7 @@ sub connect_ldap {
   ) or return undef;
   
   $ldap->{net_ldap_host} = $host;
+  $ldap->{net_ldap_port} = $port;
 }
 
 
@@ -154,11 +159,16 @@ my %ssl_verify = qw(none 0 optional 1 require 3);
 
 sub connect_ldaps {
   my ($ldap, $host, $arg) = @_;
+  my $port = $arg->{port} || 636;
+
   require IO::Socket::SSL;
+
+  # separate port from host overwriting given/default port
+  $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
   $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
-    PeerPort 	    => $arg->{'port'} || '636',
+    PeerPort 	    => $port,
     LocalAddr       => $arg->{localaddr} || undef,
     Proto    	    => 'tcp',
     Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
@@ -166,6 +176,7 @@ sub connect_ldaps {
   ) or return undef;
 
   $ldap->{net_ldap_host} = $host;
+  $ldap->{net_ldap_port} = $port;
 }
 
 sub _SSL_context_init_args {
@@ -257,6 +268,25 @@ sub debug {
 
 sub socket {
   $_[0]->{net_ldap_socket};
+}
+
+sub host {
+  my $ldap = shift;
+  ($ldap->{net_ldap_scheme} ne 'ldapi')
+  ? $ldap->{net_ldap_host}
+  : $ldap->{net_ldap_peer};
+}
+
+sub port {
+  $_[0]->{net_ldap_port} || undef;
+}
+
+sub scheme {
+  $_[0]->{net_ldap_scheme};
+}
+
+sub uri {
+  $_[0]->{net_ldap_uri};
 }
 
 
