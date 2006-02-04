@@ -5,7 +5,7 @@
 
 package Net::LDAPI;
 @Net::LDAPI::ISA = ( 'Net::LDAP' );
-$Net::LDAPI::VERSION = "0.02";
+$Net::LDAPI::VERSION = "0.02_01";
 
 use strict;
 use Net::LDAP;
@@ -26,7 +26,7 @@ Net::LDAPI - use LDAP over a UNIX domain socket
 
  use Net::LDAPI;
 
- $ldapi = Net::LDAPI->new('/var/lib/ldapi');
+ $ldapi = Net::LDAPI->new('/var/run/ldapi');
 
  # alternate way
  use Net::LDAP;

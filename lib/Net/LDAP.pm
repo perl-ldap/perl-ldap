@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.33_03";
+$VERSION 	= "0.33_04";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -216,7 +216,7 @@ sub _SSL_context_init_args {
 sub connect_ldapi {
   my ($ldap, $peer, $arg) = @_;
 
-  $peer = $ENV{LDAPI_SOCK} || "/var/lib/ldapi"
+  $peer = $ENV{LDAPI_SOCK} || "/var/run/ldapi"
     unless length $peer;
 
   require IO::Socket::UNIX;

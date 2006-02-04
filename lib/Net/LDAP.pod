@@ -172,7 +172,7 @@ L<start_tls|/start_tls> method for details. Note the default value for
 is 636.
 
 For LDAPI connections, HOST is actually the location of a UNIX domain
-socket to connect to. The default location is '/var/lib/ldapi'.
+socket to connect to. The default location is '/var/run/ldapi'.
 
 =back
 
