@@ -10,18 +10,18 @@ Net::LDAP::Message - Message response from LDAP server
 
 B<Net::LDAP::Message> is a base class for the objects returned by the
 L<Net::LDAP> methods
-L<abandon|Net::LDAP/item_abandon>,
-L<add|Net::LDAP/item_add>,
-L<bind|Net::LDAP/item_bind>,
-L<compare|Net::LDAP/item_compare>,
-L<delete|Net::LDAP/item_delete>,
-L<modify|Net::LDAP/item_modify>,
-L<moddn|Net::LDAP/item_moddn>,
-L<search|Net::LDAP/item_search> and
-L<unbind|Net::LDAP/item_unbind>.
+L<abandon|Net::LDAP/abandon>,
+L<add|Net::LDAP/add>,
+L<bind|Net::LDAP/bind>,
+L<compare|Net::LDAP/compare>,
+L<delete|Net::LDAP/delete>,
+L<modify|Net::LDAP/modify>,
+L<moddn|Net::LDAP/moddn>,
+L<search|Net::LDAP/search> and
+L<unbind|Net::LDAP/unbind>.
 
 The sub-class L<Net::LDAP::Search> returned by
-L<search|Net::LDAP/item_search> also defines many methods.
+L<search|Net::LDAP/search> also defines many methods.
 
 If the L<Net::LDAP> object is in async mode then all these methods,
 except C<done> and C<mesg_id>, will cause a wait until the request is completed.
@@ -63,21 +63,21 @@ from the result message.
 =item error_name ( )
 
 Returns the name of the error code in the result message from the
-server. See L<ldap_error_name|Net::LDAP::Util::ldap_error_name> for a
+server. See L<ldap_error_name|Net::LDAP::Util/ldap_error_name> for a
 detailed description of the return value.
 
 =item error_text ( )
 
 Returns the short text description of the error code in the result
 message from the server. See
-L<ldap_error_text|Net::LDAP::Util::ldap_error_text> for a detailed
+L<ldap_error_text|Net::LDAP::Util/ldap_error_text> for a detailed
 description of the return value.
 
 =item error_desc ( )
 
 Returns a long text description of the error code in the result
 message from the server. See
-L<ldap_error_desc|Net::LDAP::Util::ldap_error_desc> for a detailed
+L<ldap_error_desc|Net::LDAP::Util/ldap_error_desc> for a detailed
 description of the return value.
 
 =item is_error ( )
