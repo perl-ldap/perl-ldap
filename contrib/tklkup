@@ -11,7 +11,7 @@
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
 #
-# $Id: tklkup,v 2.29 2003/06/18 18:23:31 gbarr Exp $
+# $Id: tklkup,v 2.47 2006/03/27 01:45:56 clif Exp $
 #
 # Purpose: This program is designed to retrieve data from a LDAP
 #          directory and display on the graphical user interface
@@ -27,9 +27,10 @@
 use Carp;
 use Data::Dumper;
 use MIME::Base64;
+#use Net::LDAP qw(:all);
 use Net::LDAP;
 use Net::LDAP::Filter;
-use Net::LDAP::Util qw( ldap_explode_dn ldap_error_name ldap_error_text);
+use Net::LDAP::Util qw( ldap_explode_dn ldap_error_name ldap_error_text canonical_dn );
 use Net::LDAP::Constant;
 use Net::LDAP::DSML;
 use Net::LDAP::LDIF;
@@ -40,6 +41,7 @@ use Tk::ErrorDialog;
 use Tk::LabFrame;
 use Tk::ROText;
 use Tk::HList;
+use Tk::Tree;
 use Tk::Label;
 
 use subs qw/ops_items/;
@@ -48,8 +50,9 @@ use subs qw/ops_items/;
 # but Tk forces me to.
 #
 my %Global = ();
-my %NC     = ();
-                                                                                $Global{'jpeg'}   = 1;
+my %Tree   = ();
+
+$Global{'jpeg'}   = 1;
 eval 'require Tk::JPEG';
 $Global{'jpeg'}   = 0 if ( $@ );
  
@@ -61,7 +64,8 @@ $Global{'splash'}   = 0 if ( $@ );
  
 #
 # Window roots
-#                                                                               $Global{'mainWindow'}   = undef();
+#
+$Global{'mainWindow'}   = undef();
 $Global{'schemaWindow'} = undef();
 $Global{'histWindow'}   = undef();
 $Global{'portWindow'}   = undef();
@@ -72,46 +76,50 @@ my %schemaHash = ();
 &init_schemaHash;
 
 $Global{'LDAP_SERVER'} = "";
-$Global{'ldap'} = undef;
-$Global{'bindpw'} = "";
-$Global{'binddn'} = "";
-$Global{'adata'} = "";
-$Global{'info'} = "";
-$Global{'slist'} = 0;
-$Global{'setVersion'} = 3;  # set version 3 ldap
-$Global{'sfile'} = 0;
-$Global{'fdata'} = "";
-$Global{'hand'}  = 'left';
-$Global{'horz'} = 200;
-$Global{'vert'} = 20;
-$Global{'Font'} = "{ MS Sans Serif} 10";
+$Global{'ldap'}        = undef;
+$Global{'bindpw'}      = "";
+$Global{'binddn'}      = "";
+$Global{fref}          = 0;
+$Global{'adata'}       = "";
+$Global{'info'}        = "";
+$Global{'slist'}       = 0;
+$Global{'setVersion'}  = 3;  # set version 3 ldap
+$Global{'sfile'}       = 0;
+$Global{'fdata'}       = "";
+$Global{'hand'}        = 'left';
+$Global{'horz'}        = 200;
+$Global{'vert'}        = 20;
+$Global{'Font'}        = "{ MS Sans Serif} 10";
 $Global{'CORE_SERVER'} = "";
-$Global{'sclear'} = 0;
-$Global{'limit'}  = 30;
-$Global{'port'}   = 389;
-$Global{'platform'} = ($^O eq 'MSWin32') ? $^O : 'unix' ;
-$Global{'max'} = 0;
-$Global{'infoFilter'} = "equal";
-$Global{'nismapname'} = 0;
-$Global{'records'} = 0;
-$Global{'mwwidth'} = 600;
-$Global{'mwheight'} = 520;
-$Global{dirConnError} = undef();
-$Global{'setSSL'} = 0;
+$Global{'sclear'}      = 0;
+$Global{'limit'}       = 100;
+$Global{port}          = 389;
+$Global{nsslport}      = 389;
+$Global{sslport}       = 636;
+$Global{'platform'}    = ($^O eq 'MSWin32') ? $^O : 'unix' ;
+$Global{'max'}         = 0;
+$Global{'infoFilter'}  = "equal";
+$Global{'nismapname'}  = 0;
+$Global{'automountMapName'}  = 0;
+$Global{'records'}     = 0;
+$Global{'mwwidth'}     = 600;
+$Global{'mwheight'}    = 520;
+$Global{dirConnError}  = undef();
+$Global{'setSSL'}      = 0;
 
 my $sbbframe;
 my $LDAP_SEARCH_BASE = "";
-my $DN_BASE = "";
-my @base       = ();
-my $base       = "";
-my @BaseButton = ();
-my $defaultPort = 389;
+my $DN_BASE          = "";
+my @base             = ();
+my $base             = "";
+my $defaultPort      = 389;
+my $sepChar          = "\f";       # formfeed separator
 
 #--------------------------------------------------------
 # Handle the command line parameter(s)
 #--------------------------------------------------------
  
-getopts( 'hnrd:' );
+getopts( 'hnrd:i:' );
  
 Usage() if ( $opt_h );
 
@@ -123,8 +131,9 @@ my $debug  = $opt_n ? 1 : 0;
 # Fork a child process and kill the parent.
 # (That sounds nasty)
 #
-                                                                                if ( !$debug && $Global{'platform'} eq 'unix' ) {
- 
+
+if ( !$debug && $Global{'platform'} eq 'unix' ) {
+
  
         FORK: {
  
@@ -178,7 +187,9 @@ $Global{'mainWindow'}->geometry("$Global{'mwwidth'}x$Global{'mwheight'}+$Global{
 
 $splash->update()
         if ( $Global{splash} );
- 
+
+&createSearchBaseWindow();
+$Global{'sbWindow'}->withdraw if Tk::Exists($Global{'sbWindow'});
 &initializeBases;
 
 $splashList->insert("0", "Setting tklkup GUI.")
@@ -224,52 +235,76 @@ $smenu = $mwf -> Menubutton(-text => "SELECT SERVER",
                   -relief => "raised", -font => $Global{'Font'},
                   -borderwidth => 3 )
                   -> pack(-side => "left", -pady => 2, -padx => 5 );
- 
 
 #
-# Create a LDAP version Checkbutton that will set up  variable
-# setVersion to set the LDAP version before each directory query.
+# Create a LDAP version status label
 #
  
-$setVersion = $mwf -> Checkbutton(
-                       -text => "LDAP V3",
-                       -variable =>  \$Global{'setVersion'}, -onvalue => 3,
-                       -offvalue => 2, -font => $Global{'Font'} )
-                       -> pack(-side => "left", -anchor => "center" );
+$Versionstatus = $mwf -> Label -> pack(-side => "left", -anchor => "center" );
+
+if ( $Global{setVersion} == 3 )
+{
+ $Versionstatus->configure( -text => "LDAP V3", -font => $Global{Font});
+}
+else
+{
+ $Versionstatus->configure( -text => "LDAP V2", -font => $Global{Font});
+}
  
-$setVersion->select();
+#
+# Create a SSL status label
+#
+$SSLstatus = $mwf -> Label -> pack(-side => "left", -anchor => "center" );
+
+if ( $Global{setSSL} )
+{
+ $SSLstatus->configure( -text => "SSL", -font => $Global{Font});
+} 
+else
+{
+ $SSLstatus->configure( -text => "NON-SSL", -font => $Global{Font});
+}
 
 #
-# Create a SSL Checkbutton that will set up  a SSL variable
-# 
+# Create a REF status label
 #
+$FRstatus = $mwf -> Label -> pack(-side => "left", -anchor => "center" );
  
-$mwf -> Checkbutton(
-                       -text => "SSL",
-                       -variable =>  \$Global{'setSSL'}, -onvalue => 1,
-                       -offvalue => 0, -font => $Global{'Font'} )
-                       -> pack(-side => "left", -anchor => "center" );
+if ( $Global{fref} )
+{
+ $FRstatus->configure( -text => "REF", -font => $Global{Font});
+} 
+else
+{
+ $FRstatus->configure( -text => "   ", -font => $Global{Font});
+}
 
+$Global{'mainWindow'}->update();
 
 $Global{nb} = $Global{'mainWindow'}->NoteBook()
               ->pack(-expand => 1, -fill => 'both');
 
 $Global{p2} = $Global{nb}->add('SEARCH',-label => 'SEARCH');
 
+$Global{'mainWindow'}->update();
 &initializeP2;
 
+$Global{'mainWindow'}->update();
 $Global{p3} = $Global{nb}->add('SEARCH DISPLAY',-label => 'SEARCH DISPLAY');
 
 &initializeP3;
 
+$Global{'mainWindow'}->update();
 $Global{p4} = $Global{nb}->add('SCHEMA',-label => 'SCHEMA DATA');
 
 &initializeP4;
 
+$Global{'mainWindow'}->update();
 $Global{p5} = $Global{nb}->add('CREATE ENTRY',-label => 'CREATE ENTRY');
 
 &initializeP5;
 
+$Global{'mainWindow'}->update();
 $Global{p1} = $Global{nb}->add('INFO',-label => 'INFO');
 
 &initializeP1;
@@ -294,9 +329,13 @@ sub ops_items
  
 [ 'command', 'Explore ~Root DSE', -accelerator => "Ctrl-r", -command => \&rootDse ],
 "",
-[ 'command', 'Toggle ~SSL', -accelerator => "Ctrl-s", -command => \&toggleSSL ],
+[ 'command', 'Set ~SSL', -accelerator => "Ctrl-s", -command => \&setSSL ],
+"",
+[ 'command', 'Set ~NON-SSL', -accelerator => "Ctrl-n", -command => \&nonSSL ],
 "",
 [ 'command', 'Toggle ~LDAP Version', -accelerator => "Ctrl-l", -command => \&toggleVersion ],
+"",
+[ 'command', 'Toggle ~Follow Referral', -accelerator => "Ctrl-f", -command => \&toggleRef ],
 "",
 [ 'command', 'E~xit', -accelerator => "Ctrl-x", -command => sub { exit;} ],
  
@@ -345,33 +384,51 @@ sub init_schemaHash
  
 } # End of subroutine init_schemaHash
 
-sub toggleSSL
+sub setSSL
 {
+ $Global{setSSL} = 1;
+ $Global{port} = $Global{sslport};
+ $SSLstatus->configure( -text => "SSL", -font => $Global{Font});
+} # End of subroutine setSSL
 
-if ( $Global{setSSL} )
+sub nonSSL
 {
- $Global{setSSL} = 0
-}
-else
-{
- $Global{setSSL} = 1
-}
- 
-} # End of subroutine toggleSSL
+ $Global{setSSL} = 0;
+ $Global{port} = $Global{nsslport};
+ $SSLstatus->configure(-text => "NON-SSL", -font => $Global{Font});
+} # End of subroutine nonSSL
 
 sub toggleVersion
 {
  
 if ( $Global{setVersion} == 2 )
 {
- $Global{setVersion} = 3
+ $Global{setVersion} = 3;
+ $Versionstatus->configure( -text => "LDAP V3", -font => $Global{Font});
 }
 else
 {
- $Global{setVersion} = 2
+ $Global{setVersion} = 2;
+ $Versionstatus->configure( -text => "LDAP V2", -font => $Global{Font});
+}
+
+} # End of subroutine toggleVersion
+
+sub toggleRef
+{
+ 
+if ( $Global{fref} == 0 )
+{
+ $Global{fref} = 1;
+ $FRstatus->configure( -text => "REF", -font => $Global{Font});
+}
+else
+{
+ $Global{fref} = 0;
+ $FRstatus->configure( -text => "   ", -font => $Global{Font});
 }
  
-} # End of subroutine toggleVersion
+} # End of subroutine toggleRef
 
 sub saveLdif
 {
@@ -399,18 +456,41 @@ else
 {
  $ENV{'TMP'} = "./";
 }
- 
+
+@dotfile = (); 
+push(@dotfile,$opt_i) if $opt_i;
+
 #
 #  Active State Perl does not always set ENV HOME.
 #
  
-if ( !$ENV{"HOME"} )
+if ( !$ENV{HOME} )
 {
- $ENV{"HOME"} = "./";
+ $ENV{"HOME"} = ".";
+}
+
+ 
+if ( !$ENV{PWD} )
+{
+ $ENV{PWD} = ".";
 }
  
-my $dotfile = $ENV{"HOME"} . "/.tklkup";
-                                                                                if ( -e $dotfile && -r $dotfile )
+push( @dotfile, "$ENV{HOME}/.tklkup");
+push( @dotfile, "$ENV{PWD}/.tklkup");
+
+foreach (@dotfile)
+{
+ #
+ # first .tklkup file found is the one that will be used.
+ #
+ if ( -e $_ && -r $_ )
+ {
+   $dotfile = $_;
+   last;
+ }
+}
+
+if ( -e $dotfile && -r $dotfile )
 {
  
 open(DOT, "<$dotfile");
@@ -435,13 +515,26 @@ $data[2] =~ s/\s+$// if ( defined($data[2]) );
 $_ = $data[0]; 
 
 TYPE: {
+
+    /^followref/i && do {
+                     $Global{fref} = 1;
+                     last TYPE; };
  
+    /^binddn/i && do {
+                     $Global{binddn} = $data[1];
+                     last TYPE; };
+
     /^hand/i && do {
                      $Global{'hand'} = $data[1];
                      last TYPE; };
  
     /^port/i && do {
-                     $Global{'port'} = $data[1];
+                     $Global{port} = $data[1];
+                     $Global{nsslport} = $data[1];
+                     last TYPE; };
+ 
+    /^sslport/i && do {
+                     $Global{sslport} = $data[1];
                      last TYPE; };
  
     /^limit/i && do {
@@ -451,7 +544,7 @@ TYPE: {
                      }
                      else
                      {
-                      $Global{'limit'} = 30;
+                      $Global{'limit'} = 100;
                      }
                      last TYPE; };
  
@@ -474,7 +567,11 @@ TYPE: {
     /^nismapname/i && do {
                      $Global{'nismapname'} = 1;
                      last TYPE; };
- 
+
+    /^automountMapName/i && do {
+                     $Global{'nismapname'} = 1;
+                     last TYPE; };
+
     /^mwwidth/i && do {
                      $Global{'mwwidth'} = $data[1];
                      last TYPE; };
@@ -550,12 +647,10 @@ if ( !$error || $Global{setVersion} )
  {
  # user defined base
  my $t1 = [];
- $NC{$server{$server[0]}} = [ "0" ];  # dummy load in position 0
- $NC{$server{$server[0]}}[1] = [ "0" ];  # dummy load in position 0
- ${$NC{$server{$server[0]}}}[2] = $t1;      #
- 
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$server[0]}));
- push(@base, @$t1);
+ $ncbase =~ tr/[A-Z]/[a-z]/;
+ $Tree{$ncbase} = $t1;
+ $BASEDN{$ncbase} = $ncbase;
  }
  else
  {
@@ -578,17 +673,19 @@ if ( !$error || $Global{setVersion} )
      $splash->update()
         if ( $Global{splash} );
      my $t1 = [];
-     ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-     ${$NC{$ncbase}}[1] = [ "0" ];  # dummy load in position 0
-     ${$NC{$ncbase}}[2] = $t1;      #
      push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
-     push(@base, @$t1);
+     $ncbase =~ tr/[A-Z]/[a-z]/;
+     $Tree{$ncbase} = $t1;
+     $BASEDN{$ncbase} = $ncbase;
     }
    }
  }
  
  }
  }
+
+&initTree();
+
 }
 else
 {
@@ -602,11 +699,12 @@ else
   }
  
 }
- 
- if ( @base >= 1)
+
+ @NcKeys = sort(keys(%Tree)); 
+ if ( @NcKeys )
  {
- $LDAP_SEARCH_BASE = $base[0];
- $DN_BASE = $base[0];
+ $LDAP_SEARCH_BASE = $NcKeys[0];
+ $DN_BASE = $NcKeys[0];
  }
  else
  {
@@ -773,11 +871,13 @@ $Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
 # will start from.
 #
  
-$sbmenu = $sbbframe -> Menubutton(-text => " SELECT\nBASE",
-                 -relief => "raised", -font => $Global{'Font'},
+$sbmenu = $sbbframe->Button( -text => " SELECT\nBASE",
+                 -command => \&sbHlist, -font => $Global{'Font'},
                  -borderwidth => 3 )
-                 -> pack(-side => $Global{hand} );
- 
+                 -> pack(-side => "top", -anchor => "w",
+                 -padx => 1, -pady => 1 )
+                 if ( !Exists($sbmenu));
+
 #
 # Create Hierarchial DN list box, this is where the DN data
 # tree will be displayed.
@@ -789,7 +889,7 @@ $Global{'searchHList'} = $hlframe ->Scrolled('HList',
             -width      => 50, 
             -height     => 13,
             -itemtype   => 'text',
-            -separator  => '/',
+            -separator  => $sepChar,
             -selectmode => 'single',
             -browsecmd  => sub {
 #
@@ -801,7 +901,7 @@ $Global{'searchHList'} = $hlframe ->Scrolled('HList',
 
    );  # End of Scrolled HList.
 
-$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
+#$Global{'searchHList'}->add($LDAP_SEARCH_BASE, -text=>$LDAP_SEARCH_BASE);  
 
 $Global{'searchHList'}->pack(-side => "right");
 
@@ -951,39 +1051,6 @@ $splashList->insert("0", "Creating cascading search base menus.")
         if ( $Global{splash} );
 $splash->update()
         if ( $Global{splash} );
-#
-# Create the cascade search base menus
-#
- 
-@NcKeys = sort(keys(%NC));
- 
-foreach ( @NcKeys )
-{
-  my $t1 = $NC{$_};
-  $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
-}
-                                                                                #
-# Set up the select search base radio buttons.
-#
- 
-foreach $Nc (@NcKeys)
-{
- 
-  foreach ( @{@{$NC{$Nc}}[2]} )
-  {
-     push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
-                       -variable => \$LDAP_SEARCH_BASE,
-                       -value => $_, -command => \&base,
-                       -font => $Global{'Font'} ) );
-  }
- 
-}
- 
-foreach my $Nclabel ( @NcKeys )
-{
-  $sbmenu->cascade(-label => "$Nclabel");
-  $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
-}
  
 #
 # Create Bottom Attribute frame.
@@ -999,8 +1066,10 @@ $tframe = $bmframe->LabFrame(-label => "FILTER DATA",
 # Create Text Entry list box.
 #
  
-$tframe->Entry(-textvariable => \$Global{'adata'}, -width => 27 )
+$tframe_text = $tframe->Entry(-textvariable => \$Global{'adata'}, -width => 27 )
       -> pack(-side => "left",-anchor => "w", );
+
+$tframe_text->bind('<Key-Return>' => \&search );
  
 #
 # Create Clear Attribute Data and Search Directory buttons
@@ -1338,46 +1407,13 @@ $cteframe = $eframe ->LabFrame(-label => "MANUALLY CREATE ENTRY")
 #
 # Create dn base button.
 #
- 
-$dnmenu = $cteframe -> Menubutton(-text => " SELECT\nDN BASE",
-                 -relief => "raised", -font => $Global{'Font'},
+$dnmenu = $cteframe->Button( -text => " SELECT\nDN BASE",
+                 -command => \&sbHlist, -font => $Global{'Font'},
                  -borderwidth => 3 )
-                 -> pack(-side => "right", -anchor => "e", 
-                         -padx => 5, -pady => 5  );
-#
-# Create the cascade search base menus
-#
- 
-@NcKeys = sort(keys(%NC));
- 
-foreach ( @NcKeys )
-{
-  my $t1 = $NC{$_};
-  $$t1[1] = $dnmenu->menu->Menu(-tearoff => 0);
-}
-                                                                                #
-# Set up the select search base radio buttons.
-#
- 
-foreach $Nc (@NcKeys)
-{
- 
-  foreach ( @{@{$NC{$Nc}}[2]} )
-  {
-     push(@DnBaseButton, @{$NC{$Nc}}[1]->radiobutton(-label => $_,
-                       -variable => \$DN_BASE,
-                       -value => $_, -command => \&dnbase,
-                       -font => $Global{'Font'} ) );
-  }
- 
-}
- 
-foreach my $Nclabel ( @NcKeys )
-{
-  $dnmenu->cascade(-label => "$Nclabel");
-  $dnmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[1]);
-}
- 
+                 -> pack(-side => "right", -anchor => "e",
+                 -padx => 5, -pady => 5 )
+                 if ( !Exists($dnmenu));
+
 #
 # Create the search base box
 #
@@ -1385,9 +1421,18 @@ foreach my $Nclabel ( @NcKeys )
 $dnblist = $cteframe ->Listbox( -width => 40, -font => $Global{'Font'},
                                 -height => 1  );
  
-$dnblist->pack(-side => "left", -anchor => 'w',  -padx => 5, -pady => 5 );
+$dnblist->pack(-side => "right", -anchor => 'e',  -padx => 5, -pady => 5 );
  
 $dnblist->insert("end", $DN_BASE);
+
+#
+# create attribute action button
+#
+$cteframe->Button(-text => "Create The\nEntry",
+                -font => $Global{'Font'},
+                -borderwidth => 3,
+                -command => \&getObjectAttributes,
+                -relief => 'raised' ) ->pack();
 
 } # End of subroutine initializeP5
 
@@ -1404,7 +1449,10 @@ my $schema = $schemaHash{'schema'};
 my @tmpKeys;
 my @must;
 my @may;
+my $colist;
+$Global{ceObject} = {};
 
+my $optr = 0;
 #
 # Create Hierarchial list box, this is where the objectclass data
 # tree will be displayed.
@@ -1416,71 +1464,79 @@ $Global{'olist'} = $eframe->Scrolled('HList',
             -width      => $Global{'max'}, 
             -height     => 20,
             -itemtype   => 'text',
-            -separator  => '/',
+            -separator  => $sepChar,
             -selectmode => 'single',
             -browsecmd  => sub {
 #
             my $objects = shift;
             my $oid;
-            my @objectclasses = ();
-            @objectclasses = split(/\//,$objects);
+            my $colist;
+            my $ab;
+            #my @objectclasses = ();
+            my $objectclasses = [];
+            @$objectclasses = split(/$sepChar/,$objects);
 
+            $schema = $schemaHash{'schema'};
+            $colist = $Global{'colist'};
+            $obj = $schemaHash{'obj'};
             $Global{entryData} = {};
             $Global{entryData}->{objectClass} = [];
             $Global{entryData}->{may} = [];
             $Global{entryData}->{must} = [];
 
-            foreach my $var (@objectclasses)
-            { 
-               $Global{mainWindow}->update;
-               $oid = $$obj{$var}->[0];
-               #
-               # Get the various other items associated with
-               # this objectclass.
-               #
-               my $ahash = $schema->objectclass( "$oid" );
-               #
-               # Get and display the objectclass name.
-               #
-               push( @{$Global{entryData}->{objectClass}},$$ahash{'name'});
+            my $var = $$objectclasses[-1];
 
-                if ( $$ahash{must} )
-                {
-                $alArray =  $$ahash{must};
+#            foreach my $var (@var)
+#            { 
+
+               if ( !(exists($Global{ceObject}->{$var})) )
+               {
+               #
+               # create attribute action button
+               #
+               $ab = $colist->Button(-text => $var,
+                                   -font => $Global{'Font'},
+                                   -borderwidth => 3,
+                                   -relief => 'raised' );
+
+               $Global{ceObject}->{$var} = [];
+               $Global{ceObject}->{$var}->[0] = $ab;
+               $Global{ceObject}->{$var}->[1] = $objects;
+
+               $colist->windowCreate("end", -window => $ab );
  
-                if ( ref($alArray) eq 'ARRAY' )
-                {
-                  push(@{$Global{entryData}->{must}}, @$alArray );
-                }
-                else
-                {
-                  push(@{$Global{entryData}->{must}}, $alArray );
-                }
-                }
-
-                if ( $$ahash{may} )
-                {
-                $alArray =  $$ahash{may};
+               $ab->configure( -command => [ \&deleteObjectclass, \$ab, $var ] );
  
-                if ( ref($alArray) eq 'ARRAY' )
-                {
-                  push(@{$Global{entryData}->{may}}, @$alArray );
-                }
-                else
-                {
-                  push(@{$Global{entryData}->{may}}, $alArray ) ;
-                      #if ( length($alArray) );
-                }
-                }
-
-            }
-            
-            &makeTheEntry;
-
+               # position to the next row.
+               $colist->insert("end", "\n");
+               }
+#            }
+             
             } # End of subroutine browsecmd
 
             ) -> pack( -side => "top", -anchor => 'e')
             if ( !Tk::Exists($Global{'olist'}) ) ;  # End of Scrolled HList.
+
+#
+# Create a ROText Box that will contain the selected objectclass(s)
+# for the new entry.
+#
+ 
+$Global{'colist'} = $eframe ->Scrolled('Text', -scrollbars => 'se',
+        -width => $Global{'max'}, -height => 20, -wrap => 'none',
+        -font => $Global{'Font'}  ) 
+        ->pack( -side => "top", -anchor => 'e' )
+        if ( !Tk::Exists($Global{'colist'}) ) ;  # End of Scrolled HList.
+
+#
+# Create Hierarchial list box, this is where the objectclass data
+# tree will be displayed.
+#
+#
+#$Global{'colist'} = $eframe ->Listbox( -width => $Global{'max'}, 
+#                    -height => 20  )
+#                    -> pack( -side => "top", -anchor => 'e')
+#            if ( !Tk::Exists($Global{'colist'}) ) ;  # End of Scrolled HList.
 
 @tmpKeys = sort(keys(%$tree));
 my $base;
@@ -1510,7 +1566,7 @@ eval{
         $ptr = 1;
         next;
       }
-      $_ = $base . "/" . $var; 
+      $_ = $base . $sepChar . $var; 
       $Global{'olist'}->add($_, -text => $var);
       if ( defined($$tree{$_}) )
       {
@@ -1555,6 +1611,317 @@ $Global{'searchList'}->destroy if Tk::Exists($Global{'searchList'});
 $Global{'searchHList'}->destroy if Tk::Exists($Global{'searchHList'});
 } # End of cancel subroutine
 
+sub deleteObjectclass
+{
+my ($aba, $var) = @_;
+my $ab;
+my $colist = $Global{colist};
+$ab = $Global{ceObject}->{$var}->[0];
+$ab->destroy;
+delete($Global{ceObject}->{$var});
+#
+# if no objects, clear the ROTEXT box. 
+#
+$Global{colist}->delete("1.0","end")
+       if ( !(keys(%{$Global{ceObject}})) );
+}
+
+#
+#  Create the Search base window to display the
+#  search base tree.
+#
+sub createSearchBaseWindow
+{
+&globalPos();
+ 
+my $x = $Global{'horz'} + 150;
+my $y = $Global{'vert'} + 150;
+ 
+#
+# Create Main Bind Window
+#
+ 
+$Global{'sbWindow'} = MainWindow->new;
+ 
+$Global{'sbWindow'}->title("Select Search Base");
+ 
+$Global{'sbWindow'}->geometry("+$x+$y");
+#
+# Create process accept button
+#
+$Global{'sbWindow'}->Button( -text => "ACCEPT SELECTED DN", -command => \&sbaccept,
+           -font => $Global{'Font'}, -borderwidth => 3 )
+           -> pack(-side => "bottom", -padx => 5, -pady => 5 ) ;
+ 
+#
+# Create process cancel button
+#
+$Global{'sbWindow'}->Button(-text => "CANCEL BASE CHANGE",
+           -command => \&sbcancel,
+           -font => $Global{'Font'}, -borderwidth => 3)
+           -> pack(-side => "top", -padx => 5, -pady => 5 ) ;
+ 
+my $sbdnframe = $Global{'sbWindow'}->Frame()
+      ->pack( -fill => "both", -side => "top", -padx => 5, -pady => 5 );
+
+$Global{sbtree} = $sbdnframe->Scrolled("Tree",
+                -width => 50,
+                -height => 20,
+                -separator => $sepChar,
+                -indent => 35,
+                -scrollbars => 'sw',
+                -selectmod => 'single',
+                -browsecmd => sub {
+            my $objects = shift;
+            my %tree = %BASEDN;
+            $Global{SelectedDN} = $tree{$objects};
+            }
+ )->pack(-fill => "both", -expand => 1);
+
+sub sbcancel
+{
+ $Global{'sbWindow'}->withdraw if Tk::Exists($Global{'sbWindow'});
+} # End of cancel subroutine
+ 
+sub sbaccept
+{
+ if ( exists($Global{SelectedDN}) )
+ {
+  $LDAP_SEARCH_BASE = $Global{SelectedDN};
+  $DN_BASE = $LDAP_SEARCH_BASE;
+  $sbblist->insert(0 , $LDAP_SEARCH_BASE);
+  $dnblist->insert(0 , $LDAP_SEARCH_BASE);
+  $Global{dsasbls}->insert(0, $LDAP_SEARCH_BASE)
+     if ( $Global{dsasbls} );
+  delete($Global{SelectedDN});
+  $Global{'sbWindow'}->withdraw if Tk::Exists($Global{'sbWindow'});
+ }
+} # End of sbaccept subroutine
+
+sub sbHlist
+{
+if (Tk::Exists($Global{'sbWindow'}))
+{
+  $Global{'sbWindow'}->deiconify();
+  $Global{mainWindow}->update;
+  #$Global{'sbWindow'}->raise();
+  $Global{mainWindow}->update;
+}
+else
+{
+  &createSearchBaseWindow();
+  &initTree();
+}
+
+}
+
+} # End of createSearchBaseWindow subroutine
+
+sub initTree
+{
+my $onvar;
+my $bvar;
+my $cvar;
+my $t1v;
+my $t1;
+my $t2;
+my $t2K;
+my @t2Keys;
+my $path;
+my $size;
+my $wack;
+my $nvar;
+
+my @keys = sort(keys(%Tree));
+foreach $nvar (@keys)
+{
+  $onvar = $nvar;
+  $t1v = $Tree{$nvar};
+#  print "t1 : " ,Dumper($t1v), "\n";
+ 
+  $Global{sbtree}->add($nvar, -text => $nvar);
+  foreach $bvar (@$t1v)
+  {
+  $cvar = canonical_dn($bvar, casefold => "lower" );
+  $adn = $cvar;
+  $cvar =~ s/$nvar//;
+  chop($cvar) if ($cvar =~ /,$/);
+#  print $bvar,"\n";
+#  print $cvar,"\n";
+  $path = "$nvar" . $sepChar;
+  $t1 = ldap_explode_dn($cvar, casefold => "lower" );
+  $size = @$t1;
+#  print "t1 size == $size\n";
+  while ($size > 1)
+  {
+  $t2 = pop(@$t1);
+  @t2Keys = keys(%$t2);
+  while (@t2Keys)
+  {
+    $t2K = shift( @t2Keys);
+    $t2size = @t2Keys;
+    $path .= "$t2K=$$t2{$t2K}";
+    $path .= "+" if ($t2size > 0 );
+  }
+
+  $path .= $sepChar;
+  $size = @$t1;
+  }
+#  chop($path) if ( $path =~ /\|$/ );
+  $text = "";
+  $t2 = pop(@$t1);
+  @t2Keys = keys(%$t2);
+  while (@t2Keys)
+  {
+    $wack = shift(@t2Keys);
+    $t2size = @$t2Keys;
+    $text .= "$wack=$$t2{$wack}";
+    $text .= "+" if ($t2size > 0 );
+  }
+  $path .= $text;
+#  print "path == $path\n";
+#  print "text == $text\n";
+ 
+  $path = $text if ( !length($path)) ;
+  $BASEDN{$path} = $adn;
+ 
+  $Global{sbtree}->add($path, -text => $text);
+  }
+ 
+  $Global{sbtree}->setmode($onvar,'close');
+  $Global{sbtree}->close($onvar);
+}
+
+$Global{sbtree}->autosetmode();
+
+} # End of subroutine initTree
+
+sub destroyTree
+{
+
+}
+
+#
+# Get the attributes of the selected objectClasses
+# 
+
+sub getObjectAttributes
+{
+
+ my $oid;
+ my $ahash;
+ my $alArray;
+ my @objectclasses = ();
+ my @tmp;
+ my $hash = $Global{ceObject};
+ my @hashKeys = keys(%$hash);
+
+ foreach my $hvar ( @hashKeys)
+ {
+ 
+  @tmp = split(/$sepChar/,$Global{ceObject}->{$hvar}->[1]);
+  
+  foreach my $nvar (@tmp)
+  {
+    if ( !(grep(/$nvar/,@objectclasses)) )
+    {
+     push(@objectclasses,$nvar);
+    }
+
+  }
+
+ }
+
+ return if (!@objectclasses); # can not create an entry with no objectclass. 
+
+#
+# If this is a posixAccount or shadowAccount, automatically put
+# posixAccount, shadowAccount, and account as objectclasses for
+# the new entry.
+#
+
+ push(@objectclasses, "posixAccount") 
+     if ( grep(/shadowAccount/,@objectclasses) && 
+          !( grep(/posixAccount/,@objectclasses) ) );
+
+ push(@objectclasses, "shadowAccount") 
+     if ( grep(/posixAccount/,@objectclasses) &&
+          !( grep(/shadowAccount/,@objectclasses) ) );
+
+ push(@objectclasses, "account") 
+     if ( grep(/shadowAccount/,@objectclasses) && 
+          grep(/posixAccount/,@objectclasses)  &&
+          !( grep(/account/,@objectclasses) ) );
+
+ my  $schema = $schemaHash{'schema'};
+ $obj = $schemaHash{'obj'};
+ $Global{entryData} = {};
+ $Global{entryData}->{objectClass} = [];
+ $Global{entryData}->{may} = [];
+ $Global{entryData}->{must} = [];
+
+ foreach my $var (@objectclasses)
+ { 
+    $Global{mainWindow}->update;
+    $oid = $$obj{$var}->[0];
+    #
+    # Get the various other items associated with
+    # this objectclass.
+    #
+    my $ahash = $schema->objectclass( $oid );
+    #
+    # Get the objectclass name.
+    #
+    push( @{$Global{entryData}->{objectClass}},$$ahash{'name'});
+
+     if ( $$ahash{must} )
+                {
+     $alArray =  $$ahash{must};
+
+     if ( ref($alArray) eq 'ARRAY' )
+     {
+       my $aMust = $Global{entryData}->{must};
+
+       foreach my $avar ( @$alArray )
+       {
+       push(@{$Global{entryData}->{must}}, $avar )
+           if ( !(grep(/$avar/,@$aMust)) );
+       }
+     }
+     else
+     {
+       push(@{$Global{entryData}->{must}}, $alArray ) 
+           if ( !(grep(/$alArray/,@{$Global{entryData}})) );
+     }
+     }
+
+     if ( $$ahash{may} )
+     {
+     $alArray =  $$ahash{may};
+
+     if ( ref($alArray) eq 'ARRAY' )
+     {
+       my $aMay = $Global{entryData}->{may};
+
+       foreach my $avar ( @$alArray )
+       {
+       push(@{$Global{entryData}->{may}}, $avar )
+           if ( !(grep(/$avar/,@$aMay)) );
+       }
+     }
+     else
+     {
+       push(@{$Global{entryData}->{may}}, $alArray )  
+           if ( !(grep(/$alArray/,@{$Global{entryData}})) );
+     }
+     }
+
+ }
+
+&makeTheEntry;
+
+} # End of subroutine getObjectAttributes
+
 #
 # Search the directory for data
 #
@@ -1563,7 +1930,6 @@ sub search
 {
 my $mesg;
 my $error;
-my $att_wanted;
 my %opt = (
   'd' => 0
 );
@@ -1583,7 +1949,8 @@ if ( $Global{'setVersion'} == 3 )
 #
 # Default to return everything.
 #
-$att_wanted = [ "*", 
+$Global{att_wanted} = [ "*", 
+                "aci",
                 "createTimeStamp",
                 "modifyTimeStamp",
                 "creatorsName",
@@ -1598,7 +1965,7 @@ else
 # this list.
 #
 #
-$att_wanted = [ "cn" ,
+$Global{att_wanted} = [ "cn" ,
                 "sn",
                 "mail",
                 "modifyTimeStamp",
@@ -1684,7 +2051,7 @@ $Global{'searchResults'} = {};  # initialize results hash.
 $mesg = $Global{ldap}->search(
   base   => $LDAP_SEARCH_BASE,
   filter => $Global{filter},
-  attrs  => $att_wanted,
+  attrs  => $Global{att_wanted},
   callback => \&print_entry,
 ); 
    
@@ -1715,7 +2082,7 @@ $results = $Global{'searchResults'};
 foreach my $dnvar ( @dnKeys ) 
 {
  $var = $$results{$dnvar};  # get entry data array
- $shbase = $LDAP_SEARCH_BASE . "/" . $$var[0]; # create new leaf
+ $shbase = $LDAP_SEARCH_BASE . $sepChar . $$var[0]; # create new leaf
  $Global{'searchHList'}->add($shbase, -text => $$var[0]); # add leaf to tree.
 }
 $Global{'searchHList'}->pack(-side => "right");
@@ -1858,37 +2225,10 @@ $Global{mainWindow} -> update;  # Allow Tk to update
 
 $ptr = 1;
 
-#
-# Delete data from BaseButton array, we are deleteing the 
-# buttons.
-#
-
-while ( @BaseButton >= 1  )
-{
-  $widget = pop(@BaseButton);
-  foreach my $mvar ( @$widget)
-  {
-  $sbmenu->menu->delete($ptr);
-  }
-  ++$ptr;
-}
-
-$ptr = 1;
-while ( @DnBaseButton >= 1  )
-{
-  $widget = pop(@DnBaseButton);
-  foreach my $mvar ( @$widget)
-  {
-  $dnmenu->menu->delete($ptr);
-  }
-  ++$ptr;
-}
-
-%NC = ();  # Delete the old stuff.
-@BaseButton = ();  # Delete the old stuff.
-@DnBaseButton = ();  # Delete the old stuff.
+%Tree = ();  # Delete the old stuff.
+%BASEDN = ();  # Delete the old stuff.
 @NcKeys = ();  # Delete the old stuff.
-
+$Global{'sbtree'}->delete("all");
 $msgbox->delete("0.0", "end");
 $msgbox->update();
 
@@ -1901,11 +2241,10 @@ if ( $Global{'CORE_SERVER'} ne $Global{'LDAP_SERVER'} && defined($server{$Global
 {
  # user defined base
  my $t1 = [];
- $NC{$server{$Global{'LDAP_SERVER'}}} = [ "0" ];  # dummy load in position 0
- $NC{$server{$Global{'LDAP_SERVER'}}} = [ "1" ];  # dummy load in position 0
- ${$NC{$server{$Global{'LDAP_SERVER'}}}}[2] = $t1;      #
  push(@$t1, getBases($Global{'LDAP_SERVER'}, $server{$Global{'LDAP_SERVER'}}));
-
+ $ncbase =~ tr/[A-Z]/[a-z]/;
+ $Tree{$ncbase} = $t1;
+ $BASEDN{$ncbase} = $ncbase;
 }
 elsif ( $Global{setVersion} == 3 )
 {
@@ -1922,10 +2261,10 @@ elsif ( $Global{setVersion} == 3 )
      {
        $Global{mainWindow}->update;
        my $t1 = [];
-       ${$NC{$ncbase}}[0] = [ "0" ];  # dummy load in position 0
-       ${$NC{$ncbase}}[1] = [ "0" ];  # dummy load in position 0
-       ${$NC{$ncbase}}[2] = $t1;      #
        push(@$t1, getBases($Global{'LDAP_SERVER'}, $ncbase));
+       $ncbase =~ tr/[A-Z]/[a-z]/;
+       $Tree{$ncbase} = $t1;
+       $BASEDN{$ncbase} = $ncbase;
      }
    }
  }
@@ -1933,51 +2272,11 @@ elsif ( $Global{setVersion} == 3 )
 }
 
 #
-# Create the cascade search base menus
+# Create the search base tree
 #
-@NcKeys = sort(keys(%NC));
- 
-foreach ( @NcKeys )
-{
-   my $t1 = $NC{$_};
-   my $t9 = $NC{$_};
-   $$t1[0] = $sbmenu->menu->Menu(-tearoff => 0);
-   $$t9[1] = $dnmenu->menu->Menu(-tearoff => 0);
-}
+&initTree();
 
-#
-# Set up the select search base radio buttons.
-#
-
-foreach $Nc (@NcKeys)
-{
- 
- foreach ( @{@{$NC{$Nc}}[2]} )
- {
-   push(@BaseButton, @{$NC{$Nc}}[0]->radiobutton(-label => $_,
-                     -variable => \$LDAP_SEARCH_BASE,
-                     -value => $_, -command => \&base,
-                     -font => $Global{'Font'} ) );
-
-   push(@DnBaseButton, @{$NC{$Nc}}[1]->radiobutton(-label => $_,
-                     -variable => \$DN_BASE,
-                     -value => $_, -command => \&dnbase,
-                     -font => $Global{'Font'} ) );
- }
- 
-}
-
-#
-# Attached the cascaded menu to it's master menu
-#
- 
-foreach my $Nclabel ( @NcKeys )
-{
- $sbmenu->cascade(-label => "$Nclabel");
- $dnmenu->cascade(-label => "$Nclabel");
- $sbmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[0]);
- $dnmenu->entryconfigure("$Nclabel", -menu => @{$NC{$Nclabel}}[1]);
-}
+@NcKeys = sort(keys(%Tree));
 
 }
 else
@@ -2084,7 +2383,7 @@ else
 {
 $Global{ldap} = new Net::LDAP( $Global{'LDAP_SERVER'},
                           timeout => 1,
-                          port => $Global{'port'},
+                          port => $Global{port},
                           debug => $opt_d,
                         ) or $error = 1;
 if ( $error )
@@ -2110,6 +2409,89 @@ if ( $mesg->code && $mesg->code != 48 )
 return 0;
  
 } # End of subroutine dirConn
+
+#
+# Connect and bind to the referral directory server
+#
+ 
+sub dirRConn
+{
+my ($url) = @_;
+my $error;
+$error = 0;
+
+$Global{dirConnError} = undef();
+
+ #
+ # Make the connection to the directory server
+ #
+ 
+if ( $Global{port} == 636 || $Global{'setSSL'} )
+{
+ 
+$bindcommand = 'require Net::LDAPS; new Net::LDAPS( $url, timeout => 1, debug => $opt{d} ) ';
+
+
+if ( $Global{'platform'} eq 'MSWin32')
+{
+$error = "This program currently does not support SSL on Microsoft Windows systems.";
+ERROR(\$error);
+return 1;
+}
+ 
+$Global{rldap} = eval $bindcommand;
+if ($@)
+{
+$msgbox->insert("0.0", $@) if ($@ && Tk::Exists($msgbox)) ;
+return -1;
+}
+ 
+if ( !($Global{rldap}->isa('Net::LDAPS') ) )
+{
+$Global{dirConnError} = "LDAPS connection error to $url.";
+return -1;
+}
+ 
+}
+else
+{
+$Global{rldap} = new Net::LDAP( $url,
+                          timeout => 1,
+                          debug => $opt_d,
+                        ) or $error = 1;
+if ( $error )
+{
+$Global{dirConnError} = "LDAP connection error to $url.";
+return 1;
+}
+ 
+}
+ 
+$mesg = $Global{rldap}->bind( password => "$Global{'bindpw'}",
+                       dn => "$Global{'binddn'}",
+                       version => $Global{'setVersion'},
+                       );
+ 
+if ( $mesg->code && $mesg->code != 48 )
+{
+#  $errstr = $mesg->code;
+#  ERROR($errstr);
+  return $mesg->code;
+}
+ 
+return 0;
+ 
+} # End of subroutine dirRConn
+
+#
+# Disconnect from the directory server.
+#
+sub dirRUConn
+{
+$Global{rldap}->disconnect; 
+delete($Global{rldap});
+return 0;
+} # End of subroutine dirRUConn
  
 #
 # Detect and record the sub-bases, or branches, of the directory.
@@ -2129,11 +2511,12 @@ if ( $Global{'nismapname'} )
  #
  # Solaris Native LDAP enabled
  #
- $match = "(|(o=*)(ou=*)(nismapname=*))";  #search only for ou entries.
+ #$match = "(|(ou=*)(nismapname=*)(objectClass=organizationalUnit))";  #search only for ou entries.
+ $match = "(|(objectClass=nisMap)(objectClass=organizationalUnit)(objectClass=automountMap))";  #search only for ou entries.
 }
 else
 {
- $match = "(|(o=*)(ou=*))";  #search only for ou entries.
+ $match = "(objectClass=organizationalUnit)";  #search only for ou entries.
 }
 
 my $f = Net::LDAP::Filter->new($match) or $error = 1;
@@ -2144,8 +2527,8 @@ $error = "getBases subroutine Bad filter $match";
 ERROR(\$error);
 return @base;
 }
- 
-push(@base,$base);
+
+$base[0] = $base; 
 $ptr = 0;
  
 while ( $ptr < @base )
@@ -2165,7 +2548,7 @@ while ( $ptr < @base )
  }
  $base = $base[++$ptr];
 }
- 
+shift(@base);  # get rid of the namingContext entry
 return @base;
  
 } # End of subroutine getBases()
@@ -2182,7 +2565,7 @@ my @new_base = ();
 $mesg = $Global{ldap}->search(
   base   => $base,
   filter => $f,
-  attrs  => [ "cn","nismapname" ],
+  attrs  => [ "cn","nismapname","automountMapName" ],
   scope  => "one",
 );
  
@@ -2210,13 +2593,15 @@ else
  my $entry = $mesg->entry($i);
  
  $dn = $entry->dn;
+ $dn = canonical_dn($dn,casefold => "lower");
+ $dn =~ tr/[A-Z]/[a-z]/;
  $_ = $dn;
  
 #
 # Record only dn that start with ou=, or in some cases nismapname.
 # Normal entrys can be mixed in with these objects.
 #
- if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i ) )
+ if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i || /^automountMapName/i ) )
  {
   push(@new_base, $dn);  # record only dn that start with ou=
  }
@@ -2404,7 +2789,9 @@ $pw_data = "";
 
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
- 
+
+if ( !Tk::Exists( $Global{'bindWindow'} ) )
+{ 
 #
 # Create Main Bind Window
 #
@@ -2435,6 +2822,7 @@ my $binddnframe = $Global{'bindWindow'}->LabFrame(-label => "DN",
 #
 # Create DN Entry text box.
 #
+$dn_data = $Global{binddn} if ( length($Global{binddn}) );
  
 $binddnframe->Entry(-textvariable => \$dn_data, -width => 25 )
       -> pack(-fill => 'x');
@@ -2447,10 +2835,12 @@ my $bindpwframe = $Global{'bindWindow'}->LabFrame(-label => "PASSWORD",
 # Create Password Entry text box.
 #
  
-$bindpwframe->Entry(-show => '*', -textvariable => \$pw_data, 
+$bindpwdata = $bindpwframe->Entry(-show => '*', -textvariable => \$pw_data, 
                     -width => 25, -font => $Global{'Font'} )
                     -> pack(-fill => 'x');
- 
+
+$bindpwdata->bind('<Key-Return>' => \&accept );
+
 sub cancel{
  
 $Global{'bindWindow'}->destroy() if Tk::Exists($Global{'bindWindow'});
@@ -2492,6 +2882,8 @@ $Global{'bindWindow'}->destroy() if Tk::Exists($Global{'bindWindow'});
 $Global{'bindWindow'} = undef(); 
  
 } # End of accept subroutine
+}
+
 } # End of BIND subroutine
  
 #
@@ -2500,7 +2892,7 @@ $Global{'bindWindow'} = undef();
  
 sub PORT {
  
-$port_data = $Global{'port'};
+$port_data = $Global{port};
 &globalPos();
 my $x = $Global{'horz'} + 150;
 my $y = $Global{'vert'} + 150;
@@ -2539,11 +2931,22 @@ $Global{'portWindow'}->Label(-text => "Port 636 ssl default")
 # to set ssl if not port 636.
 #
  
-$Global{'portWindow'}  -> Checkbutton(
-                       -text => "SSL connection",
-                       -variable =>  \$Global{'setSSL'}, -onvalue => 1,
-                       -offvalue => 0, -font => $Global{'Font'} )
-                       -> pack(-side => "top", -anchor => "w" );
+#$Global{'portWindow'}  -> Checkbutton(
+#                       -text => "SSL connection",
+#                       -variable =>  \$Global{'setSSL'},
+#                       -font => $Global{'Font'} )
+#                       -> pack(-side => "top", -anchor => "w" );
+
+$PSSLstatus = $Global{'portWindow'} -> Label -> pack(-side => "top", -anchor => "w" );
+
+if ( $Global{setSSL} )
+{
+ $PSSLstatus->configure( -text => "SSL", -font => $Global{Font});
+}
+else
+{
+ $PSSLstatus->configure(-text => "NON-SSL", -font => $Global{Font});
+}
 
 my $portframe = $Global{'portWindow'}->LabFrame(-label => "PORT",
       -labelside => "acrosstop")
@@ -2566,8 +2969,9 @@ $Global{'portWindow'} = undef();
  
 sub portAccept{ 
  
-$Global{'port'} = $port_data;
-$Global{setSSL} = 1 if ( $port_data == 636);
+$Global{port} = $port_data;
+if ( $Global{setSSL} ) { $Global{sslport} = $port_data;}
+else { $Global{nsslport} = $port_data;}
 $Global{dsaptls}->insert(0, $Global{port});
 $Global{'portWindow'}->destroy() if Tk::Exists($Global{'portWindow'});
 $Global{'portWindow'} = undef(); 
@@ -2785,9 +3189,8 @@ $schemaHash{'ocs'} = $ra_atts;
 #
 foreach my $var (@$ra_atts) 
 { 
-$Global{'max'} = length($$var{'name'}) 
-        if length($$var{'name'}) > $Global{'max'} 
-
+  $Global{'max'} = length($$var{'name'}) 
+        if length($$var{'name'}) > $Global{'max'} ;
 }
 
 #
@@ -2909,6 +3312,7 @@ if ( $selectAll || $selectDcr )
     if ( defined($schemaHash{'ditc'}) );
 }
 
+$Global{'max'} = 50 if ( $Global{'max'} > 50 ); 
 &objTree();   # Create the objectClass tree
 $Global{'olist'}->delete('all') if  Tk::Exists($Global{'olist'});
 $Global{mainWindow} -> update;  # Allow Tk to update
@@ -2939,7 +3343,7 @@ sub objTree
 {
 my $ocs = $schemaHash{'ocs'};
 my $obj = $schemaHash{'obj'};
-$schemaHash{'tree'} = {};
+#$schemaHash{'tree'} = {};
 my $tree = $schemaHash{'tree'};
 my $schema = $schemaHash{'schema'};
 my @tmpKeys;
@@ -3010,7 +3414,7 @@ $Path = $SUP;  # Start objectclass path.
 }
 else
 {
-$Path = $SUP . "/" . $Path;  # add new objectclass to path.
+$Path = $SUP . $sepChar . $Path;  # add new objectclass to path.
 }
 $done = 1 if ( $SUP eq 'top' ) ; # when we reach objectclass top we are done.
 $_ = $SUP;  # walk back up the chain
@@ -3128,20 +3532,22 @@ $Global{'list'} = $Global{'histWindow'}->Scrolled('ROText',
 # tree will be displayed.
 #
 
+if ( !Exists($Global{'hlist'}) )
+{
 $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList', 
             -font       => $Global{'Font'},
             -scrollbars => 'se',
             -width      => $Global{'max'}, 
             -height     => 20,
             -itemtype   => 'text',
-            -separator  => '/',
+            -separator  => $sepChar,
             -selectmode => 'single',
             -browsecmd  => sub {
 #
             my $objects = shift;
             my $oid;
             my @objectclasses = ();
-            @objectclasses = split(/\//,$objects);
+            @objectclasses = split(/$sepChar/,$objects);
             $Global{'list'}->delete("1.0", "end");
             $Global{'label'}->configure(-text=>$objects);
             $Global{'list'}->insert("end", " \n");
@@ -3154,7 +3560,7 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
                # Get the various other items associated with
                # this objectclass.
                #
-               my $ahash = $schema->objectclass( "$oid" );
+               my $ahash = $schema->objectclass( $oid );
                my @hkeys = sort(keys(%$ahash));
                #
                # Get and display the objectclass name.
@@ -3246,7 +3652,7 @@ eval{
         $ptr = 1;
         next;
       }
-      $_ = $base . "/" . $var; 
+      $_ = $base . $sepChar . $var; 
       $Global{'hlist'}->add($_, -text => $var);
       if ( defined($$tree{$_}) )
       {
@@ -3271,6 +3677,8 @@ foreach ( @tmpKeys )
  {
   $$tree{$_}->[0] = 0;
  } 
+}
+
 }
 
 sub hist_clear {
@@ -3568,7 +3976,9 @@ $createMe = $Global{'createWindow'}->Button(
 
 sub create_cancel
 {
- 
+
+$Global{ceObject} = undef();
+$Global{colist}->delete("1.0","end");
 $Global{'createWindow'}->destroy if Tk::Exists($Global{'createWindow'});
 $Global{'createWindow'} = undef();
 } # End of create_cancel subroutine
@@ -3579,6 +3989,7 @@ my $error;
 my $do_it;
 my @add = ();
 my $mesg;
+my $rmesg;
 my $DN;
 
 push(@add, 'objectClass');
@@ -3630,8 +4041,6 @@ if ( $error == 1 )
   return;
 }
 
-#print Dumper(@add), "\n\n";
-
 $do_it = 1;
 $Global{loopCount} = 0;
 
@@ -3641,24 +4050,74 @@ while ($do_it == 1 )
    
  if ( $mesg->code ) 
  {
-   #
-   # There was an error, check for dsa busy
-   # error.
-   #
-   #
-   $errstr = $mesg->code;
-   $errstr = ldap_error_text($errstr);
-   #
-   # Check for server busy.
-   #
-   if ( !(CheckError($errstr) ) )
-   {
-    $errstr = $mesg->code;
-    ERROR($errstr);
-#    %Creation = ();
-#    &create_cancel;
-    return;
-   } 
+     if ( $mesg->code == 10 && $Global{fref} )
+     {
+       #
+       #  Being refer'ed to another directory server.
+       #
+       @referral = $mesg->referrals();
+       foreach my $rref (@referral )
+       {
+        print "LDAP Referral: $rref \n" if $debug;
+        $rresult = &dirRConn($rref);
+        if ( $rresult != 0 )
+        {
+          print "Referral connect error, trying next now\n" if ( $debug );
+          next;
+        }
+        else
+        {
+          $rmesg = $Global{rldap}->add($DN, attrs => \@add ); 
+ 
+          if ( !$rmesg->code )
+          {
+            &dirRUConn();
+            $do_it = 0;
+            last;
+          }
+ 
+        }
+ 
+       } # End of foreach my $rref (@ref )
+
+       if ( $do_it )
+       {
+       #
+       # All referrals have been tried, there is a major error.
+       #
+ 
+        &dirRUConn();
+        $errstr = "There has been a major referral error creating this DN.";
+        $errstr .= "The following referrals were tried;\n";
+        foreach  my $rref (@referral )
+        {
+          $errstr .= "$rref\n";
+        }
+        ERROR($errstr);
+        return;
+ 
+       } # End of if ( $do_it )
+ 
+     }
+     else
+     {
+     #
+     # There was an error, check for dsa busy
+     # error.
+     #
+     #
+     $errstr = $mesg->code;
+     $errstr = ldap_error_text($errstr);
+     #
+     # Check for server busy.
+     #
+     if ( !(CheckError($errstr) ) )
+     {
+      $errstr = $mesg->code;
+      ERROR($errstr);
+      return;
+     } 
+  }
  }
  else
  {
@@ -3712,7 +4171,7 @@ if ( $display_clear ) { &display_clear(); }
 # Format and display the data associcated with the dn 
 # passed to this subroutine.
 #
-@DNs = split(/\//,$objects); # split base from dn.
+@DNs = split(/$sepChar/,$objects); # split base from dn.
 
 $dataArray = $Global{'searchResults'};
 $data = $$dataArray{$DNs[1]}; # get data associated with this dn
@@ -3812,7 +4271,7 @@ return if Tk::Exists($Global{'editWindow'});
 # Format and display the data associcated with the dn 
 # passed to this subroutine.
 #
-@DNs = split(/\//,$objects); # split base from dn.
+@DNs = split(/$sepChar/,$objects); # split base from dn.
 
 $dataArray = $Global{'searchResults'};
 $data = $$dataArray{$DNs[1]}; # get data associated with this dn
@@ -3863,13 +4322,16 @@ $elist->insert("end", "\n"); # position to the next row.
 #
 # For each attribute display it's data
 # 
+my $sptr = 0;
 foreach my $var (@infoKeys)
 {
 
-$text = sprintf "%${max}s",$var;
+ $$Global{'multi'}[$sptr] = 0;
+ $text = sprintf "%${max}s",$var;
 
  my $values = $$info{$var}; # get attribute data array.
 
+ $$Global{'multi'}[$sptr] = 1 if (@$values > 1);
  foreach my $Value ( @$values )
  {
 
@@ -3892,12 +4354,13 @@ $text = sprintf "%${max}s",$var;
   $elist->windowCreate("end", -window => $lb ); 
   $lb->insert('end', $Value );
 
-  $ab->configure( -command => [ \&changeAttribute, \$ab, \$lb, \$Value, \$var ] );
+  $ab->configure( -command => [ \&changeAttribute, \$ab, \$lb, \$Value, \$var, $sptr ] );
 
   # position to the next row. 
   $elist->insert("end", "\n");
 
   }
+ ++$sptr;
 }
 
 $lb = $elist->Entry(-width => 85,
@@ -3910,7 +4373,7 @@ $elist->insert("end", "\n");
 
 sub changeAttribute
 {
-my ( $ab, $lb, $Value, $attr  ) = @_;
+my ( $ab, $lb, $Value, $attr, $mv ) = @_;
 
 #
 # Create change attribute Window
@@ -4043,23 +4506,12 @@ $Global{'changeWindow'}->Button(-text => "DELETE",
 #
  
 $Global{'changeWindow'}->Button(-text => "REPLACE",
-      -command => [\&replace_data, $attr, $Value,\$attrlist],
+      -command => [\&replace_data, $attr, $Value,\$attrlist, $mv],
       -font => $Global{'Font'}, -borderwidth => 5 )
       -> pack(-side => $Global{'hand'},
       -padx => 2, -pady => 2 ) ;
 
-#
-# Create a multi value Checkbutton that will determine how multi-valued
-# attributes are handled.  The schema can tell you but version 2
-# ldap servers can not deliver schema data.
-#
- 
-$Global{'changeWindow'} -> Checkbutton(
-      -text => "SET MULTI-VALUED ATTRIBUTE",
-      -variable =>  \$Global{'multi'}, -onvalue => 1,
-      -offvalue => 0, -font => $Global{'Font'} )
-      -> pack(-side => "left", -anchor => "center" );
-
+$Global{'multi'} = [];
 }
 
 }
@@ -4076,12 +4528,12 @@ $Global{'tmpDELETE'}{$$attr} = $$Value;
  
  
 sub replace_data {
-my ( $attr, $Value, $tbox ) = @_;
+my ( $attr, $Value, $tbox,$mv ) = @_;
 #
 # Replace this attributes value.
 # But what if this is a multi-valued attribute.  
 #
-if ( $Global{'multi'} )
+if ( $$Global{'multi'}[$mv] )
 {
 #
 # User says it is a multi-valued attribute.
@@ -4090,7 +4542,6 @@ if ( $Global{'multi'} )
 #
 $Global{'tmpDELETE'}{$$attr} = $$Value;
 $Global{'tmpADD'}{$$attr} = $$tbox->get('1.0','1.end');
-
 }
 else
 {
@@ -4195,6 +4646,7 @@ sub change_cancel
 $Global{tmpADD} = {};
 $Global{tmpDELETE} = {};
 $Global{tmpREPLACE} = {};
+$Global{'multi'} = [];
 $Global{'changeWindow'}->destroy if Tk::Exists($Global{'changeWindow'});
  
 } # End of cancel subroutine
@@ -4208,8 +4660,12 @@ sub ldapActionDelete
 {
 my $error;
 my $mesg;
+my $rmesg;
 my @DNs;
 my $do_it;
+my $okay;
+my @referral;
+my $rresult;
 
 if ( !$Global{'ldapActionDN'} )
 {
@@ -4220,7 +4676,7 @@ my $objects = $Global{'ldapActionDN'};
 
 &ldapActionCancel();
  
-@DNs = split(/\//,$objects); # split base from dn.
+@DNs = split(/$sepChar/,$objects); # split base from dn.
 $error = 0;
 
 if ( !defined($Global{ldap}) )
@@ -4246,6 +4702,7 @@ if ( $error == 1 )
 
 $do_it = 1;
 $Global{loopCount} = 0;
+$okay = 0;
 
 while ($do_it == 1 )
 { 
@@ -4253,6 +4710,59 @@ while ($do_it == 1 )
    
  if ( $mesg->code ) 
  {
+   if ( $mesg->code == 10 && $Global{fref} ) 
+   {
+   #
+   #  Being refer'ed to another directory server.
+   #
+   @referral = $mesg->referrals();
+   foreach my $rref (@referral )
+   {
+    print "LDAP Referral: $rref \n" if $debug;
+    $rresult = &dirRConn($rref);
+    if ( $rresult != 0 )
+    {
+      print "Referral connect error, trying next now\n" if ( $debug );
+      next;
+    }
+    else
+    {
+      $rmesg = $Global{rldap}->delete($DNs[1]); 
+
+      if ( !$rmesg->code )
+      {
+        &dirRUConn();
+        $do_it = 0;
+        last;
+      }
+ 
+    }
+ 
+   } # End of foreach my $rref (@ref )
+
+   if ( $do_it ) 
+   {
+   #
+   # All referrals have been tried, there is a major error.
+   #
+ 
+    &dirRUConn();
+    $errstr = "There has been a major referral error deleteing this DN.";
+    $errstr .= "The following referrals were tried;\n";
+    foreach  my $rref (@referral )
+    { 
+      $errstr .= "$rref\n";
+    }
+    ERROR($errstr);
+    return;
+ 
+   } # End of if ( $do_it )
+ 
+   }  # End of if ( $mesg->code == 10 && $Global{fref} )
+   else
+   {
+    print "Delete check busy now\n" if ( $debug );
+
    #
    # There was an error, check for dsa busy
    # error.
@@ -4269,7 +4779,8 @@ while ($do_it == 1 )
     ERROR($errstr);
     return;
    } 
- }
+   } # End of else for if ( $mesg->code == 10 && $Global{fref} )
+ }   # End of if ( $mesg->code )
  else
  {
  #
@@ -4278,7 +4789,7 @@ while ($do_it == 1 )
  $do_it = 0;
  }
 
-}
+} # End of while ($do_it == 1 )
 
 #
 # Destroy the dn history list if it exists.
@@ -4296,10 +4807,15 @@ sub ldapActionCreateLdifEntry
 {
 my $error;
 my $mesg;
+my $rmesg;
 my $f;
 my $ldif;
 my @entry;
 my $do_it;
+my $type;
+my $task;
+my $rresult;
+my @referral;
  
 $error = 0;
 
@@ -4352,25 +4868,112 @@ if ( $error == 1 )
           else 
           {
 
-        #  print Dumper($entry),"\n\n";
+           $op = $$entry{changetype};
 
-          $op = $$entry{changetype};
+           if ( $op =~  /add/)
+           {
+           $type = "add";
 
-          if ( $op =~  /add/)
-          {
-          $mesg = $Global{ldap}->add($entry);
-          }
-          else
-          {
-          $op = $$entry{changes};
-          #$mesg = $Global{ldap}->modify($entry);
-          $mesg = $entry->update($Global{ldap});
-          }
-          if ( $mesg->code )
-          {
-          ERROR($mesg->code);
-          }
-          }
+#           $mesg = $Global{ldap}->add($entry);
+           $task = '$Global{ldap}->add($entry)';
+           }
+           else
+           {
+           $type = "change";
+           $op = $$entry{changes};
+           #$mesg = $Global{ldap}->modify($entry);
+
+           $task = '$entry->update($Global{ldap})';
+           }
+
+           $do_it = 1;
+           while ( $do_it )
+           {
+            $mesg = eval $task;
+
+            if ( $mesg->code )
+            {
+ 
+            if ( $mesg->code == 10 && $Global{fref} )
+            {
+             #
+             #  Being refer'ed to another directory server.
+             #
+             @referral = $mesg->referrals();
+             foreach my $rref (@referral )
+             { 
+                print "LDAP Referral: $rref \n" if $debug;
+                $rresult = &dirRConn($rref);
+                if ( $rresult != 0 )
+                {
+                  print "Referral connect error, trying next now\n" if ( $debug );
+                  next;
+                }
+                else
+                {
+                  $task = '$entry->update($Global{rldap})';
+                  $rmesg = eval $task;
+ 
+                  if ( !$rmesg->code )
+                  {
+                    &dirRUConn();
+                    $do_it = 0;
+                    last;
+                  }
+                }
+ 
+             } # End of foreach my $rref (@ref )
+
+             if ( $do_it )
+             {
+              #
+              # All referrals have been tried, there is a major error.
+              #
+ 
+              &dirRUConn();
+              $errstr = "There has been a major referral updating this DN.";
+              $errstr .= "The following referrals were tried;\n";
+              foreach  my $rref (@referral )
+              {
+                $errstr .= "$rref\n";
+              }
+              ERROR($errstr);
+              return;
+ 
+              } # End of if ( $do_it )
+            } # End of if ( $mesg->code == 10 && $Global{fref} )
+            else
+            {
+               print "Delete check busy now\n" if ( $debug );
+ 
+              #
+              # There was an error, check for dsa busy
+              # error.
+              #
+              #
+              $errstr = $mesg->code;
+              $errstr = ldap_error_text($errstr);
+              #
+              # Check for server busy.
+              #
+              if ( !(CheckError($errstr) ) )
+              {
+                 $errstr = $mesg->code;
+                 ERROR($errstr);
+                 return;
+              }
+            }
+            } # End of if ( $mesg->code )
+            else
+            {
+              #
+              # There was no error
+              #
+              $do_it = 0;
+            } # End of else for if ( $mesg->code == 10 && $Global{fref} )
+ 
+           } # End of while ( $do_it )
+          } # End of else for if ( $ldif->error() )
        }
 
        $ldif->done();
@@ -4417,7 +5020,7 @@ if ( $error == 1 )
 {
   if ( defined($Global{dirConnError}) )
   {
-  $error = "ldapActionRename $Global{dirConnError}";
+  $error = "ldapActionMultiSaveToLdif $Global{dirConnError}";
   ERROR(\$error);
   return;
   }
@@ -4435,7 +5038,7 @@ if ( $error == 1 )
 $mesg = $Global{ldap}->search(
   base   => $LDAP_SEARCH_BASE,
   filter => $Global{filter},
-  attrs  => $att_wanted,
+  attrs  => $Global{att_wanted},
 );
  
 if ( $mesg->code && $mesg->code != 48 )
@@ -4521,7 +5124,7 @@ my $objects = $Global{'ldapActionDN'};
 
 &ldapActionCancel();
  
-@DNs = split(/\//,$objects); # split base from dn.
+@DNs = split(/$sepChar/,$objects); # split base from dn.
 $error = 0;
 
 if ( !defined($Global{ldap}) )
@@ -4533,7 +5136,7 @@ if ( $error == 1 )
 {
   if ( defined($Global{dirConnError}) )
   {
-  $error = "ldapActionRename $Global{dirConnError}";
+  $error = "ldapActionSaveToLdif $Global{dirConnError}";
   ERROR(\$error);
   return;
   }
@@ -4551,7 +5154,7 @@ if ( $error == 1 )
 $mesg = $Global{ldap}->search(
   base   => $LDAP_SEARCH_BASE,
   filter => $Global{filter},
-  attrs  => $att_wanted,
+  attrs  => $Global{att_wanted},
 );
  
 if ( $mesg->code && $mesg->code != 48 )
@@ -4637,8 +5240,11 @@ sub ldapActionRename
 {
 my $error;
 my $mesg;
+my $rmesg;
 $error = 0;
 my $do_it;
+my $rresult;
+my @referral;
 
 if ( $Global{'Rename'} == -1 ) 
 {
@@ -4679,6 +5285,59 @@ $mesg = $Global{ldap}->moddn($Global{'RenameDN'},
 
 if ( $mesg->code ) 
 {
+  if ( $mesg->code == 10 && $Global{fref} )
+  {
+    #
+    #  Being refer'ed to another directory server.
+    #
+    @referral = $mesg->referrals();
+    foreach my $rref (@referral )
+    {
+      print "LDAP Referral: $rref \n" if $debug;
+      $rresult = &dirRConn($rref);
+      if ( $rresult != 0 )
+      {
+        print "Rename referral connect error, trying next now\n" if ( $debug );
+        next;
+      }
+      else
+      {
+ 
+        $rmesg = $Global{rldap}->moddn($Global{'RenameDN'}, 
+                     newrdn => $Global{'newrdn'}, 
+                     deleteoldrdn => $Global{'deleteoldrdn'}, 
+                     newsuperior => $Global{'newsuperior'} ); 
+ 
+      if ( !$rmesg->code )
+       {
+         &dirRUConn();
+         $do_it = 0;
+         last;
+       }
+      } 
+    } # End of foreach my $rref (@ref ) 
+
+   if ( $do_it )
+   {
+   #
+   # All referrals have been tried, there is a major error.
+   #
+ 
+    &dirRUConn();
+    $errstr = "There has been a major referral error renaming this DN.";
+    $errstr .= "The following referrals were tried;\n";
+    foreach  my $rref (@referral )
+    {
+      $errstr .= "$rref\n";
+    }
+    ERROR($errstr);
+    return;
+ 
+   } # End of if ( $do_it )
+ 
+  } # End of if ( $mesg->code == 10 && $Global{fref} )
+  else
+  {
    #
    # There was an error, check for dsa busy
    # error.
@@ -4695,7 +5354,8 @@ if ( $mesg->code )
     ERROR($errstr);
     return;
    }
- }
+  }
+ } # End of if ( $mesg->code ) 
  else
  {
  #
@@ -4704,7 +5364,7 @@ if ( $mesg->code )
  $do_it = 0;
  }
 
-}
+} # End of while ($do_it == 1 )
 
 #
 # Destroy the dn history list if it exists.
@@ -4712,7 +5372,7 @@ if ( $mesg->code )
 $Global{'searchHList'}->delete('all') if Tk::Exists($Global{'searchHList'});
 $Global{nb}->raise('SEARCH');
 
-}
+} # End of subroutine ldapActionRename
  
 #
 # Create Rename DATA  Window
@@ -4742,7 +5402,7 @@ my $objects = $Global{'ldapActionDN'};
 
 &ldapActionCancel();
  
-@DNs = split(/\//,$objects); # split base from dn.
+@DNs = split(/$sepChar/,$objects); # split base from dn.
 
 $Global{'RenameDN'} = $DNs[1];
 
@@ -4973,8 +5633,11 @@ sub changeEntry
 {
 my $errstr;
 my $mesg;
+my $rmesg;
 my $error = 0;  # initialize error flag.
 my $do_it;
+my $rresult;
+my @referral;
 
 if ( !defined($Global{ldap}) )
 {
@@ -5012,6 +5675,61 @@ $mesg = $Global{ldap}->modify( $Global{'entryDN'}, add => $Global{'add'});
  
 if ( $mesg->code )
 {
+
+   if ( $mesg->code == 10 && $Global{fref} )
+   {
+    #
+    #  Being refer'ed to another directory server.
+    #  
+    # 
+   @referral = $mesg->referrals();
+ 
+   foreach my $rref (@referral )
+   {
+    print "LDAP Referral: $rref \n" if $debug;
+    $rresult = &dirRConn($rref);
+ 
+    if ( $rresult != 0 )
+    {
+    print "Referral connect error, trying next now\n" if ( $debug );
+      next;
+    }
+    else
+    {
+      $rmesg = $Global{rldap}->modify( $Global{'entryDN'}, add => $Global{'add'});
+ 
+      if ( !$rmesg->code )
+      {
+        &dirRUConn();
+        $do_it = 0;
+        last;
+      }
+ 
+    }
+ 
+   } # End of foreach my $rref (@ref )
+
+   if ( $do_it )
+   {
+   #
+   # All referrals have been tried, there is a major error.
+   #
+ 
+    &dirRUConn();
+    $errstr = "There has been a major referral error adding an attribute to this DN.";
+    $errstr .= "The following referrals were tried;\n";
+    foreach  my $rref (@referral )
+    {
+      $errstr .= "$rref\n";
+    }
+    ERROR($errstr);
+    return;
+ 
+   } # End of if ( $do_it )
+
+   }
+   else
+   {
    #
    # There was an error, check for dsa busy
    # error.
@@ -5027,6 +5745,7 @@ if ( $mesg->code )
     $errstr = $mesg->code;
     ERROR($errstr);
     return;
+   }
    }
  }
  else
@@ -5059,6 +5778,60 @@ $mesg = $Global{ldap}->modify( $Global{'entryDN'}, delete => $Global{'delete'});
  
 if ( $mesg->code )
 {
+
+   if ( $mesg->code == 10 && $Global{fref} )
+   {
+    #
+    #  Being refer'ed to another directory server.
+    #  
+    # 
+   @referral = $mesg->referrals();
+ 
+   foreach my $rref (@referral )
+   {
+    $rresult = &dirRConn($rref);
+ 
+    if ( $rresult != 0 )
+    {
+      print "Referral connect error, trying next now\n" if ( $debug );
+      next;
+    }
+    else
+    {
+      $rmesg = $Global{rldap}->modify( $Global{'entryDN'}, delete => $Global{'delete'});
+ 
+      if ( !$rmesg->code )
+      {
+        &dirRUConn();
+        $do_it = 0;
+        last;
+      }
+ 
+    }
+ 
+   } # End of foreach my $rref (@ref )
+
+    if ( $do_it )
+    {
+    #
+    # All referrals have been tried, there is a major error.
+    #
+ 
+     &dirRUConn();
+     $errstr = "There has been a major referral error deleteing an attribute on this DN.";
+     $errstr .= "The following referrals were tried;\n";
+     foreach  my $rref (@referral )
+     {
+       $errstr .= "$rref\n";
+     }
+     ERROR($errstr);
+     return;
+ 
+    } # End of if ( $do_it )
+
+   }
+   else
+   {
    #
    # There was an error, check for dsa busy
    # error.
@@ -5074,6 +5847,7 @@ if ( $mesg->code )
     $errstr = $mesg->code;
     ERROR($errstr);
     return;
+   }
    }
  }
  else
@@ -5106,6 +5880,61 @@ $mesg = $Global{ldap}->modify( $Global{'entryDN'}, replace => $Global{'replace'}
  
 if ( $mesg->code )
 {
+
+   if ( $mesg->code == 10 && $Global{fref} )
+   {
+    #
+    #  Being refer'ed to another directory server.
+    #  
+    # 
+   @referral = $mesg->referrals();
+ 
+   foreach my $rref (@referral )
+   {
+    $rresult = &dirRConn($rref);
+ 
+    if ( $rresult != 0 )
+    {
+      print "Referral connect error, trying next now\n" if ( $debug );
+      next;
+    }
+    else
+    {
+      $rmesg = $Global{rldap}->modify( $Global{'entryDN'}, replace => $Global{'replace'});
+ 
+      if ( !$rmesg->code )
+      {
+        &dirRUConn();
+        $do_it = 0;
+        last;
+      }
+ 
+    }
+ 
+   } # End of foreach my $rref (@ref )
+
+   if ( $do_it )
+   {
+   #
+   # All referrals have been tried, there is a major error.
+   #
+ 
+    &dirRUConn();
+    $errstr = "There has been a major referral error replacing an attribute on this DN.";
+    $errstr .= "The following referrals were tried;\n";
+    foreach  my $rref (@referral )
+    {
+      $errstr .= "$rref\n";
+    }
+    ERROR($errstr);
+    return;
+ 
+   } # End of if ( $do_it )
+ 
+ 
+   }
+   else 
+   {
    #
    # There was an error, check for dsa busy
    # error.
@@ -5122,6 +5951,7 @@ if ( $mesg->code )
     $errstr = $mesg->code;
     ERROR($errstr);
     return;
+   }
    }
  }
  else
@@ -5281,7 +6111,7 @@ foreach $attr (@Attributes)
 #----------------------------------------#
 sub Usage
 {
-   print( "Usage: [-h] | [-d <#> ] | [-n]\n" );
+   print( "Usage: [-h] | [-d <#> ] | [-n] | -i <file> \n" );
    print( "\t-d    Perl-LDAP debug mode. Display debug messages to stdout.\n" );
    print( "\t      Should be used with -n so that process will not fork a\n" );
    print( "\t      new process.\n" );
@@ -5292,6 +6122,7 @@ sub Usage
    print( "\t      Value: 8 - Show incoming packets (using asn_dump).\n" );
    print( "\t      These values can be add to display several functions.\n" );
    print( "\t-h    Help.  Display this message.\n" );
+   print( "\t-i    Use the named file as the initialization file.\n" );
    print( "\t-n    Tklkup debug mode. Display debug messages to stdout.\n" );
    print( "\n" );
    print( "\t      Perldoc pod documentation is included in this script.\n" );
@@ -5317,9 +6148,12 @@ selecting directory servers, search bases, attributes and
 for enabling the Directory Schema Search window.
 
 This script has been tested on Solaris, RedHat 7.3 Linux, 
-Mandrake 6.5 Linux,  and ActiveState Perl 628 but should work with 
+Mandrake 6.5 Linux, ActiveState Perl 628 and 5.8.7, but should work with 
 any system that has PERL and the required modules installed in 
 it.
+
+Execute tklkup -h to view the list of input options and their
+usage.
 
 The SSL connection has been tested on Solaris, RedHat 7.3, and
 Mandrake 6.5 Linux.  The SSL connection from a Microsoft Windows 
@@ -5354,8 +6188,12 @@ that it will use.
 
 To be used this file must have user read permission.
 
-There are 5 commands that can be used with this file;
-hand, attribute, server, limit, and port.
+There are 10 commands that can be used with this file;
+
+ binddn  -> string value:  Bind DN.
+ 
+ followref -> no value needed.  Setting this option will
+              activate following referrals on entry modification.
 
  mwwidth -> numeric value:  Default 600 main window width in
                             pixels, user may need to adjust this.
@@ -5366,7 +6204,7 @@ hand, attribute, server, limit, and port.
  hand -> values: left or right.  Defines where the 
                  attribute label box will be place.
 
- limit -> value: default is 30.  Limits the number of 
+ limit -> value: default is 100.  Limits the number of 
                  search base(s) detected.
 
  port -> value: default is 389.  User should set this
@@ -5494,12 +6332,18 @@ will display the information obtained from the root dse entry.
 If the root dse entry can not be obtained then an error message
 window will be displayed.  This menu has a "Hot" key, Ctrl-r.
 
+The I<Set SSL> menu will set parameters for a SSL ldap connection.
+This menu has a "Hot" key, Ctrl-s.
+
+The I<Set NON-SSL> menu will set parameters for a non-SSL ldap 
+connection.  This menu has a "Hot" key, Ctrl-n.
+
 The I<Toggle LDAP Version> menu will toggle the ldap version
 between version 2 and 3.  This menu has a "Hot" key, Ctrl-l.
 
-The I<Toggle SSL> menu will toggle between a SSL ldap connection
-and a standard ldap connection.  This menu has a "Hot" key, 
-Ctrl-s.
+The I<Toggle Follow Referral> menu will toggle the flag that
+determines whether a ldap modify follows a referral.  This menu 
+has a "Hot" key, Ctrl-f.
 
 The I<Exit> menu will exit the program.  This menu has a
 "Hot" key, Ctrl-x.
@@ -5509,21 +6353,20 @@ that is separate from the main window.  This menu has a
 "Hot" key, Alt-b.
 
 The new window contains two buttons and two text boxes. 
-For security reasons nothing is initially displayed in the 
-text boxes.  Pressing the accept button with this setup
-will cause the bind DN and password to be set to null
-strings.
 
 At the top of the window is a Cancel button, pressing
 this button will cancel the operation of setting the
 bind DN and password. 
 
 The DN text box is where the user will enter the DN
-to bind with.
+to bind with.  If the user has the binddn option in the .tklkup 
+file, the binddn will be displayed in the DN text box.
 
 The PASSWORD text box is where the user will enter the password
 for the DN.  Star "*" will be shown for the characters
-as they are typed into the text box.  
+as they are typed into the text box.  If the user presses the
+return key after entering the password, this will set the
+bind DN and password and start the bind process.
 
 At the bottom of the window is the Accept button, pressing
 this button will set the bind DN and the password.  Pressing the
@@ -5537,12 +6380,9 @@ The I<DIRECTORY PORT> button will activate a window
 that is separate from the main window.  This menu has a 
 "Hot" key, Alt-p.
 
-The new window contains two buttons, a SSL checkbox, and one 
-text box.  If the user needs to change the TCP connection port, 
-this is where it is done.
-
-The SSL checkbox is where the user can select SSL for a
-SSL connection on some other port besides 636.
+The new window contains two buttons, and one text box.  If the 
+user needs to change the TCP connection port, this is where it 
+is done.
 
 At the top of the window is a Cancel button, pressing
 this button will cancel the operation of setting the
@@ -5583,19 +6423,10 @@ off window will follow the actions of the GUI.  All other
 actions like moving or closing just the torn off window 
 must be done by the user's window manager.
 
-The I<LDAP V3> "RadioButton" diamond will select the
-LDAP protocol version.  When selected the "RadioButton" 
-diamond will be red in color.  This indicates that the 
-ldap connection will use the version I<3> protocol.  To use 
-ldap version I<2> protocol press the "RadioButton" diamond 
-so that it becomes a gray color.
-
-The I<SSL> "RadioButton" diamond will select the
-LDAP SSL protocol connection.  When selected the "RadioButton" 
-diamond will be red in color.  This indicates that the 
-ldap connection will use the I<SSL> protocol.  To use the 
-I<standard> ldap protocol press the "RadioButton" diamond 
-so that it becomes a gray color.
+To the left of the  I<SELECT SERVER> button are two text labels;
+one for the LDAP version and one for the SSL connection type.
+These labels will display information about the selected LDAP
+version and SSL connection status.
 
 At this point the tklkup GUI is made of five display and 
 control panels;  SEARCH,  SEARCH DISPLAY, SCHEMA DATA, CREATE ENTRY, 
@@ -5605,30 +6436,24 @@ and INFO;
 
 =head1 SEARCH Panel
 
-The I<SELECT BASE> button will activate a cascading 
-drop down menu that contains the NamingContexts of the directory
-server.  This menu is a designed to be a "I<tear off>" menu, 
-selecting the "---------------" line will cause the pull down 
-menu to become a separate window that is still somewhat 
-controlled by the GUI.  If the GUI is icon-ed or exited, the 
-tear off window will follow the actions of the GUI.  All other 
-actions like moving or closing just the torn off window must be 
-done by the user's window manager.
+The I<SELECT BASE> button will activate a Select Search Base window
+contains 2 buttons and a herical tree structure of the directory.
+At the top of the Select Search Base window is the CANCEL BASE CHANGE
+button.  Pressing the button will cancel the search base change and
+will close, or withdraw, the window.  At the bottom of the Select Search 
+Base window is the ACCEPT BASE CHANGE button.  Pressing the button 
+will change the search base to the highlighted directory branch and
+will close, or withdraw, the window.   
+In the middle of the Select Search Base window is the hierarchical
+list box where a tree type display of the directory branch structure
+will be displayed.  The directory namingContext(s) form the base of the
+tree(s), to the left of each branch in the directory will be a small
+box with a + or - sign in it, if the box has a + in it, clicking on
+the box will expand the tree structure, if the box has a - in it, 
+clicking on the box will collapse the tree structure.
 
-From the window that contains the NamingContexts the user
-can select a namingContext to display the bases associated with
-that naminContext.  In a non-torn off menu to select a namingContext
-simply pass the cursor over the nameingContext, a new window 
-containing the bases associated with that namingContext will be 
-displayed.  On a menu window that has been torn off, select the 
-namingContext by clicking on the namingContext, a new window 
-containing the bases associated with that namingContext will be 
-displayed.  From the bases menu the user will select the 
-"RadioButton" that corresponds to the search base the user 
-wishes to use in the directory search.  When selected the 
-"RadioButton" diamond will turn red in color.  The DIRECTORY 
-SEARCH BASE text box will display the directory search base 
-that is selected.  
+To select a search base, click on a branch, which will highlight the
+branch, and press the ACCEPT BASE CHANGE button.
 
 The I<SELECT ADDITIONAL ATTRIBUTES> button will activate a 
 drop down menu.  From the menu the user will select the 
@@ -5697,6 +6522,10 @@ put the beginning and ending parenthesis around the data.
 If the I<Filter> attribute is selected this is where the 
 I<COMPLETE> filter is entered, the program will not modify this
 string in any way.
+If the user presses the Enter key while the I<FILTER DATA> text box
+has the key board focus, a ldap search for the filter data will be
+executed.  This action is the same as pressing the 
+I<SEARCH THE DIRECTORY> button.
 
 The I<CLEAR FILTER DATA> button will clear out the text
 that appears in the Attribute Data text box.
@@ -5730,7 +6559,7 @@ SAVE FORMAT frame.
 -------------------------------------------------------------------
 
 =head1 SEARCH DISPLAY PANEL
-
+ 
 The I<SEARCH DISPLAY> is the panel where data for the
 selected DN is displayed. Data is displayed in the read only
 Directory Data text box.  Associated with the Directory Data 
@@ -5899,9 +6728,7 @@ the user selected.  Depending on the operation the user wants to do the
 user can change the data or leave the data as is.
 
 Below the attribute data text box are three buttons, ADD, DELETE, and
-REPLACE.  To the right of the REPLACE button is a check button that
-controls operations on multi-valued attributes during REPLACE operations.
-
+REPLACE.  
 
 =head2 ADD operations.
 
@@ -5917,19 +6744,13 @@ the I<DELETE> button.
 
 =head2 REPLACE operations.
 
-The attribute replace operation is a little tricky depending whether the
-attribute is single or multi valued.
+The attribute value being replaced is a part of a multi-valued 
+attribute, the new value will be added to the attribute, then
+the old value will be deleted.  If the add operation has an error
+code, the delete part of this operation will not take place.
 
-If the user knows that the attribute is multi-valued and wants to preserve
-the other attribute values the user should press the check button to the
-right of the I<REPLACE> button.  Doing this will control how the add and
-delete operations are staged.  The user should then enter the new data in
-the attribute data text box and press the I<REPLACE> button.
-
-If the user wishes to replace all of the values for an attribute; 
-the user should enter the new data in the attribute data text box and 
-press the I<REPLACE> button.
-
+If the attribute value being replace is a single valued attribute
+this value will be replaced.
 
 When the user done with the changes the user should press the 
 I<ACCEPT DATA CHANGES> button.  This will move the data changes onto
@@ -6080,11 +6901,24 @@ First thing the user should do is select the proper DN base from
 the SELECT DN BASE button.  This will setup part of the entry's
 DN.
 
-After select the DN base the user can find and select an objeclass
-from the list of objectClasses.  When the user selects, by clicking
-the pointer on an objectClass, a CREATE DIRECTORY ENTRY window
+After selecting the DN base the user can find and select an objectclass,
+or objectclasses from the list of objectClass(s).  When the user selects, 
+by clicking the pointer on an objectClass, the objectclass will appear
+in the window to the left of the objectclass list. The superior objectclass(s)
+of the selected objectclass will also be displayed.  
+
+If the user adds a wrong objectclass, the user may remove the objectclass
+by clicking the button with the objectclass name in it.  Only that 
+class will be removed.
+
+When the user is ready to create the entry, the user must click the 
+"Create The Entry" button and a CREATE DIRECTORY ENTRY window
 will be displayed.  It is from the CREATE DIRECTORY ENTRY window the
 the user will finish entering data for the new entry.
+
+If the user selects the posixAccount or shadowAccount, the
+posixAccount, shadowAccount, and account objectclasses will be
+include in the objectclasses for the new entry.
 
 -------------------------------------------------------------------
 
