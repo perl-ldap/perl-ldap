@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2004 Graham Barr. All rights reserved. This program is
+# Copyright (c) 2002-2006 Graham Barr. All rights reserved. This program is
 # free software; you can redistribute it and/or modify it under the same
 # terms as Perl itself.
 
@@ -11,7 +11,7 @@ use XML::SAX::Base;
 use Net::LDAP::Entry;
 
 @ISA = qw(XML::SAX::Base);
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 # OO purists will hate this :)
 my %schema_typemap = qw(
@@ -317,7 +317,7 @@ sub _dsml_context {
     });
   }
 
-  while (@$context and ($context->[-1] ne 'dsml' or $new eq '')) {
+  while (@$context and ($context->[-1] ne $new) and ($context->[-1] ne 'dsml' or $new eq '')) {
     my $old = pop @$context;
     $handler->end_element({
       Name         => "dsml:$old",
@@ -813,10 +813,10 @@ callback routine.
 Creates a new Net::LDAP::DSML object.  There are 2 options
 to this method.
 
-OUTPUT is a reference to either a file handle that has already
+C<output> is a reference to either a file handle that has already
 been opened or to an array.
 
-PRETTY_PRINT is an option to print a new line at the end of
+C<pretty_print> is an option to print a new line at the end of
 each element sequence.  It makes the reading of the XML output
 easier for a human.
 
@@ -883,7 +883,7 @@ L<XML::SAX::Base>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002-2004 Graham Barr. All rights reserved. This program is
+Copyright (c) 2002-2006 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
