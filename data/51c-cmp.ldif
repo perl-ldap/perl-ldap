@@ -1,3 +1,4 @@
+
 dn: cn=All Staff, ou=Groups, o=University of Michigan, c=US
 member: cn=Manager, o=University of Michigan, c=US
 member: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=Un
@@ -23,7 +24,7 @@ member: cn=Bjorn Jensen, ou=Information Technology Division, ou=People, o=Univ
 owner: cn=Manager, o=University of Michigan, c=US
 cn: All Staff
 description: Everyone in the sample data
-objectclass: groupofnames
+objectclass: groupOfNames
 
 dn: cn=Alumni Assoc Staff, ou=Groups, o=University of Michigan, c=US
 member: cn=Manager, o=University of Michigan, c=US
@@ -42,4 +43,4 @@ member: cn=Ursula Hampster, ou=Alumni Association, ou=People, o=University of
 owner: cn=Manager, o=University of Michigan, c=US
 description: All Alumni Assoc Staff
 cn: Alumni Assoc Staff
-objectclass: groupofnames
+objectclass: groupOfNames

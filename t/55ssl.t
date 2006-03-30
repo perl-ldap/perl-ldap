@@ -2,8 +2,14 @@
 
 BEGIN {
   require "t/common.pl";
-  start_server(version => 3, ssl => 1);
 }
+
+unless (eval { require IO::Socket::SSL; 1} ) {
+  print "1..0 # IO::Socket::SSL not installed\n";
+  exit;
+}
+
+start_server(version => 3, ssl => 1);
 
 print "1..15\n";
 

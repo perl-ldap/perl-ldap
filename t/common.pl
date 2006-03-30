@@ -34,9 +34,11 @@ BEGIN {
     $LDAP_VERSION = 2;
   }
   elsif ($SERVER_TYPE eq 'openldap2') {
-    $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts;
+    $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts
+      and eval { require IO::Socket::SSL; 1};
     ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g if grep { $_ eq 'ipc' } @server_opts;
-    $SASL = 1 if grep { $_ eq 'sasl' } @server_opts;
+    $SASL = 1 if grep { $_ eq 'sasl' } @server_opts
+      and eval { require Authen::SASL; 1 };
     $CONF_IN	  = "./data/slapd2-conf.in";
     push @URL, "ldap://${HOST}:$PORT/";
     push @URL, "ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;

@@ -91,7 +91,6 @@ MANIFEST
 META.yml
 README
 SIGNATURE
-t/0-signature.t
 t/00ldif-entry.t
 t/01canon_dn.t
 t/02filter.t

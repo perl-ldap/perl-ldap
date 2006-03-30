@@ -1,11 +1,10 @@
+
 dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=Univer
  sity of Michigan, c=US
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: newPilotPerson
+objectclass: OpenLDAPperson
 cn: Barbara Jensen
 cn: Babs Jensen
+uid: babs
 sn: Jensen
 title: Mythical Manager, Research Systems
 postaladdress: ITD Prod Dev & Deployment $ 535 W. William St. Room 4212 $ Ann 
@@ -23,12 +22,10 @@ telephonenumber: +1 313 555 9022
 
 dn: cn=Bjorn Jensen, ou=Information Technology Division, ou=People, o=Universi
  ty of Michigan, c=US
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: newPilotPerson
+objectclass: OpenLDAPperson
 cn: Bjorn Jensen
 cn: Biiff Jensen
+uid: bjorn
 sn: Jensen
 seealso: cn=All Staff, ou=Groups, o=University of Michigan, c=US
 userpassword: bjorn

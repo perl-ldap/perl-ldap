@@ -9,6 +9,8 @@ version_from	('lib/Net/LDAP.pm');
 license		('perl');
 abstract	('LDAP client library');
 
+sign(1);
+
 check_nmake();      # check and download nmake.exe for Win32
 
 requires(
@@ -22,7 +24,7 @@ include 	('ExtUtils::AutoInstall');
 features(
   'SASL authentication' => [
     -default => 0,
-    'Authen::SASL'  => 2.00,
+    'Authen::SASL'  => '2.00',
     recommends('Digest::MD5'),		# for DIGEST-MD5 SASL mech
     recommends('Digest::HMAC_MD5'),	# for CRAM-MD5 SASL mech
     recommends('GSSAPI'),		# for GSSAPI SASL mech
@@ -54,7 +56,4 @@ features(
 
 auto_install_now();
 
-sign(1);
-
-&Makefile->write;
-&Meta->write;
+WriteAll;

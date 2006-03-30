@@ -4,7 +4,8 @@
 include $SCHEMA_DIR/core.schema
 include $SCHEMA_DIR/cosine.schema
 include $SCHEMA_DIR/inetorgperson.schema
-schemacheck	off
+include $SCHEMA_DIR/openldap.schema
+schemacheck   	off
 pidfile     $TESTDB/slapd.pid
 argsfile    $TESTDB/slapd.args
 
@@ -21,7 +22,7 @@ rootpw		$PASSWD
 TLSCertificateFile ./data/cert.pem
 TLSCertificateKeyFile ./data/key.pem
 
-password-hash   {CLEARTEXT}
+#password-hash   {CLEARTEXT}
 #sasl-host localhost
 #sasl-realm testing
 #sasl-secprops passcred
