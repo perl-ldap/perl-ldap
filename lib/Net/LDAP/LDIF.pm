@@ -17,7 +17,7 @@ BEGIN {
 }  
 
 
-$VERSION = "0.16_02";
+$VERSION = "0.17";
 
 my %mode = qw(w > r < a >>);
 
@@ -72,7 +72,7 @@ sub new {
     fh   => $fh,
     file => "$file",
     opened_fh => $opened_fh,
-    eof => 0,
+    _eof => 0,
     write_count => ($mode eq 'a' and tell($fh) > 0) ? 1 : 0,
   };
 
