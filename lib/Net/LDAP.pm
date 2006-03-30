@@ -739,7 +739,7 @@ sub sync {
 
   $mid = $mid->mesg_id if ref($mid);
   while (defined($mid) ? exists $table->{$mid} : %$table) {
-    last if $err = $ldap->_recvresp($mid);
+    last if $err = $ldap->process($mid);
   }
 
   $err;
@@ -793,7 +793,7 @@ sub _sendmesg {
     : $mesg;
 }
 
-sub _recvresp {
+sub process {
   my $ldap = shift;
   my $what = shift;
   my $sock = $ldap->socket or return LDAP_SERVER_DOWN;
@@ -846,6 +846,8 @@ sub _recvresp {
 
   return LDAP_SUCCESS;
 }
+
+*_recvresp = \&process; # compat
 
 sub _drop_conn {
   my ($self, $err, $etxt) = @_;

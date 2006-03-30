@@ -887,6 +887,13 @@ C<MESG> is given, then wait for all outstanding requests to be completed.
 
 Returns an error code defined in L<Net::LDAP::Constant>.
 
+=item process ( MESG )
+
+Process any messages that the server has sent, but do not block. If C<MESG>
+is specified then return as soon as C<MESG> has been processed.
+
+Returns an error code defined in L<Net::LDAP::Constant>.
+
 =item version ( )
 
 Returns the version of the LDAP protocol that is being used.
