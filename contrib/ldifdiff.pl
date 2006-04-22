@@ -33,13 +33,13 @@ source and target entries. By default, all attributes are considered.
 
 =item B<-c|--ciscmp attr1,...>
 
-(Optional) Compare values of the specified attributes case-insensitively. By 
-default, comparisons are case-sensitive. 
+(Optional) Compare values of the specified attributes case-insensitively. The 
+default set is: mail manager member objectclass owner uid uniqueMember
 
 =item B<--dnattrs attr1,...>
 
 (Optional) Specifies a list of attributes to be treated as DNs when being
-compared. The default set is manager, member, owner and uniqueMember.
+compared. The default set is: manager member owner uniqueMember
 
 =item B<--sharedattrs attr1,...>
 
@@ -76,11 +76,14 @@ GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 	'k|keyattr=s' => \$keyattr,
 	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a}
 	);
-%ciscmp = (objectclass => 1, manager => 1, member => 1, owner => 1,
-		   uniquemember => 1)
-	unless keys %ciscmp;
-%dnattrs = (manager => 1, member => 1, owner => 1, uniquemember => 1)
-	unless keys %dnattrs;
+unless (keys %ciscmp) {
+	foreach (qw(mail manager member objectclass owner uid uniquemember)) 
+	{ $ciscmp{$_} = 1 }
+}
+unless (keys %dnattrs) {
+	foreach (qw(manager member owner uniquemember))
+	{ $dnattrs{$_} = 1 }
+}
 %sharedattrs = (objectclass => 1)
 	unless keys %sharedattrs;
 
@@ -106,26 +109,40 @@ exit;
 
 
 # Gets the relative distinguished name (RDN) attribute
-sub rdnattr { ($_[0]->dn =~ /^(.*?)=/)[0] }
+sub rdnattr { ($_[0] =~ /^(.*?)=/)[0] }
 
 # Gets the relative distinguished name (RDN) value
-sub rdnval { my $rv = ($_[0]->dn =~ /=(.*)/)[0]; $rv =~ s/(?<!\\),.*//; $rv }
+sub rdnval { my $rv = ($_[0] =~ /=(.*)/)[0]; $rv =~ s/(?<!\\),.*//; $rv }
+
+# Gets the rest of the DN (the part after the RDN)
+sub dnsuperior { my $rv = ($_[0] =~ /^.*?(?<!\\),(.*)/)[0]; $rv }
+
+sub cmpDNs
+{
+	my ($adn, $bdn) = @_;
+	my $cadn = canonical_dn($adn, casefold => 'lower'); 
+	my $cbdn = canonical_dn($bdn, casefold => 'lower');
+	if ($ciscmp{lc rdnattr($cadn)}) { $cadn = lc($cadn), $cbdn = lc($cbdn) }
+
+	$cadn cmp $cbdn;
+}
 
 sub cmpEntries
 { 
-    my ($a, $b) = @_;
+	my ($a, $b) = @_;
+	my $dncmp = cmpDNs($a->dn, $b->dn);
 
-    if ($keyattr =~ /^dn$/i) { 
-		return lc(canonical_dn($a->dn)) cmp lc(canonical_dn($b->dn))
+	if (lc($keyattr) eq 'dn') { 
+		return ($dncmp, $dncmp);
 	}
-    else { 
+	else { 
 		my $aval = $a->get_value($keyattr);
 		my $bval = $b->get_value($keyattr);
 		if ($ciscmp{$keyattr}) {
 			$aval = lc($aval);
 			$bval = lc($bval);
 		}
-		return $aval cmp $bval;
+		return($aval cmp $bval, $dncmp);
 	}
 }
 
@@ -156,19 +173,20 @@ sub diff
             $incr_source = 1, next;
 		}
 
+		my ($entrycmp, $dncmp) = cmpEntries($sourceentry, $targetentry);
+
 		# Check if the current source entry has a higher sort position than 
 		# the current target. If so, we interpret this to mean that the 
 		# target entry no longer exists on the source. Issue a delete to LDAP.
-		if (cmpEntries($sourceentry, $targetentry) > 0) {
+		if ($entrycmp > 0) {
 			$targetentry->delete;
 			$ldifout->write_entry($targetentry);
             $incr_target = 1, next;
 		}
-
-		# Check if the current target entry has a higher sort position than 
-		# the current source entry. If so, we interpret this to mean that the
+		# Check if the current source entry has a lower sort position than 
+		# the current target entry. If so, we interpret this to mean that the
 		# source entry doesn't exist on the target. Issue an add to LDAP.
-		if (cmpEntries($targetentry, $sourceentry) > 0) {
+		elsif ($entrycmp < 0) {
 			$ldifout->write_entry($sourceentry);
             $incr_source = 1, next;
 		}
@@ -176,18 +194,26 @@ sub diff
 		# When we get here, we're dealing with the same person in $sourceentry
 		# and $targetentry. Compare the data and generate the update.
 
-		# If a modRDN is necessary, it needs to happen before other mods
-		if (lc(canonical_dn($sourceentry->dn)) 
-		 ne lc(canonical_dn($targetentry->dn))) {
-			my $rdnattr = rdnattr($sourceentry);
-			my $rdnval = rdnval($sourceentry);
+		# If a mod{R}DN is necessary, it needs to happen before other mods
+		if ($dncmp) {
+			my $rdnattr = rdnattr($sourceentry->dn);
+			my $rdnval = rdnval($sourceentry->dn);
+			my $newsuperior = dnsuperior($sourceentry->dn);
+			my $oldsuperior = dnsuperior($targetentry->dn);
+			my $changetype; 
 
-			$targetentry->{changetype} = 'modrdn';
+			if (cmpDNs($oldsuperior, $newsuperior)) {
+				$changetype = 'moddn';
+				$targetentry->add(newsuperior => $newsuperior);
+			}
+			else { $changetype = 'modrdn' }
+			$targetentry->{changetype} = $changetype;
 			$targetentry->add(newrdn => "$rdnattr=$rdnval",
 							  deleteoldrdn => '1');
 			$ldifout->write_entry($targetentry);
 			$targetentry->delete('newrdn');
 			$targetentry->delete('deleteoldrdn');
+			$targetentry->delete('newsuperior') if $changetype eq 'moddn';
 			delete($targetentry->{changetype});
 			
 			$targetentry->dn($sourceentry->dn);
@@ -282,6 +308,8 @@ sub updateFromEntry
 	delete($target->{changetype}) unless @{$target->{changes}};
 }
 
+
+=back
 
 =head1 AUTHOR
 
