@@ -41,6 +41,18 @@ Net::LDAP::Entry - An LDAP entry object
 
  $entry2 = $entry->clone; # copies entry
 
+ # new alternate syntax
+
+ $entry = Net;;LDAP::Entry->new ( $dn 
+   , attr1 => 'value1'
+   , attr2 => [ qw(value1 value2) ]
+ )->add(
+   attr3   => 'value'
+ )->update( $ldap );
+
+
+
+
 =head1 DESCRIPTION
 
 The B<Net::LDAP::Entry> object represents a single entry in the
@@ -61,7 +73,20 @@ file with the L<Net::LDAP::LDIF> module.
 
 =item new ( )
 
-Create a new entry object with the changetype set to C<'add'>
+Create a new entry object with the changetype set to C<'add'>.
+Optionally, you can provide a DN and a list of arguments passed to the
+add method.
+
+ Net::LDAP::Entry->new()
+
+ # or 
+ Net::LDAP::Entry->new( $dn )
+
+ # or 
+ Net::LDAP::Entry->new( $dn ,
+  objectClass => [qw( top posixAccount )] , uid => 'admin' 
+ )
+
 
 =item clone ( )
 
@@ -75,18 +100,21 @@ Returns a copy of the B<Net::LDAP::Entry> object.
 
 =item add ( ATTR =E<gt> VALUE, ... )
 
-Add more attributes or values to the entry. Each C<VALUE> should be a
-string if only a single value is wanted in the attribute, or a
-reference to an array of strings if multiple values are wanted. The
-values given will be added to the values which already exist for the
-given attributes.
+Add more attributes or values to the entry and returns the entry itself. Each
+C<VALUE> should be a string if only a single value is wanted in the attribute,
+or a reference to an array of strings if multiple values are wanted. The values
+given will be added to the values which already exist for the given attributes.
 
  $entry->add ( 'sn' => 'Barr' );
 
  $entry->add ( 'street' => [ '1 some road','nowhere' ] );
 
 B<NOTE>: these changes are local to the client and will not appear on
-the directory server until the C<update> method is called.
+the directory server until the C<update> method is called. As C<add> returns the
+entry, you can write something like.
+ 
+ $entry->add ( 'sn' => 'Barr' )->update( $ldap );
+
 
 =item attributes ( OPTIONS )
 
@@ -126,7 +154,7 @@ method is called.
 =item changetype ( TYPE )
 
 Set the type of operation that will be performed when the update
-method is called to C<TYPE>.
+method is called to C<TYPE>. Returns the entry itself.
 
 Possible values for C<TYPE> are
 
@@ -142,6 +170,8 @@ will result in the entry being added to the directory server.
 The update method will call the delete method on the client object,
 which will result in the entry being removed from the directory
 server.
+
+ $entry->delete->update( $ldap )
 
 =item modify
 

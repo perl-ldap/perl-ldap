@@ -25,7 +25,10 @@ sub new {
 
   my $entry = bless { 'changetype' => 'add', changes => [] }, $type;
 
-  $entry;
+  @_ and $entry->dn( shift );
+  @_ and $entry->add( @_ );
+
+  retrun $entry;
 }
 
 sub clone {
@@ -137,10 +140,12 @@ sub get_value {
 
 
 sub changetype {
+
   my $self = shift;
   return $self->{'changetype'} unless @_;
   $self->{'changes'} = [];
   $self->{'changetype'} = shift;
+  return $self;
 }
 
 
@@ -164,6 +169,8 @@ sub add {
   }
 
   push(@{$self->{'changes'}}, 'add', $cmd) if $cmd;
+
+  return $self;
 }
 
 
@@ -199,6 +206,8 @@ sub replace {
   }
 
   push(@{$self->{'changes'}}, 'replace', $cmd) if $cmd;
+
+  return $self;
 }
 
 
@@ -242,6 +251,8 @@ sub delete {
   }
 
   push(@{$self->{'changes'}}, 'delete', $cmd) if $cmd;
+
+  return $self;
 }
 
 
