@@ -243,13 +243,17 @@ sub _numeric_orderingMatch($@)
 sub _cis_substrings($@)
 {
   my $regex=shift;
-  return grep(/$regex/i, @_) ? 1 : 0;
+  my $op=shift;
+  return 1 if ($regex =~ /^$/);
+  return grep(/\Q$regex\E/i, @_) ? 1 : 0;
 }
 
 sub _exact_substrings($@)
 {
   my $regex=shift;
-  return grep(/$regex/, @_) ? 1 : 0;
+  my $op=shift;
+  return 1 if ($regex =~ /^$/);
+  return grep(/\Q$regex\E/, @_) ? 1 : 0;
 }
 
 # this one is here in case we don't use schema
@@ -289,6 +293,7 @@ sub _cis_approxMatch($@)
     }
   }
   #we really have nothing, use plain regexp
+  return 1 if ($assertion =~ /^$/);
   return grep(/^$assertion$/i, @_) ? 1 : 0;
 }
 
