@@ -28,7 +28,7 @@ sub new {
   @_ and $entry->dn( shift );
   @_ and $entry->add( @_ );
 
-  retrun $entry;
+  return $entry;
 }
 
 sub clone {
