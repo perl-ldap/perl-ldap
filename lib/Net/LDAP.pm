@@ -120,6 +120,7 @@ sub new {
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
   $obj->{net_ldap_async}   = $arg->{async} ? 1 : 0;
+  $obj->{raw} = $arg->{raw}  if ($arg->{raw});
 
   if (defined(my $onerr = $arg->{onerror})) {
     $onerr = $onerror{$onerr} if exists $onerror{$onerr};
