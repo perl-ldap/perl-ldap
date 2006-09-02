@@ -81,7 +81,7 @@ which will have the latest documentation available.
 
 No, but there is a public SVN repository at
 
-  http://svn.mutatus.co.uk
+ http://svn.mutatus.co.uk
 
 =head2 Can I get perl-ldap from the public SVN repository?
 
@@ -99,7 +99,7 @@ You can download it from CPAN by following the release link:
 The 2 lines in the following example should be put together as 
 one continuous line.  Example;
 
- http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.31.tar.gz
+ http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.33.tar.gz
 
 B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
 Netscape on Windows systems sometimes has a problem storing the module
@@ -167,8 +167,8 @@ Requests For Comments, better known as RFCs. The RFCs can be found on
 the Internet at http://www.ietf.org/ (the master repository) and many
 other places. There's a link to all the LDAP-related RFCs at
 Perl-LDAP's web site, http://ldap.perl.org/rfc.html. Some of the more
-important RFC numbers are RFC 1777 for LDAPv2 and RFC 2251 as well as
-RFC3377 for LDAPv3.
+important RFC numbers are RFC 451i0 - 4519 for LDAP (previously called
+LDAPv3) and the historic RFC 1777 for LDAPv2.
 
 =head2 What is a LDAP Directory.
 

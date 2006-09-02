@@ -176,7 +176,7 @@ Graham Barr E<lt>gbarr@pobox.comE<gt>
 John Berthels E<lt>jjb@nexor.co.ukE<gt>
 
 Please report any bugs, or post any suggestions, to the perl-ldap mailing list
-E<lt>perl-ldap-dev@perl.orgE<gt>.
+E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
