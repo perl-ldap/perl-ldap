@@ -911,6 +911,9 @@ elements below. If any of the controls are blessed then the
 method C<to_asn> will be called which should return a reference
 to a HASH containing the three elements described below.
 
+For most purposes L<Net::LDAP::Control> objects are the easiest
+way to generate controls.
+
 =over 4
 
 =item type =E<gt> OID
