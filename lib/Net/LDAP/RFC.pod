@@ -1171,5 +1171,20 @@ LDAP server. The mechanism is designed to be very flexible yet
 easy for clients and servers to implement.
 
 
+=head2 draft-ietf-ldapext-ldapv3-vlv -- LDAP Extensions for Scrolling View Browsing of Search Results
+
+This document describes a Virtual List View control  extension  for  the
+LDAP  Search  operation.  This control is designed to allow the "virtual
+list box" feature, common in existing  commercial  e-mail  address  book
+applications, to be supported efficiently by LDAP servers. LDAP servers'
+inability to support this client feature is a significant impediment  to
+LDAP replacing proprietary protocols in commercial e-mail systems.
+
+The control allows a client to specify that the  server  return,  for  a
+given  LDAP search with associated sort keys, a contiguous subset of the
+search result set. This subset is specified in terms of offsets into the
+ordered list, or in terms of a greater than or equal comparison value.
+
+
 =cut
 
