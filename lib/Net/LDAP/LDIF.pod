@@ -133,7 +133,7 @@ as one expects even on strings with international characters.
 If this option is not given or the version of Perl Net::LDAP is running on
 is too old strings are encodeed the same as in earlier versions of perl-ldap.
 
-Example: raw =E<gt> qr/;binary|jpegPhoto/io
+Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
 =back
 
