@@ -294,36 +294,38 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	responseValue    [1] OCTET STRING OPTIONAL }
 
 
-       VirtualListViewRequest ::= SEQUENCE {
-	   beforeCount    INTEGER , --(0 .. maxInt),
-	   afterCount     INTEGER , --(0 .. maxInt),
-	   CHOICE {
-	       byoffset [0] SEQUENCE {
-	       offset          INTEGER , --(0 .. maxInt),
-	       contentCount    INTEGER } --(0 .. maxInt) }
-	       byValue [1] AssertionValue }
-	       -- byValue [1] greaterThanOrEqual assertionValue }
-	 contextID     OCTET STRING OPTIONAL }
+    -- Virtual List View Control
+    VirtualListViewRequest ::= SEQUENCE {
+	beforeCount    INTEGER , --(0 .. maxInt),
+	afterCount     INTEGER , --(0 .. maxInt),
+	CHOICE {
+	    byoffset [0] SEQUENCE {
+	    offset          INTEGER , --(0 .. maxInt),
+	    contentCount    INTEGER } --(0 .. maxInt) }
+	    byValue [1] AssertionValue }
+	    -- byValue [1] greaterThanOrEqual assertionValue }
+	contextID     OCTET STRING OPTIONAL }
 
-       VirtualListViewResponse ::= SEQUENCE {
-	   targetPosition    INTEGER , --(0 .. maxInt),
-	   contentCount      INTEGER , --(0 .. maxInt),
-	   virtualListViewResult ENUMERATED {
-	       success (0),
-	       operatonsError (1),
-	       unwillingToPerform (53),
-	       insufficientAccessRights (50),
-	       busy (51),
-	       timeLimitExceeded (3),
-	       adminLimitExceeded (11),
-	       sortControlMissing (60),
-	       indexRangeError (61),
-	       other (80) }  
-	   contextID     OCTET STRING OPTIONAL     }
+    VirtualListViewResponse ::= SEQUENCE {
+	targetPosition    INTEGER , --(0 .. maxInt),
+	contentCount      INTEGER , --(0 .. maxInt),
+	virtualListViewResult ENUMERATED {
+	    success (0),
+	    operatonsError (1),
+	    unwillingToPerform (53),
+	    insufficientAccessRights (50),
+	    busy (51),
+	    timeLimitExceeded (3),
+	    adminLimitExceeded (11),
+	    sortControlMissing (60),
+	    indexRangeError (61),
+	    other (80) }  
+	contextID     OCTET STRING OPTIONAL     }
 
 
     LDAPEntry ::= COMPONENTS OF AddRequest
 
+    -- RFC-2891 Server Side Sorting Control
     -- Current parser does not allow a named entity following the ::=
     -- so we use a COMPONENTS OF hack
     SortRequestDummy ::= SEQUENCE {
@@ -357,26 +359,31 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    other                    (80) }
     attributeType [0] AttributeDescription OPTIONAL }
 
+    -- RFC-2696 Paged Results Control
     realSearchControlValue ::= SEQUENCE {
 	size            INTEGER, --  (0..maxInt),
 		      -- requested page size from client
 		      -- result set size estimate from server
 	cookie          OCTET STRING }
 
+    -- RFC-4370 Proxied Authorization Control
     proxyAuthValue ::= SEQUENCE {
         proxyDN LDAPDN
     }
 
+    -- RFC-3296 ManageDsaIT Control
     ManageDsaIT ::= SEQUENCE {
         dummy INTEGER OPTIONAL   -- it really is unused
     }
 
+    -- Persistent Search Control
     PersistentSearch ::= SEQUENCE {
         changeTypes INTEGER,
         changesOnly BOOLEAN,
         returnECs BOOLEAN
     }
 
+    -- Entry Change Notification Control
     EntryChangeNotification ::= SEQUENCE {
         changeType ENUMERATED {
             add         (1),
@@ -388,6 +395,24 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
         changeNumber INTEGER OPTIONAL     -- if supported
     }
 
+    -- RFC-3876 Matched Values Control
+    ValuesReturnFilter ::= SEQUENCE OF SimpleFilterItem
+
+    SimpleFilterItem ::= CHOICE {
+	equalityMatch   [3] AttributeValueAssertion,
+	substrings      [4] SubstringFilter,
+	greaterOrEqual  [5] AttributeValueAssertion,
+	lessOrEqual     [6] AttributeValueAssertion,
+	present         [7] AttributeDescription,
+	approxMatch     [8] AttributeValueAssertion,
+	extensibleMatch [9] SimpleMatchingAssertion }
+
+    SimpleMatchingAssertion ::= SEQUENCE {
+	matchingRule    [1] MatchingRuleId OPTIONAL,
+	type            [2] AttributeDescription OPTIONAL,
+	--- at least one of the above must be present
+	matchValue      [3] AssertionValue }
+    
 LDAP_ASN
 
 1;
