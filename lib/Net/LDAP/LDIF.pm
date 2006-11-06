@@ -384,14 +384,9 @@ sub eof {
 }
 
 sub _wrap {
-  if($_[1] > 40) {
-    my $pos = $_[1];
-    while($pos < length($_[0])) {
-      substr($_[0],$pos,0) = "\n ";
-      $pos += $_[1]+1;
-    }
-  }
-  $_[0];
+  my $a = length($_[0]) - $_[1] > 0;
+  my $b = (length($_[0]) - $_[1]) / ($_[1] - 1);
+  join("\n ", unpack("a78" x $a . "a77" x $b . "a*", $_[0]));
 }
 
 sub _write_attr {
