@@ -384,9 +384,13 @@ sub eof {
 }
 
 sub _wrap {
-  my $a = length($_[0]) - $_[1] > 0;
-  my $b = (length($_[0]) - $_[1]) / ($_[1] - 1);
-  join("\n ", unpack("a78" x $a . "a77" x $b . "a*", $_[0]));
+  my $len=$_[1];
+  return $_[0] if length($_[0]) <= $len;
+  use integer;
+  my $l2 = $len-1;
+  my $x = (length($_[0]) - $len) / $l2;
+  my $extra = (length($_[0]) == ($l2 * $x + $len)) ? "" : "a*";
+  join("\n ",unpack("a$len" . "a$l2" x $x . $extra,$_[0]));
 }
 
 sub _write_attr {
