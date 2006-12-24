@@ -228,7 +228,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
 	   content => 0,	# List size unknown
 	   offset  => 1,	# Target entry is the first
 	 );
- $sort = Net::LDAP::Control::Sort->new( sort => 'cn' );
+ $sort = Net::LDAP::Control::Sort->new( order => 'cn' );
 
  @args = ( base     => "o=Ace Industry, c=us",
 	   scope    => "subtree",
