@@ -12,7 +12,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.10_01";
+$VERSION = "0.11";
 
 
 sub first_entry { # compat

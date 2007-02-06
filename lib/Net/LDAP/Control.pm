@@ -20,7 +20,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_MATCHEDVALUES
 );
 
-$VERSION = "0.05";
+$VERSION = "0.06";
 
 my %Pkg2Type = (
 

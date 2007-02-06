@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.08_01";
+$VERSION = "1.09";
 
 my $MsgID = 0;
 

@@ -55,7 +55,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.10_01";
+$VERSION = "0.11";
 
 =item ldap_error_name ( ERR )
 

@@ -5,7 +5,7 @@
 
 package Net::LDAPI;
 @Net::LDAPI::ISA = ( 'Net::LDAP' );
-$Net::LDAPI::VERSION = "0.02_01";
+$Net::LDAPI::VERSION = "0.03";
 
 use strict;
 use Net::LDAP;
