@@ -919,6 +919,7 @@ sub schema {
 		dITContentRules
 		nameForms
 		ldapSyntaxes
+                extendedAttributeInfo
               )],
   );
 
