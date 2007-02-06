@@ -7,7 +7,7 @@ package Net::LDAP::Schema;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.9904";
+$VERSION = "0.9905";
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -248,6 +248,8 @@ my %flags = map { ($_,1) } qw(
 			      auxiliary
 			     );
 
+my %xat_flags = map { ($_,1) } qw(indexed system-only);
+
 #
 # These items can have lists arguments
 # (name can too, but we treat it special)
@@ -259,6 +261,7 @@ my %listops = map { ($_,1) } qw(must may sup);
 #
 my %type2attr = qw(
 	at	attributetypes
+        xat     extendedAttributeInfo
 	oc	objectclasses
 	syn	ldapsyntaxes
 	mr	matchingrules
@@ -323,10 +326,11 @@ sub _parse_schema {
       # The first token is the OID
       my $oid = $schema_entry{oid} = shift @tokens;
 
+      my $flags = ($type eq 'xat') ? \%xat_flags : \%flags;
       while(@tokens) {
 	my $tag = lc shift @tokens;
 
-	if (exists $flags{$tag}) {
+	if (exists $flags->{$tag}) {
 	  $schema_entry{$tag} = 1;
 	}
 	elsif (@tokens) {
@@ -376,7 +380,7 @@ sub _parse_schema {
       #
       # Store the elements by OID
       #
-      $schema->{oid}->{$oid} = \%schema_entry;
+      $schema->{oid}->{$oid} = \%schema_entry unless $type eq 'xat';
 
       #
       # We also index elements by name within each type
@@ -384,6 +388,16 @@ sub _parse_schema {
       foreach my $name ( @{$schema_entry{aliases}}, $schema_entry{name} ) {
 	my $lc_name = lc $name;
 	$names{lc $name} =  \%schema_entry;
+      }
+    }
+  }
+
+  # place extendedAttributeInfo into attribute types
+  if (my $xat = $schema->{xat}) {
+    foreach my $xat_ref (values %$xat) {
+      my $oid = $schema->{oid}{$xat_ref->{oid}} ||= {};
+      while (my($k,$v) = each %$xat_ref) {
+        $oid->{"x-$k"} = $v unless $k =~ /^(oid|type|name|aliases)$/;
       }
     }
   }
