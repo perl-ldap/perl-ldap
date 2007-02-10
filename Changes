@@ -1,3 +1,29 @@
+perl-ldap 0.34 -- Sat Feb 10 17:39:49 CST 2007
+==============================================
+
+Bug Fixes
+  * Improve dealing with mixed case attributes in Net::LDAP::Entry
+  * Documentation fixes & updates
+  * Don't let Net::LDAP->bind() die on SASL errors
+  * Fix case-folding in Net::LDAP::Util::ldap_explode_dn()
+  * Saner default for ldapi socket
+  * Update test suite to work with recent OpenLDAP versions
+  * The usual bunch of typo fixes
+  * Fix escaping on non-ascii characters in Net::LDAP::Filter
+
+Enhancements
+  * Flexible handling of line ends in Net::LDAP::LDIF when reading
+  * Improve writing speed in Net::LDAP::LDIF
+  * Net::LDAP accessor methods for scheme, host, port, URI connected to
+  * New checkcrl option to Net::LDAP->new() to do CRL checking
+  * New package Net::LDAP::Filtermatch for client side filtering
+  * More ASN1 messages handled in Net::LDAP:ASN: IntermediateResponse
+  * Option 'raw' to return Perl UTF-8 strings from queries (requires Perl 5.8)
+  * Support  Active Directory's extendedAttributeInfo schema information
+  * Method to find matchingrule for an attribute in Net::LDAP:Schema
+  * Updated build dependecies: GSSAPI support, ..
+
+
 perl-ldap 0.33 -- Mon Apr 25 08:02:26 CDT 2005
 ==============================================
 
