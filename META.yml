@@ -1,0 +1,19 @@
+abstract: LDAP client library
+author: 'Graham Barr <gbarr@cpan.org>'
+distribution_type: module
+generated_by: Module::Install version 0.64
+license: perl
+module_name: Net::LDAP
+name: perl-ldap
+no_index:
+  directory:
+    - inc
+    - t
+recommends:
+  Digest::HMAC_MD5: 0
+  Digest::MD5: 0
+  GSSAPI: 0
+requires:
+  Convert::ASN1: 0.07
+  perl: 5.004
+version: 0.34
