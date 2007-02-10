@@ -7,7 +7,7 @@ package Net::LDAP::Filter;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.14";
+$VERSION = "0.15";
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -88,7 +88,7 @@ sub _unescape {
   $_[0];
 }
 
-sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37])/sprintf("\\%02x",ord($1))/sge; $t }
+sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x",ord($1))/sge; $t }
 
 sub _encode {
   my($attr,$op,$val) = @_;
