@@ -17,7 +17,7 @@ BEGIN {
 }  
 
 
-$VERSION = "0.17";
+$VERSION = "0.17_01";
 
 my %mode = qw(w > r < a >>);
 
@@ -385,7 +385,7 @@ sub eof {
 
 sub _wrap {
   my $len=$_[1];
-  return $_[0] if length($_[0]) <= $len;
+  return $_[0] if length($_[0]) <= $len or $len <= 0;
   use integer;
   my $l2 = $len-1;
   my $x = (length($_[0]) - $len) / $l2;
