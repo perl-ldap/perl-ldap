@@ -941,6 +941,8 @@ sub root_dse {
 		  supportedFeatures
 		  supportedSASLMechanisms
 		  supportedLDAPVersion
+		  vendorName
+		  vendorVersion
 		)];
   my $root = $arg{attrs} && $ldap->{net_ldap_root_dse};
 
