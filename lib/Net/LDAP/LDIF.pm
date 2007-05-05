@@ -17,7 +17,7 @@ BEGIN {
 }  
 
 
-$VERSION = "0.17_01";
+$VERSION = "0.17_02";
 
 my %mode = qw(w > r < a >>);
 
@@ -186,7 +186,7 @@ sub _read_entry {
       unless @ldif;
   }
 
-  if (@ldif <= 1) {
+  if (@ldif < 1) {
      $self->_error("LDIF entry is not valid", @ldif);
      return;
   }
@@ -211,7 +211,7 @@ sub _read_entry {
     if (CHECK_UTF8 && $self->{raw} && ('dn' !~ /$self->{raw}/));
   $entry->dn($dn);
 
-  if ($ldif[0] =~ /^changetype:\s*/) {
+  if ((scalar @ldif) && ($ldif[0] =~ /^changetype:\s*/)) {
     my $changetype = $ldif[0] =~ s/^changetype:\s*//
         ? shift(@ldif) : $self->{'changetype'};
     $entry->changetype($changetype);
