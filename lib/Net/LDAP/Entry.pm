@@ -17,7 +17,7 @@ BEGIN {
 }
 
 
-$VERSION = "0.23";
+$VERSION = "0.23_1";
 
 sub new {
   my $self = shift;
@@ -271,9 +271,9 @@ sub update {
   elsif ($self->{'changetype'} eq 'delete') {
     $mesg = $ldap->delete($self, 'callback' => $cb, %opt);
   }
-  elsif ($self->{'changetype'} =~ /modr?dn/) {
-    my @args = (newrdn => $self->get_value('newrdn'),
-                deleteoldrdn => $self->get_value('deleteoldrdn'));
+  elsif ($self->{'changetype'} =~ /modr?dn/o) {
+    my @args = (newrdn => $self->get_value('newrdn') || undef,
+                deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
     my $newsuperior = $self->get_value('newsuperior');
     push(@args, newsuperior => $newsuperior) if $newsuperior;
     $mesg = $ldap->moddn($self, @args, 'callback' => $cb, %opt);
