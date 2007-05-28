@@ -160,6 +160,17 @@ is too old strings are encodeed the same as in earlier versions of perl-ldap.
 
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
+=item inet6 =E<gt> N
+
+Try to connect to the server using IPv6 if C<HOST> resolves to an 
+IPv6 target address.
+If it resolves to an IPv4 address, the connection is tried using IPv4,
+the same way as if this option was not given.
+
+Please note that IPv6 support is considered experimental in IO::Socket::SSL,
+which is used of SSL/TLS support, and therey are a few issues to take care
+of. See L<IO::Socket::SSL/IPv6> for details.
+
 =back
 
 B<Example>

@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.34";
+$VERSION 	= "0.34_01";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -135,11 +135,18 @@ sub new {
 sub connect_ldap {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 389;
+  my $class = 'IO::Socket::INET';
 
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
-  $ldap->{net_ldap_socket} = IO::Socket::INET->new(
+  if ($arg->{inet6}) {
+    require Socket6;
+    require IO::Socket::INET6;
+    $class = 'IO::Socket::INET6';
+  }  
+
+  $ldap->{net_ldap_socket} = $class->new(
     PeerAddr   => $host,
     PeerPort   => $port,
     LocalAddr  => $arg->{localaddr} || undef,
@@ -162,7 +169,9 @@ sub connect_ldaps {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 636;
 
+  require Socket6  if ($arg->{inet6});
   require IO::Socket::SSL;
+  IO::Socket::SSL::import(qw/inet6/)  if ($arg->{inet6});
 
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
