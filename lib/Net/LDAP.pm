@@ -141,7 +141,6 @@ sub connect_ldap {
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
   if ($arg->{inet6}) {
-    require Socket6;
     require IO::Socket::INET6;
     $class = 'IO::Socket::INET6';
   }  
@@ -169,9 +168,9 @@ sub connect_ldaps {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 636;
 
-  require Socket6  if ($arg->{inet6});
+  require IO::Socket::INET6  if ($arg->{inet6});
   require IO::Socket::SSL;
-  IO::Socket::SSL::import(qw/inet6/)  if ($arg->{inet6});
+  IO::Socket::SSL->import(qw/inet6/)  if ($arg->{inet6});
 
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
