@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.34_01";
+$VERSION 	= "0.34_02";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -778,8 +778,17 @@ sub _sendmesg {
   my $socket = $ldap->socket
       or return _error($ldap, $mesg, LDAP_SERVER_DOWN, "$!");
 
-  syswrite($socket, $mesg->pdu, length($mesg->pdu))
-    or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
+  # send packets in sizes that IO::Socket::SSL can chew
+  # originally it was:
+  #syswrite($socket, $mesg->pdu, length($mesg->pdu))
+  #  or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!")
+  my $to_send = \( $mesg->pdu );
+  my $offset = 0;
+  while($offset < length($$to_send)) {
+    my $n = syswrite($socket, substr($$to_send, $offset, 15000), 15000)
+      or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
+    $offset += $n;
+  }
 
   # for CLDAP, here we need to recode when we were sent
   # so that we can perform timeouts and resends
