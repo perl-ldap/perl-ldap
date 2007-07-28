@@ -17,7 +17,7 @@ BEGIN {
 }
 
 
-$VERSION = "0.23_1";
+$VERSION = "0.23_2";
 
 sub new {
   my $self = shift;
@@ -227,7 +227,7 @@ sub delete {
 
     if (defined($val) and (!ref($val) or @$val)) {
       my %values;
-      @values{@$val} = ();
+      @values{(ref($val) ? @$val : $val)} = ();
 
       unless( @{$attrs->{$lc_type}}
         = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
