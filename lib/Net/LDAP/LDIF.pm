@@ -384,8 +384,8 @@ sub eof {
 }
 
 sub _wrap {
-  my $len=$_[1];
-  return $_[0] if length($_[0]) <= $len or $len <= 0;
+  my $len=$_[1];	# needs to be >= 2 to avoid division by zero
+  return $_[0] if length($_[0]) <= $len or $len <= 40;
   use integer;
   my $l2 = $len-1;
   my $x = (length($_[0]) - $len) / $l2;
