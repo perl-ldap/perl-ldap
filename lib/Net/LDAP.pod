@@ -169,7 +169,7 @@ If it resolves to an IPv4 address, the connection is tried using IPv4,
 the same way as if this option was not given.
 
 Please note that IPv6 support is considered experimental in
-IO::Socket::SSL, which is used of SSL/TLS support, and therey are a few
+IO::Socket::SSL, which is used of SSL/TLS support, and there are a few
 issues to take care of. See L<IO::Socket::SSL/IPv6> for details.
 
 =back
