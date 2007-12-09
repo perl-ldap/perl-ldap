@@ -155,8 +155,9 @@ values of attributes not matching this REGEX into Perl UTF-8 strings
 so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
 
-If this option is not given or the version of Perl Net::LDAP is running on
-is too old strings are encodeed the same as in earlier versions of perl-ldap.
+If this option is not given or the version of Perl Net::LDAP is running
+on is too old strings are encoded the same as in earlier versions of
+perl-ldap.
 
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
@@ -167,9 +168,9 @@ IPv6 target address.
 If it resolves to an IPv4 address, the connection is tried using IPv4,
 the same way as if this option was not given.
 
-Please note that IPv6 support is considered experimental in IO::Socket::SSL,
-which is used of SSL/TLS support, and therey are a few issues to take care
-of. See L<IO::Socket::SSL/IPv6> for details.
+Please note that IPv6 support is considered experimental in
+IO::Socket::SSL, which is used of SSL/TLS support, and therey are a few
+issues to take care of. See L<IO::Socket::SSL/IPv6> for details.
 
 =back
 
