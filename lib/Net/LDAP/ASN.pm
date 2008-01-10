@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.04";
+$VERSION = "0.05";
 
 use Convert::ASN1;
 
@@ -365,6 +365,27 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 		      -- requested page size from client
 		      -- result set size estimate from server
 	cookie          OCTET STRING }
+
+    -- draft-behera-ldap-password-policy-09
+    ppControlResponse ::= SEQUENCE {
+	warning [0] PPWarning OPTIONAL,
+	error   [1] PPError OPTIONAL
+    }
+	PPWarning ::= CHOICE {
+	    timeBeforeExpiration [0] INTEGER, -- (0..maxInt),
+	    graceAuthNsRemaining [1] INTEGER -- (0..maxInt)
+	}
+	PPError ::= ENUMERATED {
+	    passwordExpired             (0),
+	    accountLocked               (1),
+	    changeAfterReset            (2),
+	    passwordModNotAllowed       (3),
+	    mustSupplyOldPassword       (4),
+	    insufficientPasswordQuality (5),
+	    passwordTooShort            (6),
+	    passwordTooYoung            (7),
+	    passwordInHistory           (8)
+	}
 
     -- RFC-4370 Proxied Authorization Control
     proxyAuthValue ::= SEQUENCE {

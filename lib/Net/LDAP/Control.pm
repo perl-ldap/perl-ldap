@@ -18,9 +18,10 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_PERSISTENTSEARCH
   LDAP_CONTROL_ENTRYCHANGE
   LDAP_CONTROL_MATCHEDVALUES
+  LDAP_CONTROL_PASSWORDPOLICY
 );
 
-$VERSION = "0.06";
+$VERSION = "0.07";
 
 my %Pkg2Type = (
 
@@ -40,6 +41,8 @@ my %Pkg2Type = (
   'Net::LDAP::Control::EntryChange'	=> LDAP_CONTROL_ENTRYCHANGE,
 
   'Net::LDAP::Control::MatchedValues'	=> LDAP_CONTROL_MATCHEDVALUES,
+
+  'Net::LDAP::Control::PasswordPolicy'	=> LDAP_CONTROL_PASSWORDPOLICY,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -165,13 +168,13 @@ C<Net::LDAP::Control> is a base-class for LDAPv3 control objects.
 
 =item new ( ARGS )
 
-ARGS is a list of name/value pairs, valid arguments are.
+ARGS is a list of name/value pairs, valid arguments are:
 
 =over 4
 
 =item critical
 
-A booloean value, if TRUE and the control is unrecognized by the server or
+A boolean value, if TRUE and the control is unrecognized by the server or
 is inappropriate for the requested operation then the server will return
 an error and the operation will not be performed.
 

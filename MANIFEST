@@ -59,6 +59,7 @@ lib/Net/LDAP/Control/Sort.pm
 lib/Net/LDAP/Control/SortResult.pm
 lib/Net/LDAP/Control/VLV.pm
 lib/Net/LDAP/Control/VLVResponse.pm
+lib/Net/LDAP/Control/PasswordPolicy.pm
 lib/Net/LDAP/DSML.pm
 lib/Net/LDAP/Entry.pm
 lib/Net/LDAP/Entry.pod
