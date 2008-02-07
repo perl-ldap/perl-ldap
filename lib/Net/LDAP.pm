@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.34_02";
+$VERSION 	= "0.34_03";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -745,6 +745,8 @@ sub sync {
   my $mid   = shift;
   my $table = $ldap->{net_ldap_mesg};
   my $err   = LDAP_SUCCESS;
+
+  return $err unless defined $table;
 
   $mid = $mid->mesg_id if ref($mid);
   while (defined($mid) ? exists $table->{$mid} : %$table) {
