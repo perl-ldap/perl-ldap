@@ -1,3 +1,20 @@
+perl-ldap 0.35 -- Sun Mar 30 13:35:04 CDT 2008
+==============================================
+
+Bug Fixes
+ * Fix wrapping in Net::LDAP::LDIF
+ * Patch from Gergely Santa to allow entries with no attributes in LDIF
+ * Fix modr?dn to fetch values in sclar context
+ * send packets in sizes that IO::Socket::SSL can chew
+ * Avoid attept to use undef as hash reference in ->sync
+ * Ensure Bind.pm presents final server response to SASL object
+
+Enhancements
+ * Added vendorName/vendorVersion (RFC 3045) to root_dse()
+ * add option to support IPv6
+ * Allow Entry->deleted to be called with a single value is well as array ref
+ * Added Net::LDAP::Control::PasswordPolicy to support draft RFC
+
 perl-ldap 0.34 -- Sat Feb 10 17:39:49 CST 2007
 ==============================================
 

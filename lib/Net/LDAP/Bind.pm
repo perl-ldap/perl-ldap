@@ -10,7 +10,7 @@ use Net::LDAP qw(LDAP_SASL_BIND_IN_PROGRESS LDAP_DECODING_ERROR LDAP_SUCCESS
 use Net::LDAP::Message;
 use vars qw(@ISA $VERSION);
 
-$VERSION = "1.02_1";
+$VERSION = "1.03";
 @ISA = qw(Net::LDAP::Message);
 
 sub _sasl_info {

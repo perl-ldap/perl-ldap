@@ -17,7 +17,7 @@ BEGIN {
 }
 
 
-$VERSION = "0.23_2";
+$VERSION = "0.24";
 
 sub new {
   my $self = shift;

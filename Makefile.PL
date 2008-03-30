@@ -2,6 +2,8 @@
 
 use inc::Module::Install;
 
+perl_version    5.004;
+
 name		('perl-ldap');
 module_name	('Net::LDAP');
 author		('Graham Barr <gbarr@cpan.org>');
@@ -13,10 +15,7 @@ sign(1);
 
 check_nmake();      # check and download nmake.exe for Win32
 
-requires(
-  perl => 5.004,
-  'Convert::ASN1' => 0.07,
-);
+requires        ( 'Convert::ASN1' => 0.07);
 
 include_deps	('Test::More');
 include 	('ExtUtils::AutoInstall');
@@ -25,9 +24,9 @@ features(
   'SASL authentication' => [
     -default => 0,
     'Authen::SASL'  => '2.00',
-    recommends('Digest::MD5'),		# for DIGEST-MD5 SASL mech
-    recommends('Digest::HMAC_MD5'),	# for CRAM-MD5 SASL mech
-    recommends('GSSAPI'),		# for GSSAPI SASL mech
+    #recommends('Digest::MD5'),		# for DIGEST-MD5 SASL mech
+    #recommends('Digest::HMAC_MD5'),	# for CRAM-MD5 SASL mech
+    #recommends('GSSAPI'),		# for GSSAPI SASL mech
   ],
   'LDAP URLs' => [
     -default => 0,

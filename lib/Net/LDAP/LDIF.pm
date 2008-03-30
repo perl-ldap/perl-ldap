@@ -17,7 +17,7 @@ BEGIN {
 }  
 
 
-$VERSION = "0.17_02";
+$VERSION = "0.18";
 
 my %mode = qw(w > r < a >>);
 
