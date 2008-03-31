@@ -36,4 +36,20 @@ $dsml->write_entry($_) for @entry;
 $dsml->end_dsml;
 close(FH);
 
+# postprocess generated DSML file for more flexible comparison
+# (don't rely on unpatched XML::SAX::Writer [e.g. Debian])
+{
+open(FH, "+<$outfile1");
+local $/;	# slurp mode
+my $txt = <FH>;
+
+$txt =~ s/>\n[\n\t ]+/>\n/g;	# remove empty lines & leading spaces after tags
+$txt =~ s/\"/'/g;	# convert " to ' in tag attribute values
+
+seek(FH, 0, 0);
+print FH $txt;
+truncate(FH, length($txt));
+close(FH);
+}
+
 ok(!compare($cmpfile1,$outfile1), $cmpfile1);
