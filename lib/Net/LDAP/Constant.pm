@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.05";
+$VERSION = "0.05_01";
 
 use Carp;
 
@@ -135,59 +135,31 @@ error codes.
 
 Operation completed without error
 
-=item LDAP_PP_PASSWORD_EXPIRED (0)
-
-The account's password has expired.
-
 =item LDAP_OPERATIONS_ERROR (1)
 
 Server encountered an internal error
-
-=item LDAP_PP_ACCOUNT_LOCKED (1)
-
-The account is locked.
 
 =item LDAP_PROTOCOL_ERROR (2)
 
 Unrecognized version number or incorrect PDU structure
 
-=item LDAP_PP_CHANGE_AFTER_RESET (2)
-
-The account's password has been reset and now must be changed.
-
 =item LDAP_TIMELIMIT_EXCEEDED (3)
 
 The time limit on a search operation has been exceeded
 
-=item LDAP_PP_PASSWORD_MOD_NOT_ALLOWED (3)
-
-The account's password may not be modified.
-
 =item LDAP_SIZELIMIT_EXCEEDED (4)
 
 The maximum number of search results to return has been exceeded.
-
-=item LDAP_PP_MUST_SUPPLY_OLD_PASSWORD (4)
-
-The old password must also be supplied when setting a new password.
 
 =item LDAP_COMPARE_FALSE (5)
 
 This code is returned when a compare request completes and the attribute value
 given is not in the entry specified
 
-=item LDAP_PP_INSUFFICIENT_PASSWORD_QUALITY (5)
-
-The new password was not of sufficient quality.
-
 =item LDAP_COMPARE_TRUE (6)
 
 This code is returned when a compare request completes and the attribute value
 given is in the entry specified
-
-=item LDAP_PP_PASSWORD_TOO_SHORT (6)
-
-The new password was too short.
 
 =item LDAP_AUTH_METHOD_NOT_SUPPORTED (7)
 
@@ -197,17 +169,9 @@ Unrecognized SASL mechanism name
 
 Unrecognized SASL mechanism name
 
-=item LDAP_PP_PASSWORD_TOO_YOUNG (7)
-
-The previous password was changed too recently.
-
 =item LDAP_STRONG_AUTH_REQUIRED (8)
 
 The server requires authentication be performed with a SASL mechanism
-
-=item LDAP_PP_PASSWORD_IN_HISTORY (8)
-
-The new password was used too recently.
 
 =item LDAP_PARTIAL_RESULTS (9)
 
@@ -510,6 +474,48 @@ The referral hop limit has been exceeded.
 =item LDAP_CONTROL_REFERRALS (1.2.840.113556.1.4.616)
 
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
+
+=back
+
+=head2 Control constants
+
+=over 4
+
+=item LDAP_PP_PASSWORD_EXPIRED (0) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The account's password has expired.
+
+=item LDAP_PP_ACCOUNT_LOCKED (1) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The account is locked.
+
+=item LDAP_PP_CHANGE_AFTER_RESET (2) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The account's password has been reset and now must be changed.
+
+=item LDAP_PP_PASSWORD_MOD_NOT_ALLOWED (3) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The account's password may not be modified.
+
+=item LDAP_PP_MUST_SUPPLY_OLD_PASSWORD (4) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The old password must also be supplied when setting a new password.
+
+=item LDAP_PP_INSUFFICIENT_PASSWORD_QUALITY (5) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The new password was not of sufficient quality.
+
+=item LDAP_PP_PASSWORD_TOO_SHORT (6) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The new password was too short.
+
+=item LDAP_PP_PASSWORD_TOO_YOUNG (7) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The previous password was changed too recently.
+
+=item LDAP_PP_PASSWORD_IN_HISTORY (8) [LDAP_CONTROL_PASSWORDPOLICY]
+
+The new password was used too recently.
 
 =back
 
