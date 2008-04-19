@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.09";
+$VERSION = "1.09_01";
 
 my $MsgID = 0;
 
@@ -190,6 +190,8 @@ sub control {
     my $hash = $self->{ctrl_hash} = {};
     foreach my $asn (@{delete $self->{controls}}) {
       my $ctrl = Net::LDAP::Control->from_asn($asn);
+      $ctrl->{raw} = $self->{parent}->{raw}
+        if ($self->{parent});
       push @{$hash->{$ctrl->type} ||= []}, $ctrl;
     }
   }

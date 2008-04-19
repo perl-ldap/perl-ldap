@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.05_01";
+$VERSION = "0.05_02";
 
 use Carp;
 
@@ -474,6 +474,12 @@ The referral hop limit has been exceeded.
 =item LDAP_CONTROL_REFERRALS (1.2.840.113556.1.4.616)
 
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
+
+=item LDAP_CONTROL_PREREAD (1.3.6.1.1.13.1)
+
+=item LDAP_CONTROL_POSTREAD (1.3.6.1.1.13.2)
+
+=item LDAP_CONTROL_ASSERTION (1.3.6.1.1.12)
 
 =back
 
