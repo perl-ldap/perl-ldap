@@ -110,6 +110,7 @@ sub error_text {
 }
 
 sub error_desc {
+  require Net::LDAP::Util;
   Net::LDAP::Util::ldap_error_desc(shift->code);
 }
 
