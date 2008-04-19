@@ -55,6 +55,8 @@ lib/Net/LDAP/Control/ManageDsaIT.pm
 lib/Net/LDAP/Control/Paged.pm
 lib/Net/LDAP/Control/PasswordPolicy.pm
 lib/Net/LDAP/Control/PersistentSearch.pm
+lib/Net/LDAP/Control/PostRead.pm
+lib/Net/LDAP/Control/PreRead.pm
 lib/Net/LDAP/Control/ProxyAuth.pm
 lib/Net/LDAP/Control/Sort.pm
 lib/Net/LDAP/Control/SortResult.pm
