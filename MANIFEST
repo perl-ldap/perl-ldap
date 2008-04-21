@@ -100,6 +100,7 @@ t/02filter.t
 t/03schema.t
 t/04refloop.t
 t/05dsml.t
+t/06constant.t
 t/50populate.t
 t/51search.t
 t/52modify.t
