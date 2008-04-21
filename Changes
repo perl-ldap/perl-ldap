@@ -1,3 +1,13 @@
+perl-ldap 0.36 -- Mon Apr 21 10:00:09 CDT 2008
+==============================================
+
+Bug Fixes
+ * Fixed Net::LDAP::constant to return correct names for values 0 - 9
+ * Fixed DSML test to be more tolerant of whitespace
+
+Enhancements
+ * Added controls for PreRead & PostRead
+
 perl-ldap 0.35 -- Sun Mar 30 13:35:04 CDT 2008
 ==============================================
 

@@ -23,7 +23,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_POSTREAD
 );
 
-$VERSION = "0.07_01";
+$VERSION = "0.08";
 
 my %Pkg2Type = (
 

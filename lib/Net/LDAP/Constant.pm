@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.05_02";
+$VERSION = "0.06";
 
 use Carp;
 
