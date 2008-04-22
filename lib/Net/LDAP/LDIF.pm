@@ -1,4 +1,4 @@
-# Copyright (c) 1997-2004 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1997-2008 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
@@ -228,7 +228,7 @@ sub _read_entry {
       my $modattr;
       my $lastattr;
       if($changetype eq "modify") {
-        unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace):\s*([-;\w]+)// ) {
+        unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace|increment):\s*([-;\w]+)// ) {
           $self->_error("LDAP entry is not valid",@ldif); 
           return;
         }

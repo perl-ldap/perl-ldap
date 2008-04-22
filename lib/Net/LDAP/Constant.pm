@@ -546,6 +546,24 @@ Indicates that the server supports the "Who am I?" extension (draft-zeilenga-lda
 
 =back
 
+=head2 Feature OIDs
+
+B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
+feature OIDs.
+
+=over 4
+
+=item LDAP_FEATURE_ALL_OPATTS (1.3.6.1.4.1.4203.1.5.1)
+
+Indicates if the server allows "+" for returning all operational attributes
+(RFC 3673)
+
+=item LDAP_FEATURE_MODIFY_INCREMENT (1.3.6.1.1.14)
+
+Indicates if the server supports the Modify Increment extension (RFC 4525)
+
+=back
+
 =head1 SEE ALSO
 
 L<Net::LDAP>,

@@ -241,7 +241,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    operation       ENUMERATED {
 			add     (0),
 			delete  (1),
-			replace (2) }
+			replace (2),
+			increment (3) } -- increment from RFC 4525
 	    modification    AttributeTypeAndValues } }
 
     AttributeTypeAndValues ::= SEQUENCE {

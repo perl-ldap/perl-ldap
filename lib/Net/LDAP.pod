@@ -436,12 +436,20 @@ in the attribute, or a reference to an array of strings if multiple
 values are wanted. A reference to an empty array will remove the
 entire attribute.
 
+=item increment =E<gt> { ATTR =E<gt> VALUE, ... }
+
+Atomically increment the existing value in each given attribute by the
+provided C<VALUE>. The attributes need to have integer syntax, or be
+otherwise "incrementable". Note this will only work if the server
+advertizes support for LDAP_FEATURE_MODIFY_INCREMENT. Use 
+L<Net::LDAP::RootDSE/supported_feature> to check this.
+
 =item changes =E<gt> [ OP =E<gt> [ ATTR =E<gt> VALUE ], ... ]
 
-This is an alternative to B<add>, B<delete> and B<replace> where the
-whole operation can be given in a single argument. C<OP> should be
-B<add>, B<delete> or B<replace>. C<VALUE> should be either a string or a
-reference to an array of strings, as before.
+This is an alternative to B<add>, B<delete>, B<replace> and B<increment>
+where the whole operation can be given in a single argument. C<OP>
+should be B<add>, B<delete>, B<replace> or B<increment>. C<VALUE> should
+be either a string or a reference to an array of strings, as before.
 
 Use this form if you want to control the order in which the operations
 will be performed.

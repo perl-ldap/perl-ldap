@@ -511,7 +511,7 @@ sub add {
 }
 
 
-my %opcode = ( 'add' => 0, 'delete' => 1, 'replace' => 2);
+my %opcode = ( 'add' => 0, 'delete' => 1, 'replace' => 2, 'increment' => 3);
 
 sub modify {
   my $ldap = shift;
@@ -555,7 +555,7 @@ sub modify {
     }
   }
   else {
-    foreach $op (qw(add delete replace)) {
+    foreach $op (qw(add delete replace increment)) {
       next unless exists $arg->{$op};
       my $opt = $arg->{$op};
       my $opcode = $opcode{$op};
