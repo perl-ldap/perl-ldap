@@ -174,7 +174,7 @@ According to RFC 2849 currently the only legal value for VERSION is I<1>.
 
 =item handle ( )
 
-Returns the file handle the C<Net::LDAP::LDIF> object reads fromi
+Returns the file handle the C<Net::LDAP::LDIF> object reads from
 or writes to.
 
 =item done ( )
