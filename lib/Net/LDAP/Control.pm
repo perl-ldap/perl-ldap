@@ -21,9 +21,12 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_PASSWORDPOLICY
   LDAP_CONTROL_PREREAD
   LDAP_CONTROL_POSTREAD
+  LDAP_CONTROL_SYNC
+  LDAP_CONTROL_SYNC_STATE
+  LDAP_CONTROL_SYNC_DONE
 );
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 my %Pkg2Type = (
 
@@ -49,6 +52,10 @@ my %Pkg2Type = (
   'Net::LDAP::Control::PreRead'		=> LDAP_CONTROL_PREREAD,
 
   'Net::LDAP::Control::PostRead'	=> LDAP_CONTROL_POSTREAD,
+
+  'Net::LDAP::Control::SyncRequest'	=> LDAP_CONTROL_SYNC,
+  'Net::LDAP::Control::SyncState'	=> LDAP_CONTROL_SYNC_STATE,
+  'Net::LDAP::Control::SyncDone'	=> LDAP_CONTROL_SYNC_DONE,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -294,10 +301,16 @@ L<Net::LDAP>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
 L<Net::LDAP::Control::Paged>
+L<Net::LDAP::Control::PasswordPolicy>
 L<Net::LDAP::Control::PersistentSearch>
+L<Net::LDAP::Control::PostRead>
+L<Net::LDAP::Control::PreRead>
 L<Net::LDAP::Control::ProxyAuth>
 L<Net::LDAP::Control::Sort>
 L<Net::LDAP::Control::SortResult>
+L<Net::LDAP::Control::SyncDone>
+L<Net::LDAP::Control::SyncRequest>
+L<Net::LDAP::Control::SyncState>
 L<Net::LDAP::Control::VLV>
 L<Net::LDAP::Control::VLVResponse>
 

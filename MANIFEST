@@ -76,6 +76,9 @@ lib/Net/LDAP/Control/PreRead.pm
 lib/Net/LDAP/Control/ProxyAuth.pm
 lib/Net/LDAP/Control/Sort.pm
 lib/Net/LDAP/Control/SortResult.pm
+lib/Net/LDAP/Control/SyncDone.pm
+lib/Net/LDAP/Control/SyncRequest.pm
+lib/Net/LDAP/Control/SyncState.pm
 lib/Net/LDAP/Control/VLV.pm
 lib/Net/LDAP/Control/VLVResponse.pm
 lib/Net/LDAP/DSML.pm
@@ -90,6 +93,8 @@ lib/Net/LDAP/FAQ.pod
 lib/Net/LDAP/Filter.pm
 lib/Net/LDAP/Filter.pod
 lib/Net/LDAP/FilterMatch.pm
+lib/Net/LDAP/Intermediate.pm
+lib/Net/LDAP/Intermediate/SyncInfo.pm
 lib/Net/LDAP/LDIF.pm
 lib/Net/LDAP/LDIF.pod
 lib/Net/LDAP/Message.pm

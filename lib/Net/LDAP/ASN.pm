@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.06";
+$VERSION = "0.07";
 
 use Convert::ASN1;
 
@@ -441,6 +441,56 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	objectName      LDAPDN,
 	attributes      PartialAttributeList }
     
+    -- RFC-4533 LDAP Content Synchronization Operation
+
+    syncUUID ::= OCTET STRING -- (SIZE(16))
+
+    syncCookie ::= OCTET STRING
+
+    syncRequestValue ::= SEQUENCE {
+        mode ENUMERATED {
+            -- 0 unused
+            refreshOnly       (1),
+            -- 2 reserved
+            refreshAndPersist (3)
+        }
+        cookie     syncCookie OPTIONAL,
+        reloadHint BOOLEAN -- DEFAULT FALSE
+    }
+
+    syncStateValue ::= SEQUENCE {
+        state ENUMERATED {
+            present (0),
+            add (1),
+            modify (2),
+            delete (3)
+        }
+        entryUUID syncUUID,
+        cookie    syncCookie OPTIONAL
+    }
+
+    syncDoneValue ::= SEQUENCE {
+        cookie          syncCookie OPTIONAL,
+        refreshDeletes  BOOLEAN -- DEFAULT FALSE
+    }
+
+    syncInfoValue ::= CHOICE {
+          newcookie      [0] syncCookie,
+          refreshDelete  [1] SEQUENCE {
+              refreshDeleteCookie         syncCookie OPTIONAL,
+              refreshDeleteDone    BOOLEAN -- DEFAULT TRUE
+          }
+          refreshPresent [2] SEQUENCE {
+              refreshDeletecookie         syncCookie OPTIONAL,
+              refreshDeleteDone    BOOLEAN -- DEFAULT TRUE
+          }
+          syncIdSet      [3] SEQUENCE {
+              cookie         syncCookie OPTIONAL,
+              refreshDeletes BOOLEAN, -- DEFAULT FALSE
+              syncUUIDs      SET OF syncUUID
+          }
+    }
+
 LDAP_ASN
 
 1;
