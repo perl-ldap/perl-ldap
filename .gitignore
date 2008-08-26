@@ -1,2 +1,5 @@
 Makefile
 *blib
+_test
+temp
+*.bak
