@@ -400,7 +400,7 @@ sub bind {
 
     my $initial = $sasl_conn->client_start;
 
-    return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$@")
+    return _error($ldap, $mesg, LDAP_LOCAL_ERROR, $sasl_conn->error)
       unless defined($initial);
 
     $passwd = {
