@@ -1,3 +1,14 @@
+perl-ldap 0.37 -- Thu Aug 28 07:48:13 CDT 2008
+==============================================
+
+Bug Fixes
+ * Pass correct hostname to SASL when connecting to a round-robin
+ * Return the SASL error message when sasl client_start fails
+
+Enhancements
+ * Add Modify Increment (RFC 4525) support
+ * Add Content Synchronization (RFC 4453) support
+
 perl-ldap 0.36 -- Mon Apr 21 10:00:09 CDT 2008
 ==============================================
 

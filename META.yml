@@ -17,4 +17,4 @@ no_index:
 requires:
   Convert::ASN1: 0.07
   perl: 5.004
-version: 0.36_01
+version: 0.37
