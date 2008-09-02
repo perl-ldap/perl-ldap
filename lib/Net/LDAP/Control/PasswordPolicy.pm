@@ -8,7 +8,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(ppControlResponse);
 use strict;
@@ -19,15 +19,16 @@ sub init {
   delete $self->{asn};
 
   unless (exists $self->{value}) {
-    $self->{asn} = {
-      timeBeforeExpiration   =>
-        defined($self->{time_before_expiration}) ?
-          $self->{time_before_expiration} : '',
-      graceAuthNsRemaining =>
-        defined($self->{grace_authentications_remaining}) ?
-          $self->{grace_authentications_remaining} : '',
-      error => defined($self->{error}) ? $self->{error} : '',
-    };
+    $self->{asn} = \my %asn;
+    if (defined($self->{time_before_expiration})) {
+      $asn{warning}{timeBeforeExpiration} = defined($self->{time_before_expiration});
+    }
+    elsif (defined($self->{grace_authentications_remaining})) {
+      $asn{warning}{graceAuthNsRemaining} = $self->{time_before_expiration};
+    }
+    if (defined($self->{pp_error})) {
+      $asn{error} = $self->{pp_error};
+    }
   }
 
   $self;
@@ -38,9 +39,19 @@ sub time_before_expiration {
   $self->{asn} ||= $ppControlResponse->decode($self->{value});
   if (@_) {
     delete $self->{value};
-    return $self->{asn}{timeBeforeExpiration} = shift || 0;
+    my $time = shift;
+    if (defined $time) {
+      $self->{asn}{warning} = { timeBeforeExpiration => $time };
+    }
+    elsif (my $warning = $self->{asn}{warning}) {
+      if (exists $warning->{timeBeforeExpiration}) {
+        delete $self->{asn}{warning};
+      }
+    }
+    return $time;
   }
-  $self->{asn}{timeBeforeExpiration};
+  my $warning = $self->{asn}{warning};
+  $warning && $warning->{timeBeforeExpiration};
 }
 
 sub grace_authentications_remaining {
@@ -48,19 +59,37 @@ sub grace_authentications_remaining {
   $self->{asn} ||= $ppControlResponse->decode($self->{value});
   if (@_) {
     delete $self->{value};
-    return $self->{asn}{graceAuthNsRemaining} = shift || 0;
+    my $remaining = shift;
+    if (defined $remaining) {
+      $self->{asn}{warning} = { graceAuthNsRemaining => $remaining };
+    }
+    elsif (my $warning = $self->{asn}{warning}) {
+      if (exists $warning->{graceAuthNsRemaining}) {
+        delete $self->{asn}{warning};
+      }
+    }
+    return $remaining;
   }
-  $self->{asn}{graceAuthNsRemaining};
+  my $warning = $self->{asn}{warning};
+  $warning && $warning->{graceAuthNsRemaining};
 }
 
-sub error {
+sub pp_error {
   my $self = shift;
   $self->{asn} ||= $ppControlResponse->decode($self->{value});
   if (@_) {
     delete $self->{value};
-    return $self->{asn}{error} = shift || 0;
+    return $self->{asn}{error} = shift;
   }
   $self->{asn}{error};
+}
+
+sub value {
+  my $self = shift;
+
+  exists $self->{value}
+    ? $self->{value}
+    : $self->{value} = $ppControlResponse->encode($self->{asn});
 }
 
 1;
@@ -89,7 +118,7 @@ Net::LDAP::Control::PasswordPolicy - LDAPv3 Password Policy control object
  my($resp)  = $mesg->control( LDAP_CONTROL_PASSWORDPOLICY );
 
  if (defined($resp)) {
-   my $v = $resp->error;
+   my $v = $resp->pp_error;
    print "Password policy error $v\n" if defined $v;
    $v = $resp->time_before_expiration;
    print "Password expires in $v second(s)\n" if defined $v;
@@ -123,7 +152,7 @@ before the account's password will expire.
 If defined, this is an integer value holding the number of
 authentication requests allowed before the account is locked.
 
-=item error
+=item pp_error
 
 If defined, this contains a more detailed error code for the account.
 See L<Net::LDAP::Constant> for definitions of each.
