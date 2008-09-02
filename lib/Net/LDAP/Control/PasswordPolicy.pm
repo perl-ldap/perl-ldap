@@ -86,10 +86,11 @@ sub pp_error {
 
 sub value {
   my $self = shift;
-
-  exists $self->{value}
-    ? $self->{value}
-    : $self->{value} = $ppControlResponse->encode($self->{asn});
+  return $self->{value} if exists $self->{value};
+  my $asn = $self->{asn};
+  # Return undef if all optional values are missing
+  return undef unless $asn and (defined $asn->{error} or $asn->{warning});
+  $self->{value} = $ppControlResponse->encode($self->{asn});
 }
 
 1;
