@@ -3,7 +3,7 @@ package Net::LDAP::Extension::SetPassword;
 
 require Net::LDAP::Extension;
 
-$VERSION = "0.02";
+$VERSION = "0.03";
 @ISA = qw(Net::LDAP::Extension);
 
 use Convert::ASN1;
@@ -25,7 +25,8 @@ sub Net::LDAP::set_password {
 
   my $res = $ldap->extension(
 	name => '1.3.6.1.4.1.4203.1.11.1',
-	value => $passwdModReq->encode(\%opt)
+	value => $passwdModReq->encode(\%opt),
+        control => $opt{control},
   );
 
   bless $res; # Naughty :-)
