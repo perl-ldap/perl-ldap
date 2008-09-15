@@ -40,7 +40,7 @@ Net::LDAP::RootDSE - An LDAP RootDSE object
  my $dse = $ldap->root_dse();
 
  # get naming Contexts
- my @contexts = $dse->get_value('namingContext');
+ my @contexts = $dse->get_value('namingContexts');
 
  # get supported LDAP versions as an array reference
  my $versions = $dse->get_value('supportedLDAPVersion', asref => 1);
