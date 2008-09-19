@@ -26,7 +26,7 @@ sub Net::LDAP::set_password {
   my $res = $ldap->extension(
 	name => '1.3.6.1.4.1.4203.1.11.1',
 	value => $passwdModReq->encode(\%opt),
-        control => $opt{control},
+	($opt{control} ? (control => $opt{control}) : ())
   );
 
   bless $res; # Naughty :-)
