@@ -417,9 +417,23 @@ Add more attributes or values to the entry. C<VALUE> should be a
 string if only a single value is wanted in the attribute, or a
 reference to an array of strings if multiple values are wanted.
 
+  $mesg = $ldap->modify( $dn,
+    add => {
+      description => 'List of members',    # Add description attribute
+      member      => [
+        'cn=member1,ou=people,dc=example,dc=com',    # Add to attribute
+        'cn=member2,ou=people,dc=example,dc=com',
+      ]
+    }
+  );
+
 =item delete =E<gt> [ ATTR, ... ]
 
 Delete complete attributes from the entry.
+
+  $mesg = $ldap->modify( $dn,
+    delete => ['member','description'] # Delete attributes
+  );
 
 =item delete =E<gt> { ATTR =E<gt> VALUE, ... }
 
@@ -428,13 +442,40 @@ string if only a single value is being deleted from the attribute, or
 a reference to an array of strings if multiple values are being
 deleted.
 
+If C<VALUE> is a reference to an empty array or all existing values
+of the attribute are being deleted, then the attribute will be
+deleted from the entry.
+
+  $mesg = $ldap->modify( $dn,
+    delete => {
+      description => 'List of members',
+      member      => [
+        'cn=member1,ou=people,dc=example,dc=com',    # Remove members
+        'cn=member2,ou=people,dc=example,dc=com',
+      ],
+      seeAlso => [],   # Remove attribute
+    }
+  );
+
 =item replace =E<gt> { ATTR =E<gt> VALUE, ... }
 
 Replace any existing values in each given attribute with
 C<VALUE>. C<VALUE> should be a string if only a single value is wanted
 in the attribute, or a reference to an array of strings if multiple
 values are wanted. A reference to an empty array will remove the
-entire attribute.
+entire attribute. If the attribute does not already exist in the
+entry, it will be created.
+
+  $mesg = $ldap->modify( $dn,
+    replace => {
+      description => 'New List of members', # Change the description
+      member      => [ # Replace whole list with these
+        'cn=member1,ou=people,dc=example,dc=com',   
+        'cn=member2,ou=people,dc=example,dc=com',
+      ],
+      seeAlso => [],   # Remove attribute
+    }
+  );
 
 =item increment =E<gt> { ATTR =E<gt> VALUE, ... }
 
@@ -443,6 +484,12 @@ provided C<VALUE>. The attributes need to have integer syntax, or be
 otherwise "incrementable". Note this will only work if the server
 advertizes support for LDAP_FEATURE_MODIFY_INCREMENT. Use 
 L<Net::LDAP::RootDSE/supported_feature> to check this.
+
+  $mesg = $ldap->modify( $dn,
+    increment => {
+      uidNumber => 1 # increment uidNumber by 1
+    }
+  );
 
 =item changes =E<gt> [ OP =E<gt> [ ATTR =E<gt> VALUE ], ... ]
 
@@ -453,6 +500,21 @@ be either a string or a reference to an array of strings, as before.
 
 Use this form if you want to control the order in which the operations
 will be performed.
+
+  $mesg = $ldap->modify( $dn,
+    changes => [
+      add => [
+        description => 'A description',
+        member      => $newMember,
+      ],
+      delete => [
+        seeAlso => [],
+      ],
+      add => [
+        anotherAttribute => $value,
+      ],
+    ]
+  );
 
 =item control =E<gt> CONTROL
 
