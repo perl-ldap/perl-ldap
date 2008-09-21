@@ -11,6 +11,11 @@ version_from	('lib/Net/LDAP.pm');
 license		('perl');
 abstract	('LDAP client library');
 
+resources  homepage    => 'http://ldap.perl.org/';
+resources  repository  => 'http://git.goingon.net/?p=perl-lda.git;a=summary';
+resources  MailingList => 'http://lists.cpan.org/showlist.cgi?name=perl-ldap';
+resources  ListArchive => 'http://perl.markmail.org/search/list:perl-ldap';
+
 sign(1);
 
 check_nmake();      # check and download nmake.exe for Win32

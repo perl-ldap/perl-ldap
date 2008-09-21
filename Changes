@@ -1,3 +1,13 @@
+perl-ldap 0.38 -- Sun Sep 21 09:17:25 CDT 2008
+==============================================
+
+Bug Fixes
+ * Fix bug in Net::LDAP::Extension using wrong field for resultCode
+ * Fix Net::LDAP::Control::PasswordPolicy decoding bug.
+
+Enhancements
+ * Net::LDAP::Extension::SetPassword now supports controls
+
 perl-ldap 0.37 -- Thu Aug 28 07:48:13 CDT 2008
 ==============================================
 
