@@ -8,23 +8,26 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Intermediate;
 
 @ISA = qw(Net::LDAP::Intermediate);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(syncInfoValue);
 use strict;
 
-# use some kind of hack here:
-# - calling the control without args means: response,
-# - giving an argument: means: request
 sub init {
   my($self) = @_;
 
-  delete $self->{asn};
-
-  unless (exists $self->{responseValue}) {
-    $self->{asn} = {
-      newcookie => $self->{newcookie} || '',
-    };
+  if (exists $self->{responseValue}) {
+    $self->{asn} = $syncInfoValue->decode(delete $self->{responseValue});
+  } else {
+    $self->{asn} = {};
+    $self->{asn}{newcookie} =
+      delete $self->{newcookie} if exists $self->{newcookie};
+    $self->{asn}{refreshDelete} =
+      delete $self->{refreshDelete} if exists $self->{refreshDelete};
+    $self->{asn}{refreshPresent} =
+      delete $self->{refreshPresent} if exists $self->{refreshPresent};
+    $self->{asn}{syncIdSet} =
+      delete $self->{syncIdSet} if exists $self->{syncIdSet};
   }
 
   $self;
@@ -32,11 +35,8 @@ sub init {
 
 sub newcookie {
   my $self = shift;
-  $self->{asn} ||= $syncInfoValue->decode($self->{responseValue});
-  if (@_) {
-    delete $self->{responseValue};
-    return $self->{asn}{newcookie} = shift || 0;
-  }
+  @_ ? ($self->{asn}{newcookie}=shift)
+     : $self->{asn}{newcookie};
   $self->{asn}{cookie};
 }
 

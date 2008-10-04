@@ -13,7 +13,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 @ISA = qw(Net::LDAP::Message);
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 
 sub first_entry { # compat
@@ -36,6 +36,8 @@ sub decode {
 
   return $self->SUPER::decode($result)
     if exists $result->{protocolOp}{searchResDone};
+  return $self->SUPER::decode($result)
+    if exists $result->{protocolOp}{intermediateResponse};
 
   my $data;
   @{$self}{qw(controls ctrl_hash)} = ($result->{controls}, undef);
@@ -60,17 +62,6 @@ sub decode {
     push(@{$self->{'reference'} ||= []}, @$data);
 
     $self->{callback}->($self, bless $data, 'Net::LDAP::Reference')
-      if (defined $self->{callback});
-
-    return $self;
-  }
-  elsif ($data = delete $result->{protocolOp}{intermediateResponse}) {
-
-    my $intermediate = Net::LDAP::Intermediate->from_asn($data);
-
-    push(@{$self->{'intermediate'} ||= []}, [$intermediate]);
-
-    $self->{callback}->($self, $intermediate)
       if (defined $self->{callback});
 
     return $self;

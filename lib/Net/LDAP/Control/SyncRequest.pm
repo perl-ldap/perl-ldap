@@ -8,14 +8,11 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(syncRequestValue);
 use strict;
 
-# use some kind of hack here:
-# - calling the control without args means: response,
-# - giving an argument: means: request
 sub init {
   my($self) = @_;
 
@@ -64,10 +61,8 @@ sub reloadHint {
 
 sub value {
   my $self = shift;
-
-  exists $self->{value}
-    ? $self->{value}
-    : $self->{value} = $syncRequestValue->encode($self->{asn});
+  return $self->{value} if exists $self->{value};
+  $self->{value} = $syncRequestValue->encode($self->{asn});
 }
 
 1;

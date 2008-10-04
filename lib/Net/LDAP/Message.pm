@@ -9,7 +9,7 @@ use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "1.10";
+$VERSION = "1.11";
 
 my $MsgID = 0;
 
@@ -142,9 +142,21 @@ sub decode { # $self, $pdu, $control
   # free up memory as we have a result so we will not need to re-send it
   delete $self->{pdu};
 
-  # tell our LDAP client to forget us as this message has now completed
-  # all communications with the server
-  $self->parent->_forgetmesg($self);
+  if ($data = delete $result->{protocolOp}{intermediateResponse}) {
+
+    my $intermediate = Net::LDAP::Intermediate->from_asn($data);
+
+    push(@{$self->{'intermediate'} ||= []}, $intermediate);
+
+    $self->{callback}->($self, $intermediate)
+      if (defined $self->{callback});
+
+    return $self;
+  } else {
+    # tell our LDAP client to forget us as this message has now completed
+    # all communications with the server
+    $self->parent->_forgetmesg($self);
+  }
 
   $self->{callback}->($self)
     if (defined $self->{callback});

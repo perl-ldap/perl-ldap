@@ -13,9 +13,6 @@ $VERSION = "0.01";
 use Net::LDAP::ASN qw(syncStateValue);
 use strict;
 
-# use some kind of hack here:
-# - calling the control without args means: response,
-# - giving an argument: means: request
 sub init {
   my($self) = @_;
 

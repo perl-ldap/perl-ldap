@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.07";
+$VERSION = "0.08";
 
 use Convert::ASN1;
 
@@ -455,7 +455,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
             refreshAndPersist (3)
         }
         cookie     syncCookie OPTIONAL,
-        reloadHint BOOLEAN -- DEFAULT FALSE
+        reloadHint BOOLEAN OPTIONAL -- DEFAULT FALSE
     }
 
     syncStateValue ::= SEQUENCE {
@@ -471,22 +471,22 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 
     syncDoneValue ::= SEQUENCE {
         cookie          syncCookie OPTIONAL,
-        refreshDeletes  BOOLEAN -- DEFAULT FALSE
+        refreshDeletes  BOOLEAN OPTIONAL -- DEFAULT FALSE
     }
 
     syncInfoValue ::= CHOICE {
           newcookie      [0] syncCookie,
           refreshDelete  [1] SEQUENCE {
-              refreshDeleteCookie         syncCookie OPTIONAL,
-              refreshDeleteDone    BOOLEAN -- DEFAULT TRUE
+              cookie         syncCookie OPTIONAL,
+              refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
           }
           refreshPresent [2] SEQUENCE {
-              refreshDeletecookie         syncCookie OPTIONAL,
-              refreshDeleteDone    BOOLEAN -- DEFAULT TRUE
+              cookie         syncCookie OPTIONAL,
+              refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
           }
           syncIdSet      [3] SEQUENCE {
               cookie         syncCookie OPTIONAL,
-              refreshDeletes BOOLEAN, -- DEFAULT FALSE
+              refreshDeletes BOOLEAN OPTIONAL, -- DEFAULT FALSE
               syncUUIDs      SET OF syncUUID
           }
     }

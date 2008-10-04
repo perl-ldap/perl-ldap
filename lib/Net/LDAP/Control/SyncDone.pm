@@ -8,22 +8,19 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(syncDoneValue);
 use strict;
 
-# use some kind of hack here:
-# - calling the control without args means: response,
-# - giving an argument: means: request
 sub init {
   my($self) = @_;
 
-  delete $self->{asn};
-
-  unless (exists $self->{value}) {
+  if (exists $self->{value}) {
+    $self->{asn} = $syncDoneValue->decode(delete $self->{value});
+  } else {
     $self->{asn} = {
-      cookie => $self->{cookie} || '',
+      cookie => defined($self->{cookie}) ? $self->{cookie} : '',
       refreshDeletes   => $self->{refreshDeletes} || '0',
     };
   }
@@ -36,7 +33,7 @@ sub cookie {
   $self->{asn} ||= $syncDoneValue->decode($self->{value});
   if (@_) {
     delete $self->{value};
-    return $self->{asn}{cookie} = shift || 0;
+    return $self->{asn}{cookie} = defined($_[0]) ? $_[0] : '';
   }
   $self->{asn}{cookie};
 }
