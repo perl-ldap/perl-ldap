@@ -29,6 +29,27 @@ sub init {
     $self->{asn}{syncIdSet} =
       delete $self->{syncIdSet} if exists $self->{syncIdSet};
   }
+  #$self->{asn}{refreshDelete}{refreshDone} defaults to TRUE
+  if(defined($self->{asn}{refreshDelete})) {
+    $self->{asn}{refreshDelete}{refreshDone} =
+      defined($self->{asn}{refreshDelete}{refreshDone})
+      ? $self->{asn}{refreshDelete}{refreshDone}
+      : 1;
+  }
+  #$self->{asn}{refreshPresent}{refreshDone} defaults to TRUE
+  if(defined($self->{asn}{refreshPresent})) {
+    $self->{asn}{refreshPresent}{refreshDone} =
+      defined($self->{asn}{refreshPresent}{refreshDone})
+      ? $self->{asn}{refreshPresent}{refreshDone}
+      : 1;
+  }
+  #$self->{asn}{syncIdSet}{refreshDeletes} defaults to FALSE
+  if(defined($self->{asn}{syncIdSet})) {
+    $self->{asn}{syncIdSet}{refreshDeletes} =
+      defined($self->{asn}{syncIdSet}{refreshDeletes})
+      ? $self->{asn}{syncIdSet}{refreshDeletes}
+      : 0;
+  }
 
   $self;
 }

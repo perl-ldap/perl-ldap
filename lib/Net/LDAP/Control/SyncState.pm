@@ -8,7 +8,7 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 use Net::LDAP::ASN qw(syncStateValue);
 use strict;
@@ -16,13 +16,13 @@ use strict;
 sub init {
   my($self) = @_;
 
-  delete $self->{asn};
-
-  unless (exists $self->{value}) {
+  if (exists $self->{value}) {
+    $self->{asn} = $syncStateValue->decode(delete $self->{value});
+  } else {
     $self->{asn} = {
       state => $self->{state} || '',
       entryUUID => $self->{entryUUID} || '',
-      cookie   => $self->{cookie} || '',
+      cookie => defined($self->{cookie}) ? $self->{cookie} : '',
     };
   }
 
