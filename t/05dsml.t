@@ -28,7 +28,7 @@ my $ldif = Net::LDAP::LDIF->new($infile,"r");
 @entry = $ldif->read;
 
 open(FH,">$outfile1");
-
+binmode FH;
 my $dsml = Net::LDAP::DSML->new(output => \*FH,pretty_print => 1);
 
 $dsml->write_entry($_) for @entry;
@@ -40,6 +40,7 @@ close(FH);
 # (don't rely on unpatched XML::SAX::Writer [e.g. Debian])
 {
 open(FH, "+<$outfile1");
+binmode FH;
 local $/;	# slurp mode
 my $txt = <FH>;
 
