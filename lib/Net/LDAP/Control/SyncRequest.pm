@@ -21,7 +21,7 @@ sub init {
   unless (exists $self->{value}) {
     $self->{asn} = {
       mode => $self->{mode} || '1',
-      cookie => $self->{cookie} || '',
+      cookie => $self->{cookie} || undef,
       reloadHint   => $self->{reloadHint} || '0',
     };
   }
