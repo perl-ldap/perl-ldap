@@ -437,6 +437,10 @@ A loop has been detected. For example when following referals.
 
 The referral hop limit has been exceeded.
 
+=item LDAP_SYNC_REFRESH_REQUIRED (4096)
+
+Refresh Required.
+
 =back
 
 =head2 Control OIDs
