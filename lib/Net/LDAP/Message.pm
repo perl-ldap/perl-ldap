@@ -102,10 +102,12 @@ sub set_error {
 }
 
 sub error_name {
+  require Net::LDAP::Util;
   Net::LDAP::Util::ldap_error_name(shift->code);
 }
 
 sub error_text {
+  require Net::LDAP::Util;
   Net::LDAP::Util::ldap_error_text(shift->code);
 }
 
