@@ -11,7 +11,7 @@ use Net::LDAP::Constant qw(
   LDAP_SYNC_INFO
 );
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 
 my %Class2ResponseName = (
 

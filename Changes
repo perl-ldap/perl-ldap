@@ -1,3 +1,11 @@
+perl-ldap 0.39 -- Mon Oct 27 15:02:37 CDT 2008
+==============================================
+
+Bug Fixes
+ * Several fixes to the handling of IntermediateMessage and LDAP Content synchronisation
+ * Fix dsmt test to not fail on win32
+ * Fix Net::LDAP::Util to not cause Undefined subroutine &Net::LDAP::Util::ldap_error_desc
+
 perl-ldap 0.38 -- Sun Sep 21 09:17:25 CDT 2008
 ==============================================
 

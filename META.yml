@@ -22,4 +22,4 @@ resources:
   MailingList: http://lists.cpan.org/showlist.cgi?name=perl-ldap
   homepage: http://ldap.perl.org/
   repository: http://git.goingon.net/?p=perl-lda.git;a=summary
-version: 0.38
+version: 0.39
