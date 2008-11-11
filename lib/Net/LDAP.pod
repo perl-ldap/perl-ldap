@@ -382,7 +382,7 @@ This value should be a new RDN to assign to C<DN>.
 
 =item deleteoldrdn =E<gt> 1
 
-This option should be passwd if the existing RDN is to be deleted.
+This option should be passed if the existing RDN is to be deleted.
 
 =item newsuperior =E<gt> NEWDN
 
