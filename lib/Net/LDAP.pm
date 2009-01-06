@@ -1031,7 +1031,7 @@ sub start_tls {
   my $sock_class = ref($sock);
 
   return $mesg
-    if IO::Socket::SSL::socketToSSL($sock, {_SSL_context_init_args($arg)});
+    if IO::Socket::SSL->start_SSL($sock, {_SSL_context_init_args($arg)});
 
   my $err = $@ || $IO::Socket::SSL::SSL_ERROR || $IO::Socket::SSL::SSL_ERROR || ''; # avoid use on once warning
 
