@@ -1,78 +1,33 @@
-# Copyright (c) 1998-2008 Graham Barr <gbarr@pobox.com>. All rights reserved.
+# Copyright (c) 1998-2009 Graham Barr <gbarr@pobox.com>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.07";
+$VERSION = "0.08";
 
-use Carp;
+use Exporter qw(import);
 
-my %const;
+my @err2name;
 
-sub import {
-  shift;
-  my $callpkg = caller(0);
-  _find(@_);
-  my $oops;
-  my $all = grep /:all/, @_;
-  foreach my $sym ($all ? keys %const : @_) {
-    if (my $sub = $const{$sym}) {
-      *{$callpkg . "::$sym"} = $sub;
-    }
-    else {
-      ++$oops;
-      carp(qq["$sym" is not exported by the Net::LDAP::Constant module]);
-    }
-  }
-  croak("Can't continue after import errors") if $oops;
+while(<DATA>) {
+  last if /^=cut/;
+  my $protocol_const = /^=head2 Protocol Constants/ ... /^=head2/;
+  next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/;
+  my ($name, $value) = ($1,$2);
+  *{$name} = sub () { $value };
+  push @EXPORT_OK, $name;
+  $err2name[$value] = $name if $protocol_const;
 }
 
-sub _find {
-  if (my @need = grep { ! $const{$_} } @_) {
-    my %need; @need{@need} = ();
-    my $all = exists $need{':all'};
-    seek(DATA,0,0);
-    local $/=''; # paragraph mode
-    local $_;
-    while(<DATA>) {
-      next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/ and ($all or exists $need{$1});
-      my ($name, $value) = ($1,$2);
-      delete $need{$name};
-      $const{$name} = sub () { $value };
-      last unless keys %need;
-    }
-  }
-  @const{@_};
-}
-
-sub AUTOLOAD {
-  (my $name = $AUTOLOAD) =~ s/^.*:://;
-  my $sub = _find($name) or croak("Undefined subroutine &$AUTOLOAD");
-  my $val = &$sub; # Avoid prototype error caused by *$AUTOLOAD = $sub
-  *$AUTOLOAD = sub { $val };
-  goto &$AUTOLOAD;
-}
 
 # These subs are really in Net::LDAP::Util, but need to access <DATA>
 # so its easier for them to be here.
 
-my @err2name;
 
 sub Net::LDAP::Util::ldap_error_name {
   my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
 
-  unless (@err2name) {
-    seek(DATA,0,0);
-    local $/=''; # paragraph mode
-    local $_;
-    my $n = -1;
-    while(<DATA>) {
-      last if /^=head2/ and ++$n;
-      next if $n;
-      $err2name[$2] = $1 if /^=item\s+(LDAP_\S+)\s+\((\d+)\)/;
-    }
-  }
   $err2name[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
 }
 
@@ -87,6 +42,7 @@ sub Net::LDAP::Util::ldap_error_text {
   my $n = -1;
   while(<DATA>) {
     last if /^=head2/ and ++$n;
+    last if /^=cut/;
     next if $n;
     if (/^=item\s+(LDAP_\S+)\s+\((\d+)\)/) {
       last if defined $text;
@@ -626,8 +582,9 @@ E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1998-2008 Graham Barr. All rights reserved. This program is
+Copyright (c) 1998-2009 Graham Barr. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
 =cut
+
