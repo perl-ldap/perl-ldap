@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-$VERSION 	= "0.39";
+$VERSION 	= "0.39_01";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -377,17 +377,24 @@ sub bind {
       if $ldap->{net_ldap_version} < 3;
 
     my $sasl = $passwd;
+    my $sasl_conn;
 
-    # If we're talking to a round-robin, the canonical name of
-    # the host we are talking to might not match the name we
-    # requested
-    my $connected_name = $ldap->{net_ldap_socket}->peerhost;
-    $connected_name ||= $ldap->{net_ldap_host};
+    if (ref($sasl) and $sasl->isa('Authen::SASL')) {
 
-    my $sasl_conn = eval {
-      local($SIG{__DIE__});
-      $sasl->client_new("ldap",$connected_name);
-    };
+      # If we're talking to a round-robin, the canonical name of
+      # the host we are talking to might not match the name we
+      # requested
+      my $connected_name = $ldap->{net_ldap_socket}->peerhost;
+      $connected_name ||= $ldap->{net_ldap_host};
+
+      $sasl_conn = eval {
+        local ($SIG{__DIE__});
+        $sasl->client_new("ldap", $connected_name);
+      };
+    }
+    else {
+      $sasl_conn = $sasl;
+    }
 
     return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$@")
       unless defined($sasl_conn);

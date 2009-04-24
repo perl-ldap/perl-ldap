@@ -298,7 +298,14 @@ Bind with the given password.
 =item sasl =E<gt> SASLOBJ
 
 Bind using a SASL mechanism. The argument given should be a sub-class
-of L<Authen::SASL>.
+of L<Authen::SASL> or an L<Authen::SASL> client connection by calling
+C<client_new> on an L<Authen::SASL> object.
+
+If passed an L<Authen::SASL> object then C<client_new> will be
+called to create a client connection object. The hostname passed
+by C<Net::LDAP> to C<client_new> is the result of calling C<peerhost>
+on the socket. If this is not correct for your environment, consider
+calling C<client_new> and passing the client connection object.
 
 =back
 
