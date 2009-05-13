@@ -31,3 +31,5 @@
 \bcover_db\b
 \b_test/
 \btemp/
+
+\bperl-ldap-\d.*gz$
