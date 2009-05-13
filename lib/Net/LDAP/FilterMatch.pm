@@ -17,7 +17,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
 use vars qw($VERSION);
-$VERSION   = '0.17';
+$VERSION   = '0.17_01';
 
 sub import {
   shift;
@@ -244,16 +244,18 @@ sub _cis_substrings($@)
 {
   my $regex=shift;
   my $op=shift;
+
   return 1 if ($regex =~ /^$/);
-  return grep(/\Q$regex\E/i, @_) ? 1 : 0;
+  return grep(/$regex/i, @_) ? 1 : 0;
 }
 
 sub _exact_substrings($@)
 {
   my $regex=shift;
   my $op=shift;
+
   return 1 if ($regex =~ /^$/);
-  return grep(/\Q$regex\E/, @_) ? 1 : 0;
+  return grep(/$regex/, @_) ? 1 : 0;
 }
 
 # this one is here in case we don't use schema
