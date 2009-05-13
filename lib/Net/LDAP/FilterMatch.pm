@@ -17,7 +17,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
 use vars qw($VERSION);
-$VERSION   = '0.17_01';
+$VERSION   = '0.17_02';
 
 sub import {
   shift;
@@ -37,16 +37,16 @@ use vars qw(@approxMatchers);
 
 sub _filterMatch($@);
 
-sub _cis_equalityMatch($@);
-sub _exact_equalityMatch($@);
-sub _numeric_equalityMatch($@);
-sub _cis_orderingMatch($@);
-sub _numeric_orderingMatch($@);
-sub _cis_greaterOrEqual($@);
-sub _cis_lessOrEqual($@);
-sub _cis_approxMatch($@);
-sub _cis_substrings($@);
-sub _exact_substrings($@);
+sub _cis_equalityMatch($$@);
+sub _exact_equalityMatch($$@);
+sub _numeric_equalityMatch($$@);
+sub _cis_orderingMatch($$@);
+sub _numeric_orderingMatch($$@);
+sub _cis_greaterOrEqual($$@);
+sub _cis_lessOrEqual($$@);
+sub _cis_approxMatch($$@);
+sub _cis_substrings($$@);
+sub _exact_substrings($$@);
 
 # all known matches from the OL 2.2 schema,
 *_bitStringMatch = \&_exact_equalityMatch;
@@ -168,7 +168,7 @@ sub _filterMatch($@)
   return undef;	# all other filters => fail with error
 }
 
-sub _cis_equalityMatch($@)
+sub _cis_equalityMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -176,7 +176,7 @@ sub _cis_equalityMatch($@)
   return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
 }
 
-sub _exact_equalityMatch($@)
+sub _exact_equalityMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -184,7 +184,7 @@ sub _exact_equalityMatch($@)
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
-sub _numeric_equalityMatch($@)
+sub _numeric_equalityMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -192,7 +192,7 @@ sub _numeric_equalityMatch($@)
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
-sub _cis_orderingMatch($@)
+sub _cis_orderingMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -208,7 +208,7 @@ sub _cis_orderingMatch($@)
   };
 }
 
-sub _exact_orderingMatch($@)
+sub _exact_orderingMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -224,7 +224,7 @@ sub _exact_orderingMatch($@)
   };
 }
 
-sub _numeric_orderingMatch($@)
+sub _numeric_orderingMatch($$@)
 {
   my $assertion = shift;
   my $op = shift;
@@ -240,7 +240,7 @@ sub _numeric_orderingMatch($@)
   };
 }
 
-sub _cis_substrings($@)
+sub _cis_substrings($$@)
 {
   my $regex=shift;
   my $op=shift;
@@ -249,7 +249,7 @@ sub _cis_substrings($@)
   return grep(/$regex/i, @_) ? 1 : 0;
 }
 
-sub _exact_substrings($@)
+sub _exact_substrings($$@)
 {
   my $regex=shift;
   my $op=shift;
@@ -260,7 +260,7 @@ sub _exact_substrings($@)
 
 # this one is here in case we don't use schema
 
-sub _cis_greaterOrEqual($@)
+sub _cis_greaterOrEqual($$@)
 {
   my $assertion=shift;
   my $op=shift;
@@ -275,7 +275,7 @@ sub _cis_greaterOrEqual($@)
 
 *_cis_lessOrEqual = \&_cis_greaterOrEqual;
 
-sub _cis_approxMatch($@)
+sub _cis_approxMatch($$@)
 {
   my $assertion=shift;
   my $op=shift;
