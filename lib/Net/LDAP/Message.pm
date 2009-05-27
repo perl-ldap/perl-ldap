@@ -210,12 +210,15 @@ sub control {
     }
   }
 
-  return unless $self->{ctrl_hash};
+  my $ctrl_hash = $self->{ctrl_hash}
+    or return;
 
-  @_ ?  exists $self->{ctrl_hash}{$_[0]}
-         ? @{$self->{ctrl_hash}{$_[0]}}
-         : ()
-     : map { @$_ } values %{$self->{ctrl_hash}};
+  my @oid = @_ ? @_ : keys %$ctrl_hash;
+  my @control = map {@$_} grep $_, @{$ctrl_hash}{@oid}
+    or return;
+
+  # return a list, so in a scalar context we do not just get array length
+  return @control[0 .. $#control];
 }
 
 sub pdu      {  shift->{pdu}      }
