@@ -78,36 +78,7 @@ Net::LDAP::Control::SyncState - LDAPv3 Sync State control object
 
 =head1 SYNOPSIS
 
- use Net::LDAP;
- use Net::LDAP::Control::SyncRequest;
- use Net::LDAP::Constant qw(
-  LDAP_SYNC_REFRESH_ONLY
-  LDAP_SYNC_REFRESH_AND_PERSIST
-  LDAP_SUCCESS );
-
- $ldap = Net::LDAP->new( "ldap.mydomain.eg" );
-
- $req = Net::LDAP::Control::SyncRequest->new( mode => LDAP_SYNC_REFRESH_ONLY );
- my $mesg = $ldap->search(base=> 'dc=mydomain,dc='eg',
-                          scope    => 'sub',
-                          control  => [ $req ],
-                          callback => \&searchCallback, # call for each entry
-                          filter   => "(objectClass=*)",
-                          attrs    => [ '*']);
- sub searchCallback {
-   my $message = shift;
-   my $entry = shift;
-   my @controls = $message->control;
-
-   if($controls[0]->isa('Net::LDAP::Control::SyncState')) {
-     print "Received Sync State Control\n";
-     print $entry->dn()."\n";
-     print 'State: '.$controls[0]->state."\n".', entryUUID: '.$controls[0]->entryUUID.', cookie: '.$controls[0]->cookie;
-   } elsif($controls[0]->isa('Net::LDAP::Control::SyncDone')) {
-     print "Received Sync Done Control\n";
-     print 'Cookie: '.$controls[0]->cookie.', refreshDeletes: '.$controls[0]->refreshDeletes;
-   }
- }
+See L<Net::LDAP::Control::SyncRequest>
 
 =head1 DESCRIPTION
 
