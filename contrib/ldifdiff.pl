@@ -1,5 +1,4 @@
 #! /usr/bin/perl
-# $Id: ldifdiff.pl,v 3.7 2005/03/15 14:22:45 subbarao Exp $
 
 =head1 NAME
 
@@ -13,7 +12,7 @@ into the source.
 
 =head1 SYNOPSIS
 
-ldifdiff.pl B<-k|--keyattr keyattr> [B<-a|--sourceattrs attr1,attr2,...>] [B<-c|--ciscmp attr1,...>] [B<--dnattrs attr1,...>] [B<--sharedattrs attr1,...>] B<sourcefile> B<targetfile>
+ldifdiff.pl B<-k|--keyattr keyattr> [B<-a|--sourceattrs attr1,attr2,...>] [B<-c|--ciscmp attr1,...>] [B<-n|--numcmp attr1,...>] [B<--dnattrs attr1,...>] [B<--sharedattrs attr1,...>] B<sourcefile> B<targetfile>
 
 =head1 OPTIONS
 
@@ -35,6 +34,11 @@ source and target entries. By default, all attributes are considered.
 
 (Optional) Compare values of the specified attributes case-insensitively. The 
 default set is: mail manager member objectclass owner uid uniqueMember
+
+=item B<-n|--numcmp attr1,...>
+
+(Optional) Compare values of the specified attributes numerically. The 
+default set is: employeeNumber
 
 =item B<--dnattrs attr1,...>
 
@@ -68,17 +72,22 @@ use Getopt::Long;
 use strict;
 
 my @sourceattrs;
-my (%ciscmp, %dnattrs, %sharedattrs);
+my (%ciscmp, %numcmp, %dnattrs, %sharedattrs);
 my $keyattr;
 GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 	'c|ciscmp=s' => sub { my @a = split(/,/,lc $_[1]); @ciscmp{@a} = (1) x @a },
 	'dnattrs=s' => sub { my @a = split(/,/,lc $_[1]); @dnattrs{@a} = (1) x @a },
 	'k|keyattr=s' => \$keyattr,
+	'n|numcmp=s' => sub { my @a = split(/,/,lc $_[1]); @numcmp{@a} = (1) x @a },
 	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a}
 	);
 unless (keys %ciscmp) {
 	foreach (qw(mail manager member objectclass owner uid uniquemember)) 
 	{ $ciscmp{$_} = 1 }
+}
+unless (keys %numcmp) {
+	foreach (qw(employeenumber))
+	{ $numcmp{$_} = 1 }
 }
 unless (keys %dnattrs) {
 	foreach (qw(manager member owner uniquemember))
@@ -122,9 +131,10 @@ sub cmpDNs
 	my ($adn, $bdn) = @_;
 	my $cadn = canonical_dn($adn, casefold => 'lower'); 
 	my $cbdn = canonical_dn($bdn, casefold => 'lower');
-	if ($ciscmp{lc rdnattr($cadn)}) { $cadn = lc($cadn), $cbdn = lc($cbdn) }
+	my $rdnattr = lc rdnattr($cadn);
+	if ($ciscmp{$rdnattr}) { $cadn = lc($cadn), $cbdn = lc($cbdn) }
 
-	$cadn cmp $cbdn;
+	return $numcmp{$rdnattr} ? $cadn <=> $cbdn : $cadn cmp $cbdn;
 }
 
 sub cmpEntries
@@ -142,7 +152,7 @@ sub cmpEntries
 			$aval = lc($aval);
 			$bval = lc($bval);
 		}
-		return($aval cmp $bval, $dncmp);
+		return($numcmp{$keyattr} ? $aval <=> $bval : $aval cmp $bval, $dncmp);
 	}
 }
 
