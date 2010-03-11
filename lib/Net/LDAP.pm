@@ -412,7 +412,7 @@ sub bind {
 
     $passwd = {
       mechanism   => $sasl_conn->mechanism,
-      credentials => (length($initial) ? $initial : undef)
+      credentials => $initial,
     };
 
     # Save data, we will need it later
