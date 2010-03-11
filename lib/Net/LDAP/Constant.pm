@@ -546,7 +546,11 @@ Indicates that the server supports the Password Modify extension (RFC 3062)
 
 =item LDAP_EXTENSION_WHO_AM_I (1.3.6.1.4.1.4203.1.11.3)
 
-Indicates that the server supports the "Who am I?" extension (draft-zeilenga-ldap-authzid-09)
+Indicates that the server supports the "Who am I?" extension (RFC 4532)
+
+=item LDAP_EXTENSION_REFRESH (1.3.6.1.4.1.1466.101.119.1)
+
+Indicates that the server supports the Refresh extension (RFC 2589)
 
 =back
 
