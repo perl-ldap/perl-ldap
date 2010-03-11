@@ -290,6 +290,17 @@ sub update {
   return $mesg;
 }
 
+sub ldif {
+  my $self = shift;
+  my %opt = @_;
+
+  require Net::LDAP::LDIF;
+  open(my $fh, ">", \my $buffer);
+  my $change = exists $opt{change} ? $opt{change} : $self->changes ? 1 : 0;
+  my $ldif = Net::LDAP::LDIF->new($fh, "w", change => $change);
+  $ldif->write_entry($self);
+  return $buffer;
+}
 
 # Just for debugging
 

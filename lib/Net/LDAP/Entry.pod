@@ -217,6 +217,21 @@ Set the DN for the entry, and return the previous value.
 B<NOTE>: these changes are local to the client and will not appear on
 the directory server until the C<update> method is called.
 
+=item ldif ( OPTION =E<gt> VALUE, ... )
+
+Returns the entry as an LDIF string. possible options
+
+=over
+
+=item change =E<gt> VALUE
+
+If given a true value then the LDIF will be generated as a change record.
+If flase, then the LDIF generated will represent the entry content. If
+unspecified then it will fefault to true if the entry has changes and
+false if no changes have been applied to the entry.
+
+=back
+
 =item dump ( [ FILEHANDLE ] )
 
 Dump the entry to the given filehandle. 

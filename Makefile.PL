@@ -2,7 +2,7 @@
 
 use inc::Module::Install;
 
-perl_version    5.004;
+perl_version    5.008;
 
 name		('perl-ldap');
 module_name	('Net::LDAP');

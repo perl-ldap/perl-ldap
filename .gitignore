@@ -3,3 +3,4 @@ Makefile
 _test
 temp
 *.bak
+.*.swp
