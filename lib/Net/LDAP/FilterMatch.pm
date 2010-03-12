@@ -17,7 +17,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
 use vars qw($VERSION);
-$VERSION   = '0.17_02';
+$VERSION   = '0.18';
 
 sub import {
   shift;

@@ -1,3 +1,28 @@
+0.40 -- Thu Mar 11 20:56:28 CST 2010
+
+  * Avoid 'cookie parsing error' on OpenLDAP 2.3 [Mathieu Parent]
+  * Added e-syncRefreshRequired constant [Mathieu Parent]
+  * Minor typo fix in documentation [Quanah Gibson-Mount]
+  * Update CREDITS for Mathieu Parent
+  * Remove runtime dependency on DATA handle for constants
+  * Clarify documentation for gen_password
+  * Allow caller to pass Authen::SASL client_new object
+  * fix typo [Peter Marschall]
+  * use current IO::Socket::SSL's method start_SSL instead of deprecated function socketToSSL; raise required IO::Socket:SSL version appropriately [Peter Marschall]
+  * FilterMatch.pm: fix regex treatment in _{cis,exact}_substrings(). [Peter Marschall]
+  * FilterMatch.pm: correct # of args in function declarations/definitions [Peter Marschall]
+  * Don't duplicate documentation [Mathieu Parent]
+  * Added numcmp option to compare attributes numerically. [Kartik Subbarao]
+  * Avoid infinite loop when authenticating with EXTERNAL mechanism
+  * Add Net::LDAP::Extension::Refresh as described in RFC2589 [Etienne Bagnoud]
+  * RT#40068 Fix tests to work with 2.4.11
+  * Add ldif method to Net::LDAP::Entry
+  * RT#46111 Make LWP::Protocol::ldap return ldif when requested
+  * RT#51165 Compact multiple consecutive spaces in Net::LDAP::Util::canonical_dn
+  * RT#46125 Add LWP::Protocol::ldaps to support ldaps: urls
+  * RT#44110 Fix Net::LDAP::LDIF->current_lines
+
+
 perl-ldap 0.39 -- Mon Oct 27 15:02:37 CDT 2008
 ==============================================
 

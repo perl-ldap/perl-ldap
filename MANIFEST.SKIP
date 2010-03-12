@@ -19,6 +19,7 @@
 # Avoid Module::Build generated and utility files.
 \bBuild$
 \b_build/
+\b_dev/
 
 # Avoid temp and backup files.
 ~$
@@ -33,3 +34,4 @@
 \btemp/
 
 \bperl-ldap-\d.*gz$
+\bmy.cfg$
