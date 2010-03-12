@@ -309,6 +309,8 @@ sub canonical_dn($%) {
             #escape leading and trailing whitespace
             $val =~ s/(^\s+|\s+$)/
               "\\20" x length $1/xeg; 
+            #compact multiple spaces
+            $val =~ s/\s+/ /g;
           }
           
           # case fold attribute type and create return value

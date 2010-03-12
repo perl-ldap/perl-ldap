@@ -53,6 +53,7 @@ while(my($op,$dn) = splice(@tests,0,2)) {
   print +($failed ? "not ok " : "ok "),++$testno,"\n";
 }
 
+
 __DATA__
 
 bad	OU=Sales+CN=J. Smith,O=Widget Inc.,C=US,
@@ -90,7 +91,7 @@ same	cn=Clif Harden+IDNumber=a0125589\20 ,ou=tiPerson,ou=person,o=ti,c=us
 same	cn=Clif Harden+IDNumber="a0125589 ",ou=tiPerson,ou=person,o=ti,c=us
 
 
-ref	CN=\20\20Graham  Barr\20\20,OU=person,O=vc,C=us
+ref	CN=\20\20Graham Barr\20\20,OU=person,O=vc,C=us
 same	Cn="  Graham  Barr  ",OU=person,O=vc,C=us
 same	cn="  Graham \20Barr\20 ",OU=person,O=vc,C=us
 
@@ -195,3 +196,7 @@ same CN=John Smith \2C III,DC=example,DC=net
 
 ref  DISTINGUISHEDNAMETABLEKEY=cn\3dDSA\2c c\3dGB,CN=bilateral table,CN=DSA,C=US
 same distinguishedNameTableKey=cn\=DSA\, c\=GB, cn=bilateral table, cn=DSA, c=US
+
+# RT 51165
+ref  CN=tester\2c karl,OU=test,DC=example,DC=com
+same cn=tester\,  karl,ou=test,dc=example,dc=com
