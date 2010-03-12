@@ -14,6 +14,7 @@ BEGIN {
   $TEMPDIR  = "./temp";
   $SCHEMA_DIR ||= "./data";
   $SLAPD_DB ||= 'ldbm';
+  $SCHEMA_CHECK = 1 unless defined $SCHEMA_CHECK;
 
   $TESTDB   = "$TEMPDIR/test-db";
   $CONF     = "$TEMPDIR/conf";
@@ -80,6 +81,7 @@ sub start_server {
       s/\$([A-Z]\w*)/${$1}/g;
       s/^TLS/#TLS/ unless $SSL_PORT;
       s/^(sasl.*)/#$1/ unless $SASL;
+      s/^schemacheck.*// unless $SCHEMA_CHECK;
       print CONFO;
     }
     close(CONFI);
