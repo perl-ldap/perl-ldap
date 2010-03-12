@@ -445,6 +445,7 @@ sub _write_dn {
       # Canonicalizer won't fix leading spaces, colons or less-thans, which
       # are special in LDIF, so we fix those up here.
       $dn =~ s/^([ :<])/\\$1/;
+      $dn = "dn: $dn";
     } elsif ($encode =~ /base64/i) {
       require MIME::Base64;
       $dn = "dn:: " . MIME::Base64::encode($dn,"");

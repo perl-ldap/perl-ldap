@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.10";
+$VERSION = "1.11";
 
 use strict;
 eval {
@@ -26,7 +26,7 @@ sub request {
 
   $size = 4096 unless $size;
 
-  LWP::Debug::trace('()');
+  LWP::Debug::trace('()') if defined &LWP::Debug::trace;
 
   # check proxy
   if (defined $proxy)
@@ -58,7 +58,8 @@ sub request {
 
   my $host     = $url->host;
   my $port     = $url->port;
-  my ($user, $password) = split(":", $url->userinfo, 2);
+  my $userinfo = $url->userinfo;
+  my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
 
   # Create an initial response object
   my $response = new HTTP::Response &HTTP::Status::RC_OK, "Document follows";
@@ -66,14 +67,15 @@ sub request {
 
   my $ldap = new Net::LDAP($host, port => $port);
 
-  my $mesg = $ldap->bind($user, password => $password);
+  if ($user) {
+    my $mesg = $ldap->bind($user, password => $password);
 
-  if ($mesg->code) {
-    my $res = new HTTP::Response &HTTP::Status::RC_BAD_REQUEST,
-         "LDAP return code " . $ldap->code;
-    $res->content_type("text/plain");
-    $res->content($ldap->error);
-    return $res;
+    if ($mesg->code) {
+      my $res = new HTTP::Response &HTTP::Status::RC_BAD_REQUEST, "LDAP return code " . $mesg->code;
+      $res->content_type("text/plain");
+      $res->content($mesg->error);
+      return $res;
+    }
   }
 
   my $dn = $url->dn;
@@ -81,18 +83,38 @@ sub request {
   my $scope = $url->scope || "base";
   my $filter = $url->filter;
   my @opts = (scope => $scope);
+  my %extn = $url->extensions;
+  my $format = lc($extn{'x-format'} || 'html');
+
+  if (my $accept = $request->header('Accept')) {
+    $format = 'ldif' if $accept =~ m!\btext/ldif\b!;
+  }
   
   push @opts, "base" => $dn if $dn;
   push @opts, "filter" => $filter if $filter;
   push @opts, "attrs" => \@attrs if @attrs;
 
-  $mesg = $ldap->search(@opts);
+  my $mesg = $ldap->search(@opts);
   if ($mesg->code) {
     my $res = new HTTP::Response &HTTP::Status::RC_BAD_REQUEST,
          "LDAP return code " . $ldap->code;
     $res->content_type("text/plain");
     $res->content($ldap->error);
     return $res;
+  }
+  elsif ($format eq 'ldif') {
+    require Net::LDAP::LDIF;
+    open(my $fh, ">", \my $content);
+    my $ldif = Net::LDAP::LDIF->new($fh,"w", version => 1);
+    while(my $entry = $mesg->shift_entry) {
+      $ldif->write_entry($entry);
+    }
+    $ldif->done;
+    close($fh);
+    $response->header('Content-Type' => 'text/ldif');
+    $response->header('Content-Length', length($content));
+    $response = $self->collect_once($arg, $response, $content)
+	if ($method ne 'HEAD');
   }
   else {
     my $content = "<head><title>Directory Search Results</title></head>\n<body>";
