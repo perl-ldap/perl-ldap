@@ -126,6 +126,7 @@ sub _read_lines {
     }
   }
   $self->eof(1)  if (!defined($ln));
+  $self->{_current_lines} = $entry;
   $entry =~ s/\r?\n //sgo;	# un-wrap wrapped lines
   $entry =~ s/\r?\n\t/ /sgo;	# OpenLDAP extension !!!
   @ldif = split(/^/, $entry);

@@ -5,7 +5,7 @@ BEGIN {
 }
 
 
-print "1..15\n";
+print "1..16\n";
 
 use Net::LDAP::LDIF;
 
@@ -17,21 +17,7 @@ my $cmpfile2 = $infile;
 
 my $ldif = Net::LDAP::LDIF->new($infile,"r");
 
-@entry = $ldif->read;
-
-ok($ldif->version == 1, "version == 1");
-
-Net::LDAP::LDIF->new($outfile1,"w")->write(@entry);
-Net::LDAP::LDIF->new($outfile2,"w", version => 1)->write(@entry);
-
-ok(!compare($cmpfile1,$outfile1), $cmpfile1);
-
-ok(!compare($cmpfile2,$outfile2), $cmpfile2);
-
-$e = $entry[0];
-
-is($e->ldif, <<'LDIF', "ldif method");
-
+my $entry0_ldif = <<'LDIF';
 dn: o=University of Michigan, c=US
 objectclass: top
 objectclass: organization
@@ -54,6 +40,25 @@ lastmodifiedtime: 930106182800Z
 lastmodifiedby: cn=manager, o=university of michigan, c=US
 associateddomain: umich.edu
 LDIF
+
+my $e = $ldif->read_entry;
+my @lines = $ldif->current_lines;
+is(join("",@lines),$entry0_ldif,"ldif lines");
+
+my @entry = ($e, $ldif->read);
+
+ok($ldif->version == 1, "version == 1");
+
+Net::LDAP::LDIF->new($outfile1,"w")->write(@entry);
+Net::LDAP::LDIF->new($outfile2,"w", version => 1)->write(@entry);
+
+ok(!compare($cmpfile1,$outfile1), $cmpfile1);
+
+ok(!compare($cmpfile2,$outfile2), $cmpfile2);
+
+
+is($e->ldif, "\n$entry0_ldif", "ldif method");
+
 
 is($e->ldif(change => 1), <<'LDIF', "ldif method");
 
