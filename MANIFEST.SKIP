@@ -33,5 +33,6 @@
 \b_test/
 \btemp/
 
-\bperl-ldap-\d.*gz$
+\bperl-ldap-\d
 \bmy.cfg$
+

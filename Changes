@@ -1,3 +1,7 @@
+0.4001 -- Wed Mar 24 14:54:35 CDT 2010
+
+  * Update Module::Install and generate META.yml
+
 0.40 -- Thu Mar 11 20:56:28 CST 2010
 
   * Avoid 'cookie parsing error' on OpenLDAP 2.3 [Mathieu Parent]
