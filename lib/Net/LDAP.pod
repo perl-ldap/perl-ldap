@@ -169,7 +169,7 @@ If it resolves to an IPv4 address, the connection is tried using IPv4,
 the same way as if this option was not given.
 
 Please note that IPv6 support is considered experimental in
-IO::Socket::SSL, which is used of SSL/TLS support, and there are a few
+IO::Socket::SSL, which is used for SSL/TLS support, and there are a few
 issues to take care of. See L<IO::Socket::SSL/IPv6> for details.
 
 =back
@@ -754,6 +754,12 @@ The server must provide a certificate, and it must be valid.
 
 If you set verify to optional or require, you must also set either
 cafile or capath. The most secure option is B<require>.
+
+=item check =E<gt> 1 | 0
+
+This controls whether the name in the server's certificate is checked
+against the hostname you tried to connect to. The default is to not
+check. The most secure option is B<1>.
 
 =item sslversion =E<gt> 'sslv2' | 'sslv3' | 'sslv2/3' | 'tlsv1'
 
