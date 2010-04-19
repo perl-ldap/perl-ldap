@@ -1,4 +1,9 @@
 #!perl -w
+
+BEGIN {
+  for (1,2) { require Net::LDAP::Constant; }
+}
+
 use Net::LDAP::Util qw(ldap_error_name);;
 
 my @constant = qw(

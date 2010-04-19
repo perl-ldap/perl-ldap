@@ -10,6 +10,7 @@ use Exporter qw(import);
 
 my @err2name;
 
+local $_;
 while(<DATA>) {
   last if /^=cut/;
   my $protocol_const = /^=head2 Protocol Constants/ ... /^=head2/;
