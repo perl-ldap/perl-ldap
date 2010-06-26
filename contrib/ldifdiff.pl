@@ -82,7 +82,7 @@ GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a}
 	);
 unless (keys %ciscmp) {
-	foreach (qw(mail manager member objectclass owner uid uniquemember)) 
+	foreach (qw(cn mail manager member o ou objectclass owner uid uniquemember))
 	{ $ciscmp{$_} = 1 }
 }
 unless (keys %numcmp) {
