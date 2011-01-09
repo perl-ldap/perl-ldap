@@ -6,7 +6,7 @@ package Net::LDAP::Entry;
 
 use strict;
 use Net::LDAP::ASN qw(LDAPEntry);
-use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR);
+use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR LDAP_OTHER);
 use vars qw($VERSION);
 
 use constant CHECK_UTF8 => $] > 5.007;
@@ -258,33 +258,41 @@ sub delete {
 
 sub update {
   my $self = shift;
-  my $ldap = shift;
+  my $target = shift;	# a Net::LDAP or a Net::LDAP::LDIF object
   my %opt = @_;
   my $mesg;
   my $user_cb = delete $opt{callback};
   my $cb = sub { $self->changetype('modify') unless $_[0]->code;
                  $user_cb->(@_) if $user_cb };
 
-  if ($self->{'changetype'} eq 'add') {
-    $mesg = $ldap->add($self, 'callback' => $cb, %opt);
+  if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
+    if ($self->{'changetype'} eq 'add') {
+      $mesg = $target->add($self, 'callback' => $cb, %opt);
+    }
+    elsif ($self->{'changetype'} eq 'delete') {
+      $mesg = $target->delete($self, 'callback' => $cb, %opt);
+    }
+    elsif ($self->{'changetype'} =~ /modr?dn/o) {
+      my @args = (newrdn => $self->get_value('newrdn') || undef,
+                  deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
+      my $newsuperior = $self->get_value('newsuperior');
+      push(@args, newsuperior => $newsuperior) if $newsuperior;
+      $mesg = $target->moddn($self, @args, 'callback' => $cb, %opt);
+    }
+    elsif (@{$self->{'changes'}}) {
+      $mesg = $target->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, %opt);
+    }
+    else {
+      require Net::LDAP::Message;
+      $mesg = Net::LDAP::Message->new( $target );
+      $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
+    }
   }
-  elsif ($self->{'changetype'} eq 'delete') {
-    $mesg = $ldap->delete($self, 'callback' => $cb, %opt);
-  }
-  elsif ($self->{'changetype'} =~ /modr?dn/o) {
-    my @args = (newrdn => $self->get_value('newrdn') || undef,
-                deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
-    my $newsuperior = $self->get_value('newsuperior');
-    push(@args, newsuperior => $newsuperior) if $newsuperior;
-    $mesg = $ldap->moddn($self, @args, 'callback' => $cb, %opt);
-  }
-  elsif (@{$self->{'changes'}}) {
-    $mesg = $ldap->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, %opt);
-  }
-  else {
-    require Net::LDAP::Message;
-    $mesg = Net::LDAP::Message->new( $ldap );
-    $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
+  elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
+    $target->write_entry($self);
+    $mesg = Net::LDAP::Message::Dummy->new();
+    $mesg->set_error(LDAP_OTHER, $target->error())
+      if ($target->error());
   }
 
   return $mesg;

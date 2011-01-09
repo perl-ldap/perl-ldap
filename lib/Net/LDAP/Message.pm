@@ -254,8 +254,8 @@ sub Net::LDAP::Compare::is_error {
   sub sync    { shift }
   sub decode  { shift }
   sub abandon { shift }
-  sub code { 0 }
-  sub error { "" }
+  sub code { $self->{resultcode} || LDAP_SUCCESS }
+  sub error { $self->{errorMessage} || "" }
   sub dn { "" }
   sub done { 1 }
 }
