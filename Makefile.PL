@@ -39,7 +39,7 @@ features(
   ],
   'LDAPS' => [
     -default => 0,
-    'IO::Socket::SSL' => 0.93,
+    'IO::Socket::SSL' => 1.26,
   ],
   'Read/Write DSML files' => [
     -default => 0,
