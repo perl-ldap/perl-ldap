@@ -250,12 +250,13 @@ sub Net::LDAP::Compare::is_error {
   package Net::LDAP::Message::Dummy;
   use vars qw(@ISA);
   @ISA = qw(Net::LDAP::Message);
+  use Net::LDAP::Constant qw(LDAP_SUCCESS);
 
   sub sync    { shift }
   sub decode  { shift }
   sub abandon { shift }
-  sub code { $self->{resultcode} || LDAP_SUCCESS }
-  sub error { $self->{errorMessage} || "" }
+  sub code { shift->{resultCode} || LDAP_SUCCESS }
+  sub error { shift->{errorMessage} || "" }
   sub dn { "" }
   sub done { 1 }
 }
