@@ -1,3 +1,7 @@
+0.42 -- Sat Sep 3 07:46:06 CDT 2011
+
+  * Check whether LDAP socket object has a peerhost() method defined before calling it. This fixes SASL authentication over UNIX domain (ldapi://) sockets. [Chris Mikkelson]
+
 0.41 -- Sat Sep 3 07:37:31 CDT 2011
 
   * use of non-localised $_ in Net::LDAP::Constant causes prolems in lemonldap-ng [Damyan Ivanov]
