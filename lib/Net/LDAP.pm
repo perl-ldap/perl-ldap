@@ -385,7 +385,10 @@ sub bind {
       # If we're talking to a round-robin, the canonical name of
       # the host we are talking to might not match the name we
       # requested
-      my $connected_name = $ldap->{net_ldap_socket}->peerhost;
+      my $connected_name;
+      if ($ldap->{net_ldap_socket}->can('peerhost')) {
+        $connected_name = $ldap->{net_ldap_socket}->peerhost;
+      }
       $connected_name ||= $ldap->{net_ldap_host};
 
       $sasl_conn = eval {
