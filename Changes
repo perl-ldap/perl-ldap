@@ -1,3 +1,7 @@
+0.43 -- Sat Sep 3 12:50:49 CDT 2011
+
+  * Fix copy & paste errors in Net::LDAP::Message
+
 0.42 -- Sat Sep 3 07:46:06 CDT 2011
 
   * Check whether LDAP socket object has a peerhost() method defined before calling it. This fixes SASL authentication over UNIX domain (ldapi://) sockets. [Chris Mikkelson]
