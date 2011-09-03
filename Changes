@@ -1,3 +1,11 @@
+0.41 -- Sat Sep 3 07:37:31 CDT 2011
+
+  * use of non-localised $_ in Net::LDAP::Constant causes prolems in lemonldap-ng [Damyan Ivanov]
+  * Added cn,o,ou to the default set of case-insensitive attributes [Kartik Subbarao]
+  * Entry.pod: fix typos [Peter Marschall]
+  * extend Net::LDAP::Entry->update() to take LDIF objects [Peter Marschall]
+  * Specify that we want to use the 'ldap' scheme to verify certificates. [Kevan Carstensen]
+
 0.4001 -- Wed Mar 24 14:54:35 CDT 2010
 
   * Update Module::Install and generate META.yml
