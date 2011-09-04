@@ -52,7 +52,7 @@ sub-classes just so they can get all the features.
 C<Net::LDAP::Extra> allows methods to be added directly to
 all Net::LDAP objects. This can be done by creating a class
 C<Net::LDAP::Extra::name> which exports functions. A
-C<use Net::LDAP::Extra qw(name)> will then make these functions avaliable
+C<use Net::LDAP::Extra qw(name)> will then make these functions available
 as a methods on all C<Net::LDAP> objects.
 
 Care should be taken when choosing names for the functions to export

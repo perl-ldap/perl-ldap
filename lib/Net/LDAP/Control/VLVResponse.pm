@@ -119,7 +119,7 @@ be used in any subsequent Virtual List View control using the same list.
 
 =item context
 
-An arbitary value which is used to associate subsequent requests with the
+An arbitrary value which is used to associate subsequent requests with the
 request which this control is a response for. This value should be copied
 by the client into the Virtual List View control for any subsequent
 search that uses the same list.
@@ -138,7 +138,7 @@ The list offset of the target entry.
 =head1 METHODS
 
 As with L<Net::LDAP::Control> each constructor argument
-described above is also avaliable as a method on the object which will
+described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
