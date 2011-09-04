@@ -1242,7 +1242,7 @@ Whether the extended Password Modify operation is available can be
 found out by searching the attribute supportedExtension for the
 value 1.3.6.1.4.1.4203.1.11.1 in the RootDSE object.
 
-If the extended Password Modify operation is not avaiable the
+If the extended Password Modify operation is not available the
 alternative is the regular modification of the userPassword attribute.
 
 But this method has some drawbacks:
@@ -1253,7 +1253,7 @@ But this method has some drawbacks:
 
 Depending on the type of the server the arguments to the modify
 operations may vary. Some want the modify done with replace,
-some want it done by explicitely deleting the old password
+some want it done by explicitly deleting the old password
 and add of the new one.
 This may even depend on whether you change the password for the bound
 user or as an administrator for another user.

@@ -204,7 +204,7 @@ A dotted-decimal representation of an OBJECT IDENTIFIER which
 uniquely identifies the control. This prevents conflicts between
 control names.
 
-This may be ommitted if the contructor is being called on a sub-class of
+This may be omitted if the contructor is being called on a sub-class of
 Net::LDAP::Control which has registered to be associated with an OID.
 If the contructor is being called on the Net::LDAP::Control
 package, then this argument must be given.  If the given OID has been
@@ -234,7 +234,7 @@ passed contains a valid control. It should be used with B<caution>.
 =head1 METHODS
 
 In addition to the methods listed below, each of the named parameters
-to C<new> is also avaliable as a method. C<type> will return the OID of
+to C<new> is also available as a method. C<type> will return the OID of
 the control object. C<value> and C<critical> are set/get methods and will
 return the current value for each attribute if called without arguments,
 but may also be called with arguments to set new values.

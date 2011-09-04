@@ -545,7 +545,7 @@ Escapes the given B<VALUES> according to RFC 2253 so that they
 can be safely used in LDAP DNs.
 
 The characters ",", "+", """, "\", "E<lt>", "E<gt>", ";", "#", "="
-with a special meaning in RFC 2252 are preceeded by ba backslash.
+with a special meaning in RFC 2252 are preceded by ba backslash.
 Control characters with an ASCII code E<lt> 32 are represented
 as \hexpair.
 Finally all leading and trailing spaces are converted to
