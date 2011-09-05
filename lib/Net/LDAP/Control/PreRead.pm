@@ -118,7 +118,7 @@ A list of attributes to be returned in the entry returned in the response contro
 
 If absent, all attributes are returned.
 
-Operational attributes may be included in the list by explicitely asking for them
+Operational attributes may be included in the list by explicitly asking for them
 or by using special C<"+"> feature (provided the server supports this feature).
 
 =back
@@ -126,7 +126,7 @@ or by using special C<"+"> feature (provided the server supports this feature).
 =head1 METHODS
 
 As with L<Net::LDAP::Control> each constructor argument
-described above is also avaliable as a method on the object which will
+described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
