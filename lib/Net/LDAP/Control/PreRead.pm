@@ -102,8 +102,17 @@ Net::LDAP::Control::PreRead - LDAPv3 Pre-Read control object
 =head1 DESCRIPTION
 
 C<Net::LDAP::Control::PreRead> provides an interface for the creation and
-manipulation of objects that represent the C<Pre-Read Control> as described
+manipulation of objects that represent the C<Pre-Read Controls> as described
 by RFC 4527.
+
+In modification operations, the C<Pre-Read request control> indicates to the
+server that a copy of the original entry before the update is to be returned.
+After the successful completion of the operation, the accompanying C<Pre-Read
+response control> allows to retrieve the original value from the servers's response.
+
+One use case of this control control may be to obtain replaced or deleted
+values of modified attributes or a copy of the entry being deleted.
+
 
 =head1 CONSTRUCTOR ARGUMENTS
 
@@ -122,6 +131,7 @@ Operational attributes may be included in the list by explicitly asking for them
 or by using special C<"+"> feature (provided the server supports this feature).
 
 =back
+
 
 =head1 METHODS
 
@@ -159,7 +169,7 @@ E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008 Peter Marschall. All rights reserved. This program is
+Copyright (c) 2008,2011 Peter Marschall. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 
