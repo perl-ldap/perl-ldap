@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 use Exporter qw(import);
 
@@ -435,6 +435,8 @@ Refresh Required.
 =item LDAP_CONTROL_REFERRALS (1.2.840.113556.1.4.616)
 
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
+
+=item LDAP_CONTROL_PERMISSIVEMODIFY (1.2.840.113556.1.4.1413)
 
 =item LDAP_CONTROL_PREREAD (1.3.6.1.1.13.1)
 
