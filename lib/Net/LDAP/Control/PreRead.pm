@@ -81,7 +81,7 @@ Net::LDAP::Control::PreRead - LDAPv3 Pre-Read control object
 
  $ldap = Net::LDAP->new( "ldap.mydomain.eg" );
 
- $preread = Net::LDAP::Control::Paged->new( attrs => [ qw/givenName/ ] );
+ $preread = Net::LDAP::Control::PreRead->new( attrs => [ qw/givenName/ ] );
 
  my $mesg = $ldap->modify( "cn=Barbara Jensen, o=University of Michigan, c=US",
                            replace => { givenName => "Babs" },

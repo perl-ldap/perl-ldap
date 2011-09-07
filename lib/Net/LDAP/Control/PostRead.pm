@@ -27,7 +27,7 @@ Net::LDAP::Control::PostRead - LDAPv3 Post-Read control object
 
  $ldap = Net::LDAP->new( "ldap.mydomain.eg" );
 
- $postread = Net::LDAP::Control::Paged->new( attrs => [ qw/givenName/ ] );
+ $postread = Net::LDAP::Control::PostRead->new( attrs => [ qw/givenName/ ] );
 
  my $mesg = $ldap->modify( "cn=Barbara Jensen, o=University of Michigan, c=US",
                            replace => { givenName => "Babs" },

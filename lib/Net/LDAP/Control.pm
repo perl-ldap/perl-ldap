@@ -213,7 +213,7 @@ registered to handle that OID.
 
 =item value
 
-Optional information associated with the control. It's format is specific
+Optional information associated with the control. Its format is specific
 to the particular control.
 
 =back
