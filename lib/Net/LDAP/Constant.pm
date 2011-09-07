@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.09";
+$VERSION = "0.10";
 
 use Exporter qw(import);
 
@@ -393,6 +393,11 @@ A loop has been detected. For example when following referals.
 =item LDAP_REFERRAL_LIMIT_EXCEEDED (97)
 
 The referral hop limit has been exceeded.
+
+=item LDAP_ASSERTION_FAILED (122)
+
+An assertion control given in the LDAP operation evaluated to false
+causing the operation to not be performed.
 
 =item LDAP_SYNC_REFRESH_REQUIRED (4096)
 
