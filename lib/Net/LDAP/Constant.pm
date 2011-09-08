@@ -318,6 +318,10 @@ The results of the request are to large
 The requested operation needs to be performed on multiple servers where
 the requested operation is not permitted
 
+=item LDAP_VLV_ERROR (76)
+
+A VLV error has occurred
+
 =item LDAP_OTHER (80)
 
 An unknown error has occurred
@@ -393,6 +397,23 @@ A loop has been detected. For example when following referals.
 =item LDAP_REFERRAL_LIMIT_EXCEEDED (97)
 
 The referral hop limit has been exceeded.
+
+=item LDAP_CANCELLED (118)
+
+Operation was cancelled
+
+=item LDAP_NO_SUCH_OPERATION (119)
+
+Server has no knowledge of the operation requested for cancelation
+
+=item LDAP_TOO_LATE (120)
+
+Too late to cancel the outstanding operation
+
+=item LDAP_CANNOT_CANCEL (121)
+
+The identified operation does not support cancelation or
+the cancel operation cannot be performed
 
 =item LDAP_ASSERTION_FAILED (122)
 
