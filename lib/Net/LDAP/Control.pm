@@ -24,9 +24,10 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_SYNC
   LDAP_CONTROL_SYNC_STATE
   LDAP_CONTROL_SYNC_DONE
+  LDAP_CONTROL_ASSERTION
 );
 
-$VERSION = "0.09";
+$VERSION = "0.10";
 
 my %Pkg2Type = (
 
@@ -56,6 +57,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::SyncRequest'	=> LDAP_CONTROL_SYNC,
   'Net::LDAP::Control::SyncState'	=> LDAP_CONTROL_SYNC_STATE,
   'Net::LDAP::Control::SyncDone'	=> LDAP_CONTROL_SYNC_DONE,
+  'Net::LDAP::Control::Assertion'	=> LDAP_CONTROL_ASSERTION,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -213,7 +215,7 @@ registered to handle that OID.
 
 =item value
 
-Optional information associated with the control. It's format is specific
+Optional information associated with the control. Its format is specific
 to the particular control.
 
 =back
