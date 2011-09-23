@@ -200,7 +200,7 @@ sub _SSL_context_init_args {
       $verify = 0 + (exists $ssl_verify{$v} ? $ssl_verify{$v} : $verify);
 
       if ($verify) {
-        $verifycn_ctx{SSL_verifycn_scheme} => "ldap";
+        $verifycn_ctx{SSL_verifycn_scheme} = "ldap";
         $verifycn_ctx{SSL_verifycn_name} = $arg->{'sslserver'}
           if (defined $arg->{'sslserver'});
       }
