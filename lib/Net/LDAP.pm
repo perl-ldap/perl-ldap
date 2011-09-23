@@ -184,11 +184,6 @@ sub connect_ldaps {
     _SSL_context_init_args($arg)
   ) or return undef;
 
-  if ($arg->{'check'} &&
-      $ldap->{'net_ldap_socket'}->verify_hostname( $host, 'ldap' )) {
-      $ldap->disconnect();
-      return undef;
-  }
   $ldap->{net_ldap_host} = $host;
   $ldap->{net_ldap_port} = $port;
 }
@@ -1039,15 +1034,8 @@ sub start_tls {
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
   my $sock_class = ref($sock);
 
-  if (IO::Socket::SSL->start_SSL($sock, {_SSL_context_init_args($arg)})) {
-    my $host = $ldap->{'net_ldap_host'};
-    if ($arg->{'check'} &&
-        $sock->{'net_ldap_socket'}->verify_hostname( $host, 'ldap' )) {
-      $ldap->disconnect();
-      return undef;
-    }
-    return $mesg;
-  }
+  return $mesg
+    if IO::Socket::SSL->start_SSL($sock, {_SSL_context_init_args($arg)});
 
   my $err = $@ || $IO::Socket::SSL::SSL_ERROR || $IO::Socket::SSL::SSL_ERROR || ''; # avoid use on once warning
 
