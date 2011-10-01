@@ -150,6 +150,12 @@ terms as Perl itself.
 
 package Net::LDAP::FilterList;
 
+use vars qw(@ISA $VERSION);
+use Net::LDAP::Filter;
+
+@ISA = qw(Net::LDAP::Filter);
+$VERSION = "0.02";
+
 # filter       = "(" 1*item ")"
 # item         = simple / present / substring / extensible
 # simple       = attr filtertype value
@@ -177,7 +183,6 @@ package Net::LDAP::FilterList;
 #    \               \5c, \\
 #    NUL             \00
 
-my $ErrStr;
 
 sub new {
   my $self = shift;
@@ -202,87 +207,7 @@ my %Op = qw(
   :=  extensibleMatch
 );
 
-my %Rop = reverse %Op;
-
-sub errstr { $ErrStr }
-
-# Unescape
-#   \xx where xx is a 2-digit hex number
-#   \y  where y is one of ( ) \ *
-sub _unescape {
-  $_[0] =~ s/
-	     \\([\da-fA-F]{2}|.)
-	    /
-	     length($1) == 1
-	       ? $1
-	       : chr(hex($1))
-	    /soxeg;
-  $_[0];
-}
-
-sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x",ord($1))/sge; $t }
-
-sub _encode {
-  my($attr,$op,$val) = @_;
-
-  # extensible match
-  if ($op eq ':=') {
-    # attr must be in the form type:1.2.3.4
-    unless ($attr =~ /^([-;\d\w]*)(:(\w+|[.\d]+))?$/) {
-      $ErrStr = "Bad attribute $attr";
-      return undef;
-    }
-    my($type,$rule) = ($1,$3);
-
-    return ( {
-      extensibleMatch => {
-	matchingRule => $rule,
-	type         => length($type) ? $type : undef,
-	matchValue   => _unescape($val), 
-      }
-    });
-  }
-
-
-  # special cases: present / substring matches
-  if ($op eq '=') {
-    # present match
-    if ($val eq '*') {
-      return ({ present => $attr });
-    }
-
-    # if val contains unescaped *, then we have substring match
-    elsif ( $val =~ /^(\\.|[^\\*]+)*\*/o ) {
-
-      my $n = [];
-      my $type = 'initial';
-
-      while ($val =~ s/^((\\.|[^\\*]+)*)\*//) {
-        push(@$n, { $type, _unescape("$1") })         # $1 is readonly, copy it
-	  if length($1) or $type eq 'any';
-
-        $type = 'any';
-      }
-
-      push(@$n, { 'final', _unescape($val) })
-        if length $val;
-
-      return ({
-        substrings => {
-	  type       => $attr,
-	  substrings => $n
-        }
-      });
-    }
-  }
-
-  # in all other cases we must have an operator and no un-escaped *'s on the RHS
-  return {
-    $Op{$op} => {
-      attributeDesc => $attr, assertionValue =>  _unescape($val)
-    }
-  };
-}
+my $ErrStr;
 
 sub parse {
   my $self = shift;
@@ -311,7 +236,7 @@ sub parse {
                             ((?:\\.|[^\\()]+)*)
                             \)\s*
                            //xo) {
-      my $item = _encode($1,$2,$3);
+      my $item = Net::LDAP::Filter::_encode($1,$2,$3);
       return undef  if (!$item);
       push(@parsed, $item);
       next;
@@ -333,43 +258,10 @@ sub parse {
   $self;
 }
 
-sub print {
-  my $self = shift;
-  no strict 'refs'; # select may return a GLOB name
-  my $fh = @_ ? shift : select;
-
-  print $fh $self->as_string,"\n";
-}
-
 sub as_string {
   my $l = shift;
 
-  return '(' . join('', map { _string(%{$_}) } @{$l}) . ')';
-}
-
-sub _string {    # prints things of the form (<item>)
-  my $str = "";
-
-  for ($_[0]) {
-    /^present/ and return "($_[1]=*)";
-    /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch)/
-      and return "(" . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .")";
-    /^substrings/ and do {
-      my $str = join("*", "",map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
-      $str =~ s/^.// if exists $_[1]->{substrings}[0]{initial};
-      $str .= '*' unless exists $_[1]->{substrings}[-1]{final};
-      return "($_[1]->{type}=$str)";
-    };
-    /^extensibleMatch/ and do {
-      my $str = "(";
-      $str .= $_[1]->{type} if defined $_[1]->{type};
-      $str .= ":$_[1]->{matchingRule}" if defined $_[1]->{matchingRule};
-      $str .= ":=" . _escape($_[1]->{matchValue}) . ")";
-      return $str;
-    };
-  }
-
-  die "Internal error $_[0]";
+  return '(' . join('', map { Net::LDAP::Filter::_string(%{$_}) } @{$l}) . ')';
 }
 
 1;
