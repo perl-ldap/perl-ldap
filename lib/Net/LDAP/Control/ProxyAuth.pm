@@ -8,13 +8,13 @@ use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
 @ISA = qw(Net::LDAP::Control);
-$VERSION = "1.05";
+$VERSION = "1.06";
 
-use Net::LDAP::Constant qw(LDAP_CONTROL_PROXYAUTHENTICATION);
+use Net::LDAP::Constant qw(LDAP_CONTROL_PROXYAUTHORIZATION);
 use Net::LDAP::ASN qw(proxyAuthValue);
 use strict;
 
-sub LDAP_CONTROL_PROXYAUTHENTICATION_OLD { "2.16.840.1.113730.3.4.12"; }
+sub LDAP_CONTROL_PROXYAUTHORIZATION_OLD { "2.16.840.1.113730.3.4.12"; }
 
 sub init {
   my($self) = @_;
@@ -22,7 +22,7 @@ sub init {
   delete $self->{asn};
 
   if (defined($self->{proxyDN})) {
-    $self->{type} = LDAP_CONTROL_PROXYAUTHENTICATION_OLD;
+    $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION_OLD;
   
     unless (exists $self->{value}) {
       $self->{asn} = { proxyDN => $self->{proxyDN} || '' };
@@ -45,10 +45,10 @@ sub proxyDN {
   if (@_) {
     delete $self->{value};
     
-    $self->{type} = LDAP_CONTROL_PROXYAUTHENTICATION_OLD;
+    $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION_OLD;
     return $self->{asn}{proxyDN} = shift || '';
   }
-  elsif ($self->{type} eq LDAP_CONTROL_PROXYAUTHENTICATION) {
+  elsif ($self->{type} eq LDAP_CONTROL_PROXYAUTHORIZATION) {
     $self->{error} = 'Illegal query method: use authzID()';
     return undef;
   }
@@ -66,10 +66,10 @@ sub authzID {
   if (@_) {
     delete $self->{value};
     
-    $self->{type} = LDAP_CONTROL_PROXYAUTHENTICATION;
+    $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION;
     return $self->{authzID} = shift || '';
   }
-  elsif ($self->{type} eq LDAP_CONTROL_PROXYAUTHENTICATION_OLD) {
+  elsif ($self->{type} eq LDAP_CONTROL_PROXYAUTHORIZATION_OLD) {
     $self->{error} = 'Illegal query method: use proxyDN()';
     return undef;
   }
@@ -85,7 +85,7 @@ sub value {
   my $self = shift;
 
   unless (exists $self->{value}) {
-    $self->{value} = ($self->{type} eq LDAP_CONTROL_PROXYAUTHENTICATION_OLD)
+    $self->{value} = ($self->{type} eq LDAP_CONTROL_PROXYAUTHORIZATION_OLD)
 		     ? $proxyAuthValue->encode($self->{asn})
                      : $self->{authzID} || '';
   }
@@ -99,7 +99,7 @@ __END__
 
 =head1 NAME
 
-Net::LDAP::Control::ProxyAuth - LDAPv3 Proxy Authentication control object
+Net::LDAP::Control::ProxyAuth - LDAPv3 Proxy Authorization control object
 
 =head1 SYNOPSIS
 
@@ -130,7 +130,20 @@ Net::LDAP::Control::ProxyAuth - LDAPv3 Proxy Authentication control object
 =head1 DESCRIPTION
 
 C<Net::LDAP::Control::ProxyAuth> provides an interface for the creation and manipulation
-of objects that represent the C<proxyauthorisationControl> as described by draft-weltman-ldapv3-proxy-XX.txt.
+of objects that represent the C<Proxy Authorization Control> as described by RFC 4370.
+
+It allows a client to be bound to an LDAP server with its own identity, but to perform
+operations on behalf of another user, the C<authzID>.
+
+With the exception of any extension that causes a change in authentication,
+authorization or data confidentiality, a single C<Proxy Authorization Control>
+may be included in any search, compare, modify, add, delete, or moddn or
+extended operation.
+
+As cqrequired by the RFC, the criticality of this control is automatically set to
+TRUE in order to protect clients from submitting requests with other identities
+that they intend to.
+
 
 =head1 CONSTRUCTOR ARGUMENTS
 
@@ -141,19 +154,20 @@ L<Net::LDAP::Control> the following are provided.
 
 =item authzID
 
-The authzID that is required. This is the identity we are requesting operations to use
+The authzID that is required. This is the identity we are requesting operations to use.
 
 =item proxyDN
 
-In older versions of draft-weltman-ldapv3-proxy-XX.txt the value in the control and thus the
-constructor argument was a DN and was called C<proxyDN>. It served the same purpose as C<authzID>
-in recent versions of C<proxyauthorisationControl>.
+In early versions of the drafts to RFC 4370, draft-weltman-ldapv3-proxy-XX.txt,
+the value in the control and thus the constructor argument was a DN and was called C<proxyDN>.
+It served the same purpose as C<authzID> in recent versions of C<proxyAuthorization> control.
 
 =back
 
 B<Please note:>
-Unfortunately the OID and the encoding or the C<proxyauthorisationControl>
-changed significantly in recent versions of draft-weltman-ldapv3-proxy-XX.txt.
+Unfortunately the OID and the encoding or the C<Proxy Authorization Control>
+changed significantly between early versions of draft-weltman-ldapv3-proxy-XX.txt
+and the final RFC.
 Net::LDAP::Control::ProxyAuth tries to cope with that situation and changes
 the OID and encoding used depending on the constructor argument.
 
@@ -173,7 +187,7 @@ and set a new value for the attribute if called with an argument.
 L<Net::LDAP>,
 L<Net::LDAP::Control>,
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Olivier Dubois, Swift sa/nv based on Net::LDAP::Control::Page from
 Graham Barr E<lt>gbarr@pobox.comE<gt>. 
