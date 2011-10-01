@@ -272,7 +272,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
 
 C<Net::LDAP::Control::VLV> provides an interface for the creation and
 manipulation of objects that represent the Virtual List View as described
-by draft-ietf-ldapext-ldapv3-vlv-03.txt.
+by draft-ietf-ldapext-ldapv3-vlv-09.txt.
 
 When using a Virtual List View control in a search, it must be accompanied by a sort
 control. See L<Net::LDAP::Control::Sort>

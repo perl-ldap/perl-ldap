@@ -105,7 +105,7 @@ Net::LDAP::Control::PersistentSearch - LDAPv3 Persistent Search control object
 
 C<Net::LDAP::Control::PersistentSearch> provides an interface for the creation
 and manipulation of objects that represent the C<PersistentSearch> control as
-described by draft-smith-psearch-ldap-01.txt.
+described by draft-smith-psearch-ldap-03.txt.
 
 =head1 CONSTRUCTOR ARGUMENTS
 

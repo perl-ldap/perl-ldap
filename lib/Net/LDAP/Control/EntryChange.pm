@@ -107,7 +107,7 @@ Net::LDAP::Control::EntryChange - LDAPv3 Entry Change Notification control objec
 
 C<Net::LDAP::Control::EntryChange> provides an interface for the creation
 and manipulation of objects that represent the C<EntryChangeNotification>
-control as described by draft-smith-psearch-ldap-01.txt.
+control as described by draft-smith-psearch-ldap-03.txt.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
