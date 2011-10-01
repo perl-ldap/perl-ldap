@@ -27,7 +27,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ASSERTION
 );
 
-$VERSION = "0.10";
+$VERSION = "0.11";
 
 my %Pkg2Type = (
 
@@ -300,6 +300,7 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 =head1 SEE ALSO
 
 L<Net::LDAP>
+L<Net::LDAP::Control::Assertion>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
 L<Net::LDAP::Control::Paged>
