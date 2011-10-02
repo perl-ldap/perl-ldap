@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.13";
+$VERSION = "0.14";
 
 use Exporter qw(import);
 
@@ -584,6 +584,10 @@ Indicates that the server supports the "Who am I?" extension (RFC 4532)
 =item LDAP_EXTENSION_REFRESH (1.3.6.1.4.1.1466.101.119.1)
 
 Indicates that the server supports the Refresh extension (RFC 2589)
+
+=item LDAP_EXTENSION_CANCEL (1.3.6.1.1.8)
+
+Indicates the server supports the Cancel extension (RFC 3909)
 
 =back
 
