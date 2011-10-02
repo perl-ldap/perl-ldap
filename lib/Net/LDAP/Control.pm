@@ -303,6 +303,7 @@ L<Net::LDAP>
 L<Net::LDAP::Control::Assertion>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
+L<Net::LDAP::Control::MatchedValues>
 L<Net::LDAP::Control::Paged>
 L<Net::LDAP::Control::PasswordPolicy>
 L<Net::LDAP::Control::PersistentSearch>
