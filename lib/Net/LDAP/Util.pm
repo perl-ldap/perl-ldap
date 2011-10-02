@@ -55,7 +55,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 =item ldap_error_name ( ERR )
 
@@ -164,7 +164,7 @@ my @err2desc = (
   undef,
   undef,
   undef,
-  undef,
+  "VLV error",                                           # 0x4C LDAP_VLV_ERROR
   undef,
   undef,
   undef,
