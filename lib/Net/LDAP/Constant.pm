@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 use Exporter qw(import);
 
@@ -398,9 +398,9 @@ A loop has been detected. For example when following referals.
 
 The referral hop limit has been exceeded.
 
-=item LDAP_CANCELLED (118)
+=item LDAP_CANCELED (118)
 
-Operation was cancelled
+Operation was canceled
 
 =item LDAP_NO_SUCH_OPERATION (119)
 
