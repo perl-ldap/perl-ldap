@@ -12,7 +12,7 @@ license		('perl');
 abstract	('LDAP client library');
 
 resources  homepage    => 'http://ldap.perl.org/';
-resources  repository  => 'http://git.goingon.net/?p=perl-ldap.git;a=summary';
+resources  repository  => 'https://github.com/gbarr/perl-ldap';
 resources  MailingList => 'http://lists.cpan.org/showlist.cgi?name=perl-ldap';
 resources  ListArchive => 'http://perl.markmail.org/search/list:perl-ldap';
 
