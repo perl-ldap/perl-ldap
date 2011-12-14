@@ -563,10 +563,11 @@ in scalar mode.
 sub escape_dn_value(@)
 {
 my @values = @_;
-
+  # We conservatively encode all non-ASCII characters, beyond those explicitly
+  # required by RFC2253, but as performed in the examples in section 5.
   map { $_=encode('utf-8', $_);
         $_ =~ s/([\\",=+<>#;])/\\$1/og;
-        $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
+        $_ =~ s/([^\x20-\x7f])/"\\".unpack("H2",$1)/oge;
         $_ =~ s/(^\s+|\s+$)/"\\20" x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
