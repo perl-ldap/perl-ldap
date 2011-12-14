@@ -12,4 +12,12 @@ is(unescape_dn_value("foo"), "foo", "simple, passthrough test, decoding");
 is(escape_dn_value("foo,bar"), 'foo\,bar', "with a comma");
 is(unescape_dn_value('foo\,bar'), 'foo,bar', "with a comma, decoding");
 
+my $latin1 = "caf".chr(0xe9);
+is(escape_dn_value($latin1), 'caf\C3\A9', 'latin1');
+is(unescape_dn_value('caf\C3\A9'), $latin1, 'latin1, decoding');
+
+my $bad_unicode = "mieow ".chr(0x1F638);
+is(escape_dn_value($bad_unicode), 'mieow \F0\9F\98\B8', 'bad unicode');
+is(unescape_dn_value('mieow \F0\9F\98\B8'), $bad_unicode, 'bad unicode, decoding');
+
 done_testing();
