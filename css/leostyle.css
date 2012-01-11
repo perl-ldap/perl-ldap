@@ -103,8 +103,8 @@ div p {
 	font-size: 2em;
 	font-weight: 100;
 	float: left;
-	width: 600px;
-	padding: 0px;
+	width: 560px;
+	padding: 0px 0px 0px 40px;
 	margin: 25px 0px 0px 9px;
 }
 
