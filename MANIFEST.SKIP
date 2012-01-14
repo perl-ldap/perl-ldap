@@ -5,7 +5,14 @@
 ,v$
 \B\.svn\b
 \B\.git\b
+\B\.gitignore\b
 \b_darcs\b
+\B\.cvsignore$
+
+# Avoid VMS specific MakeMaker generated files
+\bDescrip.MMS$
+\bDESCRIP.MMS$
+\bdescrip.mms$
 
 # Avoid Makemaker generated and utility files.
 \bMANIFEST\.bak
@@ -19,7 +26,10 @@
 # Avoid Module::Build generated and utility files.
 \bBuild$
 \b_build/
-\b_dev/
+\bBuild.bat$
+\bBuild.COM$
+\bBUILD.COM$
+\bbuild.com$
 
 # Avoid temp and backup files.
 ~$
@@ -27,12 +37,29 @@
 \#$
 \b\.#
 \.bak$
+\.tmp$
+\.#
+\.rej$
 
-# Avoid Devel::Cover files.
+# Avoid OS-specific files/dirs
+# Mac OSX metadata
+\B\.DS_Store
+# Mac OSX SMB mount metadata files
+\B\._
+
+# Avoid Devel::Cover and Devel::CoverX::Covered files.
 \bcover_db\b
+\bcovered\b
+
+# Avoid MYMETA files
+^MYMETA\.
+
+# perl-ldap-sepcifc extensions
+\b_dev/
 \b_test/
 \btemp/
 
 \bperl-ldap-\d
 \bmy.cfg$
 
+# EOF
