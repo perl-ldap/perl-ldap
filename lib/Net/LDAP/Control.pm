@@ -13,7 +13,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_VLVREQUEST
   LDAP_CONTROL_VLVRESPONSE
   LDAP_CONTROL_PAGED
-  LDAP_CONTROL_PROXYAUTHENTICATION
+  LDAP_CONTROL_PROXYAUTHORIZATION
   LDAP_CONTROL_MANAGEDSAIT
   LDAP_CONTROL_PERSISTENTSEARCH
   LDAP_CONTROL_ENTRYCHANGE
@@ -27,7 +27,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ASSERTION
 );
 
-$VERSION = "0.10";
+$VERSION = "0.12";
 
 my %Pkg2Type = (
 
@@ -39,7 +39,7 @@ my %Pkg2Type = (
 
   'Net::LDAP::Control::Paged'		=> LDAP_CONTROL_PAGED,
 
-  'Net::LDAP::Control::ProxyAuth'	=> LDAP_CONTROL_PROXYAUTHENTICATION,
+  'Net::LDAP::Control::ProxyAuth'	=> LDAP_CONTROL_PROXYAUTHORIZATION,
 
   'Net::LDAP::Control::ManageDsaIT'	=> LDAP_CONTROL_MANAGEDSAIT,
 
@@ -300,8 +300,10 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 =head1 SEE ALSO
 
 L<Net::LDAP>
+L<Net::LDAP::Control::Assertion>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
+L<Net::LDAP::Control::MatchedValues>
 L<Net::LDAP::Control::Paged>
 L<Net::LDAP::Control::PasswordPolicy>
 L<Net::LDAP::Control::PersistentSearch>

@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.10";
+$VERSION = "0.14";
 
 use Exporter qw(import);
 
@@ -398,9 +398,9 @@ A loop has been detected. For example when following referals.
 
 The referral hop limit has been exceeded.
 
-=item LDAP_CANCELLED (118)
+=item LDAP_CANCELED (118)
 
-Operation was cancelled
+Operation was canceled
 
 =item LDAP_NO_SUCH_OPERATION (119)
 
@@ -438,6 +438,8 @@ Refresh Required.
 
 =item LDAP_CONTROL_VLVRESPONSE (2.16.840.1.113730.3.4.10)
 
+=item LDAP_CONTROL_PROXYAUTHORIZATION (2.16.840.1.113730.3.4.18)
+
 =item LDAP_CONTROL_PROXYAUTHENTICATION (2.16.840.1.113730.3.4.18)
 
 =item LDAP_CONTROL_PAGED (1.2.840.113556.1.4.319)
@@ -469,6 +471,8 @@ Refresh Required.
 =item LDAP_CONTROL_POSTREAD (1.3.6.1.1.13.2)
 
 =item LDAP_CONTROL_ASSERTION (1.3.6.1.1.12)
+
+=item LDAP_CONTROL_DONTUSECOPY (1.3.6.1.1.22)
 
 =item LDAP_CONTROL_SYNC (1.3.6.1.4.1.4203.1.9.1.1)
 
@@ -580,6 +584,10 @@ Indicates that the server supports the "Who am I?" extension (RFC 4532)
 =item LDAP_EXTENSION_REFRESH (1.3.6.1.4.1.1466.101.119.1)
 
 Indicates that the server supports the Refresh extension (RFC 2589)
+
+=item LDAP_EXTENSION_CANCEL (1.3.6.1.1.8)
+
+Indicates the server supports the Cancel extension (RFC 3909)
 
 =back
 

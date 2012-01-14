@@ -35,7 +35,7 @@ sub assertion {
   }
   elsif (exists $self->{value}) {
     my $f = $Filter->decode($self->{value});
-    $self->{asn} ||= $f->as_string
+    $self->{asn} ||= Net::LDAP::Filter::as_string($f)
       if (ref $f);
   }
 
@@ -84,7 +84,7 @@ manipulation of objects that represent the C<Assertion Control> as described
 by RFC 4528.
 
 The C<Assertion Control> allows the client to specify a condition, an assertion,
-that must be true for the operation to be processed normally.
+that must be TRUE for the operation to be processed normally.
 Otherwise, the operation is not performed.
 For instance, the control can be used with the Modify operation to perform
 atomic "test and set" and "test and clear" operations.
@@ -102,7 +102,7 @@ L<Net::LDAP::Control> the following are provided.
 
 =item assertion => FILTER
 
-A filter specifying the assertion that must valuate to true in order to make the
+A filter specifying the assertion that must evaluate to TRUE in order to make the
 operation process normally.
 
 =back

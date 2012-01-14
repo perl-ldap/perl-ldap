@@ -42,7 +42,7 @@ Net::LDAP::Extension::WhoAmI - LDAP "Who am I?" Operation
 =head1 DESCRIPTION
 
 C<Net::LDAP::Extension::WhoAmI> implements the C<Who am I?>
-extended LDAPv3 operation as described in draft-zeilenga-ldap-authzid-09.
+extended LDAPv3 operation as described in RFC 4532.
 
 It implements no object by itself but extends the L<Net::LDAP> object 
 by another method:
