@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.08";
+$VERSION = "0.14";
 
 use Exporter qw(import);
 
@@ -318,6 +318,10 @@ The results of the request are to large
 The requested operation needs to be performed on multiple servers where
 the requested operation is not permitted
 
+=item LDAP_VLV_ERROR (76)
+
+A VLV error has occurred
+
 =item LDAP_OTHER (80)
 
 An unknown error has occurred
@@ -394,6 +398,28 @@ A loop has been detected. For example when following referals.
 
 The referral hop limit has been exceeded.
 
+=item LDAP_CANCELED (118)
+
+Operation was canceled
+
+=item LDAP_NO_SUCH_OPERATION (119)
+
+Server has no knowledge of the operation requested for cancelation
+
+=item LDAP_TOO_LATE (120)
+
+Too late to cancel the outstanding operation
+
+=item LDAP_CANNOT_CANCEL (121)
+
+The identified operation does not support cancelation or
+the cancel operation cannot be performed
+
+=item LDAP_ASSERTION_FAILED (122)
+
+An assertion control given in the LDAP operation evaluated to false
+causing the operation to not be performed.
+
 =item LDAP_SYNC_REFRESH_REQUIRED (4096)
 
 Refresh Required.
@@ -411,6 +437,8 @@ Refresh Required.
 =item LDAP_CONTROL_VLVREQUEST (2.16.840.1.113730.3.4.9)
 
 =item LDAP_CONTROL_VLVRESPONSE (2.16.840.1.113730.3.4.10)
+
+=item LDAP_CONTROL_PROXYAUTHORIZATION (2.16.840.1.113730.3.4.18)
 
 =item LDAP_CONTROL_PROXYAUTHENTICATION (2.16.840.1.113730.3.4.18)
 
@@ -436,11 +464,15 @@ Refresh Required.
 
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
 
+=item LDAP_CONTROL_PERMISSIVEMODIFY (1.2.840.113556.1.4.1413)
+
 =item LDAP_CONTROL_PREREAD (1.3.6.1.1.13.1)
 
 =item LDAP_CONTROL_POSTREAD (1.3.6.1.1.13.2)
 
 =item LDAP_CONTROL_ASSERTION (1.3.6.1.1.12)
+
+=item LDAP_CONTROL_DONTUSECOPY (1.3.6.1.1.22)
 
 =item LDAP_CONTROL_SYNC (1.3.6.1.4.1.4203.1.9.1.1)
 
@@ -552,6 +584,10 @@ Indicates that the server supports the "Who am I?" extension (RFC 4532)
 =item LDAP_EXTENSION_REFRESH (1.3.6.1.4.1.1466.101.119.1)
 
 Indicates that the server supports the Refresh extension (RFC 2589)
+
+=item LDAP_EXTENSION_CANCEL (1.3.6.1.1.8)
+
+Indicates the server supports the Cancel extension (RFC 3909)
 
 =back
 

@@ -272,7 +272,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
 
 C<Net::LDAP::Control::VLV> provides an interface for the creation and
 manipulation of objects that represent the Virtual List View as described
-by draft-ietf-ldapext-ldapv3-vlv-03.txt.
+by draft-ietf-ldapext-ldapv3-vlv-09.txt.
 
 When using a Virtual List View control in a search, it must be accompanied by a sort
 control. See L<Net::LDAP::Control::Sort>
@@ -329,7 +329,7 @@ Set the offset of the target entry.
 =head2 METHODS
 
 As with L<Net::LDAP::Control> each constructor argument
-described above is also avaliable as a method on the object which will
+described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 

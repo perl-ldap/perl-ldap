@@ -7,7 +7,7 @@ package Net::LDAP::Filter;
 use strict;
 use vars qw($VERSION);
 
-$VERSION = "0.15";
+$VERSION = "0.16";
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -71,12 +71,12 @@ my %Op = qw(
 
 my %Rop = reverse %Op;
 
-# Unescape
-#   \xx where xx is a 2-digit hex number
-#   \y  where y is one of ( ) \ *
 
 sub errstr { $ErrStr }
 
+# Unescape
+#   \xx where xx is a 2-digit hex number
+#   \y  where y is one of ( ) \ *
 sub _unescape {
   $_[0] =~ s/
 	     \\([\da-fA-F]{2}|.)
@@ -90,11 +90,11 @@ sub _unescape {
 
 sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x",ord($1))/sge; $t }
 
+# encode a triplet ($attr,$op,$val) representing a single filter item
 sub _encode {
   my($attr,$op,$val) = @_;
 
-  # An extensible match
-
+  # extensible match
   if ($op eq ':=') {
 
     # attr must be in the form type:dn:1.2.3.4
@@ -114,34 +114,40 @@ sub _encode {
     });
   }
 
-  # If the op is = and contains one or more * not
-  # preceeded by \ then do partial matches
+  # special cases: present / substring match
+  if ($op eq '=') {
 
-  if ($op eq '=' && $val =~ /^(\\.|[^\\*]+)*\*/o ) {
-
-    my $n = [];
-    my $type = 'initial';
-
-    while ($val =~ s/^((\\.|[^\\*]+)*)\*//) {
-      push(@$n, { $type, _unescape("$1") })         # $1 is readonly, copy it
-	if length($1) or $type eq 'any';
-
-      $type = 'any';
+    # present match
+    if ($val eq '*') {
+      return ({ present => $attr });
     }
 
-    push(@$n, { 'final', _unescape($val) })
-      if length $val;
+    # if val contains unescaped *, then we have substring match
+    elsif ( $val =~ /^(\\.|[^\\*]+)*\*/o ) {
 
-    return ({
-      substrings => {
-	type       => $attr,
-	substrings => $n
+      my $n = [];
+      my $type = 'initial';
+
+      while ($val =~ s/^((\\.|[^\\*]+)*)\*//) {
+	push(@$n, { $type, _unescape("$1") })         # $1 is readonly, copy it
+	  if length($1) or $type eq 'any';
+
+	$type = 'any';
       }
-    });
+
+      push(@$n, { 'final', _unescape($val) })
+	if length $val;
+
+      return ({
+	substrings => {
+	  type       => $attr,
+	  substrings => $n
+	}
+      });
+    }
   }
 
-  # Well we must have an operator and no un-escaped *'s on the RHS
-
+  # in all other cases we must have an operator and no un-escaped *'s on the RHS
   return {
     $Op{$op} => {
       attributeDesc => $attr, assertionValue =>  _unescape($val)
@@ -149,6 +155,7 @@ sub _encode {
   };
 }
 
+# parse & encode a filter string
 sub parse {
   my $self   = shift;
   my $filter = shift;
@@ -173,7 +180,7 @@ sub parse {
 
   while (length($filter)) {
 
-    # Process the start of  (& (...)(...))
+    # Process the start of  (<op> (...)(...)), with <op> = [&!|]
 
     if ($filter =~ s/^\(\s*([&!|])\s*//) {
       push @stack, [$op,$cur];
@@ -182,7 +189,7 @@ sub parse {
       next;
     }
 
-    # Process the end of  (& (...)(...))
+    # Process the end of  (<op> (...)(...)), with <op> = [&!|]
 
     elsif ($filter =~ s/^\)\s*//o) {
       unless (@stack) {
@@ -196,13 +203,6 @@ sub parse {
       next if @stack;
     }
     
-    # present is a special case (attr=*)
-
-    elsif ($filter =~ s/^\(\s*($Attr)=\*\)\s*//o) {
-      push(@$cur, { present => $1 } );
-      next if @stack;
-    }
-
     # process (attr op string)
 
     elsif ($filter =~ s/^\(\s*
@@ -246,7 +246,6 @@ sub print {
 sub as_string { _string(%{$_[0]}) }
 
 sub _string {    # prints things of the form (<op> (<list>) ... )
-  my $i;
   my $str = "";
 
   for ($_[0]) {

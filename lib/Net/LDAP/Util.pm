@@ -55,7 +55,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.11";
+$VERSION = "0.12";
 
 =item ldap_error_name ( ERR )
 
@@ -164,7 +164,7 @@ my @err2desc = (
   undef,
   undef,
   undef,
-  undef,
+  "VLV error",                                           # 0x4C LDAP_VLV_ERROR
   undef,
   undef,
   undef,
@@ -545,7 +545,7 @@ Escapes the given B<VALUES> according to RFC 2253 so that they
 can be safely used in LDAP DNs.
 
 The characters ",", "+", """, "\", "E<lt>", "E<gt>", ";", "#", "="
-with a special meaning in RFC 2252 are preceeded by ba backslash.
+with a special meaning in RFC 2252 are preceded by ba backslash.
 Control characters with an ASCII code E<lt> 32 are represented
 as \hexpair.
 Finally all leading and trailing spaces are converted to

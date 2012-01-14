@@ -192,11 +192,18 @@ sub _SSL_context_init_args {
   my $arg = shift;
 
   my $verify = 0;
+  my %verifycn_ctx = ();
   my ($clientcert,$clientkey,$passwdcb);
 
   if (exists $arg->{'verify'}) {
       my $v = lc $arg->{'verify'};
       $verify = 0 + (exists $ssl_verify{$v} ? $ssl_verify{$v} : $verify);
+
+      if ($verify) {
+        $verifycn_ctx{SSL_verifycn_scheme} = "ldap";
+        $verifycn_ctx{SSL_verifycn_name} = $arg->{'sslserver'}
+          if (defined $arg->{'sslserver'});
+      }
   }
 
   if (exists $arg->{'clientcert'}) {
@@ -230,7 +237,7 @@ sub _SSL_context_init_args {
     SSL_verify_mode     => $verify,
     SSL_version         => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
                            'sslv2/3',
-    SSL_verifycn_scheme => "ldap",
+    %verifycn_ctx,
   );
 }
 
@@ -1031,6 +1038,8 @@ sub start_tls {
   delete $ldap->{net_ldap_root_dse};
 
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
+  $arg->{sslserver} = $ldap->{'net_ldap_host'} unless defined $arg->{sslserver};
+
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
   my $sock_class = ref($sock);
 

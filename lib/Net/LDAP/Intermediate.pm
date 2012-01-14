@@ -152,7 +152,7 @@ passed contains a valid intermediate response. It should be used with B<caution>
 =head1 METHODS
 
 In addition to the methods listed below, each of the named parameters
-to C<new> is also avaliable as a method. C<responseName> will return the OID of
+to C<new> is also available as a method. C<responseName> will return the OID of
 the intermediate response object. C<responseValue> is set/get methods and will
 return the current value for each attribute if called without arguments,
 but may also be called with arguments to set new values.

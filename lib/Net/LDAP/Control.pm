@@ -13,7 +13,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_VLVREQUEST
   LDAP_CONTROL_VLVRESPONSE
   LDAP_CONTROL_PAGED
-  LDAP_CONTROL_PROXYAUTHENTICATION
+  LDAP_CONTROL_PROXYAUTHORIZATION
   LDAP_CONTROL_MANAGEDSAIT
   LDAP_CONTROL_PERSISTENTSEARCH
   LDAP_CONTROL_ENTRYCHANGE
@@ -24,9 +24,10 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_SYNC
   LDAP_CONTROL_SYNC_STATE
   LDAP_CONTROL_SYNC_DONE
+  LDAP_CONTROL_ASSERTION
 );
 
-$VERSION = "0.09";
+$VERSION = "0.12";
 
 my %Pkg2Type = (
 
@@ -38,7 +39,7 @@ my %Pkg2Type = (
 
   'Net::LDAP::Control::Paged'		=> LDAP_CONTROL_PAGED,
 
-  'Net::LDAP::Control::ProxyAuth'	=> LDAP_CONTROL_PROXYAUTHENTICATION,
+  'Net::LDAP::Control::ProxyAuth'	=> LDAP_CONTROL_PROXYAUTHORIZATION,
 
   'Net::LDAP::Control::ManageDsaIT'	=> LDAP_CONTROL_MANAGEDSAIT,
 
@@ -56,6 +57,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::SyncRequest'	=> LDAP_CONTROL_SYNC,
   'Net::LDAP::Control::SyncState'	=> LDAP_CONTROL_SYNC_STATE,
   'Net::LDAP::Control::SyncDone'	=> LDAP_CONTROL_SYNC_DONE,
+  'Net::LDAP::Control::Assertion'	=> LDAP_CONTROL_ASSERTION,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -204,7 +206,7 @@ A dotted-decimal representation of an OBJECT IDENTIFIER which
 uniquely identifies the control. This prevents conflicts between
 control names.
 
-This may be ommitted if the contructor is being called on a sub-class of
+This may be omitted if the contructor is being called on a sub-class of
 Net::LDAP::Control which has registered to be associated with an OID.
 If the contructor is being called on the Net::LDAP::Control
 package, then this argument must be given.  If the given OID has been
@@ -213,7 +215,7 @@ registered to handle that OID.
 
 =item value
 
-Optional information associated with the control. It's format is specific
+Optional information associated with the control. Its format is specific
 to the particular control.
 
 =back
@@ -234,7 +236,7 @@ passed contains a valid control. It should be used with B<caution>.
 =head1 METHODS
 
 In addition to the methods listed below, each of the named parameters
-to C<new> is also avaliable as a method. C<type> will return the OID of
+to C<new> is also available as a method. C<type> will return the OID of
 the control object. C<value> and C<critical> are set/get methods and will
 return the current value for each attribute if called without arguments,
 but may also be called with arguments to set new values.
@@ -298,8 +300,10 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 =head1 SEE ALSO
 
 L<Net::LDAP>
+L<Net::LDAP::Control::Assertion>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
+L<Net::LDAP::Control::MatchedValues>
 L<Net::LDAP::Control::Paged>
 L<Net::LDAP::Control::PasswordPolicy>
 L<Net::LDAP::Control::PersistentSearch>

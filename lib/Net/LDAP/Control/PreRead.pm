@@ -81,7 +81,7 @@ Net::LDAP::Control::PreRead - LDAPv3 Pre-Read control object
 
  $ldap = Net::LDAP->new( "ldap.mydomain.eg" );
 
- $preread = Net::LDAP::Control::Paged->new( attrs => [ qw/givenName/ ] );
+ $preread = Net::LDAP::Control::PreRead->new( attrs => [ qw/givenName/ ] );
 
  my $mesg = $ldap->modify( "cn=Barbara Jensen, o=University of Michigan, c=US",
                            replace => { givenName => "Babs" },
@@ -102,8 +102,17 @@ Net::LDAP::Control::PreRead - LDAPv3 Pre-Read control object
 =head1 DESCRIPTION
 
 C<Net::LDAP::Control::PreRead> provides an interface for the creation and
-manipulation of objects that represent the C<Pre-Read Control> as described
+manipulation of objects that represent the C<Pre-Read Controls> as described
 by RFC 4527.
+
+In modification operations, the C<Pre-Read request control> indicates to the
+server that a copy of the original entry before the update is to be returned.
+After the successful completion of the operation, the accompanying C<Pre-Read
+response control> allows to retrieve the original value from the servers's response.
+
+One use case of this control control may be to obtain replaced or deleted
+values of modified attributes or a copy of the entry being deleted.
+
 
 =head1 CONSTRUCTOR ARGUMENTS
 
@@ -118,15 +127,16 @@ A list of attributes to be returned in the entry returned in the response contro
 
 If absent, all attributes are returned.
 
-Operational attributes may be included in the list by explicitely asking for them
+Operational attributes may be included in the list by explicitly asking for them
 or by using special C<"+"> feature (provided the server supports this feature).
 
 =back
 
+
 =head1 METHODS
 
 As with L<Net::LDAP::Control> each constructor argument
-described above is also avaliable as a method on the object which will
+described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
@@ -159,7 +169,7 @@ E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008 Peter Marschall. All rights reserved. This program is
+Copyright (c) 2008,2011 Peter Marschall. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 

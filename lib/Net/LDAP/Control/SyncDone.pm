@@ -91,7 +91,7 @@ L<Net::LDAP::Control> the following are provided.
 =head1 METHODS
 
 As with L<Net::LDAP::Control> each constructor argument
-described above is also avaliable as a method on the object which will
+described above is also available as a method on the object which will
 return the current value for the attribute if called without an argument,
 and set a new value for the attribute if called with an argument.
 
