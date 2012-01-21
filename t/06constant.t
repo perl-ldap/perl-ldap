@@ -83,7 +83,7 @@ my @constant = qw(
   73
   74
   75
-  76
+  LDAP_VLV_ERROR
   77
   78
   79

@@ -147,6 +147,39 @@ directory objects defined for specific uses in other documents.
 =head1 Other LDAP Related RFCs - Proposed Standards
 
 
+=head2 RFC-6171 The Lightweight Directory Access Protocol (LDAP) Don't Use Copy Control
+
+http://www.ietf.org/rfc/rfc6171.txt
+
+This document defines the Lightweight Directory Access Protocol (LDAP)
+Don't Use Copy control extension which allows a client to specify that
+copied information should not be used in providing service.  This
+control is based upon the X.511 dontUseCopy service control option.
+
+
+=head2 RFC-5020 The Lightweight Directory Access Protocol (LDAP) entryDN Operational Attribute
+
+http://www.ietf.org/rfc/rfc5020.txt
+
+This document describes the LDAP/X.500 'entryDN' operational
+attribute.  The attribute provides a copy of the entry's distinguished
+name for use in attribute value assertions.
+
+
+=head2 RFC-4792 Encoding Instructions for the Generic String Encoding Rules (GSER)
+
+http://www.ietf.org/rfc/rfc4792.txt
+
+Abstract Syntax Notation One (ASN.1) defines a general framework for
+annotating types in an ASN.1 specification with encoding instructions
+that alter how values of those types are encoded according to ASN.1
+encoding rules.  This document defines the supporting notation for
+encoding instructions that apply to the Generic String Encoding Rules
+(GSER), and in particular defines an encoding instruction to provide
+a machine-processable representation for the declaration of a GSER
+ChoiceOfStrings type.
+
+
 =head2 RFC-4532 Lightweight Directory Access Protocol (LDAP) Who am I? Operation
 
 http://www.ietf.org/rfc/rfc4532.txt
@@ -249,6 +282,21 @@ This document defines the Lightweight Directory Access Protocol
 allows a client to request that an operation be processed under a
 provided authorization identity instead of under the current
 authorization identity associated with the connection.
+
+
+=head2 RFC-4104 Policy Core Extension Lightweight Directory Access Protocol Schema (PCELS)
+
+http://www.ietf.org/rfc/rfc4104.txt
+
+This document defines a number of changes and extensions to the
+Policy Core Lightweight Directory Access Protocol (LDAP) Schema (RFC
+3703) based on the model extensions defined by the Policy Core
+Information Model (PCIM) Extensions (RFC 3460).  These changes and
+extensions consist of new LDAP object classes and attribute types.
+Some of the schema items defined in this document re-implement
+existing concepts in accordance with their new semantics introduced
+by RFC 3460.  The other schema items implement new concepts, not
+covered by RFC 3703.  This document updates RFC 3703.
 
 
 =head2 RFC-3928 Lightweight Directory Access Protocol (LDAP) Client Update Protocol (LCUP)
@@ -411,8 +459,7 @@ results but still needs them sorted. Other permissible controls
 on search operations are not defined in this extension.
 
 
-=head2 RFC-2849 The LDAP Data Interchange Format (LDIF) - Technical
-Specification
+=head2 RFC-2849 The LDAP Data Interchange Format (LDIF) - Technical Specification
 
 http://www.ietf.org/rfc/rfc2849.txt
 
@@ -608,6 +655,47 @@ procedures.
 
 
 =head1 Other LDAP Related RFCs - Informational
+
+
+=head2 RFC-5803 Lightweight Directory Access Protocol (LDAP) Schema for Storing Salted Challenge Response Authentication Mechanism (SCRAM) Secrets
+
+http://www.ietf.org/rfc/rfc5803.txt
+
+This memo describes how the "authPassword" Lightweight Directory
+Access Protocol (LDAP) attribute can be used for storing secrets used
+by the Salted Challenge Response Authentication Mechanism (SCRAM)
+mechanism in the Simple Authentication and Security Layer (SASL)
+framework.
+
+
+=head2 RFC-4876 A Configuration Profile Schema for Lightweight Directory Access Protocol (LDAP)-Based Agents
+
+http://www.ietf.org/rfc/rfc4828.txt
+
+This document consists of two primary components, a schema for agents
+that make use of the Lightweight Directory Access protocol (LDAP) and
+a proposed use case of that schema, for distributed configuration of
+similar directory user agents.  A set of attribute types and an
+object class are proposed.  In the proposed use case, directory user
+agents (DUAs) can use this schema to determine directory data
+location and access parameters for specific services they support.
+In addition, in the proposed use case, attribute and object class
+mapping allows DUAs to reconfigure their expected (default) schema to
+match that of the end user's environment.  This document is intended
+to be a skeleton for future documents that describe configuration of
+specific DUA services.
+
+
+=head2 RFC-4529 Requesting Attributes by Object Class in the Lightweight Directory Access Protocol (LDAP)
+
+http://www.ietf.org/rfc/rfc4829.txt
+
+The Lightweight Directory Access Protocol (LDAP) search operation
+provides mechanisms for clients to request all user application
+attributes, all operational attributes, and/or attributes selected by
+their description.  This document extends LDAP to support a mechanism
+that LDAP clients may use to request the return of all attributes of
+an object class.
 
 
 =head2 RFC-4525 Lightweight Directory Access Protocol (LDAP) Modify-Increment Extension
@@ -881,6 +969,20 @@ demonstrating the use of the API.
 =head1 Other LDAP Related RFCs - Experimental
 
 
+=head2 RFC-5805 Lightweight Directory Access Protocol (LDAP) Transactions
+
+http://www.ietf.org/rfc/rfc5805.txt
+
+Lightweight Directory Access Protocol (LDAP) update operations, such
+as Add, Delete, and Modify operations, have atomic, consistency,
+isolation, durability (ACID) properties.  Each of these update
+operations act upon an entry.  It is often desirable to update two or
+more entries in a single unit of interaction, a transaction.
+Transactions are necessary to support a number of applications
+including resource provisioning.  This document extends LDAP to
+support transactions.
+
+
 =head2 RFC-4533 The Lightweight Directory Access Protocol (LDAP) Content Synchronization Operation
 
 http://www.ietf.org/rfc/rfc4533.txt
@@ -972,7 +1074,7 @@ has already been implemented with some success.
 
 
 
-=head1 Current Internet Drafts
+=head1 Expired but still interesting Internet Drafts
 
 
 =head2 draft-wahl-ldap-adminaddr -- Administrator Address Attribute
@@ -987,34 +1089,6 @@ can be used by management clients which are, for example,
 checking the state of a replication or referral topology, to
 provide a way for the user of the management client to send
 email to manager of a particular server.
-
-
-=head2 draft-zeilenga-ldap-txn -- LDAP Transactions
-
-Lightweight Directory Access Protocol (LDAP) update operations, such
-as Add, Delete, and Modify operations, have atomic, consistency,
-isolation, durability (ACID) properties.  Each of these update
-operations act upon an entry.  However, It is often desirable to
-update two or more entries in a single unit of interaction, a
-transaction.  Transactions are necessary to support a number of
-applications including resource provisioning.  This document defines
-an LDAP extension to support transactions.
-
-
-=head2 draft-joslin-config-schema -- A Configuration Profile Schema for LDAP-based agents
-
-This document consists of two primary components, a schema for agents
-that make use of the Lightweight Directory Access protocol (LDAP) and
-a proposed use case of that schema, for distributed configuration of
-similar directory user agents.  A set of attribute types and an
-objectclass are proposed.  In the proposed use case, directory user
-agents (DUAs) can use this schema to determine directory data
-location and access parameters for specific services they support.
-In addition, in the proposed use case, attribute and objectclass
-mapping allows DUAs to re-configure their expected (default) schema
-to match that of the end user's environment.  This document is
-intended to be a skeleton for future documents that describe
-configuration of specific DUA services.
 
 
 =head2 draft-zeilenga-ldap-noop -- The LDAP No-Op Control
@@ -1048,14 +1122,6 @@ e.g. if an entry must exist even though its contents are
 uninteresting.
 
 
-=head2 draft-zeilenga-ldap-dontusecopy -- The LDAP Don't Use Copy Control
-
-This document defines the Lightweight Directory Access Protocol (LDAP)
-Don't Use Copy control extension which allows a client to specify that
-copied information should not be used in providing service.  This
-control is based upon the X.511 dontUseCopy service control option.
-
-
 =head2 draft-wahl-ldap-p3p -- P3P Policy Attributes for LDAP
 
 This document defines attributes that can be retrieved via
@@ -1064,18 +1130,6 @@ which contain URIs pointing to the privacy policy documents.  These
 documents describe the privacy policy concerning access to a
 directory server, and the privacy policies that apply to the contents
 of the directory (a subtree of entries).
-
-
-=head2 draft-legg-ldap-gser-ei -- Encoding Instructions for the Generic String Encoding Rules (GSER)
-
-Abstract Syntax Notation One (ASN.1) defines a general framework for
-annotating types in an ASN.1 specification with encoding instructions
-that alter how values of those types are encoded according to ASN.1
-encoding rules.  This document defines the supporting notation for
-encoding instructions that apply to the Generic String Encoding Rules
-(GSER), and in particular defines an encoding instruction to provide
-a machine-processable representation for the declaration of a GSER
-ChoiceOfStrings type.
 
 
 =head2 draft-chu-ldap-xordered -- Ordered Entries and Values in LDAP
@@ -1099,13 +1153,6 @@ mechanisms.  This document defines a schema that may be used to
 represent all of the requests that have been processed by an LDAP
 server.  It may be used by various applications for auditing, flight
 recorder, replication, and other purposes.
-
-
-=head2 draft-zeilenga-ldap-entrydn -- The LDAP entryDN Operational Attribute
-
-This document describes the LDAP/X.500 'entryDN' operational
-attribute.  The attribute provides a copy of the entry's distinguished
-name for use in attribute value assertions.
 
 
 =head2 draft-zeilenga-ldap-relax -- The LDAP Relax Rules Control
@@ -1157,11 +1204,6 @@ clients using the Lightweight Directory Access Protocol (LDAP) to
 determine the source of directory entries.
 
 
-
-
-=head1 Expired but still interesting Internet Drafts
-
-
 =head2 draft-ietf-ldapext-psearch -- Persistent Search: A Simple LDAP Change Notification Mechanism
 
 This document defines two controls that extend the LDAPv3
@@ -1184,6 +1226,14 @@ The control allows a client to specify that the  server  return,  for  a
 given  LDAP search with associated sort keys, a contiguous subset of the
 search result set. This subset is specified in terms of offsets into the
 ordered list, or in terms of a greater than or equal comparison value.
+
+
+
+
+=head1 Where to find the latest information
+
+Latest information on the RFCs and drafts around LDAP can be found at
+L<IETF's datatracker|https://datatracker.ietf.org>.
 
 
 =cut
