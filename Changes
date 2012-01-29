@@ -1,3 +1,23 @@
+0.44 -- Sun Jan 29 10:36:08 CET 2012
+
+Bug Fixes
+  * un-break certificate verification
+  * fixes for the ProxyAuthorization control
+  * fix typos & spelling errors in POD
+
+Enhancements
+  * MANIFEST.SKIP: sync with Perl 5.14.2's ExtUtils version
+  * Makefile.PL: update resource info on repository
+  * new extended operation Net::LDAP::Extension::Cancel
+  * new control Net::LDAP::Control::MatchedValues
+  * new control Net::LDAP::Control::Assertion
+  * update reference documents in POD
+  * extend documentation for Pre-Read & Post-Read controls
+  * add error string for LDAP_VLV_ERROR
+  * add result codes for VLV and cancel
+  * add constant for DontUseCopy control
+  * add constant for PermissiveModify control
+
 0.43 -- Sat Sep 3 12:50:49 CDT 2011
 
   * Fix copy & paste errors in Net::LDAP::Message
