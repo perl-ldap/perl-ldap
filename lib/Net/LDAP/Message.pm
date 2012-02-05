@@ -252,6 +252,15 @@ sub Net::LDAP::Compare::is_error {
   @ISA = qw(Net::LDAP::Message);
   use Net::LDAP::Constant qw(LDAP_SUCCESS);
 
+  sub new {
+    my $self   = shift;
+    my $type   = ref($self) || $self;
+
+    $self = bless {}, $type;
+
+    $self;
+  }
+
   sub sync    { shift }
   sub decode  { shift }
   sub abandon { shift }
