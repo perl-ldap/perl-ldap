@@ -54,7 +54,7 @@ by RFC 4527.
 In modification operations, the C<Post-Read request control> indicates to the
 server that a copy of the modified entry after the update is to be returned.
 After the successful completion of the operation, the accompanying C<Post-Read
-response control> allows to retrieve the updated value from the servers's response.
+response control> allows one to retrieve the updated value from the servers's response.
 
 One use case of this control may be to obtain values of operational attributes,
 such as the C<entryUUID> and C<modifyTimestamp> attributes, updated by the server
