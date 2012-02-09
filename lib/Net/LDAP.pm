@@ -845,7 +845,7 @@ sub process {
   my $sel = IO::Select->new($sock);
   my $ready;
 
-  for( $ready = 1 ; $ready ; $ready = $sel->can_read(0)) {
+  for( $ready = 1 ; $ready ; $ready = $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending())) {
     my $pdu;
     asn_read($sock, $pdu)
       or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, "Communications Error");
