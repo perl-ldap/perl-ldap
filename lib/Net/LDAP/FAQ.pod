@@ -11,7 +11,7 @@ Net::LDAP::FAQ - Frequently Asked Questions about Net::LDAP
 This document serves to answer the most frequently asked questions on both the
 perl-ldap Mailing List and those sent to Graham Barr.
 
-The latest version of this FAQ can be found at 
+The latest version of this FAQ can be found at
 
  http://ldap.perl.org/FAQ.html
 
@@ -33,7 +33,7 @@ which require a C compiler.
 
 Perl-ldap is available from CPAN. You will find it in the
 authors/id/GBARR directory. Alternatively you can download
-the latest version from 
+the latest version from
 
  http://www.cpan.org/search?dist=perl-ldap
 
@@ -73,7 +73,7 @@ which also has messages from before the move.
 
 Yes. perl-ldap has online documentation at
 
- http://ldap.perl.org/ 
+ http://ldap.perl.org/
 
 which will have the latest documentation available.
 
@@ -94,9 +94,9 @@ There are several ways this can be done.
 
 =item Web
 
-You can download it from CPAN by following the release link:  
+You can download it from CPAN by following the release link:
 
-The 2 lines in the following example should be put together as 
+The 2 lines in the following example should be put together as
 one continuous line.  Example;
 
  http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.33.tar.gz
@@ -113,14 +113,14 @@ name.
 You can download latest development version of perl-ldap from
 svn.mutatus.co.uk by executing a anonymous SVN "checkout" command.
 
-The 2 lines in the following example should be put together as 
+The 2 lines in the following example should be put together as
 one continuous line.  Example;
 
  svn co http://svn.mutatus.co.uk/repos/perl-ldap/trunk
 
 =item Web page
 
-Most of the time there is a URL link on the perl-ldap 
+Most of the time there is a URL link on the perl-ldap
 home page on ldap.perl.org that points to the latest released
 version of perl-ldap.  Due to the fact that humans must
 update the web page to point to a new release it sometimes does
@@ -183,7 +183,7 @@ communicating with a client.
 
 =head2 What is an Entry.
 
-The traditional directory definition of a directory object 
+The traditional directory definition of a directory object
 is called an Entry. Entries are composed of attributes that
 contain the information to be recorded about the object.
 
@@ -206,7 +206,7 @@ An entry's direct superior entry is called the entry's 'parent'.
 
 The entry(s) in a directory are composed of attributes that contain
 information about the object.  Each attribute has a type
-and can contain one or more values.  
+and can contain one or more values.
 
 For example:
 
@@ -292,11 +292,11 @@ Technically, an RDN contains attribute-value assertions, or AVAs. When
 an AVA is written down, the attribute name is separated from the
 attribute value with an equals (=) sign.
 
-Example of a DN: 
+Example of a DN:
 
  cn=Road Runner,ou=bird,dc=cartoon,dc=com
 
- RDNs of the proceeding DN: 
+ RDNs of the proceeding DN:
  RDN => cn=Road Runner
  RDN => ou=bird
  RDN => dc=cartoon
@@ -332,19 +332,19 @@ entry still only has one DN.
 
 =head2 What is a search base.
 
-A search base is a Distinguished Name that is the 
+A search base is a Distinguished Name that is the
 starting point of search queries.
 
 Example of a DN:
 
- cn=Road Runner,ou=bird,dc=cartoon,dc=com  
+ cn=Road Runner,ou=bird,dc=cartoon,dc=com
 
 Possible search base(s) for the proceeding DN:
 
- Base => cn=Road Runner,ou=bird,dc=cartoon,dc=com  
- Base => ou=bird,dc=cartoon,dc=com  
- Base => dc=cartoon,dc=com  
- Base => dc=com  
+ Base => cn=Road Runner,ou=bird,dc=cartoon,dc=com
+ Base => ou=bird,dc=cartoon,dc=com
+ Base => dc=cartoon,dc=com
+ Base => dc=com
 
 Setting the search base to the lowest possible branch of
 the directory will speed up searches considerably.
@@ -373,14 +373,14 @@ network. There's language specific protocols (like Perl's DBI and Java's
 JDBC) that hide this problem behind an API abstraction, but that's not a
 replacement for a standard access protocol.
 
-LDAP is starting to be used on roles traditionally played by RDBMS in 
-terms of general data management because it's easier to setup a LDAP 
-server (once you understand the basic nomenclature) and you don't need 
-a DBA to write your queries and more importantly all LDAP servers speak 
-the same essential protocol, thus you don't have to fuss with a 
-database driver trying to connect it to the Internet. Once you have an 
-LDAP server up and running, it's automatically available over the 'net. 
-It's possible to connect to a LDAP server from a variety of mechanisms, 
+LDAP is starting to be used on roles traditionally played by RDBMS in
+terms of general data management because it's easier to setup a LDAP
+server (once you understand the basic nomenclature) and you don't need
+a DBA to write your queries and more importantly all LDAP servers speak
+the same essential protocol, thus you don't have to fuss with a
+database driver trying to connect it to the Internet. Once you have an
+LDAP server up and running, it's automatically available over the 'net.
+It's possible to connect to a LDAP server from a variety of mechanisms,
 including just about every possible programming language.
 
 More information on this topic can be found on the following URLs;
@@ -410,7 +410,7 @@ is
    # replace 0.33 with the version you have
 
    gunzip perl-ldap-0.33.tar.gz
-   tar xvf perl-ldap-0.33.tar       
+   tar xvf perl-ldap-0.33.tar
    cd perl-ldap-0.33
 
    perl Makefile.PL
@@ -444,7 +444,7 @@ can then be installed with
    # replace 0.33 with the version you have
 
    gunzip perl-ldap-0.33.tar.gz
-   tar xvf perl-ldap-0.33.tar       
+   tar xvf perl-ldap-0.33.tar
    cd perl-ldap-0.33/lib
 
    cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
@@ -461,23 +461,23 @@ ActiveState Perl tree.
 The ActiveState ppm command can be used to install Perl-LDAP.
 When a new version of Perl-LDAP is released, it takes ActiveState
 a period of time to get the new release into the ActiveState ppm
-system. 
+system.
 
 =item 2.
 
-If the user has nmake installed, the user can do a normal perl 
+If the user has nmake installed, the user can do a normal perl
 module install using nmake instead of make.
 
 =item 3.
 
-If the user does not have nmake or make, the user can install 
-Perl-LDAP using the install-nomake script by issuing the 
+If the user does not have nmake or make, the user can install
+Perl-LDAP using the install-nomake script by issuing the
 following command.
 
  perl install-nomake
 
 The install-nomake script can be used on any system that does not
-have make installed. 
+have make installed.
 
 =back
 
@@ -541,7 +541,7 @@ web search engine to find the package that you need.
 If you want to use Net::LDAP::DSML you will need these modules.
 
 You can obtain the latest releases from
-  http://search.cpan.org/search?module=XML::SAX 
+  http://search.cpan.org/search?module=XML::SAX
   http://search.cpan.org/search?module=XML::SAX::Writer
 
 
@@ -589,8 +589,8 @@ the directory manager.
 =head2 How can I tell when the server returns an error, bind() always returns
 true ?
 
-Most methods in Net::LDAP return a L<Net::LDAP::Message> 
-object, or a sub-class of that. This object will hold the results 
+Most methods in Net::LDAP return a L<Net::LDAP::Message>
+object, or a sub-class of that. This object will hold the results
 from the server, including the result code.
 
 So, for example, to determine the result of the bind operation.
@@ -654,7 +654,7 @@ shift each entry in turn. For example
   # as an array
 
   # How many entries were returned from the search
-  my $max = $mesg->count; 
+  my $max = $mesg->count;
 
   for( my $index = 0 ; $index < $max ; $index++) {
     my $entry = $mesg->entry($index);
@@ -687,7 +687,7 @@ And to get the first of the values for a given attribute
 
   $values = $entry->get( 'cn' );
 
-One thing to remember is that attribute names are case 
+One thing to remember is that attribute names are case
 insensitive, so 'sn', 'Sn', 'sN' and 'SN' are all the same.
 
 So, if you want to print all the values for the attribute C<'ou'> then this
@@ -709,7 +709,7 @@ can do
 =head2 How do I limit the scope of a directory search.
 
 You limit the scope of a directory search by setting the
-scope parameter of search request. 
+scope parameter of search request.
 Consider the following:
 
  use Net::LDAP;
@@ -736,7 +736,7 @@ Search the entries immediately below the base object.
 =item sub
 
 Search the whole tree below the base object.
-This is the default.                                         
+This is the default.
 
 =back
 
@@ -751,7 +751,7 @@ Using the inline approach involves requesting the data and
 then waiting for all of the data to be returned before the
 user starts processing the data.
 
-Example: 
+Example:
 
  use Net::LDAP;
 
@@ -767,9 +767,9 @@ Example:
   # In this example we will use an array
 
   # How many entries were returned from the search
-  my $max = $mesg->count; 
+  my $max = $mesg->count;
 
-  for( my $index = 0 ; $index < $max ; $index++) 
+  for( my $index = 0 ; $index < $max ; $index++)
   {
     my $entry = $mesg->entry($index);
     my $dn = $entry->dn; # Obtain DN of this entry
@@ -779,20 +779,20 @@ Example:
     {
      #get a list of values for a given attribute
      $attr = $entry->get_value( $var, asref => 1 );
-     if ( defined($attr) )         
-     {          
-         foreach my $value ( @$attr )          
-         {           
+     if ( defined($attr) )
+     {
+         foreach my $value ( @$attr )
+         {
           print "$var: $value\n";  # Print each value for the attribute.
-         }         
-     }                                                                       
+         }
+     }
     }
   }
 
 As you can see the example is straight forward, but there is one
 drawback to this approach.  You must wait until all entries for the
 request search to be returned before you can process the data.  If
-there several thousand entries that match the search filter this 
+there several thousand entries that match the search filter this
 could take quite a long time period.
 
 =head2 USING THE CALLBACK SUBROUTINE APPROACH
@@ -803,7 +803,7 @@ to a callback subroutine as each entry arrives at the client.
 A callback is just a subroutine that is passed two parameters when
 it is called, the mesg and entry objects.
 
-Example: 
+Example:
 
  use Net::LDAP;
 
@@ -817,7 +817,7 @@ Example:
  #
  # At this point the user needs to check the status of the
  # ldap search.
- # 
+ #
 
  if ( $mesg->code )
  {
@@ -825,7 +825,7 @@ Example:
     print "Error code:  $errstr\n";
     $errstr = ldap_error_text($errstr);
     print "$errstr\n";
- } 
+ }
 
 
  sub callback
@@ -851,17 +851,17 @@ Example:
    {
     #get a list of values for a given attribute
     $attr = $entry->get_value( $var, asref => 1 );
-    if ( defined($attr) )         
-    {          
-      foreach my $value ( @$attr )          
-      {           
+    if ( defined($attr) )
+    {
+      foreach my $value ( @$attr )
+      {
         print "$var: $value\n";  # Print each value for the attribute.
-      }         
-    }                                                                       
+      }
+    }
    }
    #
    # For large search requests the following 2 lines of code
-   # may be very important, they will reduce the amount of memory 
+   # may be very important, they will reduce the amount of memory
    # used by the search results.
    #
    # If the user is not worried about memory useage then the 2 lines
@@ -873,7 +873,7 @@ Example:
 
 As you can see the example is straight forward and it does not waste
 time waiting for all of the entries to be returned.  However if the
-pop_entry method is not used the callback approach can allocate a 
+pop_entry method is not used the callback approach can allocate a
 lot of memory to the search request.
 
 =head1 USING NET::LDAPS
@@ -883,7 +883,7 @@ lot of memory to the search request.
 This class is a subclass of Net::LDAP so all the normal
 Net::LDAP methods can be used with a Net::LDAPS object;
 see the documentation for Net::LDAP to find out how to
-query a directory server using the LDAP protocol.                        
+query a directory server using the LDAP protocol.
 
 The connection to the server is created when you create a new Net::LDAPS
 object, e.g.
@@ -903,9 +903,9 @@ So, the above can also be expressed as:
                            capath => '/usr/local/cacerts/',
                            );
 
-There are additional options to the new method with LDAPS URIs 
+There are additional options to the new method with LDAPS URIs
 and the LDAPS new method and several additional methods are
-included in the LDAPS object class.  
+included in the LDAPS object class.
 
 For further information and code examples read the LDAPS
 module documentation;  perldoc Net::LDAPS
@@ -924,24 +924,24 @@ but some LDAP server vendors restrict this flexibility by not
 allowing nested groups in their servers.
 
 Two scripts for working with groups are available in the contrib
-directory.  They are isMember.pl and printMembers.pl. 
+directory.  They are isMember.pl and printMembers.pl.
 
 =head2 How do you format a filter to search for entries whose 'member'
-attribute has a particular value? 
+attribute has a particular value?
 
-Asking for (member=*) is OK - the directory uses the equality matching 
+Asking for (member=*) is OK - the directory uses the equality matching
 rule which is defined for the member attribute.
 
-Asking for (member=c*) is not OK - there is no defined substring 
-matching rule for the member attribute. That's because the member 
-values are *not* strings, but distinguished names. There is no 
+Asking for (member=c*) is not OK - there is no defined substring
+matching rule for the member attribute. That's because the member
+values are *not* strings, but distinguished names. There is no
 substring matching rule for DNs, see RFC 2256 section 5.50.
 
-What you have to do is get the results of (member=*) and then select 
-the required results from the returned values. You need to do this 
-using knowledge of the string representation of DNs defined in RFC 
-2253, which is important because the same DN can have different string 
-representations. So you need to perform some canonicalization if you 
+What you have to do is get the results of (member=*) and then select
+the required results from the returned values. You need to do this
+using knowledge of the string representation of DNs defined in RFC
+2253, which is important because the same DN can have different string
+representations. So you need to perform some canonicalization if you
 want to be correct.
 
 
@@ -972,7 +972,7 @@ module documentation;  perldoc Net::LDAP::DSML
 
 =head2 How do I access the Control features.
 
-Support for LDAP version 3 Control objects is included in 
+Support for LDAP version 3 Control objects is included in
 perl-ldap starting with version .20.
 
 For further information and code examples read the Control
@@ -980,7 +980,7 @@ module documentation;  perldoc Net::LDAP::Control
 
 =head2 How do I access the Virtual List features.
 
-Support for Virtual Lists is included in perl-ldap starting 
+Support for Virtual Lists is included in perl-ldap starting
 with version .20.
 
 For further information and code examples read the Control
@@ -1014,13 +1014,13 @@ perl-ldap or not. The figures quoted in this answer are only
 indicative, and will differ for different people.
 
 =head2 Can I contribute perl scripts that use perl-ldap
-to the contrib section? 
+to the contrib section?
 
 Any one can submit a perl script that uses perl-ldap for inclusion
 in the contrib section.  Graham Barr will determine if the script
 will be included and will do the initial check in of the script
 to the SVN system on http://svn.mutatus.co.uk.  Graham will make you
-the owner/developer of the script. 
+the owner/developer of the script.
 
 There are a couple of requirements for consideration.
 
@@ -1031,19 +1031,19 @@ Inside the script will be the pod documentation for the script.
 No auxiliary documentation will be allowed.  For examples of how
 to do this see the tklkup script currently in the contrib section.
 
-=head2 Is it possible to get a complete entry, DN and attributes 
+=head2 Is it possible to get a complete entry, DN and attributes
 without specifying the attributes name?
 
-Yes, just specify you want a list of no attributes back. The RFC says 
-that this tells the server to return all readable attributes back 
+Yes, just specify you want a list of no attributes back. The RFC says
+that this tells the server to return all readable attributes back
 (there may be access controls to prevent some from being returned.)
 
 So in the search method, just set (for LDAPv2):
 
 		attrs => [ ]
 
-If you are using LDAPv3, you can specify an attribute called "*" 
-instead, which lets you ask for additional (i.g. operational) attributes 
+If you are using LDAPv3, you can specify an attribute called "*"
+instead, which lets you ask for additional (i.g. operational) attributes
 in the same search.
 
 		attrs => [ "*" ]
@@ -1053,12 +1053,12 @@ the use of the "+" pseudo attribute. So that with these servers
 
 		attrs => [ "*", "+" ]
 
-will return the most information from the server.		
+will return the most information from the server.
 
 =head2 How do I put a JPEG photo into a entry in the directory.
 
 Follow the following code example, replacing the (...) with
-whatever is relevant to your setup. 
+whatever is relevant to your setup.
 
   use Net::LDAP;
   use Net::LDAP::Util qw(ldap_error_text);
@@ -1077,7 +1077,7 @@ whatever is relevant to your setup.
 =head2 How do I add a jpeg photo into a entry in the directory via html-forms.
 
 Follow the following code example, replacing the (...) with
-whatever is relevant to your setup. 
+whatever is relevant to your setup.
 
   use Net::LDAP;
   use Net::LDAP::Util qw(ldap_error_text);
@@ -1109,7 +1109,7 @@ whatever is relevant to your setup.
 
 =head2 What happens when you delete an attribute that does not exist.
 
-It is an error to delete an attribute that doesn't exist.  When you 
+It is an error to delete an attribute that doesn't exist.  When you
 get the error back the server ignores the entire modify operation
 you sent it, so you need to make sure the error doesn't happen.
 
@@ -1138,7 +1138,7 @@ type.
 The code required will look similar to the following code snippet.
 
   $mesg =  $ldap->delete("ref=\"ldap://acme/c=us,o=bricks\",o=clay",
-                  control => {type => "2.16.840.1.113730.3.4.2"} ); 
+                  control => {type => "2.16.840.1.113730.3.4.2"} );
 
 =head2 How do I add an ACI/ACL entry to a directory server with
 Perl-LDAP.
@@ -1159,9 +1159,9 @@ When loading a binary attribute with data read from a file on a Win32
 system, it has been noted that you should set "binmode" on the file
 before reading the file contents into the data array.
 
-Another possible solution to this problem is to convert the 
+Another possible solution to this problem is to convert the
 binary data into a base64 encoded string and then store the encoded string
-in the file.  Then when reading the file, decode the base64 encoded 
+in the file.  Then when reading the file, decode the base64 encoded
 string back to binary and then use perl ldap to store the data
 in the directory.
 
@@ -1171,7 +1171,7 @@ This is a solution provide by a perl-ldap user.
 
 This code works with ActiveState Perl running on WinNT 4. Please note that
 this requires the Win32::Perms module, and needs valid NT account info to
-replace the placeholders. 
+replace the placeholders.
 
   use Net::LDAP;
   use Net::LDAP::Util;
@@ -1230,12 +1230,12 @@ replace the placeholders.
 Most LDAP servers use the standard userPassword attribute as the
 attribute to set when you want to change a user's password.
 
-They usually allow to set the password either using the regular 
+They usually allow to set the password either using the regular
 modify operation on the userPassword attribute or using the
 extended LDAP Password Modify operation defined in RFC3062.
 
 The recommended method is the extended Password Modify operation,
-which offers a standardized way to set user passwords but 
+which offers a standardized way to set user passwords but
 unfortunately is not available on all LDAP servers.
 
 Whether the extended Password Modify operation is available can be
@@ -1273,7 +1273,7 @@ support to set the password (which is heavily recommended anyway ;-)
 
 =back
 
-Here is an example of how to change your own password (for brevity's 
+Here is an example of how to change your own password (for brevity's
 sake error checking is left out):
 
   use Net::LDAP;
@@ -1355,11 +1355,11 @@ Here is one possible solution.
 
   unless ( $ldaps =
             Net::LDAPS->new($ldapserverone,
-                            port=>636,timeout=>5) ) 
+                            port=>636,timeout=>5) )
           {
               $ldaps = Net::LDAPS->new($ldapservertwo,
-                                       port=>636,timeout=>20) || 
-              return 
+                                       port=>636,timeout=>20) ||
+              return
               "Can't connect to $ldapserverone or $ldapservertwo via LDAPS: $@";
           }
 
@@ -1447,7 +1447,7 @@ I<This web site has a nasty habit of resizing the browser
 to cover the WHOLE screen.>
 http://www.ldaps.com
 
-Jeff Hodges's Kings Mountain LDAP 
+Jeff Hodges's Kings Mountain LDAP
 http://www.kingsmountain.com/ldapRoadmap.shtml
 
 Mark Wahl's LDAP World at Innosoft.
@@ -1491,7 +1491,7 @@ http://www.java.sun.com/jndi/
 Sun One, formerly Iplanet.
 http://wwws.sun.com/software/
 
-Eine deutsche LDAP Website 
+Eine deutsche LDAP Website
 A german LDAP Website
 http://verzeichnisdienst.de/ldap/Perl/index.html
 
@@ -1512,20 +1512,20 @@ By Sven B. Schreiber.  ISBN:  0201657775
 Implementing LDAP.
 By Mark Wilcox.  ISBN:  1861002211
 
-LDAP: Programming Directory-Enabled Applications With 
-Lightweight Directory Access Protocol. 
+LDAP: Programming Directory-Enabled Applications With
+Lightweight Directory Access Protocol.
 By Tim Howes, Mark Smith.  ISBN:  1578700000
 
 LDAP Programming; Directory Management and Integration.
 By Clayton Donley.  ISBN:  1884777910
 
-LDAP Programming with Java. 
+LDAP Programming with Java.
 By Rob Weltman, Tony Dahbura.  ISBN:  0201657589
 
 LDAP System Administration.
 By Gerald Carter.  ISBN:  1565924916
 
-Managing Enterprise Active Directory Services. 
+Managing Enterprise Active Directory Services.
 By Robbie Allen, Richard Puckett.  ISBN:  0672321254
 
 Solaris and LDAP Naming Services.
@@ -1549,7 +1549,7 @@ It was previously updated by Clif Harden E<lt>charden@pobox.comE<gt>.
 
 The original author of this FAQ was Graham Barr E<lt>gbarr@pobox.comE<gt>
 
-Please report any bugs, or post any suggestions, to the 
+Please report any bugs, or post any suggestions, to the
 perl-ldap mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
