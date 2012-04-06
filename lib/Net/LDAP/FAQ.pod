@@ -31,18 +31,10 @@ which require a C compiler.
 
 =head2 Where can I get it ?
 
-Perl-ldap is available from CPAN. You will find it in the
-authors/id/GBARR directory. Alternatively you can download
-the latest version from
+Perl-ldap is available from CPAN.
+You can find the released versions at:
 
- http://www.cpan.org/search?dist=perl-ldap
-
-B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
-Netscape on Windows systems sometimes has a problem storing the module
-with the correct name, it will replace the *.tar.gz with *_tar.tar.
-To correct the problem, with the pointer on the link, do a right click
-and then select B<save link as> to save the file with the correct file
-name.
+ http://search.cpan.org/dist/perl-ldap/
 
 =head2 Is there a web page for perl-ldap ?
 
@@ -77,46 +69,56 @@ Yes. perl-ldap has online documentation at
 
 which will have the latest documentation available.
 
-=head2 Is there a public CVS repository ?
+=head2 Is there a public repository ?
 
-No, but there is a public SVN repository at
+Yes, there is a public Git repository at
 
- http://svn.mutatus.co.uk
+ https://github.com/perl-ldap/perl-ldap
 
-=head2 Can I get perl-ldap from the public SVN repository?
+=head2 Can I get perl-ldap from the public Git repository?
 
-Yes, any one can pull perl-ldap from the public SVN repository
-on perl.ldap.org.
+Yes, anyone can pull perl-ldap from the public Git repository
+on GitHub.
 
-There are several ways this can be done.
+There are several ways this can be done - see below.
 
 =over 4
 
-=item Web
+=item CPAN
 
-You can download it from CPAN by following the release link:
+You can download it from CPAN by following the "Download" link on:
 
-The 2 lines in the following example should be put together as
-one continuous line.  Example;
+ http://search.cpan.org/dist/perl-ldap/
 
- http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.44.tar.gz
+Example;
 
-B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
-Netscape on Windows systems sometimes has a problem storing the module
-with the correct name, it will replace the *.tar.gz with *_tar.tar.
-To correct the problem, with the pointer on the link, do a right click
-and then select B<save link as> to save the file with the correct file
-name.
+ http://search.cpan.org/CPAN/authors/id/M/MA/MARSCHAP/perl-ldap-0.44.tar.gz
 
-=item SVN
+=item Git - fork on GitHub
+
+If you have an account on Github (there's a free variant), you can easily
+fork the perl-ldap respository on GitHub.
+When logged on to GitHub, navigate to the perl-ldap repository
+
+ https://github.com/perl-ldap/perl-ldap
+
+and simply click on the "Fork" button near the top-right corner.
+
+=item Git - clone repository
 
 You can download latest development version of perl-ldap from
-svn.mutatus.co.uk by executing a anonymous SVN "checkout" command.
+GitHub by cloning the repsoitory using the command:
 
-The 2 lines in the following example should be put together as
-one continuous line.  Example;
+ git clone https://github.com/perl-ldap/perl-ldap.git
 
- svn co http://svn.mutatus.co.uk/repos/perl-ldap/trunk
+This command will create a directory named 'perl-ldap' in your
+current directory containing a local clone of the repository.
+
+Keeping your local repository in sync with perl-ldap's GitHub repository
+is easy:
+
+  cd perl-ldap
+  git pull
 
 =item Web page
 
@@ -126,22 +128,14 @@ version of perl-ldap.  Due to the fact that humans must
 update the web page to point to a new release it sometimes does
 not get updated as quickly as it should.
 
-B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
-Netscape on Windows systems sometimes has a problem storing the module
-with the correct name, it will replace the *.tar.gz with *_tar.tar.
-To correct the problem, with the pointer on the link, do a right click
-and then select B<save link as> to save the file with the correct file
-name.
-
 =back
 
-=head2 What is SVN.
+=head2 What is Git.
 
-"SVN" is an abbreviation for "Subversion" (see http://subversion.tigris.org).
-Subversion is a "Source Control" or "Revision Control" tool
-designed to keep track of source changes made by groups of
-developers working on the same files, allowing them to
-stay in sync with each other as each individual chooses.
+Git (see http://git-scm.com) is a distributed version control system
+designed to keep track of source changes made by groups of developers
+working on the same files, allowing them to stay in sync with each other
+as each individual chooses.
 
 =head1 LDAP AND DIRECTORY TERMINOLOGY.
 
