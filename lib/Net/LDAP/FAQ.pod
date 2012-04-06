@@ -345,7 +345,7 @@ the directory will speed up searches considerably.
 
 =head2 What is the difference between a LDAP server and a relational database.
 
-The most basic difference is that a directory server is  a
+The most basic difference is that a directory server is a
 specialized database designed to provide fast searches. While a relational
 database is optimized for transactions (where a series of operations is
 counted as 1, thus if one of the steps fails, the RDBMS can roll-back to
@@ -785,7 +785,7 @@ Example:
     }
   }
 
-As you can see the example is straight forward, but there is one
+As you can see the example is straightforward, but there is one
 drawback to this approach.  You must wait until all entries for the
 request search to be returned before you can process the data.  If
 there several thousand entries that match the search filter this
@@ -867,7 +867,7 @@ Example:
 
  }  # End of callback subroutine
 
-As you can see the example is straight forward and it does not waste
+As you can see the example is straightforward and it does not waste
 time waiting for all of the entries to be returned.  However if the
 pop_entry method is not used the callback approach can allocate a
 lot of memory to the search request.
