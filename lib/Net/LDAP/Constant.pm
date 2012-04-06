@@ -404,7 +404,7 @@ Operation was canceled
 
 =item LDAP_NO_SUCH_OPERATION (119)
 
-Server has no knowledge of the operation requested for cancelation
+Server has no knowledge of the operation requested for cancellation
 
 =item LDAP_TOO_LATE (120)
 
@@ -412,7 +412,7 @@ Too late to cancel the outstanding operation
 
 =item LDAP_CANNOT_CANCEL (121)
 
-The identified operation does not support cancelation or
+The identified operation does not support cancellation or
 the cancel operation cannot be performed
 
 =item LDAP_ASSERTION_FAILED (122)

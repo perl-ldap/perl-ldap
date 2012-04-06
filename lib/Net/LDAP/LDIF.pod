@@ -158,7 +158,7 @@ Write the entries to the LDIF file.
 
 =item write_version ( )
 
-If the object's version is defined, this method allows to explicitly
+If the object's version is defined, this method allows one to explicitly
 write the version before an entry is written.
 
 If  not called explicitly, it gets called automatically when writing

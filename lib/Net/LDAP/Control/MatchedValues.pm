@@ -83,7 +83,7 @@ by RFC 3876.
 
 The C<MatchedValues Control>, which only has a meaning with the C<Search> operation,
 allows the client to specify criteria that restrict the values of attributes returned.
-It has no effect on the number of objects found, but only allows to restrict the
+It has no effect on the number of objects found, but only allows one to restrict the
 values of the attributes returned by the search to those matching the criteria.
 
 

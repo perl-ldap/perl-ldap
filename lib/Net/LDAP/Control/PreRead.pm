@@ -108,7 +108,7 @@ by RFC 4527.
 In modification operations, the C<Pre-Read request control> indicates to the
 server that a copy of the original entry before the update is to be returned.
 After the successful completion of the operation, the accompanying C<Pre-Read
-response control> allows to retrieve the original value from the servers's response.
+response control> allows one to retrieve the original value from the servers's response.
 
 One use case of this control control may be to obtain replaced or deleted
 values of modified attributes or a copy of the entry being deleted.
