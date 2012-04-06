@@ -429,16 +429,18 @@ This will output information about the version of Perl you have
 installed. Near the bottom you will find something like
 
   @INC:
-    /usr/local/perl/perl5.005/lib/5.00502/sun4-solaris
-    /usr/local/perl/perl5.005/lib/5.00502
-    /usr/local/perl/perl5.005/lib/site_perl/5.005/sun4-solaris
-    /usr/local/perl/perl5.005/lib/site_perl/5.005
-    .
+    /usr/local/lib/perl/5.8.3
+    /usr/local/share/perl/5.8.3
+    /usr/lib/perl5
+    /usr/share/perl5
+    /usr/lib/perl/5.8.3
+    /usr/share/perl/5.8.3
+    /usr/local/lib/site_perl
 
 This is a list of directories that Perl searches when it is looking for
 a module. The directory you need is the site_perl directory, but without
 the system architecture name, in this case it is
-C</usr/local/perl/perl5.005/lib/site_perl/5.005>. The files required
+C</usr/local/lib/site_perl>. The files required
 can then be installed with
 
    # replace 0.44 with the version you have
@@ -447,7 +449,7 @@ can then be installed with
    tar xvf perl-ldap-0.44.tar
    cd perl-ldap-0.44/lib
 
-   cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
+   cp * /usr/local/lib/site_perl
 
 =head2 How can I load Perl-LDAP into an ActiveState Perl installation.
 
