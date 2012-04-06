@@ -167,7 +167,7 @@ Requests For Comments, better known as RFCs. The RFCs can be found on
 the Internet at http://www.ietf.org/ (the master repository) and many
 other places. There's a link to all the LDAP-related RFCs at
 Perl-LDAP's web site, http://ldap.perl.org/rfc.html. Some of the more
-important RFC numbers are RFC 451i0 - 4519 for LDAP (previously called
+important RFC numbers are RFC 4510 - 4519 for LDAP (previously called
 LDAPv3) and the historic RFC 1777 for LDAPv2.
 
 =head2 What is a LDAP Directory.
@@ -1162,7 +1162,7 @@ before reading the file contents into the data array.
 Another possible solution to this problem is to convert the
 binary data into a base64 encoded string and then store the encoded string
 in the file.  Then when reading the file, decode the base64 encoded
-string back to binary and then use perl ldap to store the data
+string back to binary and then use perl-ldap to store the data
 in the directory.
 
 =head2 How do I create a Microsoft Exchange 5.x user.
