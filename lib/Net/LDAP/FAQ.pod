@@ -99,7 +99,7 @@ You can download it from CPAN by following the release link:
 The 2 lines in the following example should be put together as
 one continuous line.  Example;
 
- http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.33.tar.gz
+ http://search.cpan.org/CPAN/authors/id/G/GB/GBARR/perl-ldap-0.44.tar.gz
 
 B<WARNING:>  The perl-ldap module is stored on CPAN as a *.gz file.
 Netscape on Windows systems sometimes has a problem storing the module
@@ -407,11 +407,11 @@ To install the modules that are in the perl-ldap distribution follow the
 same steps that you would for most other distributions found on CPAN, that
 is
 
-   # replace 0.33 with the version you have
+   # replace 0.44 with the version you have
 
-   gunzip perl-ldap-0.33.tar.gz
-   tar xvf perl-ldap-0.33.tar
-   cd perl-ldap-0.33
+   gunzip perl-ldap-0.44.tar.gz
+   tar xvf perl-ldap-0.44.tar
+   cd perl-ldap-0.44
 
    perl Makefile.PL
    make
@@ -441,11 +441,11 @@ the system architecture name, in this case it is
 C</usr/local/perl/perl5.005/lib/site_perl/5.005>. The files required
 can then be installed with
 
-   # replace 0.33 with the version you have
+   # replace 0.44 with the version you have
 
-   gunzip perl-ldap-0.33.tar.gz
-   tar xvf perl-ldap-0.33.tar
-   cd perl-ldap-0.33/lib
+   gunzip perl-ldap-0.44.tar.gz
+   tar xvf perl-ldap-0.44.tar
+   cd perl-ldap-0.44/lib
 
    cp * /usr/local/perl/perl5.005/lib/site_perl/5.005
 
