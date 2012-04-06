@@ -22,10 +22,10 @@ The latest version of this FAQ can be found at
 perl-ldap is the distribution name. The perl-ldap distribution contains
 the Net::LDAP modules.
 
-=head2 Why another perl LDAP implementation ?
+=head2 Why another Perl LDAP implementation ?
 
 perl-ldap's goal is to be as portable as possible. It does this by
-being implemented completely in perl. So basically anywhere that perl
+being implemented completely in Perl. So basically anywhere that Perl
 runs perl-ldap will run. This is not true for other implementations
 which require a C compiler.
 
@@ -425,7 +425,7 @@ complex, so a simple copy is enough to install. First run
 
   perl -V
 
-This will output information about the version of perl you have
+This will output information about the version of Perl you have
 installed. Near the bottom you will find something like
 
   @INC:
@@ -435,7 +435,7 @@ installed. Near the bottom you will find something like
     /usr/local/perl/perl5.005/lib/site_perl/5.005
     .
 
-This is a list of directories that perl searches when it is looking for
+This is a list of directories that Perl searches when it is looking for
 a module. The directory you need is the site_perl directory, but without
 the system architecture name, in this case it is
 C</usr/local/perl/perl5.005/lib/site_perl/5.005>. The files required
@@ -465,7 +465,7 @@ system.
 
 =item 2.
 
-If the user has nmake installed, the user can do a normal perl
+If the user has nmake installed, the user can do a normal Perl
 module install using nmake instead of make.
 
 =item 3.
@@ -548,7 +548,7 @@ You can obtain the latest releases from
 =item ResourcePool::Factory::Net::LDAP
 
 If you want to use failover the ResourcePool::Factory::Net::LDAP
-perl module provides methods to do this.
+Perl module provides methods to do this.
 
 You can obtain the latest release from
   http://search.cpan.org/search?module=ResourcePool::Factory::Net::LDAP
@@ -1004,19 +1004,19 @@ there are no performance issues with perl-ldap.
 
 Where you may wish to use perl-ldap to perform, for example, a very
 large number of queries (e.g. 10,000) in succession you may find a
-noticeable performance difference between perl-ldap and non pure-perl
+noticeable performance difference between perl-ldap and non pure-Perl
 modules. This is not because of perl-ldap itself but because of the
-pure-perl Convert::ASN1 module that it depends on.
+pure-Perl Convert::ASN1 module that it depends on.
 
 You should make up your own mind, based upon your own situation
 (performance requirements, hardware etc.) as to whether you should use
 perl-ldap or not. The figures quoted in this answer are only
 indicative, and will differ for different people.
 
-=head2 Can I contribute perl scripts that use perl-ldap
+=head2 Can I contribute Perl scripts that use perl-ldap
 to the contrib section?
 
-Any one can submit a perl script that uses perl-ldap for inclusion
+Any one can submit a Perl script that uses perl-ldap for inclusion
 in the contrib section.  Graham Barr will determine if the script
 will be included and will do the initial check in of the script
 to the SVN system on http://svn.mutatus.co.uk.  Graham will make you
