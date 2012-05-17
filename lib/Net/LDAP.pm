@@ -225,6 +225,11 @@ sub _SSL_context_init_args {
       $passwdcb = $arg->{'keydecrypt'};
   }
 
+  # allow deprecated "sslv2/3" in addition to IO::Socket::SSL's "sslv23"
+  if (defined $arg->{'sslversion'}) {
+      $arg->{'sslversion'} =~ s:sslv2/3:sslv23:io;
+  }
+
   (
     SSL_cipher_list     => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
     SSL_ca_file         => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
@@ -236,7 +241,7 @@ sub _SSL_context_init_args {
     SSL_cert_file       => $clientcert,
     SSL_verify_mode     => $verify,
     SSL_version         => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
-                           'sslv2/3',
+                           'sslv23',
     %verifycn_ctx,
   );
 }

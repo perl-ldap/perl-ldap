@@ -180,7 +180,7 @@ B<Example>
 
 LDAPS connections have some extra valid options, see the
 L<start_tls|/start_tls> method for details. Note the default value for
-'sslversion' for LDAPS is 'sslv2/3', and the default port for LDAPS
+'sslversion' for LDAPS is 'sslv23', and the default port for LDAPS
 is 636.
 
 For LDAPI connections, HOST is actually the location of a UNIX domain
@@ -755,7 +755,7 @@ The server must provide a certificate, and it must be valid.
 If you set verify to optional or require, you must also set either
 cafile or capath. The most secure option is B<require>.
 
-=item sslversion =E<gt> 'sslv2' | 'sslv3' | 'sslv2/3' | 'tlsv1'
+=item sslversion =E<gt> 'sslv2' | 'sslv3' | 'sslv23' | 'tlsv1'
 
 This defines the version of the SSL/TLS protocol to use. Defaults to
 B<'tlsv1'>.
