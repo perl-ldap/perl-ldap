@@ -5,6 +5,7 @@
 package Net::LDAP;
 
 use strict;
+use Socket qw(AF_INET AF_INET6 AF_UNSPEC);
 use IO::Socket;
 use IO::Select;
 use Tie::Hash;
@@ -27,6 +28,8 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_EXTENSION_START_TLS
 			   LDAP_UNAVAILABLE
 			);
+
+use constant CAN_IPV6 => eval { require IO::Socket::INET6 } ? 1 : 0;
 
 $VERSION 	= "0.43";
 @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
@@ -135,21 +138,23 @@ sub new {
 sub connect_ldap {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 389;
-  my $class = 'IO::Socket::INET';
+  my $class = (CAN_IPV6) ? 'IO::Socket::INET6' : 'IO::Socket::INET';
+  my $domain = $arg->{inet4} ? AF_INET : ($arg->{inet6} ? AF_INET6 : AF_UNSPEC);
 
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
-  if ($arg->{inet6}) {
-    require IO::Socket::INET6;
-    $class = 'IO::Socket::INET6';
-  }  
+  if ($arg->{inet6} && !CAN_IPV6) {
+    $@ = 'unable to load IO::Socket::INET6; no IPv6 support';
+    return undef;
+  }
 
   $ldap->{net_ldap_socket} = $class->new(
     PeerAddr   => $host,
     PeerPort   => $port,
     LocalAddr  => $arg->{localaddr} || undef,
     Proto      => 'tcp',
+    Domain     => $domain,
     MultiHomed => $arg->{multihomed},
     Timeout    => defined $arg->{timeout}
 		 ? $arg->{timeout}
@@ -167,10 +172,14 @@ my %ssl_verify = qw(none 0 optional 1 require 3);
 sub connect_ldaps {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 636;
+  my $domain = $arg->{inet4} ? AF_INET : ($arg->{inet6} ? AF_INET6 : AF_UNSPEC);
 
-  require IO::Socket::INET6  if ($arg->{inet6});
+  if ($arg->{inet6} && !CAN_IPV6) {
+    $@ = 'unable to load IO::Socket::INET6; no IPv6 support';
+    return undef;
+  }
+
   require IO::Socket::SSL;
-  IO::Socket::SSL->import(qw/inet6/)  if ($arg->{inet6});
 
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
@@ -180,6 +189,7 @@ sub connect_ldaps {
     PeerPort 	    => $port,
     LocalAddr       => $arg->{localaddr} || undef,
     Proto    	    => 'tcp',
+    Domain          => $domain,
     Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
     _SSL_context_init_args($arg)
   ) or return undef;
