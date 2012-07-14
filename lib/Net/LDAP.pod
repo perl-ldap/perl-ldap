@@ -166,7 +166,7 @@ Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
 Try to connect to the server using the specified IP protocol only,
 i.e. either IPv4 or IPv6.
-If the protocol selected is not supported, iconnecting will fail.
+If the protocol selected is not supported, connecting will fail.
 
 The default is to use any of the two protocols.
 
