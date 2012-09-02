@@ -1013,15 +1013,14 @@ indicative, and will differ for different people.
 to the contrib section?
 
 Any one can submit a Perl script that uses perl-ldap for inclusion
-in the contrib section.  Graham Barr will determine if the script
-will be included and will do the initial check in of the script
-to the SVN system on http://svn.mutatus.co.uk.  Graham will make you
-the owner/developer of the script.
+in the contrib section.  The perl-ldap maintainers will determiner
+if the script will be included and will do the initial check in of
+the script to the Git repository at https://github.com/perl-ldap/perl-ldap.
 
 There are a couple of requirements for consideration.
 
 You must supply a one line description of your script to be included
-in the contrib readme file.
+in the contrib README file.
 
 Inside the script will be the pod documentation for the script.
 No auxiliary documentation will be allowed.  For examples of how
@@ -1450,14 +1449,20 @@ Mark Wahl's LDAP World at Innosoft.
 http://www.innosoft.com/ldapworld/
 (outdated: last update was in 1998)
 
-Open Source LDAP Directory Server.
+OpenLDAP Directory Server - open source LDAP server.
 http://www.openldap.org/
+
+389 Directory Server - open source LDAP server
+http://port389.org/
+
+ApacheDS - open source LDAP server in Java
+http://directory.apache.org/
 
 CriticalPath
 http://www.cp.net/
 
-IBM Directory Server
-http://www-306.ibm.com/software/network/directory/server/
+IBM Tivoli Directory Server
+http://www-01.ibm.com/software/tivoli/products/directory-server/
 
 Innosoft
 http://www.innosoft.com
@@ -1466,17 +1471,11 @@ http://www.innosoft.com
 Isode (was MessagingDirect)
 http://www.isode.com/
 
-Netscape Directory Developers Area
-http://developer.netscape.com/directory/
-
 Nexor's X.500 and Internet Directories
 http://www.nexor.com/info/directory.htm/
 
 Novell's eDirectory
 http://www.novell.com/
-
-Novell's LDAPzone
-http://ldapzone.com/
 
 Octet String
 http://www.octetstring.com/
@@ -1484,8 +1483,8 @@ http://www.octetstring.com/
 SUN JAVA JNDI (Java Naming and Directory Interface)
 http://www.java.sun.com/jndi/
 
-Sun One, formerly Iplanet.
-http://wwws.sun.com/software/
+Oracle Directory Server Enterprise Edition, formerly Sun One, formerly iPlanet.
+http://www.oracle.com/technetwork/middleware/id-mgmt/index-085178.html
 
 Eine deutsche LDAP Website
 A german LDAP Website
