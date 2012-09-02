@@ -57,7 +57,7 @@ Controls
 General
   Move the TCP connect out of new() and into a connect() method
   Add a configure/cget methods for options, async and version methods become deprecated
-  rename _recvresp and document to make avaliable for async users
+  rename _recvresp and document to make available for async users
   if bind() is passed options then require an auth option, stop accidental anon binds.
     make bind(password => '') illegal, force then to use noauth => ''
 
