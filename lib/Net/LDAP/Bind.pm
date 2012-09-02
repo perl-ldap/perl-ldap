@@ -36,8 +36,10 @@ sub decode {
 	  or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error"), return;
   }
 
-  $ldap->{net_ldap_socket} = $sasl->securesocket($ldap->{net_ldap_socket})
-    if $sasl and $bind->{resultCode} == LDAP_SUCCESS;
+  if ($sasl and $bind->{resultCode} == LDAP_SUCCESS) {
+    $sasl->property('ssf', 0)  if !$sasl->property('ssf');
+    $ldap->{net_ldap_socket} = $sasl->securesocket($ldap->{net_ldap_socket});
+  }
 
   return $self->SUPER::decode($result)
     unless $bind->{resultCode} == LDAP_SASL_BIND_IN_PROGRESS;
