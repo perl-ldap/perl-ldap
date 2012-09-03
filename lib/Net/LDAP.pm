@@ -340,6 +340,8 @@ sub unbind {
   $ldap->_sendmesg($mesg);
 }
 
+# convenience alias
+*done = &unbind;
 
 sub ldapbind {
   require Carp;

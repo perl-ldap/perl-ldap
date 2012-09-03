@@ -830,6 +830,11 @@ B<Example>
 
  $mesg = $ldap->unbind;
 
+=item done ( )
+
+Convencience alias for C<unbind()>, named after the clean-up method
+of L<Net::LDAP::LDIF>.
+
 =back
 
 The following methods are for convenience, and do not return
