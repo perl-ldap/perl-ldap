@@ -331,6 +331,16 @@ corresponding to the entry's changetype.
 The result will be an object of type L<Net::LDAP::Message> as returned
 by the add, modify or delete method called on CLIENT.
 
+Alternatively C<CLIENT> can also be a C<Net::LDAP::LDIF> object, that
+must be an LDIF file opened for writing.
+
+In this case, C<OPTIONS> my be options that the method C<write_entry>
+of C<Net::LDAP::LDIF> takes.
+
+Here too, the result is an object class C<Net::LDAP::Message>.
+On error, the error code is C<LDAP_OTHER> with the LDIF error message
+in the error text.
+
 =back
 
 =head1 SEE ALSO

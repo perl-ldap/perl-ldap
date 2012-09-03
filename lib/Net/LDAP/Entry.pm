@@ -290,7 +290,7 @@ sub update {
   }
   elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
     require Net::LDAP::Message;
-    $target->write_entry($self);
+    $target->write_entry($self, %opt);
     $mesg = Net::LDAP::Message::Dummy->new();
     $mesg->set_error(LDAP_OTHER, $target->error())
       if ($target->error());
