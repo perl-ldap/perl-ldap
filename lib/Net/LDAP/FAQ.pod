@@ -1464,10 +1464,6 @@ http://www.cp.net/
 IBM Tivoli Directory Server
 http://www-01.ibm.com/software/tivoli/products/directory-server/
 
-Innosoft
-http://www.innosoft.com
-(acquired by Sun)
-
 Isode (was MessagingDirect)
 http://www.isode.com/
 
@@ -1481,14 +1477,35 @@ Octet String
 http://www.octetstring.com/
 
 SUN JAVA JNDI (Java Naming and Directory Interface)
-http://www.java.sun.com/jndi/
+http://java.sun.com/products/jndi/overview.html
 
 Oracle Directory Server Enterprise Edition, formerly Sun One, formerly iPlanet.
 http://www.oracle.com/technetwork/middleware/id-mgmt/index-085178.html
 
+OptimalIDM - Virtual Identitity Server - .NET LDAP virtual directory
+http://www.optimalidm.com/products/vis/Virtual-Directory-Server-VDS.aspx
+
+Quest One Quick Connect Virtual Directory Server - LDAP virtual directory
+http://www.quest.com/quest-one-quick-connect-virtual-directory-server/
+
+Virtual Directory Blogger
+https://virtualdirectory.wordpress.com/
+
+eldapo - a directory manager's blog
+http://eldapo.blogspot.de/
+
 Eine deutsche LDAP Website
 A german LDAP Website
 http://verzeichnisdienst.de/ldap/Perl/index.html
+
+(non-exhaustive) list of LDAP software on wikipedia
+http://en.wikipedia.org/wiki/List_of_LDAP_software
+
+web2ldap - WWW gateway to LDAP server in Python
+http://www.web2ldap.de/
+
+LemonLDAP::NG - Web SingleSignOn solution & SAML IdP in Perl
+http://lemonldap-ng.org/
 
 The 2 following URLs deal mainly with Microsoft's
 Active Directory.
