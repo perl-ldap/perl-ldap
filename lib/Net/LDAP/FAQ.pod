@@ -391,7 +391,7 @@ another server.
 A continuation reference is returned when B<part> of the operation must be
 resent to another server.
 
-See RFC 2251 section 4.5.3 for more details.
+See RFC 4511 section 4.5.3 for more details.
 
 =head1 PERL-LDAP INSTALLATION
 
@@ -931,12 +931,12 @@ rule which is defined for the member attribute.
 Asking for (member=c*) is not OK - there is no defined substring
 matching rule for the member attribute. That's because the member
 values are *not* strings, but distinguished names. There is no
-substring matching rule for DNs, see RFC 2256 section 5.50.
+substring matching rule for DNs, see RFC 4519 section 2.7.
 
 What you have to do is get the results of (member=*) and then select
 the required results from the returned values. You need to do this
 using knowledge of the string representation of DNs defined in RFC
-2253, which is important because the same DN can have different string
+4514, which is important because the same DN can have different string
 representations. So you need to perform some canonicalization if you
 want to be correct.
 
