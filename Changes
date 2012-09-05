@@ -1,3 +1,20 @@
+0.45 -- Wed Sep 5 11:20:46 CEST 2012
+
+Bug Fixes
+  * RT#72108 fix non-blocking IO with SSL
+  * RT#74572 fix $entry->update($ldif)
+  * RT#74759 fix POD spelling/grammar errors
+  * RT#77180 use "sslv23" instead of "sslv2/3" for sslversion
+  * work around a warning in Authen::SASL::Perl <= 2.1.5
+  * various typo fixes in documentation
+
+Enhancements
+  * RT#77458 re-work IPv6 support
+  * Don't accumulate intermediate messages passed to a callback.
+  * slightly extend Net::LDAP::Entry->update() and document it
+  * convenience alias done() for Net::LDAP->unbind()
+  * various updates to the FAQ
+
 0.44 -- Sun Jan 29 10:36:08 CET 2012
 
 Bug Fixes
