@@ -341,7 +341,10 @@ sub unbind {
 }
 
 # convenience alias
-*done = &unbind;
+sub done {
+  goto &unbind;
+}
+
 
 sub ldapbind {
   require Carp;
