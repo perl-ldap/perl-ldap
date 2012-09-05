@@ -1,3 +1,12 @@
+0.46 -- Wed Sep 5 18:09:00 CEST 2012
+
+Bug Fixes
+  * LDAP.pm: unbreak - make done a real sub
+  * Message.pm: fix typo, i.e. add forgotten ';'
+
+Enhancements:
+  * FAQ.pod: update URLs a bit more
+
 0.45 -- Wed Sep 5 11:20:46 CEST 2012
 
 Bug Fixes
