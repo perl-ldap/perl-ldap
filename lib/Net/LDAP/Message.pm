@@ -149,7 +149,7 @@ sub decode { # $self, $pdu, $control
     my $intermediate = Net::LDAP::Intermediate->from_asn($data);
 
     if (defined $self->{callback}) {
-      $self->{callback}->($self, $intermediate)
+      $self->{callback}->($self, $intermediate);
     } else {
       push(@{$self->{'intermediate'} ||= []}, $intermediate);
     }
