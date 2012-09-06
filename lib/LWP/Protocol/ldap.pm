@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.15";
+$VERSION = "1.16";
 
 use strict;
 eval {
@@ -69,6 +69,16 @@ sub request {
 
   if (my $accept = $request->header('Accept')) {
     $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
+  }
+
+  if (!$user) {
+    if (my $authorization = $request->header('Authorization')) {
+      # we only accept Basic authorization for now
+      if ($authorization =~ /^Basic\s+([A-Z0-9+\/=]+)$/i) {
+        require MIME::Base64;
+        ($user, $password) = split(":", MIME::Base64::decode_base64($1), 2);
+      }
+    }
   }
 
   # Create an initial response object
