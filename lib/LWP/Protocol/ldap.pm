@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.12";
+$VERSION = "1.13";
 
 use strict;
 eval {
@@ -36,8 +36,9 @@ sub request {
   }
 
   my $url = $request->url;
-  if ($url->scheme ne 'ldap') {
-    my $scheme = $url->scheme;
+  my $scheme = $url->scheme;
+
+  if ($scheme !~ /^ldap[si]?$/) {
     return new HTTP::Response HTTP_INTERNAL_SERVER_ERROR,
             "LWP::Protocol::ldap::request called for '$scheme'";
   }
@@ -48,7 +49,7 @@ sub request {
   unless ($method =~ /^(?:GET|HEAD)$/) {
     return new HTTP::Response HTTP_NOT_IMPLEMENTED,
                  'Library does not allow method ' .
-                 "$method for 'ldap:' URLs";
+                 "$method for '$scheme:' URLs";
   }
 
   if ($init_failed) {
@@ -56,16 +57,14 @@ sub request {
             $init_failed;
   }
 
-  my $host     = $url->host;
-  my $port     = $url->port;
-  my $userinfo = $url->userinfo;
+  my $userinfo = $url->can('userinfo') ? $url->userinfo : '';
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
 
   # Create an initial response object
   my $response = new HTTP::Response HTTP_OK, "Document follows";
   $response->request($request);
 
-  my $ldap = new Net::LDAP($host, port => $port);
+  my $ldap = new Net::LDAP($url->as_string);
 
   if ($user) {
     my $mesg = $ldap->bind($user, password => $password);
