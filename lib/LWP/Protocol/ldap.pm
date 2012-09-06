@@ -6,14 +6,14 @@ package LWP::Protocol::ldap;
 
 use Carp ();
 
-use HTTP::Status ();
+use HTTP::Status qw(HTTP_OK HTTP_BAD_REQUEST HTTP_INTERNAL_SERVER_ERROR HTTP_NOT_IMPLEMENTED);
 use HTTP::Negotiate ();
 use HTTP::Response ();
 use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.11";
+$VERSION = "1.12";
 
 use strict;
 eval {
@@ -31,28 +31,28 @@ sub request {
   # check proxy
   if (defined $proxy)
   {
-    return new HTTP::Response &HTTP::Status::RC_BAD_REQUEST,
+    return new HTTP::Response HTTP_BAD_REQUEST,
                  'You can not proxy through the ldap';
   }
 
   my $url = $request->url;
   if ($url->scheme ne 'ldap') {
     my $scheme = $url->scheme;
-    return new HTTP::Response &HTTP::Status::RC_INTERNAL_SERVER_ERROR,
+    return new HTTP::Response HTTP_INTERNAL_SERVER_ERROR,
             "LWP::Protocol::ldap::request called for '$scheme'";
   }
 
   # check method
   my $method = $request->method;
 
-  unless ($method eq 'GET') {
-    return new HTTP::Response &HTTP::Status::RC_BAD_REQUEST,
+  unless ($method =~ /^(?:GET|HEAD)$/) {
+    return new HTTP::Response HTTP_NOT_IMPLEMENTED,
                  'Library does not allow method ' .
                  "$method for 'ldap:' URLs";
   }
 
   if ($init_failed) {
-    return new HTTP::Response &HTTP::Status::RC_INTERNAL_SERVER_ERROR,
+    return new HTTP::Response HTTP_INTERNAL_SERVER_ERROR,
             $init_failed;
   }
 
@@ -62,7 +62,7 @@ sub request {
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
 
   # Create an initial response object
-  my $response = new HTTP::Response &HTTP::Status::RC_OK, "Document follows";
+  my $response = new HTTP::Response HTTP_OK, "Document follows";
   $response->request($request);
 
   my $ldap = new Net::LDAP($host, port => $port);
@@ -71,7 +71,7 @@ sub request {
     my $mesg = $ldap->bind($user, password => $password);
 
     if ($mesg->code) {
-      my $res = new HTTP::Response &HTTP::Status::RC_BAD_REQUEST, "LDAP return code " . $mesg->code;
+      my $res = new HTTP::Response HTTP_BAD_REQUEST, "LDAP return code " . $mesg->code;
       $res->content_type("text/plain");
       $res->content($mesg->error);
       return $res;
@@ -96,7 +96,7 @@ sub request {
 
   my $mesg = $ldap->search(@opts);
   if ($mesg->code) {
-    my $res = new HTTP::Response &HTTP::Status::RC_BAD_REQUEST,
+    my $res = new HTTP::Response HTTP_BAD_REQUEST,
          "LDAP return code " . $ldap->code;
     $res->content_type("text/plain");
     $res->content($ldap->error);
