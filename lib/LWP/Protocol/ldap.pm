@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.17";
+$VERSION = "1.18";
 
 use strict;
 eval {
@@ -69,6 +69,7 @@ sub request {
   # analyse HTTP headers
   if (my $accept = $request->header('Accept')) {
     $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
+    $format = 'json' if $accept =~ m!\b(?:text|application)/json\b!;
   }
 
   if (!$user) {
@@ -151,6 +152,28 @@ sub request {
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
       if ($method ne 'HEAD');
+  }
+  elsif ($format eq 'json') {
+    require JSON;
+
+    my $entry;
+    my $index;
+    my %objects;
+
+    for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
+      my $dn = $entry->dn;
+      
+      $objects{$dn} = {};
+      foreach my $attr (sort($entry->attributes)) {
+        $objects{$dn}{$attr} = $entry->get_value($attr, asref => 1);
+      }
+    }
+
+    my $content = JSON::to_json(\%objects, {pretty => 1, utf8 => 1});
+    $response->header('Content-Type' => 'text/json; charset=utf-8');
+    $response->header('Content-Length', length($content));
+    $response = $self->collect_once($arg, $response, $content)
+	if ($method ne 'HEAD');
   }
   else {
     my $content = "<head><title>Directory Search Results</title></head>\n<body>";
