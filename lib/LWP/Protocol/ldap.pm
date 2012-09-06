@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.16";
+$VERSION = "1.17";
 
 use strict;
 eval {
@@ -29,44 +29,44 @@ sub request {
   LWP::Debug::trace('()') if defined &LWP::Debug::trace;
 
   # check proxy
-  if (defined $proxy)
-  {
-    return new HTTP::Response HTTP_BAD_REQUEST,
-                 'You can not proxy through the ldap';
+  if (defined $proxy) {
+    return HTTP::Response->new(HTTP_BAD_REQUEST,
+                              'You can not proxy through the ldap');
   }
 
   my $url = $request->url;
-  my $scheme = $url->scheme;
+  my $scheme   = $url->scheme;
+  my $userinfo = $url->can('userinfo') ? $url->userinfo : '';
+  my $dn       = $url->dn;
+  my @attrs    = $url->attributes;
+  my $scope    = $url->scope || 'base';
+  my $filter   = $url->filter;
 
+  # check scheme
   if ($scheme !~ /^ldap[si]?$/) {
-    return new HTTP::Response HTTP_INTERNAL_SERVER_ERROR,
-            "LWP::Protocol::ldap::request called for '$scheme'";
+    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
+                               "LWP::Protocol::ldap::request called for '$scheme'");
   }
 
   # check method
   my $method = $request->method;
 
   unless ($method =~ /^(?:GET|HEAD)$/) {
-    return new HTTP::Response HTTP_NOT_IMPLEMENTED,
-                 'Library does not allow method ' .
-                 "$method for '$scheme:' URLs";
+    return HTTP::Response->new(HTTP_NOT_IMPLEMENTED,
+                               "Library does not allow method $method for '$scheme:' URLs");
   }
 
   if ($init_failed) {
-    return new HTTP::Response HTTP_INTERNAL_SERVER_ERROR,
-            $init_failed;
+    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
+                               $init_failed);
   }
 
-  my $userinfo = $url->can('userinfo') ? $url->userinfo : '';
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
-  my $dn = $url->dn;
-  my @attrs = $url->attributes;
-  my $scope = $url->scope || "base";
-  my $filter = $url->filter;
-  my %extn = $url->extensions;
-  my $tls = exists($extn{'x-tls'}) ? 1 : 0;
+  my %extn     = $url->extensions;
+  my $tls     = exists($extn{'x-tls'}) ? 1 : 0;
   my $format = lc($extn{'x-format'} || 'html');
 
+  # analyse HTTP headers
   if (my $accept = $request->header('Accept')) {
     $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
   }
@@ -81,51 +81,67 @@ sub request {
     }
   }
 
-  # Create an initial response object
-  my $response = new HTTP::Response HTTP_OK, "Document follows";
-  $response->request($request);
-
+  # connect to LDAP server
   my $ldap = new Net::LDAP($url->as_string);
+  if (!$ldap) {
+    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
+                                  "Connection to LDAP server failed");
+    $res->content_type("text/plain");
+    $res->content($@);
+    return $res;
+  }
 
+  # optional: startTLS
   if ($tls && $scheme ne 'ldaps') {
     my $mesg = $ldap->start_tls();
     if ($mesg->code) {
-      my $res = new HTTP::Response HTTP_BAD_REQUEST,
-           "LDAP return code " . $mesg->code;
+      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
+                                    "LDAP return code " . $mesg->code);
       $res->content_type("text/plain");
       $res->content($mesg->error);
       return $res;
     }
   }
 
+  # optional: simple bind
   if ($user) {
     my $mesg = $ldap->bind($user, password => $password);
 
     if ($mesg->code) {
-      my $res = new HTTP::Response HTTP_BAD_REQUEST, "LDAP return code " . $mesg->code;
+      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
+                                    "LDAP return code " . $mesg->code);
       $res->content_type("text/plain");
       $res->content($mesg->error);
       return $res;
     }
   }
 
-  my @opts = (scope => $scope);
-  push @opts, "base" => $dn if $dn;
-  push @opts, "filter" => $filter if $filter;
-  push @opts, "attrs" => \@attrs if @attrs;
+  # do the search
+  my %opts = ( scope => $scope );
+  $opts{base}   = $dn      if $dn;
+  $opts{filter} = $filter  if $filter;
+  $opts{attrs}  = \@attrs  if @attrs;
 
-  my $mesg = $ldap->search(@opts);
+  my $mesg = $ldap->search(%opts);
   if ($mesg->code) {
-    my $res = new HTTP::Response HTTP_BAD_REQUEST,
-         "LDAP return code " . $ldap->code;
+    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
+                                  "LDAP return code " . $mesg->code);
     $res->content_type("text/plain");
-    $res->content($ldap->error);
+    $res->content($mesg->error);
     return $res;
   }
-  elsif ($format eq 'ldif') {
+
+  # Create an initial response object
+  my $response = HTTP::Response->new(HTTP_OK, "Document follows");
+  $response->request($request);
+
+  # return data in the format requested
+  if ($format eq 'ldif') {
     require Net::LDAP::LDIF;
+
     open(my $fh, ">", \my $content);
-    my $ldif = Net::LDAP::LDIF->new($fh,"w", version => 1);
+    my $ldif = Net::LDAP::LDIF->new($fh, "w", version => 1);
+
     while(my $entry = $mesg->shift_entry) {
       $ldif->write_entry($entry);
     }
@@ -134,14 +150,14 @@ sub request {
     $response->header('Content-Type' => 'text/ldif');
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
-	if ($method ne 'HEAD');
+      if ($method ne 'HEAD');
   }
   else {
     my $content = "<head><title>Directory Search Results</title></head>\n<body>";
     my $entry;
     my $index;
 
-    for($index = 0 ; $entry = $mesg->entry($index) ; $index++ ) {
+    for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $attr;
 
       $content .= $index ? qq{<tr><th colspan="2"><hr>&nbsp</tr>\n} : "<table>";
@@ -175,8 +191,7 @@ sub request {
     $response->header('Content-Type' => 'text/html');
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
-	if ($method ne 'HEAD');
-
+      if ($method ne 'HEAD');
   }
 
   $ldap->unbind;
