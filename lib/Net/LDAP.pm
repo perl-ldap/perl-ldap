@@ -920,6 +920,7 @@ sub _drop_conn {
 
   if (my $msgs = delete $self->{net_ldap_mesg}) {
     foreach my $mesg (values %$msgs) {
+      next unless (defined $mesg);
       $mesg->set_error($err, $etxt);
     }
   }
