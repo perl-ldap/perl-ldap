@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.13";
+$VERSION = "1.14";
 
 use strict;
 eval {
@@ -86,7 +86,7 @@ sub request {
   my $format = lc($extn{'x-format'} || 'html');
 
   if (my $accept = $request->header('Accept')) {
-    $format = 'ldif' if $accept =~ m!\btext/ldif\b!;
+    $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
   }
   
   push @opts, "base" => $dn if $dn;
