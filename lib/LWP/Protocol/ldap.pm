@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.18";
+$VERSION = "1.19";
 
 use strict;
 eval {
@@ -148,7 +148,7 @@ sub request {
     }
     $ldif->done;
     close($fh);
-    $response->header('Content-Type' => 'text/ldif');
+    $response->header('Content-Type' => 'text/ldif; charset=utf-8');
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
       if ($method ne 'HEAD');
@@ -211,7 +211,7 @@ sub request {
     $content .= $index ? sprintf("%s Match%s found",$index, $index>1 ? "es" : "")
 		       : "<b>No Matches found</b>";
     $content .= "</body>\n";
-    $response->header('Content-Type' => 'text/html');
+    $response->header('Content-Type' => 'text/html; charset=utf-8');
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
       if ($method ne 'HEAD');
