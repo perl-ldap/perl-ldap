@@ -56,9 +56,9 @@ sub init {
 
 sub newcookie {
   my $self = shift;
-  @_ ? ($self->{asn}{newcookie}=shift)
+
+  @_ ? ($self->{asn}{newcookie} = shift)
      : $self->{asn}{newcookie};
-  $self->{asn}{cookie};
 }
 
 sub responseValue {
