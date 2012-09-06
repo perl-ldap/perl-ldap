@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.14";
+$VERSION = "1.15";
 
 use strict;
 eval {
@@ -59,12 +59,34 @@ sub request {
 
   my $userinfo = $url->can('userinfo') ? $url->userinfo : '';
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
+  my $dn = $url->dn;
+  my @attrs = $url->attributes;
+  my $scope = $url->scope || "base";
+  my $filter = $url->filter;
+  my %extn = $url->extensions;
+  my $tls = exists($extn{'x-tls'}) ? 1 : 0;
+  my $format = lc($extn{'x-format'} || 'html');
+
+  if (my $accept = $request->header('Accept')) {
+    $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
+  }
 
   # Create an initial response object
   my $response = new HTTP::Response HTTP_OK, "Document follows";
   $response->request($request);
 
   my $ldap = new Net::LDAP($url->as_string);
+
+  if ($tls && $scheme ne 'ldaps') {
+    my $mesg = $ldap->start_tls();
+    if ($mesg->code) {
+      my $res = new HTTP::Response HTTP_BAD_REQUEST,
+           "LDAP return code " . $mesg->code;
+      $res->content_type("text/plain");
+      $res->content($mesg->error);
+      return $res;
+    }
+  }
 
   if ($user) {
     my $mesg = $ldap->bind($user, password => $password);
@@ -77,18 +99,7 @@ sub request {
     }
   }
 
-  my $dn = $url->dn;
-  my @attrs = $url->attributes;
-  my $scope = $url->scope || "base";
-  my $filter = $url->filter;
   my @opts = (scope => $scope);
-  my %extn = $url->extensions;
-  my $format = lc($extn{'x-format'} || 'html');
-
-  if (my $accept = $request->header('Accept')) {
-    $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
-  }
-  
   push @opts, "base" => $dn if $dn;
   push @opts, "filter" => $filter if $filter;
   push @opts, "attrs" => \@attrs if @attrs;
