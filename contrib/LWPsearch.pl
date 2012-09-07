@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+use open OUT => ':utf8';
+
 use LWP::UserAgent;
 use MIME::Base64;
 use Getopt::Long;
