@@ -1,14 +1,14 @@
 package Net::LDAP::Extension::Refresh;
 require Net::LDAP::Extension;
 
-$VERSION = "0.01";
+$VERSION = "0.02";
 @ISA = qw(Net::LDAP::Extension);
 
 use Convert::ASN1;
 
 my $refreshReq = Convert::ASN1->new;
 $refreshReq->prepare(q<SEQUENCE {
-                     entryName    [0] STRING,
+                     entryName    [0] OCTET STRING, -- originally: LDAPDN
                      requestTtl   [1] INTEGER 
                      }>);
 
