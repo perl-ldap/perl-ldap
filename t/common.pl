@@ -12,9 +12,8 @@ BEGIN {
   # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
   $TEMPDIR  = "./temp";
-  $SCHEMA_DIR ||= "./data";
+  $SLAPD_SCHEMA_DIR ||= "./data";
   $SLAPD_DB ||= 'bdb';
-  $SCHEMA_CHECK = 1 unless defined $SCHEMA_CHECK;
 
   $TESTDB   = "$TEMPDIR/test-db";
   $CONF     = "$TEMPDIR/conf";
@@ -29,21 +28,26 @@ BEGIN {
   my @server_opts;
   ($SERVER_TYPE,@server_opts) = split(/\+/, $SERVER_TYPE || 'none');
 
-  if ($SERVER_TYPE eq 'openldap2') {
-    $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts
-      and eval { require IO::Socket::SSL; 1};
-    ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g if grep { $_ eq 'ipc' } @server_opts;
-    $SASL = 1 if grep { $_ eq 'sasl' } @server_opts
-      and eval { require Authen::SASL; 1 };
-    $CONF_IN	  = "./data/slapd2-conf.in";
+  if ($SERVER_TYPE =~ /^openldap$/i) {
+    $CONF_IN  = "./data/slapd.conf.in";
+    $CONF     = "$TEMPDIR/slapd.conf";
+
+    $SSL_PORT = 9010
+      if grep /^ssl$/i, @server_opts and eval { require IO::Socket::SSL; 1};
+
+    ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g
+      if grep /^ipc$/i, @server_opts;
+
+    $SASL = 1
+      if grep /^sasl$/i, @server_opts and eval { require Authen::SASL; 1 };
+
     push @URL, "ldap://${HOST}:$PORT/";
     push @URL, "ldaps://${HOST}:$SSL_PORT/" if $SSL_PORT;
-    push @URL, "ldapi://$IPC_SOCK/" if $IPC_SOCK;
-    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-h', "@URL",qw(-d 1));
-    $LDAP_VERSION = 3;
+    push @URL, "ldapi://$IPC_SOCK/"         if $IPC_SOCK;
+    @LDAPD  = ($SERVER_EXE, '-f', $CONF, '-h', "@URL", qw(-d 1));
   }
 
-  $LDAP_VERSION ||= 2;
+  $LDAP_VERSION ||= 3;
   mkdir($TEMPDIR,0777);
   die "$TEMPDIR is not a directory" unless -d $TEMPDIR;
 }
@@ -57,7 +61,7 @@ use File::Basename qw(basename);
 my $pid;
 
 sub start_server {
-  my %arg = (version => 2, @_);
+  my %arg = (version => 3, @_);
 
   unless ($LDAP_VERSION >= $arg{version}
 	and $LDAPD[0] and -x $LDAPD[0]
@@ -70,13 +74,15 @@ sub start_server {
 
   if ($CONF_IN and -f $CONF_IN) {
     # Create slapd config file
-    open(CONFI,"<$CONF_IN") or die "$!";
-    open(CONFO,">$CONF") or die "$!";
+    open(CONFI, "<$CONF_IN") or die "$!";
+    open(CONFO, ">$CONF") or die "$!";
     while(<CONFI>) {
       s/\$([A-Z]\w*)/${$1}/g;
-      s/^TLS/#TLS/ unless $SSL_PORT;
-      s/^(sasl.*)/#$1/ unless $SASL;
-      s/^schemacheck.*// unless $SCHEMA_CHECK;
+
+      s/^TLS/#TLS/        unless $SSL_PORT;
+      s/^(sasl.*)/#$1/    unless $SASL;
+      s/^#module/module/  if $SLAPD_MODULE_DIR;
+
       print CONFO;
     }
     close(CONFI);
@@ -84,7 +90,7 @@ sub start_server {
   }
 
   rmtree($TESTDB) if ( -d $TESTDB );
-  mkdir($TESTDB,0777);
+  mkdir($TESTDB, 0777);
   die "$TESTDB is not a directory" unless -d $TESTDB;
 
   warn "@LDAPD" if $ENV{TEST_VERBOSE};
@@ -94,8 +100,8 @@ sub start_server {
   unless ($pid = fork) {
     die "fork: $!" unless defined $pid;
 
-    open(STDERR,">$log");
-    open(STDOUT,">&STDERR");
+    open(STDERR, ">$log");
+    open(STDOUT, ">&STDERR");
     close(STDIN);
 
     exec(@LDAPD) or die "cannot exec @LDAPD";
