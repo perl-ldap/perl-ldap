@@ -442,7 +442,7 @@ sub _write_dn {
   if ($dn =~ /^[ :<]|[\x00-\x1f\x7f-\xff]/) {
     if ($encode =~ /canonical/i) {
       require Net::LDAP::Util;
-      $dn = Net::LDAP::Util::canonical_dn($dn);
+      $dn = Net::LDAP::Util::canonical_dn($dn, mbcescape => 1);
       # Canonicalizer won't fix leading spaces, colons or less-thans, which
       # are special in LDIF, so we fix those up here.
       $dn =~ s/^([ :<])/\\$1/;
