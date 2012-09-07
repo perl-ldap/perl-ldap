@@ -13,7 +13,7 @@ BEGIN {
   # the Makefile is setup to delete temp/ when make clean is run
   $TEMPDIR  = "./temp";
   $SCHEMA_DIR ||= "./data";
-  $SLAPD_DB ||= 'ldbm';
+  $SLAPD_DB ||= 'bdb';
   $SCHEMA_CHECK = 1 unless defined $SCHEMA_CHECK;
 
   $TESTDB   = "$TEMPDIR/test-db";
@@ -29,12 +29,7 @@ BEGIN {
   my @server_opts;
   ($SERVER_TYPE,@server_opts) = split(/\+/, $SERVER_TYPE || 'none');
 
-  if ($SERVER_TYPE eq 'openldap1') {
-    $CONF_IN	  = "./data/slapd-conf.in";
-    @LDAPD	  = ($SERVER_EXE, '-f',$CONF,'-p',$PORT,qw(-d 1));
-    $LDAP_VERSION = 2;
-  }
-  elsif ($SERVER_TYPE eq 'openldap2') {
+  if ($SERVER_TYPE eq 'openldap2') {
     $SSL_PORT = 9010 if grep { $_ eq 'ssl' } @server_opts
       and eval { require IO::Socket::SSL; 1};
     ($IPC_SOCK = "$TEMPDIR/ldapi_sock") =~ s,/,%2f,g if grep { $_ eq 'ipc' } @server_opts;
