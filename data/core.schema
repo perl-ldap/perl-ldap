@@ -1,364 +1,399 @@
-# $OpenLDAP: pkg/ldap/servers/slapd/schema/core.schema,v 1.7.2.12 2001/09/18 18:34:22 kurt Exp $
-#
 # OpenLDAP Core schema
+# $OpenLDAP$
+## This work is part of OpenLDAP Software <http://www.openldap.org/>.
+##
+## Copyright 1998-2012 The OpenLDAP Foundation.
+## All rights reserved.
+##
+## Redistribution and use in source and binary forms, with or without
+## modification, are permitted only as authorized by the OpenLDAP
+## Public License.
+##
+## A copy of this license is available in the file LICENSE in the
+## top-level directory of the distribution or, alternatively, at
+## <http://www.OpenLDAP.org/license.html>.
+#
+## Portions Copyright (C) The Internet Society (1997-2006).
+## All Rights Reserved.
+##
+## This document and translations of it may be copied and furnished to
+## others, and derivative works that comment on or otherwise explain it
+## or assist in its implementation may be prepared, copied, published
+## and distributed, in whole or in part, without restriction of any
+## kind, provided that the above copyright notice and this paragraph are
+## included on all such copies and derivative works.  However, this
+## document itself may not be modified in any way, such as by removing
+## the copyright notice or references to the Internet Society or other
+## Internet organizations, except as needed for the purpose of
+## developing Internet standards in which case the procedures for
+## copyrights defined in the Internet Standards process must be         
+## followed, or as required to translate it into languages other than
+## English.
+##                                                                      
+## The limited permissions granted above are perpetual and will not be  
+## revoked by the Internet Society or its successors or assigns.        
+## 
+## This document and the information contained herein is provided on an 
+## "AS IS" basis and THE INTERNET SOCIETY AND THE INTERNET ENGINEERING
+## TASK FORCE DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+## BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION
+## HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED WARRANTIES OF
+## MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+#
 #
 # Includes LDAPv3 schema items from:
-#	RFC2251-RFC2256 (LDAPv3)
+#	RFC 2252/2256 (LDAPv3)
 #
-# select standard track schema items:
-#	RFC2079 (URI)
-#	RFC1274 (uid/dc)
-#	RFC2247 (dc/dcObject)
-#	RFC2289 (Dynamic Directory Services)
+# Select standard track schema items:
+#	RFC 1274 (uid/dc)
+#	RFC 2079 (URI)
+#	RFC 2247 (dc/dcObject)
+#	RFC 2587 (PKI)
+#	RFC 2589 (Dynamic Directory Services)
+#	RFC 4524 (associatedDomain)
 #
-# select informational schema items:
-#	RFC2377 (uidObject)
+# Select informational schema items:
+#	RFC 2377 (uidObject)
+
 #
-# select IETF ''work in progress'' LDAPext/LDUP items
-#   ldapSubentry
-#	ldapRootDSE
-#	named referrals
-#	alias draft
+# Standard attribute types from RFC 2256
+#
 
-# Standard X.501(93) Operational Attribute Types from RFC2252
+# system schema
+#attributetype ( 2.5.4.0 NAME 'objectClass'
+#	DESC 'RFC2256: object classes of the entity'
+#	EQUALITY objectIdentifierMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
 
-attributetype ( 2.5.18.1 NAME 'createTimestamp'
-	EQUALITY generalizedTimeMatch
-	ORDERING generalizedTimeOrderingMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation )
+# system schema
+#attributetype ( 2.5.4.1 NAME ( 'aliasedObjectName' 'aliasedEntryName' )
+#	DESC 'RFC2256: name of aliased object'
+#	EQUALITY distinguishedNameMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
 
-attributetype ( 2.5.18.2 NAME 'modifyTimestamp'
-	EQUALITY generalizedTimeMatch
-	ORDERING generalizedTimeOrderingMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.24
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation )
-
-attributetype ( 2.5.18.3 NAME 'creatorsName'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation )
-
-attributetype ( 2.5.18.4 NAME 'modifiersName'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE directoryOperation )
-
-attributetype ( 2.5.18.10 NAME 'subschemaSubentry'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 NO-USER-MODIFICATION
-	SINGLE-VALUE USAGE directoryOperation )
-
-attributetype ( 2.5.21.1 NAME 'dITStructureRules'
-	EQUALITY integerFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.17 USAGE directoryOperation )
-
-attributetype ( 2.5.21.2 NAME 'dITContentRules'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.16 USAGE directoryOperation )
-
-attributetype ( 2.5.21.4 NAME 'matchingRules'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.30 USAGE directoryOperation )
-
-attributetype ( 2.5.21.5 NAME 'attributeTypes'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.3 USAGE directoryOperation )
-
-attributetype ( 2.5.21.6 NAME 'objectClasses'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.37 USAGE directoryOperation )
-
-attributetype ( 2.5.21.7 NAME 'nameForms'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.35 USAGE directoryOperation )
-
-attributetype ( 2.5.21.8 NAME 'matchingRuleUse'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.31 USAGE directoryOperation )
-
-# From X.500(93)
-attributetype ( 2.5.21.9 NAME 'structuralObjectClass'
-	DESC 'X.500(93) structural object class'
-	EQUALITY objectIdentifierMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
-	NO-USER-MODIFICATION SINGLE-VALUE USAGE directoryOperation )
-
-# LDAP Operational Attributes from RFC2252
-attributetype ( 1.3.6.1.4.1.1466.101.120.5 NAME 'namingContexts'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.6 NAME 'altServer'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.7 NAME 'supportedExtension'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.13 NAME 'supportedControl'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.14 NAME 'supportedSASLMechanisms'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.15 NAME 'supportedLDAPVersion'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.120.16 NAME 'ldapSyntaxes'
-	EQUALITY objectIdentifierFirstComponentMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.54 USAGE directoryOperation )
-
-# Object Classes from RFC2252
-objectclass ( 2.5.20.1 NAME 'subschema' AUXILIARY
-	DESC 'RFC2252: controlling subschema' 
-	MAY ( dITStructureRules $ nameForms $ ditContentRules $
-		objectClasses $ attributeTypes $ matchingRules $
-		matchingRuleUse ) )
-
-# Standard attribute types used for subtyping from RFC2256
-
-attributetype ( 2.5.4.41 NAME 'name'
-	EQUALITY caseIgnoreMatch
-	SUBSTR caseIgnoreSubstringsMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
-
-attributetype ( 2.5.4.49 NAME 'distinguishedName'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
-
-# Standard attribute types from RFC2256
-
-attributetype ( 2.5.4.0 NAME 'objectClass'
-	EQUALITY objectIdentifierMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
-
-attributetype ( 2.5.4.1 NAME 'aliasedObjectName'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 SINGLE-VALUE )
-
-# obsolete
 attributetype ( 2.5.4.2 NAME 'knowledgeInformation'
+	DESC 'RFC2256: knowledge information'
 	EQUALITY caseIgnoreMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
 
-attributetype ( 2.5.4.3 NAME ( 'cn' 'commonName' ) SUP name )
+# system schema
+#attributetype ( 2.5.4.3 NAME ( 'cn' 'commonName' )
+#	DESC 'RFC2256: common name(s) for which the entity is known by'
+#	SUP name )
 
-attributetype ( 2.5.4.4 NAME ( 'sn' 'surname' ) SUP name )
+attributetype ( 2.5.4.4 NAME ( 'sn' 'surname' )
+	DESC 'RFC2256: last (family) name(s) for which the entity is known by'
+	SUP name )
 
-attributetype ( 2.5.4.5 NAME 'serialNumber' EQUALITY caseIgnoreMatch
+attributetype ( 2.5.4.5 NAME 'serialNumber'
+	DESC 'RFC2256: serial number of the entity'
+	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.44{64} )
 
-# (2-letter code from ISO 3166)
-attributetype ( 2.5.4.6 NAME ( 'c' 'countryName' ) SUP name SINGLE-VALUE )
+# RFC 4519 definition ('countryName' in X.500 and RFC2256)
+attributetype ( 2.5.4.6 NAME ( 'c' 'countryName' )
+	DESC 'RFC4519: two-letter ISO-3166 country code'
+	SUP name
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.11
+	SINGLE-VALUE )
 
-attributetype ( 2.5.4.7 NAME ( 'l' 'localityName' ) SUP name )
+#attributetype ( 2.5.4.6 NAME ( 'c' 'countryName' )
+#	DESC 'RFC2256: ISO-3166 country 2-letter code'
+#	SUP name SINGLE-VALUE )
 
-attributetype ( 2.5.4.8 NAME ( 'st' 'stateOrProvinceName' ) SUP name )
+attributetype ( 2.5.4.7 NAME ( 'l' 'localityName' )
+	DESC 'RFC2256: locality which this object resides in'
+	SUP name )
+
+attributetype ( 2.5.4.8 NAME ( 'st' 'stateOrProvinceName' )
+	DESC 'RFC2256: state or province which this object resides in'
+	SUP name )
 
 attributetype ( 2.5.4.9 NAME ( 'street' 'streetAddress' )
+	DESC 'RFC2256: street address of this object'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{128} )
 
-attributetype ( 2.5.4.10 NAME ( 'o' 'organizationName' ) SUP name )
+attributetype ( 2.5.4.10 NAME ( 'o' 'organizationName' )
+	DESC 'RFC2256: organization this object belongs to'
+	SUP name )
 
-attributetype ( 2.5.4.11 NAME ( 'ou' 'organizationalUnitName' ) SUP name )
+attributetype ( 2.5.4.11 NAME ( 'ou' 'organizationalUnitName' )
+	DESC 'RFC2256: organizational unit this object belongs to'
+	SUP name )
 
-attributetype ( 2.5.4.12 NAME 'title' SUP name )
+attributetype ( 2.5.4.12 NAME 'title'
+	DESC 'RFC2256: title associated with the entity'
+	SUP name )
 
-attributetype ( 2.5.4.13 NAME 'description'
-	EQUALITY caseIgnoreMatch
-	SUBSTR caseIgnoreSubstringsMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
+# system schema
+#attributetype ( 2.5.4.13 NAME 'description'
+#	DESC 'RFC2256: descriptive information'
+#	EQUALITY caseIgnoreMatch
+#	SUBSTR caseIgnoreSubstringsMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{1024} )
 
-# Obsoleted by enhancedSearchGuide
+# Deprecated by enhancedSearchGuide
 attributetype ( 2.5.4.14 NAME 'searchGuide'
+	DESC 'RFC2256: search guide, deprecated by enhancedSearchGuide'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.25 )
 
 attributetype ( 2.5.4.15 NAME 'businessCategory'
+	DESC 'RFC2256: business category'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{128} )
 
 attributetype ( 2.5.4.16 NAME 'postalAddress'
+	DESC 'RFC2256: postal address'
 	EQUALITY caseIgnoreListMatch
 	SUBSTR caseIgnoreListSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )
 
 attributetype ( 2.5.4.17 NAME 'postalCode'
+	DESC 'RFC2256: postal code'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} )
 
 attributetype ( 2.5.4.18 NAME 'postOfficeBox'
+	DESC 'RFC2256: Post Office Box'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{40} )
 
 attributetype ( 2.5.4.19 NAME 'physicalDeliveryOfficeName'
+	DESC 'RFC2256: Physical Delivery Office Name'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{128} )
 
 attributetype ( 2.5.4.20 NAME 'telephoneNumber'
+	DESC 'RFC2256: Telephone Number'
 	EQUALITY telephoneNumberMatch
 	SUBSTR telephoneNumberSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50{32} )
 
 attributetype ( 2.5.4.21 NAME 'telexNumber'
+	DESC 'RFC2256: Telex Number'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.52 )
 
 attributetype ( 2.5.4.22 NAME 'teletexTerminalIdentifier'
+	DESC 'RFC2256: Teletex Terminal Identifier'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.51 )
 
 attributetype ( 2.5.4.23 NAME ( 'facsimileTelephoneNumber' 'fax' )
+	DESC 'RFC2256: Facsimile (Fax) Telephone Number'
+	EQUALITY facsimileNumberMatch
+	SUBSTR facsimileNumberSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.22 )
 
 attributetype ( 2.5.4.24 NAME 'x121Address'
+	DESC 'RFC2256: X.121 Address'
 	EQUALITY numericStringMatch
 	SUBSTR numericStringSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.36{15} )
 
 attributetype ( 2.5.4.25 NAME 'internationaliSDNNumber'
+	DESC 'RFC2256: international ISDN number'
 	EQUALITY numericStringMatch
 	SUBSTR numericStringSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.36{16} )
 
-attributetype ( 2.5.4.26 NAME 'registeredAddress' SUP postalAddress
+attributetype ( 2.5.4.26 NAME 'registeredAddress'
+	DESC 'RFC2256: registered postal address'
+	SUP postalAddress
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )
 
 attributetype ( 2.5.4.27 NAME 'destinationIndicator'
+	DESC 'RFC2256: destination indicator'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.44{128} )
 
 attributetype ( 2.5.4.28 NAME 'preferredDeliveryMethod'
+	DESC 'RFC2256: preferred delivery method'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.14
 	SINGLE-VALUE )
 
 attributetype ( 2.5.4.29 NAME 'presentationAddress'
+	DESC 'RFC2256: presentation address'
 	EQUALITY presentationAddressMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.43
 	SINGLE-VALUE )
 
 attributetype ( 2.5.4.30 NAME 'supportedApplicationContext'
+	DESC 'RFC2256: supported application context'
 	EQUALITY objectIdentifierMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.38 )
 
-attributetype ( 2.5.4.31 NAME 'member' SUP distinguishedName )
+attributetype ( 2.5.4.31 NAME 'member'
+	DESC 'RFC2256: member of a group'
+	SUP distinguishedName )
 
-attributetype ( 2.5.4.32 NAME 'owner' SUP distinguishedName )
+attributetype ( 2.5.4.32 NAME 'owner'
+	DESC 'RFC2256: owner (of the object)'
+	SUP distinguishedName )
 
-attributetype ( 2.5.4.33 NAME 'roleOccupant' SUP distinguishedName )
+attributetype ( 2.5.4.33 NAME 'roleOccupant'
+	DESC 'RFC2256: occupant of role'
+	SUP distinguishedName )
 
-attributetype ( 2.5.4.34 NAME 'seeAlso' SUP distinguishedName )
+# system schema
+#attributetype ( 2.5.4.34 NAME 'seeAlso'
+#	DESC 'RFC2256: DN of related object'
+#	SUP distinguishedName )
 
-attributetype ( 2.5.4.35 NAME 'userPassword'
-	EQUALITY octetStringMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{128} )
+# system schema
+#attributetype ( 2.5.4.35 NAME 'userPassword'
+#	DESC 'RFC2256/2307: password of user'
+#	EQUALITY octetStringMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.40{128} )
 
 # Must be transferred using ;binary
+# with certificateExactMatch rule (per X.509)
 attributetype ( 2.5.4.36 NAME 'userCertificate'
+	DESC 'RFC2256: X.509 user certificate, use ;binary'
+	EQUALITY certificateExactMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.8 )
 
 # Must be transferred using ;binary
+# with certificateExactMatch rule (per X.509)
 attributetype ( 2.5.4.37 NAME 'cACertificate'
+	DESC 'RFC2256: X.509 CA certificate, use ;binary'
+	EQUALITY certificateExactMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.8 )
 
 # Must be transferred using ;binary
 attributetype ( 2.5.4.38 NAME 'authorityRevocationList'
+	DESC 'RFC2256: X.509 authority revocation list, use ;binary'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.9 )
 
 # Must be transferred using ;binary
 attributetype ( 2.5.4.39 NAME 'certificateRevocationList'
+	DESC 'RFC2256: X.509 certificate revocation list, use ;binary'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.9 )
 
 # Must be stored and requested in the binary form
 attributetype ( 2.5.4.40 NAME 'crossCertificatePair'
+	DESC 'RFC2256: X.509 cross certificate pair, use ;binary'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.10 )
 
-# 2.5.4.41 is defined above as it's used for subtyping
+# system schema
 #attributetype ( 2.5.4.41 NAME 'name'
 #	EQUALITY caseIgnoreMatch
 #	SUBSTR caseIgnoreSubstringsMatch
 #	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
 
-attributetype ( 2.5.4.42 NAME ( 'givenName' 'gn' ) SUP name )
+attributetype ( 2.5.4.42 NAME ( 'givenName' 'gn' )
+	DESC 'RFC2256: first name(s) for which the entity is known by'
+	SUP name )
 
-attributetype ( 2.5.4.43 NAME 'initials' SUP name
-	DESC 'The initials attribute type contains the initials of some
-		or all of an individuals names, but not the surname(s).' )
+attributetype ( 2.5.4.43 NAME 'initials'
+	DESC 'RFC2256: initials of some or all of names, but not the surname(s).'
+	SUP name )
 
-attributetype ( 2.5.4.44 NAME 'generationQualifier' 
-	DESC 'e.g. Jr or II.'
+attributetype ( 2.5.4.44 NAME 'generationQualifier'
+	DESC 'RFC2256: name qualifier indicating a generation'
 	SUP name )
 
 attributetype ( 2.5.4.45 NAME 'x500UniqueIdentifier'
+	DESC 'RFC2256: X.500 unique identifier'
 	EQUALITY bitStringMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.6 )
 
 attributetype ( 2.5.4.46 NAME 'dnQualifier'
+	DESC 'RFC2256: DN qualifier'
 	EQUALITY caseIgnoreMatch
 	ORDERING caseIgnoreOrderingMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.44 )
 
 attributetype ( 2.5.4.47 NAME 'enhancedSearchGuide'
+	DESC 'RFC2256: enhanced search guide'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.21 )
 
 attributetype ( 2.5.4.48 NAME 'protocolInformation'
+	DESC 'RFC2256: protocol information'
 	EQUALITY protocolInformationMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.42 )
 
-# 2.5.4.49 is defined above as it's used for subtyping
+# system schema
 #attributetype ( 2.5.4.49 NAME 'distinguishedName'
 #	EQUALITY distinguishedNameMatch
 #	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
 attributetype ( 2.5.4.50 NAME 'uniqueMember'
+	DESC 'RFC2256: unique member of a group'
 	EQUALITY uniqueMemberMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.34 )
 
 attributetype ( 2.5.4.51 NAME 'houseIdentifier'
+	DESC 'RFC2256: house identifier'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{32768} )
 
 # Must be transferred using ;binary
 attributetype ( 2.5.4.52 NAME 'supportedAlgorithms'
+	DESC 'RFC2256: supported algorithms'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.49 )
 
 # Must be transferred using ;binary
 attributetype ( 2.5.4.53 NAME 'deltaRevocationList'
+	DESC 'RFC2256: delta revocation list; use ;binary'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.9 )
 
-attributetype ( 2.5.4.54 NAME 'dmdName' SUP name )
+attributetype ( 2.5.4.54 NAME 'dmdName'
+	DESC 'RFC2256: name of DMD'
+	SUP name )
+
+attributetype ( 2.5.4.65 NAME 'pseudonym'
+	DESC 'X.520(4th): pseudonym for the object'
+	SUP name )
 
 # Standard object classes from RFC2256
 
-objectclass ( 2.5.6.0 NAME 'top' ABSTRACT
-	MUST objectClass )
+# system schema
+#objectclass ( 2.5.6.0 NAME 'top'
+#	DESC 'RFC2256: top of the superclass chain'
+#	ABSTRACT
+#	MUST objectClass )
 
-objectclass ( 2.5.6.1 NAME 'alias' SUP top STRUCTURAL
-	MUST aliasedObjectName )
+# system schema
+#objectclass ( 2.5.6.1 NAME 'alias'
+#	DESC 'RFC2256: an alias'
+#	SUP top STRUCTURAL
+#	MUST aliasedObjectName )
 
-objectclass ( 2.5.6.2 NAME 'country' SUP top STRUCTURAL
+objectclass ( 2.5.6.2 NAME 'country'
+	DESC 'RFC2256: a country'
+	SUP top STRUCTURAL
 	MUST c
 	MAY ( searchGuide $ description ) )
 
-objectclass ( 2.5.6.3 NAME 'locality' SUP top STRUCTURAL
+objectclass ( 2.5.6.3 NAME 'locality'
+	DESC 'RFC2256: a locality'
+	SUP top STRUCTURAL
 	MAY ( street $ seeAlso $ searchGuide $ st $ l $ description ) )
 
-objectclass ( 2.5.6.4 NAME 'organization' SUP top STRUCTURAL
+objectclass ( 2.5.6.4 NAME 'organization'
+	DESC 'RFC2256: an organization'
+	SUP top STRUCTURAL
 	MUST o
 	MAY ( userPassword $ searchGuide $ seeAlso $ businessCategory $
 		x121Address $ registeredAddress $ destinationIndicator $
 		preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $
-		telephoneNumber $ internationaliSDNNumber $
+		telephoneNumber $ internationaliSDNNumber $ 
 		facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $
 		postalAddress $ physicalDeliveryOfficeName $ st $ l $ description ) )
 
-objectclass ( 2.5.6.5 NAME 'organizationalUnit' SUP top STRUCTURAL
+objectclass ( 2.5.6.5 NAME 'organizationalUnit'
+	DESC 'RFC2256: an organizational unit'
+	SUP top STRUCTURAL
 	MUST ou
 	MAY ( userPassword $ searchGuide $ seeAlso $ businessCategory $
 		x121Address $ registeredAddress $ destinationIndicator $
@@ -367,18 +402,24 @@ objectclass ( 2.5.6.5 NAME 'organizationalUnit' SUP top STRUCTURAL
 		facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $
 		postalAddress $ physicalDeliveryOfficeName $ st $ l $ description ) )
 
-objectclass ( 2.5.6.6 NAME 'person' SUP top STRUCTURAL
+objectclass ( 2.5.6.6 NAME 'person'
+	DESC 'RFC2256: a person'
+	SUP top STRUCTURAL
 	MUST ( sn $ cn )
 	MAY ( userPassword $ telephoneNumber $ seeAlso $ description ) )
 
-objectclass ( 2.5.6.7 NAME 'organizationalPerson' SUP person STRUCTURAL
+objectclass ( 2.5.6.7 NAME 'organizationalPerson'
+	DESC 'RFC2256: an organizational person'
+	SUP person STRUCTURAL
 	MAY ( title $ x121Address $ registeredAddress $ destinationIndicator $
 		preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $
-		telephoneNumber $ internationaliSDNNumber $
+		telephoneNumber $ internationaliSDNNumber $ 
 		facsimileTelephoneNumber $ street $ postOfficeBox $ postalCode $
 		postalAddress $ physicalDeliveryOfficeName $ ou $ st $ l ) )
 
-objectclass ( 2.5.6.8 NAME 'organizationalRole' SUP top STRUCTURAL
+objectclass ( 2.5.6.8 NAME 'organizationalRole'
+	DESC 'RFC2256: an organizational role'
+	SUP top STRUCTURAL
 	MUST cn
 	MAY ( x121Address $ registeredAddress $ destinationIndicator $
 		preferredDeliveryMethod $ telexNumber $ teletexTerminalIdentifier $
@@ -387,11 +428,15 @@ objectclass ( 2.5.6.8 NAME 'organizationalRole' SUP top STRUCTURAL
 		postOfficeBox $ postalCode $ postalAddress $
 		physicalDeliveryOfficeName $ ou $ st $ l $ description ) )
 
-objectclass ( 2.5.6.9 NAME 'groupOfNames' SUP top STRUCTURAL
+objectclass ( 2.5.6.9 NAME 'groupOfNames'
+	DESC 'RFC2256: a group of names (DNs)'
+	SUP top STRUCTURAL
 	MUST ( member $ cn )
 	MAY ( businessCategory $ seeAlso $ owner $ ou $ o $ description ) )
 
-objectclass ( 2.5.6.10 NAME 'residentialPerson' SUP person STRUCTURAL
+objectclass ( 2.5.6.10 NAME 'residentialPerson'
+	DESC 'RFC2256: an residential person'
+	SUP person STRUCTURAL
 	MUST l
 	MAY ( businessCategory $ x121Address $ registeredAddress $
 		destinationIndicator $ preferredDeliveryMethod $ telexNumber $
@@ -400,46 +445,64 @@ objectclass ( 2.5.6.10 NAME 'residentialPerson' SUP person STRUCTURAL
 		postOfficeBox $ postalCode $ postalAddress $
 		physicalDeliveryOfficeName $ st $ l ) )
 
-objectclass ( 2.5.6.11 NAME 'applicationProcess' SUP top STRUCTURAL
+objectclass ( 2.5.6.11 NAME 'applicationProcess'
+	DESC 'RFC2256: an application process'
+	SUP top STRUCTURAL
 	MUST cn
 	MAY ( seeAlso $ ou $ l $ description ) )
 
-objectclass ( 2.5.6.12 NAME 'applicationEntity' SUP top STRUCTURAL
+objectclass ( 2.5.6.12 NAME 'applicationEntity'
+	DESC 'RFC2256: an application entity'
+	SUP top STRUCTURAL
 	MUST ( presentationAddress $ cn )
 	MAY ( supportedApplicationContext $ seeAlso $ ou $ o $ l $
 	description ) )
 
-objectclass ( 2.5.6.13 NAME 'dSA' SUP applicationEntity STRUCTURAL
+objectclass ( 2.5.6.13 NAME 'dSA'
+	DESC 'RFC2256: a directory system agent (a server)'
+	SUP applicationEntity STRUCTURAL
 	MAY knowledgeInformation )
 
-objectclass ( 2.5.6.14 NAME 'device' SUP top STRUCTURAL
+objectclass ( 2.5.6.14 NAME 'device'
+	DESC 'RFC2256: a device'
+	SUP top STRUCTURAL
 	MUST cn
 	MAY ( serialNumber $ seeAlso $ owner $ ou $ o $ l $ description ) )
 
-objectclass ( 2.5.6.15 NAME 'strongAuthenticationUser' SUP top AUXILIARY
+objectclass ( 2.5.6.15 NAME 'strongAuthenticationUser'
+	DESC 'RFC2256: a strong authentication user'
+	SUP top AUXILIARY
 	MUST userCertificate )
 
-objectclass ( 2.5.6.16 NAME 'certificationAuthority' SUP top AUXILIARY
+objectclass ( 2.5.6.16 NAME 'certificationAuthority'
+	DESC 'RFC2256: a certificate authority'
+	SUP top AUXILIARY
 	MUST ( authorityRevocationList $ certificateRevocationList $
 		cACertificate ) MAY crossCertificatePair )
 
-objectclass ( 2.5.6.17 NAME 'groupOfUniqueNames' SUP top STRUCTURAL
+objectclass ( 2.5.6.17 NAME 'groupOfUniqueNames'
+	DESC 'RFC2256: a group of unique names (DN and Unique Identifier)'
+	SUP top STRUCTURAL
 	MUST ( uniqueMember $ cn )
 	MAY ( businessCategory $ seeAlso $ owner $ ou $ o $ description ) )
 
-objectclass ( 2.5.6.18 NAME 'userSecurityInformation' SUP top AUXILIARY
+objectclass ( 2.5.6.18 NAME 'userSecurityInformation'
+	DESC 'RFC2256: a user security information'
+	SUP top AUXILIARY
 	MAY ( supportedAlgorithms ) )
 
-objectclass ( 2.5.6.16.2 NAME 'certificationAuthority-V2' SUP
-	certificationAuthority
+objectclass ( 2.5.6.16.2 NAME 'certificationAuthority-V2'
+	SUP certificationAuthority
 	AUXILIARY MAY ( deltaRevocationList ) )
 
-objectclass ( 2.5.6.19 NAME 'cRLDistributionPoint' SUP top STRUCTURAL
+objectclass ( 2.5.6.19 NAME 'cRLDistributionPoint'
+	SUP top STRUCTURAL
 	MUST ( cn )
 	MAY ( certificateRevocationList $ authorityRevocationList $
 		deltaRevocationList ) )
 
-objectclass ( 2.5.6.20 NAME 'dmd' SUP top STRUCTURAL
+objectclass ( 2.5.6.20 NAME 'dmd'
+	SUP top STRUCTURAL
 	MUST ( dmdName )
 	MAY ( userPassword $ searchGuide $ seeAlso $ businessCategory $
 		x121Address $ registeredAddress $ destinationIndicator $
@@ -448,49 +511,47 @@ objectclass ( 2.5.6.20 NAME 'dmd' SUP top STRUCTURAL
 		street $ postOfficeBox $ postalCode $ postalAddress $
 		physicalDeliveryOfficeName $ st $ l $ description ) )
 
-objectclass ( 1.3.6.1.4.1.1466.101.120.111 NAME 'extensibleObject'
-	DESC 'RFC2252: extensible object'
-	SUP top AUXILIARY )
+#
+# Object Classes from RFC 2587
+#
+objectclass ( 2.5.6.21 NAME 'pkiUser'
+	DESC 'RFC2587: a PKI user'
+	SUP top AUXILIARY
+	MAY userCertificate )
+
+objectclass ( 2.5.6.22 NAME 'pkiCA'
+	DESC 'RFC2587: PKI certificate authority'
+	SUP top AUXILIARY
+	MAY ( authorityRevocationList $ certificateRevocationList $
+		cACertificate $ crossCertificatePair ) )
+
+objectclass ( 2.5.6.23 NAME 'deltaCRL'
+	DESC 'RFC2587: PKI user'
+	SUP top AUXILIARY
+	MAY deltaRevocationList )
 
 #
-# Standard Track URI label schema from RFC2079
-#
-attributetype ( 1.3.6.1.4.1.250.1.57 NAME 'labeledURI'
-	DESC 'RFC2079: Uniform Resource Identifier with optional label'
-	EQUALITY caseExactMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
+# Standard Track URI label schema from RFC 2079
+# system schema
+#attributetype ( 1.3.6.1.4.1.250.1.57 NAME 'labeledURI'
+#	DESC 'RFC2079: Uniform Resource Identifier with optional label'
+#	EQUALITY caseExactMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
 
 objectclass ( 1.3.6.1.4.1.250.3.15 NAME 'labeledURIObject'
 	DESC 'RFC2079: object that contains the URI attribute type'
-	MAY ( labeledURI )
-	SUP top AUXILIARY )
+	SUP top AUXILIARY
+	MAY ( labeledURI ) )
 
 #
-# Standard Track Dynamic Directory Services from RFC2589
+# Derived from RFC 1274, but with new "short names"
 #
-objectclass ( 1.3.6.1.4.1.1466.101.119.2 NAME 'dynamicObject'
-	DESC 'RFC2589: Dynamic Object'
-	SUP top AUXILIARY )
-
-attributetype ( 1.3.6.1.4.1.1466.101.119.3 NAME 'entryTtl'
-	DESC 'RFC2589: entry time-to-live'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE
-	NO-USER-MODIFICATION USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.1466.101.119.4 NAME 'dynamicSubtrees'
-	DESC 'RFC2589: dynamic subtrees'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 NO-USER-MODIFICATION
-	USAGE dSAOperation )
-
-#
-# Derived from RFC1274, but with new "short names"
-#
-attributetype ( 0.9.2342.19200300.100.1.1
-	NAME ( 'uid' 'userid' )
-	DESC 'RFC1274: user identifier'
-	EQUALITY caseIgnoreMatch
-	SUBSTR caseIgnoreSubstringsMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
+#attributetype ( 0.9.2342.19200300.100.1.1
+#	NAME ( 'uid' 'userid' )
+#	DESC 'RFC1274: user identifier'
+#	EQUALITY caseIgnoreMatch
+#	SUBSTR caseIgnoreSubstringsMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
 
 attributetype ( 0.9.2342.19200300.100.1.3
 	NAME ( 'mail' 'rfc822Mailbox' )
@@ -504,7 +565,7 @@ objectclass ( 0.9.2342.19200300.100.4.19 NAME 'simpleSecurityObject'
 	SUP top AUXILIARY
 	MUST userPassword )
 
-# RFC1274 + RFC2247
+# RFC 1274 + RFC 2247
 attributetype ( 0.9.2342.19200300.100.1.25
 	NAME ( 'dc' 'domainComponent' )
 	DESC 'RFC1274/2247: domain component'
@@ -512,92 +573,40 @@ attributetype ( 0.9.2342.19200300.100.1.25
 	SUBSTR caseIgnoreIA5SubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 SINGLE-VALUE )
 
-# RFC2247
+# RFC 2247
 objectclass ( 1.3.6.1.4.1.1466.344 NAME 'dcObject'
 	DESC 'RFC2247: domain component object'
 	SUP top AUXILIARY MUST dc )
 
-
-# From RFC2377
+# RFC 2377
 objectclass ( 1.3.6.1.1.3.1 NAME 'uidObject'
 	DESC 'RFC2377: uid object'
 	SUP top AUXILIARY MUST uid )
 
+# RFC 4524
+#   The 'associatedDomain' attribute specifies DNS [RFC1034][RFC2181]
+#   host names [RFC1123] that are associated with an object.   That is,
+#   values of this attribute should conform to the following ABNF:
 #
-# From draft-zeilenga-ldap-nameref-00.txt
-#	used to represent referrals in the directory
-#
-attributetype ( 2.16.840.1.113730.3.1.34 NAME 'ref'
-	DESC 'Named referral'
-	EQUALITY caseExactMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15
-	USAGE distributedOperation )
-
-objectclass ( 2.16.840.1.113730.3.2.6 NAME 'referral'
-	DESC 'Named referral object'
-	SUP top STRUCTURAL MUST ref )
-
-#
-# LDAPsubEntry
-#	likely to change!
-objectclass ( 2.16.840.1.113719.2.142.6.1.1 NAME 'LDAPsubEntry'
-	DESC 'LDAP Subentry'
-	SUP top STRUCTURAL MAY cn )
-
-#
-# OpenLDAProotDSE
-#	likely to change!
-objectclass ( 1.3.6.1.4.1.4203.1.4.1
-	NAME ( 'OpenLDAProotDSE' 'LDAProotDSE' )
-	DESC 'OpenLDAP Root DSE object'
-	SUP top STRUCTURAL MAY cn )
-
-#
-# From Cosine Pilot
-#
-attributetype ( 0.9.2342.19200300.100.1.37 NAME 'associatedDomain'
+#    domain = root / label *( DOT label )
+#    root   = SPACE
+#    label  = LETDIG [ *61( LETDIG / HYPHEN ) LETDIG ]
+#    LETDIG = %x30-39 / %x41-5A / %x61-7A ; "0" - "9" / "A"-"Z" / "a"-"z"
+#    SPACE  = %x20                        ; space (" ")
+#    HYPHEN = %x2D                        ; hyphen ("-")
+#    DOT    = %x2E                        ; period (".")
+attributetype ( 0.9.2342.19200300.100.1.37
+	NAME 'associatedDomain'
+	DESC 'RFC1274: domain associated with object'
 	EQUALITY caseIgnoreIA5Match
 	SUBSTR caseIgnoreIA5SubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
 
-#
-# From U-Mich
-#
-attributetype ( 1.3.6.1.4.1.250.1.32
-	NAME ( 'krbName' 'kerberosName' )
-	DESC 'Kerberos Name'
+# RFC 2459 -- deprecated in favor of 'mail' (in cosine.schema)
+attributetype ( 1.2.840.113549.1.9.1
+	NAME ( 'email' 'emailAddress' 'pkcs9email' )
+	DESC 'RFC3280: legacy attribute for email addresses in DNs'
 	EQUALITY caseIgnoreIA5Match
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26
-	SINGLE-VALUE )
+	SUBSTR caseIgnoreIA5SubstringsMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{128} )
 
-#
-# draft-zeilenga-ldap-features-xx.txt (supportedFeatures)
-#
-attributetype ( 1.3.6.1.4.1.4203.1.3.5
-      NAME 'supportedFeatures'
-      DESC 'features supported by the server'
-      EQUALITY objectIdentifierMatch
-      SYNTAX 1.3.6.1.4.1.1466.115.121.1.38
-      USAGE dSAOperation )
-
-#
-# OpenLDAP specific schema items
-#
-attributetype ( 1.3.6.1.4.1.4203.1.3.1
-	NAME 'entry'
-	DESC 'OpenLDAP ACL entry pseudo-attribute'
-	SYNTAX 1.3.6.1.4.1.4203.1.1.1
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.4203.1.3.2
-	NAME 'children'
-	DESC 'OpenLDAP ACL children pseudo-attribute'
-	SYNTAX 1.3.6.1.4.1.4203.1.1.1
-	SINGLE-VALUE NO-USER-MODIFICATION USAGE dSAOperation )
-
-attributetype ( 1.3.6.1.4.1.4203.666.1.5
-	NAME 'OpenLDAPaci'
-	DESC 'OpenLDAP access control information'
-	EQUALITY OpenLDAPaciMatch
-	SYNTAX 1.3.6.1.4.1.4203.666.2.1
-	USAGE directoryOperation )

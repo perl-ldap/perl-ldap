@@ -1,4 +1,17 @@
-# $OpenLDAP: pkg/ldap/servers/slapd/schema/cosine.schema,v 1.6.2.4 2000/09/28 17:35:12 kurt Exp $
+# RFC1274: Cosine and Internet X.500 schema
+# $OpenLDAP$
+## This work is part of OpenLDAP Software <http://www.openldap.org/>.
+##
+## Copyright 1998-2012 The OpenLDAP Foundation.
+## All rights reserved.
+##
+## Redistribution and use in source and binary forms, with or without
+## modification, are permitted only as authorized by the OpenLDAP
+## Public License.
+##
+## A copy of this license is available in the file LICENSE in the
+## top-level directory of the distribution or, alternatively, at
+## <http://www.OpenLDAP.org/license.html>.
 #
 # RFC1274: Cosine and Internet X.500 schema
 #
@@ -10,7 +23,7 @@
 #
 # Note: It seems that the pilot schema evolved beyond what was
 # described in RFC1274.  However, this document attempts to describes
-# RFC1274 as published. 
+# RFC1274 as published.
 #
 # Depends on core.schema
 
@@ -149,6 +162,7 @@ attributetype ( 0.9.2342.19200300.100.1.2 NAME 'textEncodedORAddress'
 #    ::= {pilotAttributeType 4}
 #
 attributetype ( 0.9.2342.19200300.100.1.4 NAME 'info'
+	DESC 'RFC1274: general information'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{2048} )
@@ -167,6 +181,7 @@ attributetype ( 0.9.2342.19200300.100.1.4 NAME 'info'
 #
 attributetype ( 0.9.2342.19200300.100.1.5
 	NAME ( 'drink' 'favouriteDrink' )
+	DESC 'RFC1274: favorite drink'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -184,6 +199,7 @@ attributetype ( 0.9.2342.19200300.100.1.5
 #    ::= {pilotAttributeType 6}
 #
 attributetype ( 0.9.2342.19200300.100.1.6 NAME 'roomNumber'
+	DESC 'RFC1274: room number'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -207,6 +223,7 @@ attributetype ( 0.9.2342.19200300.100.1.6 NAME 'roomNumber'
 #    ::= {pilotAttributeType 7}
 #
 attributetype ( 0.9.2342.19200300.100.1.7 NAME 'photo'
+	DESC 'RFC1274: photo (G3 fax)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.23{25000} )
 
 # 9.3.8.  User Class
@@ -225,6 +242,7 @@ attributetype ( 0.9.2342.19200300.100.1.7 NAME 'photo'
 #    ::= {pilotAttributeType 8}
 #
 attributetype ( 0.9.2342.19200300.100.1.8 NAME 'userClass'
+	DESC 'RFC1274: category of user'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -240,6 +258,7 @@ attributetype ( 0.9.2342.19200300.100.1.8 NAME 'userClass'
 #    ::= {pilotAttributeType 9}
 #
 attributetype ( 0.9.2342.19200300.100.1.9 NAME 'host'
+	DESC 'RFC1274: host computer'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -255,6 +274,7 @@ attributetype ( 0.9.2342.19200300.100.1.9 NAME 'host'
 #    ::= {pilotAttributeType 10}
 #
 attributetype ( 0.9.2342.19200300.100.1.10 NAME 'manager'
+	DESC 'RFC1274: DN of manager'
 	EQUALITY distinguishedNameMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
@@ -270,6 +290,7 @@ attributetype ( 0.9.2342.19200300.100.1.10 NAME 'manager'
 #    ::= {pilotAttributeType 11}
 #
 attributetype ( 0.9.2342.19200300.100.1.11 NAME 'documentIdentifier'
+	DESC 'RFC1274: unique identifier of document'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -285,6 +306,7 @@ attributetype ( 0.9.2342.19200300.100.1.11 NAME 'documentIdentifier'
 #    ::= {pilotAttributeType 12}
 #
 attributetype ( 0.9.2342.19200300.100.1.12 NAME 'documentTitle'
+	DESC 'RFC1274: title of document'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -301,6 +323,7 @@ attributetype ( 0.9.2342.19200300.100.1.12 NAME 'documentTitle'
 #    ::= {pilotAttributeType 13}
 #
 attributetype ( 0.9.2342.19200300.100.1.13 NAME 'documentVersion'
+	DESC 'RFC1274: version of document'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -316,6 +339,7 @@ attributetype ( 0.9.2342.19200300.100.1.13 NAME 'documentVersion'
 #    ::= {pilotAttributeType 14}
 #
 attributetype ( 0.9.2342.19200300.100.1.14 NAME 'documentAuthor'
+	DESC 'RFC1274: DN of author of document'
 	EQUALITY distinguishedNameMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
@@ -331,6 +355,7 @@ attributetype ( 0.9.2342.19200300.100.1.14 NAME 'documentAuthor'
 #    ::= {pilotAttributeType 15}
 #
 attributetype ( 0.9.2342.19200300.100.1.15 NAME 'documentLocation'
+	DESC 'RFC1274: location of document original'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -349,6 +374,7 @@ attributetype ( 0.9.2342.19200300.100.1.15 NAME 'documentLocation'
 #
 attributetype ( 0.9.2342.19200300.100.1.20
 	NAME ( 'homePhone' 'homeTelephoneNumber' )
+	DESC 'RFC1274: home telephone number'
 	EQUALITY telephoneNumberMatch
 	SUBSTR telephoneNumberSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
@@ -364,6 +390,7 @@ attributetype ( 0.9.2342.19200300.100.1.20
 #    ::= {pilotAttributeType 21}
 #
 attributetype ( 0.9.2342.19200300.100.1.21 NAME 'secretary'
+	DESC 'RFC1274: DN of secretary'
 	EQUALITY distinguishedNameMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
@@ -394,9 +421,12 @@ attributetype ( 0.9.2342.19200300.100.1.22 NAME 'otherMailbox'
 #            uTCTimeSyntax
 #    ::= {pilotAttributeType 23}
 #
-## OBSOLETE
-attributetype ( 0.9.2342.19200300.100.1.23 NAME 'lastModifiedTime'
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.53 )
+## Deprecated in favor of modifyTimeStamp
+#attributetype ( 0.9.2342.19200300.100.1.23 NAME 'lastModifiedTime'
+#	DESC 'RFC1274: time of last modify, replaced by modifyTimestamp'
+#	OBSOLETE
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.53
+#	USAGE directoryOperation )
 
 # 9.3.20.  Last Modified By
 #
@@ -409,11 +439,13 @@ attributetype ( 0.9.2342.19200300.100.1.23 NAME 'lastModifiedTime'
 #            distinguishedNameSyntax
 #    ::= {pilotAttributeType 24}
 #
-
-## OBSOLETE
-attributetype ( 0.9.2342.19200300.100.1.24 NAME 'lastModifiedBy'
-	EQUALITY distinguishedNameMatch
-	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+## Deprecated in favor of modifiersName
+#attributetype ( 0.9.2342.19200300.100.1.24 NAME 'lastModifiedBy'
+#	DESC 'RFC1274: last modifier, replaced by modifiersName'
+#	OBSOLETE
+#	EQUALITY distinguishedNameMatch
+#	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12
+#	USAGE directoryOperation )
 
 # 9.3.21.  Domain Component
 #
@@ -544,6 +576,7 @@ attributetype ( 0.9.2342.19200300.100.1.31 NAME 'cNAMERecord'
 #    ::= {pilotAttributeType 38}
 #
 attributetype ( 0.9.2342.19200300.100.1.38 NAME 'associatedName'
+	DESC 'RFC1274: DN of entry associated with domain'
 	EQUALITY distinguishedNameMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
@@ -560,6 +593,7 @@ attributetype ( 0.9.2342.19200300.100.1.38 NAME 'associatedName'
 #    ::= {pilotAttributeType 39}
 #
 attributetype ( 0.9.2342.19200300.100.1.39 NAME 'homePostalAddress'
+	DESC 'RFC1274: home postal address'
 	EQUALITY caseIgnoreListMatch
 	SUBSTR caseIgnoreListSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.41 )
@@ -576,6 +610,7 @@ attributetype ( 0.9.2342.19200300.100.1.39 NAME 'homePostalAddress'
 #    ::= {pilotAttributeType 40}
 #
 attributetype ( 0.9.2342.19200300.100.1.40 NAME 'personalTitle'
+	DESC 'RFC1274: personal title'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -594,6 +629,7 @@ attributetype ( 0.9.2342.19200300.100.1.40 NAME 'personalTitle'
 #
 attributetype ( 0.9.2342.19200300.100.1.41
 	NAME ( 'mobile' 'mobileTelephoneNumber' )
+	DESC 'RFC1274: mobile telephone number'
 	EQUALITY telephoneNumberMatch
 	SUBSTR telephoneNumberSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
@@ -611,6 +647,7 @@ attributetype ( 0.9.2342.19200300.100.1.41
 #
 attributetype ( 0.9.2342.19200300.100.1.42
 	NAME ( 'pager' 'pagerTelephoneNumber' )
+	DESC 'RFC1274: pager telephone number'
 	EQUALITY telephoneNumberMatch
 	SUBSTR telephoneNumberSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.50 )
@@ -628,6 +665,7 @@ attributetype ( 0.9.2342.19200300.100.1.42
 #
 attributetype ( 0.9.2342.19200300.100.1.43
 	NAME ( 'co' 'friendlyCountryName' )
+	DESC 'RFC1274: friendly country name'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
@@ -648,6 +686,7 @@ attributetype ( 0.9.2342.19200300.100.1.43
 #    ::= {pilotAttributeType 44}
 #
 attributetype ( 0.9.2342.19200300.100.1.44 NAME 'uniqueIdentifier'
+	DESC 'RFC1274: unique identifer'
 	EQUALITY caseIgnoreMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
 
@@ -668,6 +707,7 @@ attributetype ( 0.9.2342.19200300.100.1.44 NAME 'uniqueIdentifier'
 #    ::= {pilotAttributeType 45}
 #
 attributetype ( 0.9.2342.19200300.100.1.45 NAME 'organizationalStatus'
+	DESC 'RFC1274: organizational status'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -688,6 +728,7 @@ attributetype ( 0.9.2342.19200300.100.1.45 NAME 'organizationalStatus'
 #    ::= {pilotAttributeType 46}
 #
 attributetype ( 0.9.2342.19200300.100.1.46 NAME 'janetMailbox'
+	DESC 'RFC1274: Janet mailbox'
 	EQUALITY caseIgnoreIA5Match
 	SUBSTR caseIgnoreIA5SubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.26{256} )
@@ -719,6 +760,7 @@ attributetype ( 0.9.2342.19200300.100.1.46 NAME 'janetMailbox'
 #
 attributetype ( 0.9.2342.19200300.100.1.47
 	NAME 'mailPreferenceOption'
+	DESC 'RFC1274: mail preference option'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 )
 
 # 9.3.38.  Building Name
@@ -733,6 +775,7 @@ attributetype ( 0.9.2342.19200300.100.1.47
 #    ::= {pilotAttributeType 48}
 #
 attributetype ( 0.9.2342.19200300.100.1.48 NAME 'buildingName'
+	DESC 'RFC1274: name of building'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15{256} )
@@ -749,6 +792,7 @@ attributetype ( 0.9.2342.19200300.100.1.48 NAME 'buildingName'
 #    ::= {pilotAttributeType 49}
 #
 attributetype ( 0.9.2342.19200300.100.1.49 NAME 'dSAQuality'
+	DESC 'RFC1274: DSA Quality'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.19 SINGLE-VALUE )
 
 # 9.3.40.  Single Level Quality
@@ -763,6 +807,7 @@ attributetype ( 0.9.2342.19200300.100.1.49 NAME 'dSAQuality'
 #    ::= {pilotAttributeType 50}
 #
 attributetype ( 0.9.2342.19200300.100.1.50 NAME 'singleLevelQuality'
+	DESC 'RFC1274: Single Level Quality'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.13 SINGLE-VALUE )
 
 # 9.3.41.  Subtree Minimum Quality
@@ -778,6 +823,7 @@ attributetype ( 0.9.2342.19200300.100.1.50 NAME 'singleLevelQuality'
 #    ::= {pilotAttributeType 51}
 #
 attributetype ( 0.9.2342.19200300.100.1.51 NAME 'subtreeMinimumQuality'
+	DESC 'RFC1274: Subtree Mininum Quality'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.13 SINGLE-VALUE )
 
 # 9.3.42.  Subtree Maximum Quality
@@ -793,6 +839,7 @@ attributetype ( 0.9.2342.19200300.100.1.51 NAME 'subtreeMinimumQuality'
 #    ::= {pilotAttributeType 52}
 #
 attributetype ( 0.9.2342.19200300.100.1.52 NAME 'subtreeMaximumQuality'
+	DESC 'RFC1274: Subtree Maximun Quality'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.13 SINGLE-VALUE )
 
 # 9.3.43.  Personal Signature
@@ -814,6 +861,7 @@ attributetype ( 0.9.2342.19200300.100.1.52 NAME 'subtreeMaximumQuality'
 #    ::= {pilotAttributeType 53}
 #
 attributetype ( 0.9.2342.19200300.100.1.53 NAME 'personalSignature'
+	DESC 'RFC1274: Personal Signature (G3 fax)'
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.23 )
 
 # 9.3.44.  DIT Redirect
@@ -831,8 +879,9 @@ attributetype ( 0.9.2342.19200300.100.1.53 NAME 'personalSignature'
 #    ::= {pilotAttributeType 54}
 #
 attributetype ( 0.9.2342.19200300.100.1.54 NAME 'dITRedirect'
-	 EQUALITY distinguishedNameMatch
-	 SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
+	DESC 'RFC1274: DIT Redirect'
+	EQUALITY distinguishedNameMatch
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.12 )
 
 # 9.3.45.  Audio
 #
@@ -847,7 +896,8 @@ attributetype ( 0.9.2342.19200300.100.1.54 NAME 'dITRedirect'
 #    ::= {pilotAttributeType 55}
 #
 attributetype ( 0.9.2342.19200300.100.1.55 NAME 'audio'
-	 SYNTAX 1.3.6.1.4.1.1466.115.121.1.4{25000} )
+	DESC 'RFC1274: audio (u-law)'
+	SYNTAX 1.3.6.1.4.1.1466.115.121.1.4{25000} )
 
 # 9.3.46.  Publisher of Document
 #
@@ -860,6 +910,7 @@ attributetype ( 0.9.2342.19200300.100.1.55 NAME 'audio'
 #    ::= {pilotAttributeType 56}
 #
 attributetype ( 0.9.2342.19200300.100.1.56 NAME 'documentPublisher'
+	DESC 'RFC1274: publisher of document'
 	EQUALITY caseIgnoreMatch
 	SUBSTR caseIgnoreSubstringsMatch
 	SYNTAX 1.3.6.1.4.1.1466.115.121.1.15 )
@@ -983,11 +1034,12 @@ attributetype ( 0.9.2342.19200300.100.1.56 NAME 'documentPublisher'
 #            audio}
 #    ::= {pilotObjectClass 3}
 #
-objectclass ( 0.9.2342.19200300.100.4.3 NAME 'pilotObject'
-	SUP top AUXILIARY
-	MAY ( info $ photo $ manager $ uniqueIdentifier $
-		lastModifiedTime $ lastModifiedBy $ dITRedirect $ audio )
-	)
+#objectclass ( 0.9.2342.19200300.100.4.3 NAME 'pilotObject'
+#	DESC 'RFC1274: pilot object'
+#	SUP top AUXILIARY
+#	MAY ( info $ photo $ manager $ uniqueIdentifier $
+#		lastModifiedTime $ lastModifiedBy $ dITRedirect $ audio )
+#	)
 
 # 8.3.2.  Pilot Person
 #
@@ -1155,20 +1207,18 @@ objectclass ( 0.9.2342.19200300.100.4.9 NAME 'documentSeries'
 #            organizationalAttributeSet}
 #    ::= {pilotObjectClass 13}
 #
-## from RFC 2247, we presume that organizationalAttributeSet
-## should be expanded as below.
 objectclass ( 0.9.2342.19200300.100.4.13 NAME 'domain'
 	SUP top STRUCTURAL
 	MUST domainComponent
-	MAY ( userPassword $ searchGuide $ seeAlso $
-		businessCategory $ x121Address $ registeredAddress $
-		destinationIndicator $ preferredDeliveryMethod $
-		telexNumber $ teletexTerminalIdentifier $  
-		telephoneNumber $ internationaliSDNNumber $
-		facsimileTelephoneNumber $ street $ postOfficeBox $
-		postalCode $ postalAddress $
-		physicalDeliveryOfficeName $
-		stateOrProvinceName $ localityName $ description )
+	MAY ( associatedName $ organizationName $ description $
+		businessCategory $ seeAlso $ searchGuide $ userPassword $
+		localityName $ stateOrProvinceName $ streetAddress $
+		physicalDeliveryOfficeName $ postalAddress $ postalCode $
+		postOfficeBox $ streetAddress $
+		facsimileTelephoneNumber $ internationalISDNNumber $
+		telephoneNumber $ teletexTerminalIdentifier $ telexNumber $
+		preferredDeliveryMethod $ destinationIndicator $
+		registeredAddress $ x121Address )
 	)
 
 # 8.3.8.  RFC822 Local Part
@@ -1190,11 +1240,15 @@ objectclass ( 0.9.2342.19200300.100.4.13 NAME 'domain'
 #            telecommunicationAttributeSet}
 #    ::= {pilotObjectClass 14}
 #
-## not sure what to expand postalAttributeSet and
-## telecommunitionAttributeSet to, so they are trimmed
 objectclass ( 0.9.2342.19200300.100.4.14 NAME 'RFC822localPart'
 	SUP domain STRUCTURAL
-	MAY ( commonName $ surname $ description $ seeAlso $ telephonenumber )
+	MAY ( commonName $ surname $ description $ seeAlso $ telephoneNumber $
+		physicalDeliveryOfficeName $ postalAddress $ postalCode $
+		postOfficeBox $ streetAddress $
+		facsimileTelephoneNumber $ internationalISDNNumber $
+		telephoneNumber $ teletexTerminalIdentifier $
+		telexNumber $ preferredDeliveryMethod $ destinationIndicator $
+		registeredAddress $ x121Address )
 	)
 
 # 8.3.9.  DNS Domain
@@ -1215,8 +1269,8 @@ objectclass ( 0.9.2342.19200300.100.4.14 NAME 'RFC822localPart'
 #    ::= {pilotObjectClass 15}
 #
 objectclass ( 0.9.2342.19200300.100.4.15 NAME 'dNSDomain'
-	SUP 'domain' STRUCTURAL
-	MAY ( ARecord $ MDRecord $ MXRecord $ NSRecord $ 
+	SUP domain STRUCTURAL
+	MAY ( ARecord $ MDRecord $ MXRecord $ NSRecord $
 		SOARecord $ CNAMERecord )
 	)
 
@@ -1234,6 +1288,7 @@ objectclass ( 0.9.2342.19200300.100.4.15 NAME 'dNSDomain'
 #    ::= {pilotObjectClass 17}
 #
 objectclass ( 0.9.2342.19200300.100.4.17 NAME 'domainRelatedObject'
+	DESC 'RFC1274: an object related to an domain'
 	SUP top AUXILIARY
 	MUST associatedDomain )
 
