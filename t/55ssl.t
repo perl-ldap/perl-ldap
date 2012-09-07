@@ -23,10 +23,10 @@ ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
 ok(ldif_populate($ldap, "data/50-in.ldif"), "data/50-in.ldif");
 
 $mesg = $ldap->start_tls;
-ok(!$mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
+ok(!$mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->start_tls;
-ok($mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
+ok($mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
@@ -37,7 +37,7 @@ $ldap = client(ssl => 1);
 ok($ldap, "ssl client");
 
 $mesg = $ldap->start_tls;
-ok($mesg->code, "start_stl: " . $mesg->code . ": " . $mesg->error);
+ok($mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
 $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
 ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
