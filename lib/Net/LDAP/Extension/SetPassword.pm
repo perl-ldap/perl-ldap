@@ -3,20 +3,20 @@ package Net::LDAP::Extension::SetPassword;
 
 require Net::LDAP::Extension;
 
-$VERSION = "0.03";
+$VERSION = "0.04";
 @ISA = qw(Net::LDAP::Extension);
 
 use Convert::ASN1;
 my $passwdModReq = Convert::ASN1->new;
 $passwdModReq->prepare(q<SEQUENCE {
-                       user         [0] STRING OPTIONAL,
-                       oldpasswd    [1] STRING OPTIONAL,
-                       newpasswd    [2] STRING OPTIONAL
+                       user         [0] OCTET STRING OPTIONAL,
+                       oldpasswd    [1] OCTET STRING OPTIONAL,
+                       newpasswd    [2] OCTET STRING OPTIONAL
                        }>);
 
 my $passwdModRes = Convert::ASN1->new;
 $passwdModRes->prepare(q<SEQUENCE {
-                       genPasswd    [0] STRING OPTIONAL
+                       genPasswd    [0] OCTET STRING OPTIONAL
                        }>);
 
 sub Net::LDAP::set_password {
