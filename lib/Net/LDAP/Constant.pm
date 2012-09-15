@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.14";
+$VERSION = "0.15";
 
 use Exporter qw(import);
 
@@ -600,8 +600,27 @@ feature OIDs.
 
 =item LDAP_FEATURE_ALL_OPATTS (1.3.6.1.4.1.4203.1.5.1)
 
-Indicates if the server allows "+" for returning all operational attributes
+Indicates if the server allows C<+> for returning all operational attributes
 (RFC 3673)
+
+=item LDAP_FEATURE_OBJECTCLASS_ATTRS (1.3.6.1.4.1.4203.1.5.2)
+
+Indicates that the server allows C<@I<objectclass>> for returning all
+attributes used to represent a particular class of object (RFC 4529)
+
+=item LDAP_FEATURE_ABSOLUTE_FILTERS (1.3.6.1.4.1.4203.1.5.3)
+
+Indicates that the server supports C<(&)> for the absolute I<True> filter,
+and C<(|)> for the absolute I<False> filter (RFC 4526).
+
+=item LDAP_FEATURE_LANGUAGE_TAG_OPTIONS (1.3.6.1.4.1.4203.1.5.4)
+
+Indicates the server supports language tag options of the form
+C<lang-I<language-tag>> with attributes (RFC 3866)
+
+=item LDAP_FEATURE_LANGUAGE_RANGE_OPTIONS (1.3.6.1.4.1.4203.1.5.5)
+
+Indicates that the server supports language tag range options (RFC 3866)
 
 =item LDAP_FEATURE_MODIFY_INCREMENT (1.3.6.1.1.14)
 
