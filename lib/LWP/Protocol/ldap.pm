@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.19";
+$VERSION = "1.20";
 
 use strict;
 eval {
@@ -223,3 +223,94 @@ sub request {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+LWP::Protocol::ldap - Provide LDAP support for LWP::UserAgent
+
+=head1 SYNOPSIS
+
+  use LWP::UserAgent;
+
+  $ua = LWP::UserAgent->new();
+  $res = $ua->get('ldap://ldap.example.com/' .
+                  'o=University%20of%20Michigan,c=US??sub?(cn=Babs%20Jensen)',
+                   Accept => 'text/json'):
+
+=head1 DESCRIPTION
+
+The LWP::Protocol::ldap module provides support for using I<ldap> schemed
+URLs following RFC 4516 with LWP.  This module is a plug-in to the LWP
+protocol handling, so you don't use it directly.
+
+In addition to being used with LDAP URIs, LWP::Protocol::ldap also acts
+as the base class for its sibling modules LWP::Protocol::ldaps
+and LWP::Protocol::ldapi.
+
+=head2 Features
+
+=head3 HTTP methods supported
+
+LWP::Protocol::ldap implements the HTTP I<GET> and I<HEAD> methods.
+They are mapped to the LDAP L<search|Net::LDAP/search> operation,
+
+=head3 Response format
+
+Depending on the HTTP I<Accept> header provided by the user agent,
+LWP::Protocol::ldap can answer the requests in one of three different
+formats:
+
+=over 4
+
+=item JSON
+
+When the HTTP I<Accept> header contains the C<text/json> MIME type,
+the response is sent as JSON.
+For this to work the I<JSON> Perl module needs to be installed.
+
+=item LDIF
+
+When the HTTP I<Accept> header contains the C<text/ldif> MIME type,
+the response is sent in LDIFv1 format.
+
+=item HTML
+
+In case no HTTP I<Accept> header has been sent or none of the above
+MIME types can be detected, the response is sent using HTML markup
+in a 2-column table format (roughly modeled on LDIF).
+
+=back
+
+=head3 TLS support
+
+For I<ldap> and I<ldapi> URIs, the module implements the C<x-tls> extension
+that switches the LDAP connection to TLS using a call of the
+L<start_tls|Net::LDAP/start_tls> method.
+
+Example:
+
+ ldap://ldap.example.com/o=University%20of%20Michigan,c=US??sub?(cn=Babs%20Jensen)?x-tls=1
+
+Note:
+In the above example, ideally giving C<x-tls> should be sufficient,
+but unfortunately the parser in URI::ldap has a little flaw.
+
+=head3 Authorization
+
+Usually the connection is done anonymously, but if the HTTP I<Authorization>
+header is provided with credentials for HTTP Basic authorization,
+the credentials given in that header will be used to do a simple
+bind to the LDAP server.
+
+
+=head1 SEE ALSO
+
+L<LWP::Protocol::ldaps>, L<LWP::Protocol::ldapi>
+
+=head1 COPYRIGHT
+
+Copyright (c) 1998-2004 Graham Barr, 2012 Peter Marschall.
+All rights reserved.  This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
