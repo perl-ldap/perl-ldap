@@ -1392,7 +1392,7 @@ To slurp in the certificate try something like this:
   {
       local $/ = undef; # Slurp mode
       open CERT, "cert.der" or die;
-      binmode CERT;
+      binmode CERT;	# for Windows e.a.
       $cert = <CERT>;
       close CERT;
   }
@@ -1428,6 +1428,17 @@ strongAuthenticationUser auxiliary object class. Others might also.
 
 =head2 URLs.
 
+Net::LDAP::Server - LDAP server framework in Perl
+http://search.cpan.org/search?module=Net::LDAP::Server
+https://github.com/alexrj/Net-LDAP-Server
+
+Net::LDAP::SimpleServer - LDAP server in Perl
+http://search.cpan.org/search?module=Net::LDAP::SimpleServer
+https://github.com/russoz/Net-LDAP-SimpleServer
+
+LemonLDAP::NG - Web SingleSignOn solution & SAML IdP in Perl
+http://lemonldap-ng.org/
+
 Directory Services Mark Language (DSML)
 http://www.oasis-open.org/specs/
 
@@ -1437,17 +1448,12 @@ http://www.emailman.com/ldap/
 Rafael Corvalan's LDAP shell
 http://sf.net/projects/ldapsh
 
-LDAPS, also known as LDAPGURU.
-I<This web site has a nasty habit of resizing the browser
-to cover the WHOLE screen.>
-http://www.ldaps.com
-
 Jeff Hodges's Kings Mountain LDAP
 http://www.kingsmountain.com/ldapRoadmap.shtml
+(outdated: last update was in 2004)
 
-Mark Wahl's LDAP World at Innosoft.
-http://www.innosoft.com/ldapworld/
-(outdated: last update was in 1998)
+willeke.com's LDAP Wiki
+http://ldapwiki.willeke.com/wiki/LDAP
 
 OpenLDAP Directory Server - open source LDAP server.
 http://www.openldap.org/
@@ -1501,11 +1507,14 @@ http://verzeichnisdienst.de/ldap/Perl/index.html
 (non-exhaustive) list of LDAP software on wikipedia
 http://en.wikipedia.org/wiki/List_of_LDAP_software
 
+"RFC Sourcebook" on LDAP
+http://www.networksorcery.com/enp/protocol/ldap.htm
+
 web2ldap - WWW gateway to LDAP server in Python
 http://www.web2ldap.de/
 
-LemonLDAP::NG - Web SingleSignOn solution & SAML IdP in Perl
-http://lemonldap-ng.org/
+Softerra LDAP Browser / Administrator
+http://www.ldapbrowser.com/
 
 The 2 following URLs deal mainly with Microsoft's
 Active Directory.
@@ -1513,8 +1522,8 @@ Active Directory.
 Directory Works
 http://directoryworks.com/
 
-ActiveX LDAP Client
-http://www.polonia-online.com/ldap/
+LDAP Client .Net & ActiveX LDAP Client
+http://www.ldapservices.com/Products/Default.aspx
 
 =head2 BOOKS
 
