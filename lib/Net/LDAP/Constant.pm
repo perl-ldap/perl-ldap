@@ -571,7 +571,7 @@ extension OIDs.
 
 =item LDAP_EXTENSION_START_TLS (1.3.6.1.4.1.1466.20037)
 
-Indicates if the server supports the Start TLS extension (RFC 2830)
+Indicates if the server supports the Start TLS extension (RFC 4513)
 
 =item LDAP_EXTENSION_PASSWORD_MODIFY (1.3.6.1.4.1.4203.1.11.1)
 
