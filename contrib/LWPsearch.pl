@@ -28,18 +28,17 @@ die "Usage: LWPsearch [<options>] <LDAP-URL>\n" .
 my $ua = LWP::UserAgent->new;
 $ua->agent("LWPsearch");
 
-# create a request
-my $req = HTTP::Request->new(GET => $ARGV[0]);
+# add headers as requested
+my %headers = ();
 
-# add headers
-$req->header('Accept' => "text/$format")
+$headers{Accept} = "text/$format"
   if ($format);
 
-$req->header('Authorization' => 'Basic '.encode_base64("$user:$password"))
+$headers{Authorization} = 'Basic '.encode_base64("$user:$password")
   if ($user);
 
-# pass request to the user agent and get a response back
-my $res = $ua->request($req);
+# pass GET request to the user agent and get a response back
+my $res = $ua->get($ARGV[0], %headers);
 
 # check the outcome of the response
 if ($res->is_success) {
