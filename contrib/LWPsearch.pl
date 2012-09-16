@@ -19,10 +19,10 @@ my $result = GetOptions('u|user=s'     => \$user,
 # die on errors on the command line
 die "Usage: LWPsearch [<options>] <LDAP-URL>\n" .
     "  where <options> are:\n" .
-    "    -f  --format {html|ldif|json}  output format\n" .
+    "    -f  --format {dsml|html|json|ldif}  output format\n" .
     "    -u  --user <username>       user name (DN) to logon to LDAP server\n" .
     "    -p  --password <password>   password to logon to LDAP server\n"
-  if (!$result || scalar(@ARGV) != 1 || ($format && $format !~ /^(json|ldif|html)$/));
+  if (!$result || scalar(@ARGV) != 1 || ($format && $format !~ /^(dsml|json|ldif|html)$/));
 
 # create a user agent object
 my $ua = LWP::UserAgent->new;
@@ -55,7 +55,7 @@ LWPsearch.pl -- perform LDAP search using LWP mechanisms
 =head1 SYNOPSIS
 
 B<LWPsearch.pl>
-[B<-f|--format> {C<html>|C<json>|C<ldif>}]
+[B<-f|--format> {C<dsml>|C<html>|C<json>|C<ldif>}]
 [B<-u|--user> I<user>]
 [B<-p|--password> I<password>]
 B<LDAP-URL>
@@ -74,7 +74,7 @@ The output depends on the option B<-f|--format>.
 
 =over 4
 
-=item B<-f|--format> {C<html>|C<json>|C<ldif>}
+=item B<-f|--format> {C<dsml>|C<html>|C<json>|C<ldif>}
 
 Specifies the the output format to use.
 
