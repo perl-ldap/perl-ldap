@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.21";
+$VERSION = "1.22";
 
 use strict;
 eval {
@@ -65,12 +65,13 @@ sub request {
   my %extn     = $url->extensions;
   my $tls     = exists($extn{'x-tls'}) ? 1 : 0;
   my $format = lc($extn{'x-format'} || 'html');
+  my $mime_type = 'text/'.$format;
 
   # analyse HTTP headers
   if (my $accept = $request->header('Accept')) {
-    $format = 'dsml' if $accept =~ m!\btext/(x-)?dsml\b!;
-    $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
-    $format = 'json' if $accept =~ m!\b(?:text|application)/json\b!;
+    if ($accept =~ m!\b((?:text|application|xml)/(?:x-)?dsml)\b!) { $mime_type = $1; $format = 'dsml'; };
+    if ($accept =~ m!\b(text/(?:x-)?ldif)\b!)                     { $mime_type = $1; $format = 'ldif'; };
+    if ($accept =~ m!\b((?:text|application)/json)\b!)            { $mime_type = $1; $format = 'json'; };
   }
 
   if (!$user) {
@@ -138,10 +139,12 @@ sub request {
   $response->request($request);
 
   # return data in the format requested
+  my $content = '';
+
   if ($format eq 'ldif') {
     require Net::LDAP::LDIF;
 
-    open(my $fh, ">", \my $content);
+    open(my $fh, ">", \$content);
     my $ldif = Net::LDAP::LDIF->new($fh, "w", version => 1);
 
     while(my $entry = $mesg->shift_entry) {
@@ -149,15 +152,11 @@ sub request {
     }
     $ldif->done;
     close($fh);
-    $response->header('Content-Type' => 'text/ldif; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-      if ($method ne 'HEAD');
   }
   elsif ($format eq 'dsml') {
     require Net::LDAP::DSML;
 
-    open(my $fh, ">", \my $content);
+    open(my $fh, ">", \$content);
     my $dsml = Net::LDAP::DSML->new(output => $fh, pretty_print => 1);
 
     $dsml->start_dsml();
@@ -166,10 +165,6 @@ sub request {
     }
     $dsml->end_dsml();
     close($fh);
-    $response->header('Content-Type' => 'text/dsml; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-      if ($method ne 'HEAD');
   }
   elsif ($format eq 'json') {
     require JSON;
@@ -187,16 +182,13 @@ sub request {
       }
     }
 
-    my $content = JSON::to_json(\%objects, {pretty => 1, utf8 => 1});
-    $response->header('Content-Type' => 'text/json; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-	if ($method ne 'HEAD');
+    $content = JSON::to_json(\%objects, {pretty => 1, utf8 => 1});
   }
   else {
-    my $content = "<head><title>Directory Search Results</title></head>\n<body>";
     my $entry;
     my $index;
+
+    $content = "<head><title>Directory Search Results</title></head>\n<body>";
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $attr;
@@ -229,11 +221,11 @@ sub request {
     $content .= $index ? sprintf("%s Match%s found",$index, $index>1 ? "es" : "")
 		       : "<b>No Matches found</b>";
     $content .= "</body>\n";
-    $response->header('Content-Type' => 'text/html; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-      if ($method ne 'HEAD');
   }
+  $response->header('Content-Type' => $mime_type.'; charset=utf-8');
+  $response->header('Content-Length', length($content));
+  $response = $self->collect_once($arg, $response, $content)
+    if ($method ne 'HEAD');
 
   $ldap->unbind;
 
