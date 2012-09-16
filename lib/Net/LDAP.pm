@@ -841,7 +841,7 @@ sub _sendmesg {
   my $mid  = $mesg->mesg_id;
   my $sync = not $ldap->async;
 
-  unless ($mesg->done) { # may not have a responce
+  unless ($mesg->done) { # may not have a response
 
     $ldap->{net_ldap_mesg}->{$mid} = $mesg;
 
