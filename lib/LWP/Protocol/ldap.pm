@@ -293,10 +293,18 @@ the response is sent in LDIFv1 format.
 =item HTML
 
 In case no HTTP I<Accept> header has been sent or none of the above
-MIME types can be detected, the response is sent using HTML markup
-in a 2-column table format (roughly modeled on LDIF).
+MIME types can be detected, and the I<x-format> extension has not been provided
+either, the response is sent using HTML markup in a 2-column table format
+(roughly modeled on LDIF).
 
 =back
+
+As an alternative to sending an HTTP I<Accept> header, LWP::Protocol::ldap
+also accepts the C<x-format> extension
+
+Example:
+
+ ldap://ldap.example.com/o=University%20of%20Michigan,c=US??sub?(cn=Babs%20Jensen)?x-format=dsml
 
 =head3 TLS support
 
