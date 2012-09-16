@@ -215,7 +215,7 @@ of a name.
 
 =item *
 
-Escapes all RFC 2253 special characters (",", "+", """, "\", "E<lt>",
+Escapes all RFC 4514 special characters (",", "+", """, "\", "E<lt>",
 "E<gt>", ";", "#", "=", " "), slashes ("/"), and any other character
 where the ASCII code is E<lt> 32 as \hexpair.
 
@@ -356,7 +356,7 @@ For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
    }
  ]
 
-(RFC2253 string) DNs might also contain values, which are the bytes of the 
+(RFC4514 string) DNs might also contain values, which are the bytes of the
 BER encoding of the X.500 AttributeValue rather than some LDAP string syntax. 
 These values are hex-encoded and prefixed with a #. To distinguish such BER 
 values, ldap_explode_dn uses references to the actual values, 
@@ -489,7 +489,7 @@ sub ldap_explode_dn($%) {
 
 =item escape_filter_value ( VALUES )
 
-Escapes the given B<VALUES> according to RFC 2254 so that they
+Escapes the given B<VALUES> according to RFC 4515 so that they
 can be safely used in LDAP filters.
 
 Any control characters with an ACII code E<lt> 32 as well as the
@@ -541,11 +541,11 @@ my @values = @_;
 
 =item escape_dn_value ( VALUES )
 
-Escapes the given B<VALUES> according to RFC 2253 so that they
+Escapes the given B<VALUES> according to RFC 4514 so that they
 can be safely used in LDAP DNs.
 
-The characters ",", "+", """, "\", "E<lt>", "E<gt>", ";", "#", "="
-with a special meaning in RFC 2252 are preceded by ba backslash.
+The characters ",", "+", """, "\", "E<lt>", "E<gt>", ";", "#", "=" with
+a special meaning in section 2.4 of RFC 4514 are preceded by a backslash.
 Control characters with an ASCII code E<lt> 32 are represented
 as \hexpair.
 Finally all leading and trailing spaces are converted to

@@ -1,4 +1,4 @@
-package LWP::Protocol::ldaps;
+package LWP::Protocol::ldapi;
 
 use strict ;
 use base 'LWP::Protocol::ldap' ;
@@ -9,26 +9,27 @@ __END__
 
 =head1 NAME
 
-LWP::Protocol::ldaps - Provide LDAPS support for LWP::UserAgent
+LWP::Protocol::ldapi - Provide LDAPI support for LWP::UserAgent
 
 =head1 SYNOPSIS
 
   use LWP::UserAgent;
+  use MIME::Base64;
 
   $ua = LWP::UserAgent->new();
-  $res = $ua->get('ldaps://ldap.example.com/' .
+  $res = $ua->get('ldapi:///' .
                   'o=University%20of%20Michigan,c=US??sub?(cn=Babs%20Jensen)',
-                  Accept => 'text/ldif'):
+                  Authorization => 'Basic '.encode_Base64('cn=John Doe:secret')):
 
 =head1 DESCRIPTION
 
-The LWP::Protocol::ldaps module provides support for using I<ldaps> schemed
+The LWP::Protocol::ldapi module provides support for using I<ldapi> schemed
 URLs with LWP.  This module is a plug-in to the LWP protocol handling, so
 you don't use it directly.
 
 =head1 SEE ALSO
 
-L<LWP::Protocol::ldap>, L<LWP::Protocol::ldapi>
+L<LWP::Protocol::ldap>, L<LWP::Protocol::ldaps>
 
 =head1 COPYRIGHT
 
