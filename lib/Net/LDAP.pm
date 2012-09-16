@@ -341,9 +341,7 @@ sub unbind {
 }
 
 # convenience alias
-sub done {
-  goto &unbind;
-}
+*done = \&unbind;
 
 
 sub ldapbind {
