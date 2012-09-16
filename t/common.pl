@@ -14,6 +14,7 @@ BEGIN {
   $TEMPDIR  = "./temp";
   $SLAPD_SCHEMA_DIR ||= "./data";
   $SLAPD_DB ||= 'bdb';
+  $SLAPD_MODULE_DIR ||= '';
 
   $TESTDB   = "$TEMPDIR/test-db";
   $CONF     = "$TEMPDIR/conf";
@@ -77,6 +78,7 @@ sub start_server {
     open(CONFI, "<$CONF_IN") or die "$!";
     open(CONFO, ">$CONF") or die "$!";
     while(<CONFI>) {
+      # this will choke if a variable is not defined
       s/\$([A-Z]\w*)/${$1}/g;
 
       s/^TLS/#TLS/        unless $SSL_PORT;
