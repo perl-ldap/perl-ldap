@@ -17,36 +17,36 @@ The latest version of this FAQ can be found at
 
 =head1 GENERAL
 
-=head2 What is perl-ldap ?
+=head2 What is perl-ldap?
 
 perl-ldap is the distribution name. The perl-ldap distribution contains
 the Net::LDAP modules.
 
-=head2 Why another Perl LDAP implementation ?
+=head2 Why another Perl LDAP implementation?
 
 perl-ldap's goal is to be as portable as possible. It does this by
 being implemented completely in Perl. So basically anywhere that Perl
 runs perl-ldap will run. This is not true for other implementations
 which require a C compiler.
 
-=head2 Where can I get it ?
+=head2 Where can I get it?
 
 Perl-ldap is available from CPAN.
 You can find the released versions at:
 
  http://search.cpan.org/dist/perl-ldap/
 
-=head2 Is there a web page for perl-ldap ?
+=head2 Is there a web page for perl-ldap?
 
 Yes there is at http://ldap.perl.org/
 
-=head2 Is there a mailing list ?
+=head2 Is there a mailing list?
 
 Yes there is at perl-ldap@perl.org
 
 You can subscribe to this list by mailing perl-ldap-subscribe@perl.org
 
-=head2 Is the mailing list archived ?
+=head2 Is the mailing list archived?
 
 Yes, at http://nntp.perl.org/group/perl.ldap
 
@@ -61,7 +61,7 @@ There is also an archive of the perl-ldap mailing list at
 
 which also has messages from before the move.
 
-=head2 Is there any online documentation ?
+=head2 Is there any online documentation?
 
 Yes. perl-ldap has online documentation at
 
@@ -69,7 +69,7 @@ Yes. perl-ldap has online documentation at
 
 which will have the latest documentation available.
 
-=head2 Is there a public repository ?
+=head2 Is there a public repository?
 
 Yes, there is a public Git repository at
 
@@ -130,7 +130,7 @@ not get updated as quickly as it should.
 
 =back
 
-=head2 What is Git.
+=head2 What is Git?
 
 Git (see http://git-scm.com) is a distributed version control system
 designed to keep track of source changes made by groups of developers
@@ -142,13 +142,13 @@ as each individual chooses.
 In order to help the user understand the perl-ldap module better
 some key LDAP terminology is defined here.
 
-=head2 What is a directory.
+=head2 What is a directory?
 
 A directory is a special purpose hierarchical database that usually
 contains typed information such as text strings, binary data, or X.509
 certificates.
 
-=head2 What is LDAP.
+=head2 What is LDAP?
 
 LDAP stands for Lightweight Directory Access Protocol.
 The word I<Protocol> is the key word in the definition given in
@@ -160,11 +160,11 @@ The Lightweight Directory Access Protocol is defined in a series of
 Requests For Comments, better known as RFCs. The RFCs can be found on
 the Internet at http://www.ietf.org/ (the master repository) and many
 other places. There's a link to all the LDAP-related RFCs at
-Perl-LDAP's web site, http://ldap.perl.org/rfc.html. Some of the more
+perl-ldap's web site, http://ldap.perl.org/rfc.html. Some of the more
 important RFC numbers are RFC 4510 - 4519 for LDAP (previously called
 LDAPv3) and the historic RFC 1777 for LDAPv2.
 
-=head2 What is a LDAP Directory.
+=head2 What is a LDAP Directory?
 
 In the strictest terms of the definition there is no such thing as a
 LDAP directory.  To be practical about this situation every day
@@ -175,7 +175,7 @@ definition a LDAP directory is a directory whose server software
 conforms to the Lightweight Directory Access Protocol when
 communicating with a client.
 
-=head2 What is an Entry.
+=head2 What is an Entry?
 
 The traditional directory definition of a directory object
 is called an Entry. Entries are composed of attributes that
@@ -196,7 +196,7 @@ An entry's direct superior entry is called the entry's 'parent'.
 
 'Non-leaf' entries are also said to have 'child' entries.
 
-=head2 What is an attribute.
+=head2 What is an attribute?
 
 The entry(s) in a directory are composed of attributes that contain
 information about the object.  Each attribute has a type
@@ -243,7 +243,7 @@ jpegPhotos that contain a substring!
 You can examine all of a server's attribute definitions by reading the
 schema from the server.
 
-=head2 What is an object class.
+=head2 What is an object class?
 
 An object class is the name associated with a group of attributes that
 B<must> be present in an entry, and the group of attributes that
@@ -261,7 +261,7 @@ entry.
 You can examine all of a server's objectclass definitions by reading
 the schema from the server.
 
-=head2 What is a Distinguished Name (DN).
+=head2 What is a Distinguished Name (DN)?
 
 Every entry in a directory has a Distinguished Name, or DN.  It is a
 unique Entry identifier throughout the complete directory.  No two
@@ -274,7 +274,7 @@ Examples of DNs:
  dc=cartoon, dc=com
  dc=com
 
-=head2 What is a Relative Distinguished Name.
+=head2 What is a Relative Distinguished Name?
 
 Every DN is made up of a sequence of Relative Distinguished Names, or
 RDNs.  The sequences of RDNs are separated by commas (,). In LDAPv2
@@ -324,7 +324,7 @@ B<must> contain a 'cn' attribute containing at least the value
 The attributes used in the RDN may contain additional values, but the
 entry still only has one DN.
 
-=head2 What is a search base.
+=head2 What is a search base?
 
 A search base is a Distinguished Name that is the
 starting point of search queries.
@@ -343,7 +343,7 @@ Possible search base(s) for the proceeding DN:
 Setting the search base to the lowest possible branch of
 the directory will speed up searches considerably.
 
-=head2 What is the difference between a LDAP server and a relational database.
+=head2 What is the difference between a LDAP server and a relational database?
 
 The most basic difference is that a directory server is a
 specialized database designed to provide fast searches. While a relational
@@ -393,9 +393,9 @@ resent to another server.
 
 See RFC 4511 section 4.5.3 for more details.
 
-=head1 PERL-LDAP INSTALLATION
+=head1 perl-ldap INSTALLATION
 
-=head2 How do I install perl-ldap ?
+=head2 How do I install perl-ldap?
 
 To install the modules that are in the perl-ldap distribution follow the
 same steps that you would for most other distributions found on CPAN, that
@@ -412,7 +412,7 @@ is
    make test
    make install
 
-=head2 But I do not have make, how can I install perl-ldap ?
+=head2 But I do not have make, how can I install perl-ldap?
 
 Well as luck would have it the modules in perl-ldap do not do anything
 complex, so a simple copy is enough to install. First run
@@ -445,17 +445,17 @@ can then be installed with
 
    cp * /usr/local/lib/site_perl
 
-=head2 How can I load Perl-LDAP into an ActiveState Perl installation.
+=head2 How can I load perl-ldap into an ActiveState Perl installation?
 
-There are several ways that Perl-LDAP can be installed into an
+There are several ways that perl-ldap can be installed into an
 ActiveState Perl tree.
 
 =over 4
 
 =item 1.
 
-The ActiveState ppm command can be used to install Perl-LDAP.
-When a new version of Perl-LDAP is released, it takes ActiveState
+The ActiveState ppm command can be used to install perl-ldap.
+When a new version of perl-ldap is released, it takes ActiveState
 a period of time to get the new release into the ActiveState ppm
 system.
 
@@ -467,7 +467,7 @@ module install using nmake instead of make.
 =item 3.
 
 If the user does not have nmake or make, the user can install
-Perl-LDAP using the install-nomake script by issuing the
+perl-ldap using the install-nomake script by issuing the
 following command.
 
  perl install-nomake
@@ -477,7 +477,7 @@ have make installed.
 
 =back
 
-=head2 What other modules will I need ?
+=head2 What other modules will I need?
 
 perl-ldap does use other modules. Some are required, but some are
 optional (ie required to use certain features)
@@ -553,19 +553,19 @@ You can obtain the latest release from
 
 =head1 USING NET::LDAP
 
-=head2 How do I connect to my server ?
+=head2 How do I connect to my server?
 
 The connection to the server is created when you create a new Net::LDAP
 object, e.g.
 
   $ldap = Net::LDAP->new($server);
 
-=head2 Net::LDAP-E<gt>new sometimes returns undef, why ?
+=head2 Net::LDAP-E<gt>new sometimes returns undef, why?
 
 The constructor will return undef if there was a problem connecting
 to the specified server. Any error message will be available in $@
 
-=head2 What is the proper format of the bind DN.
+=head2 What is the proper format of the bind DN?
 
 The DN used to bind to a directory is a FULLY QUALIFIED DN.  The exact
 structure of the DN will depend on what data has been stored in the
@@ -583,7 +583,7 @@ the directory manager.
   cn=directory manager
 
 =head2 How can I tell when the server returns an error, bind() always returns
-true ?
+true?
 
 Most methods in Net::LDAP return a L<Net::LDAP::Message>
 object, or a sub-class of that. This object will hold the results
@@ -614,7 +614,7 @@ Valid version numbers are 2 and 3.
 As of perl-ldap 0.27 the default LDAP version is 3.
 
 =head2 I did a search on my directory using the 'search' method. Where did
-the results go ?
+the results go?
 
 Your search results are stored in a 'search object'.
 Consider the following:
@@ -702,7 +702,7 @@ can do
     }
   }
 
-=head2 How do I limit the scope of a directory search.
+=head2 How do I limit the scope of a directory search?
 
 You limit the scope of a directory search by setting the
 scope parameter of search request.
@@ -908,7 +908,7 @@ module documentation;  perldoc Net::LDAPS
 
 =head1 USING LDAP GROUPS.
 
-=head2 What are LDAP groups.
+=head2 What are LDAP groups?
 
 LDAP groups are object classes that contain an attribute that can
 store multiple DN values.  Two standard object classes are
@@ -943,13 +943,13 @@ want to be correct.
 
 =head1 USING DSML.
 
-=head2 How can I access DSML features from PERL-LDAP.
+=head2 How can I access DSML features from perl-ldap?
 
 Directory Service Markup Language (DSML) is the XML
 standard for representing directory service information in
 XML.
 
-Support for DSML is included in PERL-LDAP starting with version
+Support for DSML is included in perl-ldap starting with version
 .20.
 
 At the moment this module only reads and writes DSML entry
@@ -966,7 +966,7 @@ module documentation;  perldoc Net::LDAP::DSML
 
 =head1 USING CONTROLS AND VIRTUAL LISTS.
 
-=head2 How do I access the Control features.
+=head2 How do I access the Control features?
 
 Support for LDAP version 3 Control objects is included in
 perl-ldap starting with version .20.
@@ -974,7 +974,7 @@ perl-ldap starting with version .20.
 For further information and code examples read the Control
 module documentation;  perldoc Net::LDAP::Control
 
-=head2 How do I access the Virtual List features.
+=head2 How do I access the Virtual List features?
 
 Support for Virtual Lists is included in perl-ldap starting
 with version .20.
@@ -990,10 +990,10 @@ Yes, there is an Examples pod file.  To view the pod
 do the following command;  perldoc Net::LDAP::Examples
 
 There is user contributed software in the contrib directory
-that is supplied with the PERL-LDAP distribution.  This is an
-excellent source of information on how to use the PERL-LDAP module.
+that is supplied with the perl-ldap distribution.  This is an
+excellent source of information on how to use the perl-ldap module.
 
-=head2 Are there any performance issues with perl-ldap ?
+=head2 Are there any performance issues with perl-ldap?
 
 In the vast majority of use cases (one user has suggested 9 out of 10)
 there are no performance issues with perl-ldap.
@@ -1050,7 +1050,7 @@ the use of the "+" pseudo attribute. So that with these servers
 
 will return the most information from the server.
 
-=head2 How do I put a JPEG photo into a entry in the directory.
+=head2 How do I put a JPEG photo into a entry in the directory?
 
 Follow the following code example, replacing the (...) with
 whatever is relevant to your setup.
@@ -1069,7 +1069,7 @@ whatever is relevant to your setup.
      $res = $ldap->unbind();
 
 
-=head2 How do I add a jpeg photo into a entry in the directory via html-forms.
+=head2 How do I add a jpeg photo into a entry in the directory via html-forms?
 
 Follow the following code example, replacing the (...) with
 whatever is relevant to your setup.
@@ -1102,7 +1102,7 @@ whatever is relevant to your setup.
 
   print $q->end_html();
 
-=head2 What happens when you delete an attribute that does not exist.
+=head2 What happens when you delete an attribute that does not exist?
 
 It is an error to delete an attribute that doesn't exist.  When you
 get the error back the server ignores the entire modify operation
@@ -1121,7 +1121,7 @@ ie:
 But make sure you are using LDAPv3, because that is defined to B<not> work
 in LDAPv2. (A nice incompatibility between LDAPv2 and LDAPv3.)
 
-=head2 How can I delete a referral from an LDAP tree.
+=head2 How can I delete a referral from an LDAP tree?
 
 Since this is a proprietary feature, you will have to check your
 server's documentation. You might find that you need to use a control. If
@@ -1136,7 +1136,7 @@ The code required will look similar to the following code snippet.
                   control => {type => "2.16.840.1.113730.3.4.2"} );
 
 =head2 How do I add an ACI/ACL entry to a directory server with
-Perl-LDAP.
+perl-ldap?
 
 ACIs and ACLs are proprietary features in LDAP. The following code
 snippet works with a Netscape directory server. You will need the
@@ -1148,7 +1148,7 @@ specify the correct DN (-DN-) and correct attribute(s) (-nom attr-).
   $ldap->modify($dn_modif, add => {'aci' => $aci });
 
 =head2 How do I avoid file type and data type mis-matching when loading
-data from a Win32 system.
+data from a Win32 system?
 
 When loading a binary attribute with data read from a file on a Win32
 system, it has been noted that you should set "binmode" on the file
@@ -1160,7 +1160,7 @@ in the file.  Then when reading the file, decode the base64 encoded
 string back to binary and then use perl-ldap to store the data
 in the directory.
 
-=head2 How do I create a Microsoft Exchange 5.x user.
+=head2 How do I create a Microsoft Exchange 5.x user?
 
 This is a solution provide by a perl-ldap user.
 
@@ -1220,7 +1220,7 @@ replace the placeholders.
 
 =head2 Ho do I reset a user's password ...
 
-=head3 Z<>... in most LDAP servers ?
+=head3 Z<>... in most LDAP servers?
 
 Most LDAP servers use the standard userPassword attribute as the
 attribute to set when you want to change a user's password.
@@ -1296,7 +1296,7 @@ sake error checking is left out):
 
   $ldap->unbind();
 
-=head3 Z<>... in MS Active Directory ?
+=head3 Z<>... in MS Active Directory?
 
 With Active Directory a user's password is stored in the unicodePwd
 attribute and changed using the regular modify operation.
@@ -1341,9 +1341,9 @@ Here's an example that demonstrates setting your own password
   $ldap->unbind();
 
 
-=head2 How can I simulate server failover.
+=head2 How can I simulate server failover?
 
-Perl-LDAP does not do server failover, however there are several
+Perl-ldap does not do server failover, however there are several
 programming options for getting around this situation.
 
 Here is one possible solution.
@@ -1575,7 +1575,7 @@ perl-ldap mailing list E<lt>perl-ldap@perl.orgE<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 1999-2004 Graham Barr. All rights reserved. This document is
-distributed, and may be redistributed, under the same terms as Perl itself.
+Copyright (c) 1999-2004 Graham Barr, (c) 2012 Peter Marschall. All rights reserved.
+This document is distributed, and may be redistributed, under the same terms as Perl itself.
 
 =cut
