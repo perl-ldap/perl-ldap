@@ -689,7 +689,7 @@ __END__
 
 =head1 NAME
 
-NET::LDAP::DSML -- A DSML Writer for Net::LDAP
+Net::LDAP::DSML -- A DSML Writer for Net::LDAP
 
 =head1 SYNOPSIS
 
