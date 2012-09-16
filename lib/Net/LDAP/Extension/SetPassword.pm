@@ -89,7 +89,7 @@ OPTIONS is a list of key/value pairs. The following keys are recognized:
 
 If present, this option contains the octet string representation of the
 user associated with the request.  Depending on how users are identified
-in the directory this string may or may not be a DN according to RFC 2253.
+in the directory this string may or may not be a DN according to RFC 4514.
 
 If this option is not present, the request acts up upon the password
 of the user currently associated with the LDAP session.

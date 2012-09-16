@@ -855,7 +855,7 @@ certificate. See the IO::Socket::SSL documentation for information
 about this class.
 
 For example, to get the subject name (in a peculiar OpenSSL-specific
-format, different from RFC 1779 and RFC 2253) from the server's
+format, different from RFC 1779 and RFC 4514) from the server's
 certificate, do this:
 
     print "Subject DN: " . $ldaps->certificate->subject_name . "\n";

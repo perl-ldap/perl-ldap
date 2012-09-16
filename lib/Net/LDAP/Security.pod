@@ -129,7 +129,7 @@ and published a standard called RFC 2246 which describes TLS
 standardized version of SSL.
 
 You can only use TLS with an LDAPv3 server. That is because the
-standard (RFC 2830) for LDAP and TLS requires that the I<normal> LDAP
+standard (RFC 4511) for LDAP and TLS requires that the I<normal> LDAP
 connection (ie., on port 389) can be switched on demand from plain text
 into a TLS connection. The switching mechanism uses a special extended
 LDAP operation, and since these are not legal in LDAPv2, you can only
