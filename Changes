@@ -1,3 +1,18 @@
+0.47 -- Sun Sep 16 12:00:30 CEST 2012
+
+Bug Fixes
+* contrib/ldifdiff.pl: fix POD
+* Intermediate/SyncInfo.pm: fix newcookie() method
+* LWP/Protocol/ldap.pm: complete overhaul
+
+Enhancements
+* more feture constants in Net/LDAP/Constant.pm
+* new features & documentation for LWP/Protocol/ldap.pm
+* LWP/Protocol/ldapi.pm: support ldapi:// URIs with LWP
+* contrib/LWPsearch.pl: demo program for LWP::Protocol::ldap*
+* update link list in the FAQ
+* update references to RFCs
+
 0.46 -- Wed Sep 5 18:09:00 CEST 2012
 
 Bug Fixes
