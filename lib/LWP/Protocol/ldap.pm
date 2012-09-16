@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.20";
+$VERSION = "1.21";
 
 use strict;
 eval {
@@ -68,6 +68,7 @@ sub request {
 
   # analyse HTTP headers
   if (my $accept = $request->header('Accept')) {
+    $format = 'dsml' if $accept =~ m!\btext/(x-)?dsml\b!;
     $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
     $format = 'json' if $accept =~ m!\b(?:text|application)/json\b!;
   }
@@ -149,6 +150,23 @@ sub request {
     $ldif->done;
     close($fh);
     $response->header('Content-Type' => 'text/ldif; charset=utf-8');
+    $response->header('Content-Length', length($content));
+    $response = $self->collect_once($arg, $response, $content)
+      if ($method ne 'HEAD');
+  }
+  elsif ($format eq 'dsml') {
+    require Net::LDAP::DSML;
+
+    open(my $fh, ">", \my $content);
+    my $dsml = Net::LDAP::DSML->new(output => $fh, pretty_print => 1);
+
+    $dsml->start_dsml();
+    while(my $entry = $mesg->shift_entry) {
+      $dsml->write_entry($entry);
+    }
+    $dsml->end_dsml();
+    close($fh);
+    $response->header('Content-Type' => 'text/dsml; charset=utf-8');
     $response->header('Content-Length', length($content));
     $response = $self->collect_once($arg, $response, $content)
       if ($method ne 'HEAD');
@@ -259,10 +277,15 @@ They are mapped to the LDAP L<search|Net::LDAP/search> operation,
 =head3 Response format
 
 Depending on the HTTP I<Accept> header provided by the user agent,
-LWP::Protocol::ldap can answer the requests in one of three different
+LWP::Protocol::ldap can answer the requests in one of the following
 formats:
 
 =over 4
+
+=item DSML
+
+When the HTTP I<Accept> header contains the C<text/dsml> MIME type,
+the response is sent as DSMLv1.
 
 =item JSON
 
