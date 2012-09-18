@@ -46,7 +46,7 @@ Net::LDAP::Extension::Cancel - LDAP Cancel Operation
  $ldap->bind('cn=Joe User,cn=People,dc=example,dc=com',
              password => 'secret');
 
- $search = $ldap->search( 
+ $search = $ldap->search(
                         base     => 'c=US',
                         filter   => '(&(sn=Barr) (o=Texas Instruments))',
                         callback => \&process_entry, # Call this sub for each entry
@@ -67,7 +67,7 @@ standard operation, and has the same call signature.
 Unlike the C<Abandon> operation, it has a response which provides
 an indication of its outcome.
 
-It implements no object by itself but extends the L<Net::LDAP> object 
+It implements no object by itself but extends the L<Net::LDAP> object
 by another method:
 
 =head1 METHODS

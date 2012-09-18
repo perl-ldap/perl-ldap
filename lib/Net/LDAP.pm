@@ -58,7 +58,7 @@ sub _options {
     $ret{substr($v,1)} = $ret{$v};
   }
 
-  $ret{control} = [ map { (ref($_) =~ /[^A-Z]/) ? $_->to_asn : $_ } 
+  $ret{control} = [ map { (ref($_) =~ /[^A-Z]/) ? $_->to_asn : $_ }
 		      ref($ret{control}) eq 'ARRAY'
 			? @{$ret{control}}
 			: $ret{control}
@@ -160,7 +160,7 @@ sub connect_ldap {
 		 ? $arg->{timeout}
 		 : 120
   ) or return undef;
-  
+
   $ldap->{net_ldap_host} = $host;
   $ldap->{net_ldap_port} = $port;
 }
@@ -573,7 +573,7 @@ sub modify {
     while($j < @{$arg->{changes}}) {
       return _error($ldap, $mesg, LDAP_PARAM_ERROR,"Bad change type '" . $arg->{changes}[--$j] . "'")
        unless defined($opcode = $opcode{$arg->{changes}[$j++]});
-      
+
       $chg = $arg->{changes}[$j++];
       if (ref($chg)) {
 	my $i = 0;

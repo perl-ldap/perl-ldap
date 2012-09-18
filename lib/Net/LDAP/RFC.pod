@@ -995,7 +995,7 @@ listening for changes.  The operation is defined as an extension of
 the LDAP Search Operation.
 
 
-=head2 RFC-4531 Lightweight Directory Access Protocol (LDAP) Turn Operation 
+=head2 RFC-4531 Lightweight Directory Access Protocol (LDAP) Turn Operation
 
 http://www.ietf.org/rfc/rfc4531.txt
 

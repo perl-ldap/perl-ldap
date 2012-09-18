@@ -42,8 +42,8 @@ Net::LDAP::Control::PostRead - LDAPv3 Post-Read control object
            join("', '", $entry->get_value(givenName") .
            "' to 'Babs'\n");
    }
- }  
-   
+ }
+
 
 =head1 DESCRIPTION
 

@@ -23,14 +23,14 @@ sub init {
 
   if (defined($self->{proxyDN})) {
     $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION_OLD;
-  
+
     unless (exists $self->{value}) {
       $self->{asn} = { proxyDN => $self->{proxyDN} || '' };
     }
   }
   else {
     $self->{value} = $self->{authzID} || '';
-  }  
+  }
 
   # criticality must be set !
   $self->{critical} = 1;
@@ -44,7 +44,7 @@ sub proxyDN {
 
   if (@_) {
     delete $self->{value};
-    
+
     $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION_OLD;
     return $self->{asn}{proxyDN} = shift || '';
   }
@@ -55,7 +55,7 @@ sub proxyDN {
   else {
     $self->{asn} ||= $proxyAuthValue->decode($self->{value});
   }
-  
+
   $self->{asn}{proxyDN};
 }
 
@@ -65,7 +65,7 @@ sub authzID {
 
   if (@_) {
     delete $self->{value};
-    
+
     $self->{type} = LDAP_CONTROL_PROXYAUTHORIZATION;
     return $self->{authzID} = shift || '';
   }
@@ -89,8 +89,8 @@ sub value {
 		     ? $proxyAuthValue->encode($self->{asn})
                      : $self->{authzID} || '';
   }
-    
-  return $self->{value};  
+
+  return $self->{value};
 }
 
 1;
@@ -190,7 +190,7 @@ L<Net::LDAP::Control>,
 =head1 AUTHORS
 
 Olivier Dubois, Swift sa/nv based on Net::LDAP::Control::Page from
-Graham Barr E<lt>gbarr@pobox.comE<gt>. 
+Graham Barr E<lt>gbarr@pobox.comE<gt>.
 Peter Marschall E<lt>peter@adpm.deE<gt> added authzID extensions
 based on ideas from Graham Barr E<lt>gbarr@pobox.comE<gt>.
 

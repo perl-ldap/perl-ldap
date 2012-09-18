@@ -9,7 +9,7 @@ use Convert::ASN1;
 my $refreshReq = Convert::ASN1->new;
 $refreshReq->prepare(q<SEQUENCE {
                      entryName    [0] OCTET STRING, -- originally: LDAPDN
-                     requestTtl   [1] INTEGER 
+                     requestTtl   [1] INTEGER
                      }>);
 
 my $refreshResp = Convert::ASN1->new;
@@ -82,7 +82,7 @@ This option contains the object to refresh. It must be a DN.
 
 =item requestTtl
 
-This option contains the TTL in seconds requested. The server may choose to 
+This option contains the TTL in seconds requested. The server may choose to
 set another value as stated in RFC 2589
 
 =back
@@ -105,7 +105,7 @@ L<Net::LDAP::Extension>
 
 Etienne Bagnoud E<lt>etienne.bagnoud@irovision.chE<gt>
 Adapted from Graham Barr L<Net::LDAP::Extension::SetPassword>
-Documentation adapted from Peter Marschall L<Net::LDAP::Extension::SetPassword> 
+Documentation adapted from Peter Marschall L<Net::LDAP::Extension::SetPassword>
 
 Please report any bugs, or post any suggestions, to the perl-ldap
 mailing list E<lt>perl-ldap@perl.orgE<gt>

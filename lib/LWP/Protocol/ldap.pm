@@ -175,7 +175,7 @@ sub request {
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $dn = $entry->dn;
-      
+
       $objects{$dn} = {};
       foreach my $attr (sort($entry->attributes)) {
         $objects{$dn}{$attr} = $entry->get_value($attr, asref => 1);

@@ -44,7 +44,7 @@ Net::LDAP::Extension::WhoAmI - LDAP "Who am I?" Operation
 C<Net::LDAP::Extension::WhoAmI> implements the C<Who am I?>
 extended LDAPv3 operation as described in RFC 4532.
 
-It implements no object by itself but extends the L<Net::LDAP> object 
+It implements no object by itself but extends the L<Net::LDAP> object
 by another method:
 
 =head1 METHODS
@@ -53,7 +53,7 @@ by another method:
 
 =item who_am_i
 
-Obtain the authorization identity which the server has associated 
+Obtain the authorization identity which the server has associated
 with the user or application entity.
 
 =back

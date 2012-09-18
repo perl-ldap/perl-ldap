@@ -88,7 +88,7 @@ L<Net::LDAP>, L<Net::LDAP::Entry>
 
 =head1 AUTHOR
 
-Chris Ridd E<lt>chris.ridd@isode.comE<gt>, 
+Chris Ridd E<lt>chris.ridd@isode.comE<gt>,
 Graham Barr E<lt>gbarr@pobox.comE<gt>.
 
 =head1 COPYRIGHT
