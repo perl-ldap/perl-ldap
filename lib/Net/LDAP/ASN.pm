@@ -182,7 +182,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	scope           ENUMERATED {
 	    baseObject              (0),
 	    singleLevel             (1),
-	    wholeSubtree            (2) }
+	    wholeSubtree            (2),
+	    subOrdinates            (3) } -- OpenLDAP extension
 	derefAliases    ENUMERATED {
 	    neverDerefAliases       (0),
 	    derefInSearching        (1),

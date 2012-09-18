@@ -459,7 +459,7 @@ sub bind {
 }
 
 
-my %scope = qw(base  0 one    1 single 1 sub    2 subtree 2);
+my %scope = qw(base  0 one    1 single 1 sub    2 subtree 2 children 3);
 my %deref = qw(never 0 search 1 find   2 always 3);
 
 sub search {
