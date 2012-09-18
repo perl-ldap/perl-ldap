@@ -30,8 +30,8 @@ sub request {
 
   # check proxy
   if (defined $proxy) {
-    return HTTP::Response->new(HTTP_BAD_REQUEST,
-                              'You can not proxy through the ldap');
+    return $self->_error(HTTP_BAD_REQUEST,
+                         'You can not proxy through the ldap');
   }
 
   my $url = $request->url;
@@ -44,21 +44,21 @@ sub request {
 
   # check scheme
   if ($scheme !~ /^ldap[si]?$/) {
-    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
-                               "LWP::Protocol::ldap::request called for '$scheme'");
+    return $self->_error(HTTP_INTERNAL_SERVER_ERROR,
+                         "LWP::Protocol::ldap::request called for '$scheme'");
   }
 
   # check method
   my $method = $request->method;
 
   unless ($method =~ /^(?:GET|HEAD)$/) {
-    return HTTP::Response->new(HTTP_NOT_IMPLEMENTED,
-                               "Library does not allow method $method for '$scheme:' URLs");
+    return $self->_error(HTTP_NOT_IMPLEMENTED,
+                         "Library does not allow method $method for '$scheme:' URLs");
   }
 
   if ($init_failed) {
-    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
-                               $init_failed);
+    return $self->_error(HTTP_INTERNAL_SERVER_ERROR,
+                         $init_failed);
   }
 
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
@@ -87,36 +87,22 @@ sub request {
   # connect to LDAP server
   my $ldap = new Net::LDAP($url->as_string);
   if (!$ldap) {
-    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                  "Connection to LDAP server failed");
-    $res->content_type("text/plain");
-    $res->content($@);
-    return $res;
+    return $self->_error(HTTP_BAD_REQUEST,
+                         "Connection to LDAP server failed", "$@");
   }
 
   # optional: startTLS
   if ($tls && $scheme ne 'ldaps') {
     my $mesg = $ldap->start_tls();
-    if ($mesg->code) {
-      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                    "LDAP return code " . $mesg->code);
-      $res->content_type("text/plain");
-      $res->content($mesg->error);
-      return $res;
-    }
+
+    return $self->_ldap_error($mesg)  if ($mesg->code);
   }
 
   # optional: simple bind
   if ($user) {
     my $mesg = $ldap->bind($user, password => $password);
 
-    if ($mesg->code) {
-      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                    "LDAP return code " . $mesg->code);
-      $res->content_type("text/plain");
-      $res->content($mesg->error);
-      return $res;
-    }
+    return $self->_ldap_error($mesg)  if ($mesg->code);
   }
 
   # do the search
@@ -126,13 +112,8 @@ sub request {
   $opts{attrs}  = \@attrs  if @attrs;
 
   my $mesg = $ldap->search(%opts);
-  if ($mesg->code) {
-    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                  "LDAP return code " . $mesg->code);
-    $res->content_type("text/plain");
-    $res->content($mesg->error);
-    return $res;
-  }
+
+  return $self->_ldap_error($mesg)  if ($mesg->code);
 
   # Create an initial response object
   my $response = HTTP::Response->new(HTTP_OK, "Document follows");
@@ -230,6 +211,27 @@ sub request {
   $ldap->unbind;
 
   $response;
+}
+
+sub _ldap_error
+{
+  my($self, $mesg) = @_;
+
+  $self->_error(HTTP_BAD_REQUEST,
+                'LDAP return code '.$mesg->code, $mesg->error);
+}
+
+sub _error
+{
+  my($self, $code, $message, $content) = @_;
+  my $res = HTTP::Response->new($code, $message);
+
+  if ($content) {
+    $res->content_type("text/plain");
+    $res->content($content);
+  }
+
+  $res;
 }
 
 1;
