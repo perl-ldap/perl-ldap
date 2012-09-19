@@ -427,28 +427,32 @@ sub ldap_explode_dn($%) {
   return undef unless defined $dn;
   return [] if $dn eq '';
 
+  my $pair = qr/\\(?:[\\"+,;<> #=]|[0-9A-F]{2})/i;
+
   my (@dn, %rdn);
   while (
   $dn =~ /\G(?:
     \s*
-    ([a-zA-Z][-a-zA-Z0-9]*|(?:[Oo][Ii][Dd]\.)?\d+(?:\.\d+)*)
+    ((?i)[A-Z][-A-Z0-9]*|(?:oid\.)?\d+(?:\.\d+)*)	# attribute type
     \s*
     =
-    \s*
-    (
-      (?:[^\\",=+<>\#;]*[^\\",=+<>\#;\s]|\s*\\(?:[\\ ",=+<>#;]|[0-9a-fA-F]{2}))*
+    [ ]*
+    (							# attribute value
+      (?:(?:[^\x00 "\#+,;<>\\\x80-\xBF]|$pair)		# string
+         (?:(?:[^\x00"+,;<>\\]|$pair)*
+            (?:[^\x00 "+,;<>\\]|$pair))?)?
       |
-      \#(?:[0-9a-fA-F]{2})+
+      \#(?:[0-9a-fA-F]{2})+				# hex string
       |
-      "(?:[^\\"]+|\\(?:[\\",=+<>#;]|[0-9a-fA-F]{2}))*"
+      "(?:[^\\"]+|$pair)*"				# "-quoted string, only for v2
     )
-    \s*
-    (?:([;,+])\s*(?=\S)|$)
+    [ ]*
+    (?:([;,+])\s*(?=\S)|$)				# separator
     )\s*/gcx)
   {
     my($type,$val,$sep) = ($1,$2,$3);
 
-    $type =~ s/^oid\.(\d+(\.\d+)*)$/$1/i; #remove leading "oid."
+    $type =~ s/^oid\.//i;	#remove leading "oid."
 
     if ( !$opt{casefold} || $opt{casefold} eq 'upper' ) {
       $type = uc $type;

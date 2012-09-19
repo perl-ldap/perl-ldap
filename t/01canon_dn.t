@@ -69,7 +69,9 @@ same	OU = Sales+CN =J. Smith,O= Widget Inc.,C=US
 same	OU="Sales"+CN=J. Smith,O=Widget Inc.,C=US
 diff	OU="Sales+CN=J. Smith",O=Widget Inc.,C=US
 
-bad	cn=J.\20Smith\+ou=Sales,O=Widget\20Inc.,C=US
+ref	cn=J.\20Smith\+ou=Sales,O=Widget\20Inc.,C=US
+
+ref	cn=Clerk #1\+ou=Sales,O=Widget\20Inc.,C=US
 
 ref	CN=Babs Jensen,O=Widget Inc.,C=US
 same	cn=Babs Jensen,o=Widget Inc.,c=US
