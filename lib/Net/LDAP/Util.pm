@@ -564,7 +564,7 @@ my @values = @_;
 
   map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
         $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
-        $_ =~ s/(^\s+|\s+$)/"\\20" x length($1)/oge; } @values;
+        $_ =~ s/(^ +| +$)/"\\20" x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
