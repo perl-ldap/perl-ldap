@@ -1,3 +1,21 @@
+0.48 -- Thu Sep 20 10:55:20 CEST 2012
+
+Bug Fixes:
+* Util.pm: fix bug in escape_dn_value()
+* t/55ssl.t: fix typos in output text
+* LDIF.pm: with encode => 'canonical', do mbcescape DNs
+* the usual typo fixes in docs
+
+Enhancements:
+* ASN.pm: adapt to RFC 4511
+* Extension/{SetPassword,Refresh}.pm: polish ASN.1 definition
+* LWP/Protocol/ldap.pm: respond with requested MIME type
+* LWP/Protocol/ldap.pm: document 'x-format' URI extension
+* LWP/Protocol/ldap.pm: add DSMLv1 as output format
+* test routines updated to work with recent OpenLDAP
+* removed trailing spaces
+* support OpenLDAP extension: scope => "children"
+
 0.47 -- Sun Sep 16 12:00:30 CEST 2012
 
 Bug Fixes
