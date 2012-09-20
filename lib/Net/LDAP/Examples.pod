@@ -62,7 +62,7 @@ B<What is not covered in these examples at this time:>
 
  $mesg = $ldap->bind ( version => 3 );    	# use for searches
 
- $mesg = $ldap->bind ( "$userToAuthenticate",		
+ $mesg = $ldap->bind ( "$userToAuthenticate",
                        password => "$passwd",
                        version => 3 );		# use for changes/edits
 
@@ -123,7 +123,7 @@ B<What is not covered in these examples at this time:>
    # passed for this one DN.
    my @arrayOfAttrs = sort keys %$valref; #use Attr hashes
 
-   my $attrName;	
+   my $attrName;
    foreach $attrName (@arrayOfAttrs) {
 
      # skip any binary data: yuck!
@@ -413,12 +413,12 @@ The following code snippet shows how to retrieve schema information.
 The first procedure is to initialize a new LDAP object using the
 same procedures as listed at the beginning of this document.
 
-The second procedure is to bind to your directory server.  Some 
-servers may require authentication to retrieve the schema from the 
-directory server.  This procedure is listed at the beginning of 
+The second procedure is to bind to your directory server.  Some
+servers may require authentication to retrieve the schema from the
+directory server.  This procedure is listed at the beginning of
 this document too.
 
-After a successful bind you are ready to retrieve the schema 
+After a successful bind you are ready to retrieve the schema
 information.  You do this by initializing a schema object.
 
  $schema = $ldap->schema ( );
@@ -440,13 +440,13 @@ Once we have a dn to search for, Net::LDAP will fetch the schema entry with
                           filter => '(objectClass=subschema)',
                         );
 
-Once the schema object has been initialized, schema methods 
+Once the schema object has been initialized, schema methods
 are used to retrieve the data.  There are a number of ways this
-can be done.  Information on the schema methods can be found 
+can be done.  Information on the schema methods can be found
 in the Net::LDAP::Schema pod documentation.
 
-The following is a code snippet showing how to get and display 
-information about returned attributes.  
+The following is a code snippet showing how to get and display
+information about returned attributes.
 
  #
  # Get the attributes
@@ -472,10 +472,10 @@ information about returned attributes.
    }
  }
 
-The process is the basically the same for getting objectClass 
-information.  Where schema-E<gt>all_attributes() is used, substitute 
+The process is the basically the same for getting objectClass
+information.  Where schema-E<gt>all_attributes() is used, substitute
 schema-E<gt>all_objectclasses().  From that point on the process is
-the same for both objectClasses and attributes. 
+the same for both objectClasses and attributes.
 
 =head1 BUGS
 

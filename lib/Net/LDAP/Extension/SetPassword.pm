@@ -3,20 +3,20 @@ package Net::LDAP::Extension::SetPassword;
 
 require Net::LDAP::Extension;
 
-$VERSION = "0.03";
+$VERSION = "0.04";
 @ISA = qw(Net::LDAP::Extension);
 
 use Convert::ASN1;
 my $passwdModReq = Convert::ASN1->new;
 $passwdModReq->prepare(q<SEQUENCE {
-                       user         [0] STRING OPTIONAL,
-                       oldpasswd    [1] STRING OPTIONAL,
-                       newpasswd    [2] STRING OPTIONAL
+                       user         [0] OCTET STRING OPTIONAL,
+                       oldpasswd    [1] OCTET STRING OPTIONAL,
+                       newpasswd    [2] OCTET STRING OPTIONAL
                        }>);
 
 my $passwdModRes = Convert::ASN1->new;
 $passwdModRes->prepare(q<SEQUENCE {
-                       genPasswd    [0] STRING OPTIONAL
+                       genPasswd    [0] OCTET STRING OPTIONAL
                        }>);
 
 sub Net::LDAP::set_password {
@@ -70,7 +70,7 @@ Net::LDAP::Extension::SetPassword - LDAPv3 Modify Password extension object
 C<Net::LDAP::Extension::SetPassword> implements the C<Modify Password>
 extended LDAPv3 operation as described in RFC 3062.
 
-It implements no object by itself but extends the L<Net::LDAP> object 
+It implements no object by itself but extends the L<Net::LDAP> object
 by another method:
 
 =head1 METHODS
@@ -99,7 +99,7 @@ of the user currently associated with the LDAP session.
 This option, if present, must contain the current password of the user
 for whom this operation is performed.
 
-It depends on the server's implementation in which cirumstances this 
+It depends on the server's implementation in which cirumstances this
 option is allowed to be missing.
 
 =item newpasswd

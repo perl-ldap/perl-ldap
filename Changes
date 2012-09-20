@@ -6,7 +6,7 @@ Bug Fixes
 * LWP/Protocol/ldap.pm: complete overhaul
 
 Enhancements
-* more feture constants in Net/LDAP/Constant.pm
+* more feature constants in Net/LDAP/Constant.pm
 * new features & documentation for LWP/Protocol/ldap.pm
 * LWP/Protocol/ldapi.pm: support ldapi:// URIs with LWP
 * contrib/LWPsearch.pl: demo program for LWP::Protocol::ldap*

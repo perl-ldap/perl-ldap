@@ -174,7 +174,7 @@ $VERSION = "0.02";
 # attr         = AttributeDescription from Section 4.1.5 of [1]
 # matchingrule = MatchingRuleId from Section 4.1.9 of [1]
 # value        = AttributeValue from Section 4.1.6 of [1]
-# 
+#
 # Special Character encodings
 # ---------------------------
 #    *               \2a, \*
@@ -187,7 +187,7 @@ $VERSION = "0.02";
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  
+
   my $me = bless [], $class;
 
   if (@_) {

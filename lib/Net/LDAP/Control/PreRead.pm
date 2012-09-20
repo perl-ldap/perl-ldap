@@ -96,8 +96,8 @@ Net::LDAP::Control::PreRead - LDAPv3 Pre-Read control object
            join("', '", $entry->get_value(givenName") .
            "' to 'Babs'\n");
    }
- }  
-   
+ }
+
 
 =head1 DESCRIPTION
 

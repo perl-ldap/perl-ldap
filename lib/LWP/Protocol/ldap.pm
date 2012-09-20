@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 @ISA = qw(LWP::Protocol);
 
-$VERSION = "1.20";
+$VERSION = "1.22";
 
 use strict;
 eval {
@@ -30,8 +30,8 @@ sub request {
 
   # check proxy
   if (defined $proxy) {
-    return HTTP::Response->new(HTTP_BAD_REQUEST,
-                              'You can not proxy through the ldap');
+    return $self->_error(HTTP_BAD_REQUEST,
+                         'You can not proxy through the ldap');
   }
 
   my $url = $request->url;
@@ -44,32 +44,34 @@ sub request {
 
   # check scheme
   if ($scheme !~ /^ldap[si]?$/) {
-    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
-                               "LWP::Protocol::ldap::request called for '$scheme'");
+    return $self->_error(HTTP_INTERNAL_SERVER_ERROR,
+                         "LWP::Protocol::ldap::request called for '$scheme'");
   }
 
   # check method
   my $method = $request->method;
 
   unless ($method =~ /^(?:GET|HEAD)$/) {
-    return HTTP::Response->new(HTTP_NOT_IMPLEMENTED,
-                               "Library does not allow method $method for '$scheme:' URLs");
+    return $self->_error(HTTP_NOT_IMPLEMENTED,
+                         "Library does not allow method $method for '$scheme:' URLs");
   }
 
   if ($init_failed) {
-    return HTTP::Response->new(HTTP_INTERNAL_SERVER_ERROR,
-                               $init_failed);
+    return $self->_error(HTTP_INTERNAL_SERVER_ERROR,
+                         $init_failed);
   }
 
   my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
   my %extn     = $url->extensions;
   my $tls     = exists($extn{'x-tls'}) ? 1 : 0;
   my $format = lc($extn{'x-format'} || 'html');
+  my $mime_type = 'text/'.$format;
 
   # analyse HTTP headers
   if (my $accept = $request->header('Accept')) {
-    $format = 'ldif' if $accept =~ m!\btext/(x-)?ldif\b!;
-    $format = 'json' if $accept =~ m!\b(?:text|application)/json\b!;
+    if ($accept =~ m!\b((?:text|application|xml)/(?:x-)?dsml)\b!) { $mime_type = $1; $format = 'dsml'; };
+    if ($accept =~ m!\b(text/(?:x-)?ldif)\b!)                     { $mime_type = $1; $format = 'ldif'; };
+    if ($accept =~ m!\b((?:text|application)/json)\b!)            { $mime_type = $1; $format = 'json'; };
   }
 
   if (!$user) {
@@ -85,36 +87,22 @@ sub request {
   # connect to LDAP server
   my $ldap = new Net::LDAP($url->as_string);
   if (!$ldap) {
-    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                  "Connection to LDAP server failed");
-    $res->content_type("text/plain");
-    $res->content($@);
-    return $res;
+    return $self->_error(HTTP_BAD_REQUEST,
+                         "Connection to LDAP server failed", "$@");
   }
 
   # optional: startTLS
   if ($tls && $scheme ne 'ldaps') {
     my $mesg = $ldap->start_tls();
-    if ($mesg->code) {
-      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                    "LDAP return code " . $mesg->code);
-      $res->content_type("text/plain");
-      $res->content($mesg->error);
-      return $res;
-    }
+
+    return $self->_ldap_error($mesg)  if ($mesg->code);
   }
 
   # optional: simple bind
   if ($user) {
     my $mesg = $ldap->bind($user, password => $password);
 
-    if ($mesg->code) {
-      my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                    "LDAP return code " . $mesg->code);
-      $res->content_type("text/plain");
-      $res->content($mesg->error);
-      return $res;
-    }
+    return $self->_ldap_error($mesg)  if ($mesg->code);
   }
 
   # do the search
@@ -124,23 +112,20 @@ sub request {
   $opts{attrs}  = \@attrs  if @attrs;
 
   my $mesg = $ldap->search(%opts);
-  if ($mesg->code) {
-    my $res = HTTP::Response->new(HTTP_BAD_REQUEST,
-                                  "LDAP return code " . $mesg->code);
-    $res->content_type("text/plain");
-    $res->content($mesg->error);
-    return $res;
-  }
+
+  return $self->_ldap_error($mesg)  if ($mesg->code);
 
   # Create an initial response object
   my $response = HTTP::Response->new(HTTP_OK, "Document follows");
   $response->request($request);
 
   # return data in the format requested
+  my $content = '';
+
   if ($format eq 'ldif') {
     require Net::LDAP::LDIF;
 
-    open(my $fh, ">", \my $content);
+    open(my $fh, ">", \$content);
     my $ldif = Net::LDAP::LDIF->new($fh, "w", version => 1);
 
     while(my $entry = $mesg->shift_entry) {
@@ -148,10 +133,19 @@ sub request {
     }
     $ldif->done;
     close($fh);
-    $response->header('Content-Type' => 'text/ldif; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-      if ($method ne 'HEAD');
+  }
+  elsif ($format eq 'dsml') {
+    require Net::LDAP::DSML;
+
+    open(my $fh, ">", \$content);
+    my $dsml = Net::LDAP::DSML->new(output => $fh, pretty_print => 1);
+
+    $dsml->start_dsml();
+    while(my $entry = $mesg->shift_entry) {
+      $dsml->write_entry($entry);
+    }
+    $dsml->end_dsml();
+    close($fh);
   }
   elsif ($format eq 'json') {
     require JSON;
@@ -162,23 +156,20 @@ sub request {
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $dn = $entry->dn;
-      
+
       $objects{$dn} = {};
       foreach my $attr (sort($entry->attributes)) {
         $objects{$dn}{$attr} = $entry->get_value($attr, asref => 1);
       }
     }
 
-    my $content = JSON::to_json(\%objects, {pretty => 1, utf8 => 1});
-    $response->header('Content-Type' => 'text/json; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-	if ($method ne 'HEAD');
+    $content = JSON::to_json(\%objects, {pretty => 1, utf8 => 1});
   }
   else {
-    my $content = "<head><title>Directory Search Results</title></head>\n<body>";
     my $entry;
     my $index;
+
+    $content = "<head><title>Directory Search Results</title></head>\n<body>";
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $attr;
@@ -211,15 +202,36 @@ sub request {
     $content .= $index ? sprintf("%s Match%s found",$index, $index>1 ? "es" : "")
 		       : "<b>No Matches found</b>";
     $content .= "</body>\n";
-    $response->header('Content-Type' => 'text/html; charset=utf-8');
-    $response->header('Content-Length', length($content));
-    $response = $self->collect_once($arg, $response, $content)
-      if ($method ne 'HEAD');
   }
+  $response->header('Content-Type' => $mime_type.'; charset=utf-8');
+  $response->header('Content-Length', length($content));
+  $response = $self->collect_once($arg, $response, $content)
+    if ($method ne 'HEAD');
 
   $ldap->unbind;
 
   $response;
+}
+
+sub _ldap_error
+{
+  my($self, $mesg) = @_;
+
+  $self->_error(HTTP_BAD_REQUEST,
+                'LDAP return code '.$mesg->code, $mesg->error);
+}
+
+sub _error
+{
+  my($self, $code, $message, $content) = @_;
+  my $res = HTTP::Response->new($code, $message);
+
+  if ($content) {
+    $res->content_type("text/plain");
+    $res->content($content);
+  }
+
+  $res;
 }
 
 1;
@@ -259,10 +271,15 @@ They are mapped to the LDAP L<search|Net::LDAP/search> operation,
 =head3 Response format
 
 Depending on the HTTP I<Accept> header provided by the user agent,
-LWP::Protocol::ldap can answer the requests in one of three different
+LWP::Protocol::ldap can answer the requests in one of the following
 formats:
 
 =over 4
+
+=item DSML
+
+When the HTTP I<Accept> header contains the C<text/dsml> MIME type,
+the response is sent as DSMLv1.
 
 =item JSON
 
@@ -278,10 +295,18 @@ the response is sent in LDIFv1 format.
 =item HTML
 
 In case no HTTP I<Accept> header has been sent or none of the above
-MIME types can be detected, the response is sent using HTML markup
-in a 2-column table format (roughly modeled on LDIF).
+MIME types can be detected, and the I<x-format> extension has not been provided
+either, the response is sent using HTML markup in a 2-column table format
+(roughly modeled on LDIF).
 
 =back
+
+As an alternative to sending an HTTP I<Accept> header, LWP::Protocol::ldap
+also accepts the C<x-format> extension
+
+Example:
+
+ ldap://ldap.example.com/o=University%20of%20Michigan,c=US??sub?(cn=Babs%20Jensen)?x-format=dsml
 
 =head3 TLS support
 

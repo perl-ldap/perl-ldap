@@ -58,7 +58,7 @@ sub _options {
     $ret{substr($v,1)} = $ret{$v};
   }
 
-  $ret{control} = [ map { (ref($_) =~ /[^A-Z]/) ? $_->to_asn : $_ } 
+  $ret{control} = [ map { (ref($_) =~ /[^A-Z]/) ? $_->to_asn : $_ }
 		      ref($ret{control}) eq 'ARRAY'
 			? @{$ret{control}}
 			: $ret{control}
@@ -160,7 +160,7 @@ sub connect_ldap {
 		 ? $arg->{timeout}
 		 : 120
   ) or return undef;
-  
+
   $ldap->{net_ldap_host} = $host;
   $ldap->{net_ldap_port} = $port;
 }
@@ -341,9 +341,7 @@ sub unbind {
 }
 
 # convenience alias
-sub done {
-  goto &unbind;
-}
+*done = \&unbind;
 
 
 sub ldapbind {
@@ -461,7 +459,7 @@ sub bind {
 }
 
 
-my %scope = qw(base  0 one    1 single 1 sub    2 subtree 2);
+my %scope = qw(base  0 one    1 single 1 sub    2 subtree 2 children 3);
 my %deref = qw(never 0 search 1 find   2 always 3);
 
 sub search {
@@ -575,7 +573,7 @@ sub modify {
     while($j < @{$arg->{changes}}) {
       return _error($ldap, $mesg, LDAP_PARAM_ERROR,"Bad change type '" . $arg->{changes}[--$j] . "'")
        unless defined($opcode = $opcode{$arg->{changes}[$j++]});
-      
+
       $chg = $arg->{changes}[$j++];
       if (ref($chg)) {
 	my $i = 0;
@@ -843,7 +841,7 @@ sub _sendmesg {
   my $mid  = $mesg->mesg_id;
   my $sync = not $ldap->async;
 
-  unless ($mesg->done) { # may not have a responce
+  unless ($mesg->done) { # may not have a response
 
     $ldap->{net_ldap_mesg}->{$mid} = $mesg;
 

@@ -10,7 +10,7 @@ use vars qw(@ISA $VERSION);
 $VERSION = "1.02";
 
 #fetch the response name
-sub response_name { 
+sub response_name {
   my $self = shift;
 
   $self->sync unless exists $self->{resultCode};

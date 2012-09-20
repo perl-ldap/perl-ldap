@@ -20,7 +20,7 @@ associated escaping mechanisms.
 
 =item new ( FILTER )
 
-Create a new object and parse FILTER. 
+Create a new object and parse FILTER.
 
 =back
 

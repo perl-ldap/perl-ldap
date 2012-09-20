@@ -43,7 +43,7 @@ Net::LDAP::Entry - An LDAP entry object
 
  # new alternate syntax
 
- $entry = Net::LDAP::Entry->new ( $dn 
+ $entry = Net::LDAP::Entry->new ( $dn
    , attr1 => 'value1'
    , attr2 => [ qw(value1 value2) ]
  )->add(
@@ -79,12 +79,12 @@ add method.
 
  Net::LDAP::Entry->new()
 
- # or 
+ # or
  Net::LDAP::Entry->new( $dn )
 
- # or 
+ # or
  Net::LDAP::Entry->new( $dn ,
-  objectClass => [qw( top posixAccount )] , uid => 'admin' 
+  objectClass => [qw( top posixAccount )] , uid => 'admin'
  )
 
 
@@ -112,7 +112,7 @@ given will be added to the values which already exist for the given attributes.
 B<NOTE>: these changes are local to the client and will not appear on
 the directory server until the C<update> method is called. As C<add> returns the
 entry, you can write something like.
- 
+
  $entry->add ( 'sn' => 'Barr' )->update( $ldap );
 
 
@@ -234,7 +234,7 @@ false if no changes have been applied to the entry.
 
 =item dump ( [ FILEHANDLE ] )
 
-Dump the entry to the given filehandle. 
+Dump the entry to the given filehandle.
 
 This method is intended for debugging purposes and does not
 treat binary attributes specially.

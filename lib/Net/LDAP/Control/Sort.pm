@@ -59,7 +59,7 @@ sub value {
 	  /^(-)?([^:]+)(?::(.+))?/;
 	  {
 	    type => $2,
-	    (defined $1 ? (reverseOrder => 1)  : ()), 
+	    (defined $1 ? (reverseOrder => 1)  : ()),
 	    (defined $3 ? (orderingRule => $3) : ())
 	  }
 	} @{$self->{order} || []}

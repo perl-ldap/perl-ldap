@@ -14,7 +14,7 @@ use constant CHECK_UTF8 => $] > 5.007;
 BEGIN {
   require Encode
     if (CHECK_UTF8);
-}  
+}
 
 
 $VERSION = "0.18";
@@ -28,7 +28,7 @@ sub new {
   my %opt = @_;
   my $fh;
   my $opened_fh = 0;
-  
+
   if (ref($file)) {
     $fh = $file;
   }
@@ -55,7 +55,7 @@ sub new {
   # Default the encoding of DNs to 'none' unless the user specifies
   $opt{'encode'} = 'none' unless exists $opt{'encode'};
 
-  # Default the error handling to die 
+  # Default the error handling to die
   $opt{'onerror'} = 'die' unless exists $opt{'onerror'};
 
   # sanitize options
@@ -84,7 +84,7 @@ sub new {
 
   bless $self, $pkg;
 }
-  
+
 sub _read_lines {
   my $self = shift;
   my $fh = $self->{'fh'};
@@ -95,7 +95,7 @@ sub _read_lines {
   my $ln;
 
   return @ldif  if ($self->eof());
-  
+
   while (defined($ln = $self->{_buffered_line} || scalar <$fh>)) {
     delete($self->{_buffered_line});
     if ($ln =~ /^#/o) {		# ignore 1st line of comments
@@ -120,8 +120,8 @@ sub _read_lines {
 	  else {
             # append non-empty line
             $entry .= $ln;
-	  }  
-        }	
+	  }
+        }
       }
     }
   }
@@ -166,13 +166,13 @@ sub _read_url_attribute {
 
 # _read_one() is deprecated and will be removed
 # in a future version
-*_read_one = \&_read_entry; 
+*_read_one = \&_read_entry;
 
 sub _read_entry {
   my $self = shift;
   my @ldif;
   $self->_clear_error();
-  
+
   @ldif = $self->_read_lines;
 
   unless (@ldif) {	# empty records are errors if not at eof
@@ -230,7 +230,7 @@ sub _read_entry {
       my $lastattr;
       if($changetype eq "modify") {
         unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace|increment):\s*([-;\w]+)// ) {
-          $self->_error("LDAP entry is not valid",@ldif); 
+          $self->_error("LDAP entry is not valid",@ldif);
           return;
         }
         $lastattr = $modattr = $2;
@@ -241,20 +241,20 @@ sub _read_entry {
         my $line = shift @ldif;
         my $attr;
 	my $xattr;
-  
+
         if ($line eq "-") {
           if (defined $lastattr) {
 	    if (CHECK_UTF8 && $self->{raw}) {
   	      map { $_ = Encode::decode_utf8($_) } @values
 	        if ($lastattr !~ /$self->{raw}/);
-	    }  
+	    }
             $entry->$modify($lastattr, \@values);
-	  }  
+	  }
           undef $lastattr;
           @values = ();
           last;
         }
- 
+
         $line =~ s/^([-;\w]+):([\<\:]?)\s*// and
 	    ($attr, $xattr) = ($1, $2);
 
@@ -272,7 +272,7 @@ sub _read_entry {
           $line = $self->_read_url_attribute($line, @ldif);
           return  if !defined($line);
         }
- 
+
         if( defined($modattr) && $attr ne $modattr ) {
           $self->_error("LDAP entry is not valid", @ldif);
           return;
@@ -283,9 +283,9 @@ sub _read_entry {
 	    if (CHECK_UTF8 && $self->{raw}) {
   	      map { $_ = Encode::decode_utf8($_) } @values
 	        if ($lastattr !~ /$self->{raw}/);
-	    }  
+	    }
             $entry->$modify($lastattr, \@values);
-	  }  
+	  }
           $lastattr = $attr;
           @values = ($line);
           next;
@@ -296,9 +296,9 @@ sub _read_entry {
         if (CHECK_UTF8 && $self->{raw}) {
   	  map { $_ = Encode::decode_utf8($_) } @values
 	    if ($lastattr !~ /$self->{raw}/);
-        }  
+        }
         $entry->$modify($lastattr, \@values);
-      }  
+      }
     }
   }
 
@@ -313,7 +313,7 @@ sub _read_entry {
     foreach $line (@ldif) {
       $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
 	  (($attr, $xattr) = ($1, $2)) or next;
-  
+
       # base64 encoded attribute: decode it
       if ($xattr eq ':') {
         eval { require MIME::Base64 };
@@ -328,7 +328,7 @@ sub _read_entry {
         $line = $self->_read_url_attribute($line, @ldif);
         return  if !defined($line);
       }
-  
+
       if (CHECK_UTF8 && $self->{raw}) {
         $line = Encode::decode_utf8($line)
           if ($attr !~ /$self->{raw}/);
@@ -378,7 +378,7 @@ sub eof {
   my $eof = shift;
 
   if ($eof) {
-    $self->{_eof} = $eof; 
+    $self->{_eof} = $eof;
   }
 
   $self->{_eof};
@@ -442,7 +442,7 @@ sub _write_dn {
   if ($dn =~ /^[ :<]|[\x00-\x1f\x7f-\xff]/) {
     if ($encode =~ /canonical/i) {
       require Net::LDAP::Util;
-      $dn = Net::LDAP::Util::canonical_dn($dn);
+      $dn = Net::LDAP::Util::canonical_dn($dn, mbcescape => 1);
       # Canonicalizer won't fix leading spaces, colons or less-thans, which
       # are special in LDIF, so we fix those up here.
       $dn =~ s/^([ :<])/\\$1/;
@@ -476,11 +476,11 @@ sub write_entry {
 sub write_version {
   my $self = shift;
   my $res = 1;
-  
+
   $res &&= print "version: $self->{'version'}\n"
     if ($self->{'version'} && !$self->{version_written}++);
-  
-  return $res;	    
+
+  return $res;
 }
 
 # internal helper: write entry in different format depending on 1st arg
@@ -499,7 +499,7 @@ sub _write_entry {
      return;
   }
   my $saver = SelectSaver->new($self->{'fh'});
-  
+
   my $fh = $self->{'fh'};
   foreach $entry (@_) {
     unless (ref $entry) {
@@ -566,7 +566,7 @@ sub _write_entry {
   $res;
 }
 
-# read_cmd() is deprecated in favor of read_entry() 
+# read_cmd() is deprecated in favor of read_entry()
 # and will be removed in a future version
 sub read_cmd {
   my $self = shift;
@@ -579,11 +579,11 @@ sub read_cmd {
   @entries;
 }
 
-# _read_one_cmd() is deprecated in favor of _read_one() 
+# _read_one_cmd() is deprecated in favor of _read_one()
 # and will be removed in a future version
 *_read_one_cmd = \&_read_entry;
 
-# write_cmd() is deprecated in favor of write_entry() 
+# write_cmd() is deprecated in favor of write_entry()
 # and will be removed in a future version
 sub write_cmd {
   my $self = shift;
@@ -617,15 +617,15 @@ my %onerror = (
                 $self->done;
                 Carp::croak($self->error(@_));
              },
-  'warn'  => sub { 
+  'warn'  => sub {
                 my $self = shift;
-                require Carp; 
-                Carp::carp($self->error(@_)); 
+                require Carp;
+                Carp::carp($self->error(@_));
              },
-  'undef' => sub { 
+  'undef' => sub {
                 my $self = shift;
-                require Carp; 
-                Carp::carp($self->error(@_)) if $^W; 
+                require Carp;
+                Carp::carp($self->error(@_)) if $^W;
              },
 );
 

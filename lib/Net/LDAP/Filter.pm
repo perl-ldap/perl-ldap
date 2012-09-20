@@ -32,7 +32,7 @@ $VERSION = "0.16";
 # attr         = AttributeDescription from Section 4.1.5 of [1]
 # matchingrule = MatchingRuleId from Section 4.1.9 of [1]
 # value        = AttributeValue from Section 4.1.6 of [1]
-# 
+#
 # Special Character encodings
 # ---------------------------
 #    *               \2a, \*
@@ -46,7 +46,7 @@ my $ErrStr;
 sub new {
   my $self = shift;
   my $class = ref($self) || $self;
-  
+
   my $me = bless {}, $class;
 
   if (@_) {
@@ -108,7 +108,7 @@ sub _encode {
       extensibleMatch => {
 	matchingRule => $rule,
 	type         => length($type) ? $type : undef,
-	matchValue   => _unescape($val), 
+	matchValue   => _unescape($val),
 	dnAttributes => $dn ? 1 : undef
       }
     });
@@ -202,7 +202,7 @@ sub parse {
       push @$cur, { $Op{$myop} => $myop eq '!' ? $mydata->[0] : $mydata };
       next if @stack;
     }
-    
+
     # process (attr op string)
 
     elsif ($filter =~ s/^\(\s*

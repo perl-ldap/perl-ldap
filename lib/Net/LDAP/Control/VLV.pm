@@ -100,7 +100,7 @@ sub context {
 sub response {
   my $self = shift;
   my $resp = shift;
-  
+
   my $asn = $self->{asn};
 
   $asn->{contextID} = $resp->context;
@@ -110,7 +110,7 @@ sub response {
   };
   delete $asn->{byValue};
 
-  1;  
+  1;
 }
 
 sub offset {
@@ -199,7 +199,7 @@ sub end {
   my $self = shift;
   my $asn = $self->{asn};
   my $content = $self->content || 0;
-  
+
   $asn->{beforeCount} += $asn->{afterCount};
   $asn->{afterCount} = 0;
   $self->offset($content);

@@ -42,7 +42,7 @@ Net::LDAP::Control::ManageDsaIT - LDAPv3 Manage DSA-IT control object
  $manage = Net::LDAP::Control::ManageDsaIT->new( critical => 1 );
 
  $msg = $ldap->modify( 'dc=sub,dc=mydomain,dc=eg",
-                       changes => [ 
+                       changes => [
                          delete => { ref => 'ldap://ldap2/dc=sub,dc=mydom,dc=eg' },
                          add => { ref => 'ldap://ldap3/dc=sub,dc=mydom,dc=eg' } ],
                        control  => [ $manage ] );

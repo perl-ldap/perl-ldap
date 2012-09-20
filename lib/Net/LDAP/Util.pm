@@ -201,7 +201,7 @@ sub ldap_error_desc {
 
 Returns the given B<DN> in a canonical form. Returns undef if B<DN> is
 not a valid Distinguished Name. (Note: The empty string "" is a valid DN.)
-B<DN> can either be a string or reference to an array of hashes as returned by 
+B<DN> can either be a string or reference to an array of hashes as returned by
 ldap_explode_dn, which is useful when constructing a DN.
 
 It performs the following operations on the given B<DN>:
@@ -257,7 +257,7 @@ Do not change attribute type names.
 
 =item mbcescape
 
-If TRUE, characters that are encoded as a multi-octet UTF-8 sequence 
+If TRUE, characters that are encoded as a multi-octet UTF-8 sequence
 will be escaped as \(hexpair){2,*}.
 
 =item reverse
@@ -276,13 +276,13 @@ sub canonical_dn($%) {
   my ($dn, %opt) = @_;
 
   return $dn unless defined $dn and $dn ne '';
-  
+
   # create array of hash representation
   my $rdns = ref($dn) eq 'ARRAY'
 		? $dn
 		: ldap_explode_dn( $dn, casefold => $opt{casefold} || 'upper')
     or return undef; #error condition
-  
+
   # assign specified or default separator value
   my $separator = $opt{separator} || ',';
 
@@ -294,7 +294,7 @@ sub canonical_dn($%) {
       join('+',
         map {
           my $val = $rdn->{$_};
-          
+
           if ( ref($val) ) {
             $val = '#' . unpack("H*", $$val);
           } else {
@@ -308,11 +308,11 @@ sub canonical_dn($%) {
             }
             #escape leading and trailing whitespace
             $val =~ s/(^\s+|\s+$)/
-              "\\20" x length $1/xeg; 
+              "\\20" x length $1/xeg;
             #compact multiple spaces
             $val =~ s/\s+/ /g;
           }
-          
+
           # case fold attribute type and create return value
           if ( !$opt{casefold} || $opt{casefold} eq 'upper' ) {
             (uc $_)."=$val";
@@ -323,7 +323,7 @@ sub canonical_dn($%) {
           }
         } @types);
     } @$rdns;
-  
+
   # join RDNs into string, optionally reversing order
   $opt{reverse}
     ? join($separator, reverse @flatrdns)
@@ -333,13 +333,13 @@ sub canonical_dn($%) {
 
 =item ldap_explode_dn ( DN [ , OPTIONS ] )
 
-Explodes the given B<DN> into an array of hashes and returns a reference to this 
+Explodes the given B<DN> into an array of hashes and returns a reference to this
 array. Returns undef if B<DN> is not a valid Distinguished Name.
 
-A Distinguished Name is a sequence of Relative Distinguished Names (RDNs), which 
-themselves are sets of Attributes. For each RDN a hash is constructed with the 
-attribute type names as keys and the attribute values as corresponding values. 
-These hashes are then stored in an array in the order in which they appear 
+A Distinguished Name is a sequence of Relative Distinguished Names (RDNs), which
+themselves are sets of Attributes. For each RDN a hash is constructed with the
+attribute type names as keys and the attribute values as corresponding values.
+These hashes are then stored in an array in the order in which they appear
 in the DN.
 
 For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
@@ -357,9 +357,9 @@ For example, the DN 'OU=Sales+CN=J. Smith,DC=example,DC=net' is exploded to:
  ]
 
 (RFC4514 string) DNs might also contain values, which are the bytes of the
-BER encoding of the X.500 AttributeValue rather than some LDAP string syntax. 
-These values are hex-encoded and prefixed with a #. To distinguish such BER 
-values, ldap_explode_dn uses references to the actual values, 
+BER encoding of the X.500 AttributeValue rather than some LDAP string syntax.
+These values are hex-encoded and prefixed with a #. To distinguish such BER
+values, ldap_explode_dn uses references to the actual values,
 e.g. '1.3.6.1.4.1.1466.0=#04024869,DC=example,DC=com' is exploded to:
  [
    {
@@ -436,7 +436,7 @@ sub ldap_explode_dn($%) {
     =
     \s*
     (
-      (?:[^\\",=+<>\#;]*[^\\",=+<>\#;\s]|\s*\\(?:[\\ ",=+<>#;]|[0-9a-fA-F]{2}))* 
+      (?:[^\\",=+<>\#;]*[^\\",=+<>\#;\s]|\s*\\(?:[\\ ",=+<>#;]|[0-9a-fA-F]{2}))*
       |
       \#(?:[0-9a-fA-F]{2})+
       |
@@ -464,9 +464,9 @@ sub ldap_explode_dn($%) {
       # remove quotes
       $val =~ s/^"(.*)"$/$1/;
       # unescape characters
-      $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2}) 
+      $val =~ s/\\([\\ ",=+<>#;]|[0-9a-fA-F]{2})
            /length($1)==1 ? $1 : chr(hex($1))
-           /xeg; 
+           /xeg;
     }
 
     $rdn{$type} = $val;
@@ -564,7 +564,7 @@ my @values = @_;
 
   map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
         $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
-        $_ =~ s/(^\s+|\s+$)/"\\20" x length($1)/oge; } @values;
+        $_ =~ s/(^ +| +$)/"\\20" x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }

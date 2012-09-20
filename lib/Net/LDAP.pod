@@ -475,7 +475,7 @@ entry, it will be created.
     replace => {
       description => 'New List of members', # Change the description
       member      => [ # Replace whole list with these
-        'cn=member1,ou=people,dc=example,dc=com',   
+        'cn=member1,ou=people,dc=example,dc=com',
         'cn=member2,ou=people,dc=example,dc=com',
       ],
       seeAlso => [],   # Remove attribute
@@ -487,7 +487,7 @@ entry, it will be created.
 Atomically increment the existing value in each given attribute by the
 provided C<VALUE>. The attributes need to have integer syntax, or be
 otherwise "incrementable". Note this will only work if the server
-advertizes support for LDAP_FEATURE_MODIFY_INCREMENT. Use 
+advertizes support for LDAP_FEATURE_MODIFY_INCREMENT. Use
 L<Net::LDAP::RootDSE/supported_feature> to check this.
 
   $mesg = $ldap->modify( $dn,
@@ -571,7 +571,7 @@ The result is an object of class L<Net::LDAP::Search>.
 The DN that is the base object entry relative to which the search is
 to be performed.
 
-=item scope =E<gt> 'base' | 'one' | 'sub'
+=item scope =E<gt> 'base' | 'one' | 'sub' | 'children'
 
 By default the search is performed on the whole tree below
 the specified base object. This maybe changed by specifying a C<scope>
@@ -591,6 +591,12 @@ Search the entries immediately below the base object.
 
 Search the whole tree below (and including) the base object. This is
 the default.
+
+=item children
+
+Search the whole subtree below the base object, excluding the base object itself.
+
+Note: I<children> scope requires LDAPv3 subordinate feature extension.
 
 =back
 
@@ -932,7 +938,7 @@ can be performed with this object.
 
 =item dn =E<gt> DN
 
-If a DN is supplied, it will become the base object entry from 
+If a DN is supplied, it will become the base object entry from
 which the search for schema information will be conducted.  If
 no DN is supplied the base object entry will be determined from
 the rootDSE entry.
@@ -1060,7 +1066,7 @@ L<Net::LDAP::Reference>,
 L<Net::LDAP::Search>,
 L<Net::LDAP::RFC>
 
-The homepage for the perl-ldap modules can be found at 
+The homepage for the perl-ldap modules can be found at
 http://ldap.perl.org/.
 
 =head1 ACKNOWLEDGEMENTS

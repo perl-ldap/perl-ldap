@@ -73,7 +73,7 @@ my %start_jumptable = qw(
 
 sub start_element {
   my ($self, $data) = @_;
-  
+
   (my $tag = lc $data->{Name}) =~ s/^dsml://;
 
   my $label = $start_jumptable{$tag} or return;
@@ -252,7 +252,7 @@ schema_element:
 
     $elem->{oid} ||= $name;
     $state->{schema}{oid}{$oid} = $state->{schema}{$elem->{type}}{lc $name} = $elem;
- 
+
     return;
   }
 
@@ -689,7 +689,7 @@ __END__
 
 =head1 NAME
 
-NET::LDAP::DSML -- A DSML Writer for Net::LDAP
+Net::LDAP::DSML -- A DSML Writer for Net::LDAP
 
 =head1 SYNOPSIS
 
@@ -733,7 +733,7 @@ NET::LDAP::DSML -- A DSML Writer for Net::LDAP
  #
 
  my @data = ();
- $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1) 
+ $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1)
      or die ("DSML object cration problem using an output array.\n");
 
 
@@ -743,10 +743,10 @@ NET::LDAP::DSML -- A DSML Writer for Net::LDAP
                            filter   => 'ou=accounting',
                            callback => sub {
 					 my ($mesg,$entry) =@_;
-					 $dsml->write_entry($entry) 
+					 $dsml->write_entry($entry)
                                           if (ref $entry eq 'Net::LDAP::Entry');
 				       }
-                            );  
+                            );
 
  die ("search failed with ",$mesg->code(),"\n") if $mesg->code();
 
@@ -769,31 +769,31 @@ NET::LDAP::DSML -- A DSML Writer for Net::LDAP
 Directory Service Markup Language (DSML) is the XML standard for
 representing directory service information in XML.
 
-At the moment this module only writes DSML entry and schema entities. 
+At the moment this module only writes DSML entry and schema entities.
 Reading DSML entities is a future project.
 
 Eventually this module will be a full level 2 consumer and producer
-enabling you to give you full DSML conformance.  Currently this 
-module has the ability to be a level 2 producer.  The user must 
-understand the his/her directory server will determine the 
-consumer and producer level they can achieve.  
+enabling you to give you full DSML conformance.  Currently this
+module has the ability to be a level 2 producer.  The user must
+understand the his/her directory server will determine the
+consumer and producer level they can achieve.
 
-To determine conformance, it is useful to divide DSML documents into 
+To determine conformance, it is useful to divide DSML documents into
 four types:
 
-  1.Documents containing no directory schema nor any references to 
-    an external schema. 
-  2.Documents containing no directory schema but containing at 
-    least one reference to an external schema. 
-  3.Documents containing only a directory schema. 
-  4.Documents containing both a directory schema and entries. 
+  1.Documents containing no directory schema nor any references to
+    an external schema.
+  2.Documents containing no directory schema but containing at
+    least one reference to an external schema.
+  3.Documents containing only a directory schema.
+  4.Documents containing both a directory schema and entries.
 
 A producer of DSML must be able to produce documents of type 1.
-A producer of DSML may, in addition, be able to produce documents of 
+A producer of DSML may, in addition, be able to produce documents of
 types 2 thru 4.
 
-A producer that can produce documents of type 1 is said to be a level 
-1 producer. A producer than can produce documents of all four types is 
+A producer that can produce documents of type 1 is said to be a level
+1 producer. A producer than can produce documents of all four types is
 said to be a level 2 producer.
 
 =head1 CALLBACKS
@@ -804,7 +804,7 @@ parse large DSML files. Every time a single entry or schema is processed
 we pass the Net::LDAP object (either an Entry or Schema object) to the
 callback routine.
 
-=head1 CONSTRUCTOR 
+=head1 CONSTRUCTOR
 
 =over 4
 
@@ -822,15 +822,15 @@ easier for a human.
 
 B<Example>
 
-  my $dsml = Net::LDAP::DSML->new();  
+  my $dsml = Net::LDAP::DSML->new();
   Prints xml data to standard out.
 
-  my $dsml = Net::LDAP::DSML->new(output => \@array);  
-  my $dsml = Net::LDAP::DSML->new(output => *FILE);  
+  my $dsml = Net::LDAP::DSML->new(output => \@array);
+  my $dsml = Net::LDAP::DSML->new(output => *FILE);
   Prints xml data to a file or array.
 
-  my $dsml = Net::LDAP::DSML->new(output => \@array, pretty_print => 1);  
-  my $dsml = Net::LDAP::DSML->new(output => *FILE, pretty_print => 1);  
+  my $dsml = Net::LDAP::DSML->new(output => \@array, pretty_print => 1);
+  my $dsml = Net::LDAP::DSML->new(output => *FILE, pretty_print => 1);
   Prints xml data to a file or array in pretty print style.
 
 =back
@@ -861,7 +861,7 @@ B<Example>
 
 =item write_schema ( SCHEMA )
 
-Schema is a Net::LDAP::Schema object. The write_schema method will 
+Schema is a Net::LDAP::Schema object. The write_schema method will
 parse the LDAP data in the Schema object and put it into DSML XML
 format.
 

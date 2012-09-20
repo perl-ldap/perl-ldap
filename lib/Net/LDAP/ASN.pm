@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-$VERSION = "0.08";
+$VERSION = "0.09";
 
 use Convert::ASN1;
 
@@ -31,7 +31,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 
     LDAPRequest ::= SEQUENCE {
 	messageID       MessageID,
-	  --protocolOp
+	-- protocolOp
 	CHOICE {
 	    bindRequest     BindRequest,
 	    unbindRequest   UnbindRequest,
@@ -42,12 +42,12 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    modDNRequest    ModifyDNRequest,
 	    compareRequest  CompareRequest,
 	    abandonRequest  AbandonRequest,
-	    extendedReq     ExtendedRequest}
-	 controls       [0] Controls OPTIONAL }
+	    extendedReq     ExtendedRequest }
+	controls        [0] Controls OPTIONAL }
 
     LDAPResponse ::= SEQUENCE {
 	messageID       MessageID,
-	protocolOp     CHOICE {
+	protocolOp      CHOICE {
 	    bindResponse    BindResponse,
 	    searchResEntry  SearchResultEntry,
 	    searchResDone   SearchResultDone,
@@ -59,26 +59,21 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    compareResponse CompareResponse,
 	    extendedResp    ExtendedResponse,
 	    intermediateResponse IntermediateResponse }
-	 controls       [0] Controls OPTIONAL }
+	controls        [0] Controls OPTIONAL }
 
     MessageID ::= INTEGER -- (0 .. maxInt)
 
     -- maxInt INTEGER ::= 2147483647 -- (2^^31 - 1) --
 
-    LDAPString ::= OCTET STRING -- UTF8String ??
+    LDAPString ::= OCTET STRING -- UTF-8 encoded, [ISO10646] characters
 
-    LDAPOID ::= OCTET STRING
+    LDAPOID ::= OCTET STRING -- Constrained to <numericoid> [RFC4512]
 
-    LDAPDN ::= LDAPString
+    LDAPDN ::= LDAPString -- Constrained to <distinguishedName> [RFC4514]
 
-    RelativeLDAPDN ::= LDAPString
+    RelativeLDAPDN ::= LDAPString -- Constrained to <name-component> [RFC4514]
 
-    AttributeType ::= LDAPString
-
-    AttributeDescription ::= LDAPString
-
-    AttributeDescriptionList ::= SEQUENCE OF
-	AttributeDescription
+    AttributeDescription ::= LDAPString -- Constrained to <attributedescription> [RFC4512]
 
     AttributeValue ::= OCTET STRING
 
@@ -88,9 +83,11 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 
     AssertionValue ::= OCTET STRING
 
-    Attribute ::= SEQUENCE {
+    PartialAttribute ::= SEQUENCE {
 	type    AttributeDescription,
 	vals    SET OF AttributeValue }
+
+    Attribute ::= PartialAttribute -- (WITH COMPONENTS { ..., vals (SIZE(1..MAX))})
 
     MatchingRuleId ::= LDAPString
 
@@ -106,11 +103,11 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    authMethodNotSupported       (7),
 	    strongAuthRequired           (8),
 		-- 9 reserved --
-	    referral                     (10),  -- new
-	    adminLimitExceeded           (11),  -- new
-	    unavailableCriticalExtension (12),  -- new
-	    confidentialityRequired      (13),  -- new
-	    saslBindInProgress           (14),  -- new
+	    referral                     (10),
+	    adminLimitExceeded           (11),
+	    unavailableCriticalExtension (12),
+	    confidentialityRequired      (13),
+	    saslBindInProgress           (14),
 	    noSuchAttribute              (16),
 	    undefinedAttributeType       (17),
 	    inappropriateMatching        (18),
@@ -139,7 +136,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    entryAlreadyExists           (68),
 	    objectClassModsProhibited    (69),
 		-- 70 reserved for CLDAP --
-	    affectsMultipleDSAs          (71), -- new
+	    affectsMultipleDSAs          (71),
 		-- 72-79 unused --
 	    other                        (80)}
 		-- 81-90 reserved for APIs --
@@ -147,36 +144,36 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	errorMessage    LDAPString,
 	referral        [3] Referral OPTIONAL }
 
-    Referral ::= SEQUENCE OF LDAPURL
+    Referral ::= SEQUENCE OF URI
 
-    LDAPURL ::= LDAPString -- limited to characters permitted in URLs
+    URI ::= LDAPString -- limited to characters permitted in URIs
 
     Controls ::= SEQUENCE OF Control
 
     -- Names changed here for backwards compat with previous
     -- Net::LDAP    --GMB
     Control ::= SEQUENCE {
-	type             LDAPOID,                       -- controlType
-	critical         BOOLEAN OPTIONAL, -- DEFAULT FALSE,    -- criticality
-	value            OCTET STRING OPTIONAL }        -- controlValue
+	type            LDAPOID,                       -- controlType
+	critical        BOOLEAN OPTIONAL, -- DEFAULT FALSE,    -- criticality
+	value           OCTET STRING OPTIONAL }        -- controlValue
 
     BindRequest ::= [APPLICATION 0] SEQUENCE {
-	version                 INTEGER, -- (1 .. 127),
-	name                    LDAPDN,
-	authentication          AuthenticationChoice }
+	version         INTEGER, -- (1 .. 127),
+	name            LDAPDN,
+	authentication  AuthenticationChoice }
 
     AuthenticationChoice ::= CHOICE {
-	simple                  [0] OCTET STRING,
-		     -- 1 and 2 reserved
-	sasl                    [3] SaslCredentials }
+	simple          [0] OCTET STRING,
+			-- 1 and 2 reserved
+	sasl            [3] SaslCredentials }
 
     SaslCredentials ::= SEQUENCE {
-	mechanism               LDAPString,
-	credentials             OCTET STRING OPTIONAL }
+	mechanism       LDAPString,
+	credentials     OCTET STRING OPTIONAL }
 
     BindResponse ::= [APPLICATION 1] SEQUENCE {
-	 COMPONENTS OF LDAPResult,
-	 serverSaslCreds    [7] OCTET STRING OPTIONAL }
+	COMPONENTS OF LDAPResult,
+	serverSaslCreds    [7] OCTET STRING OPTIONAL }
 
     UnbindRequest ::= [APPLICATION 2] NULL
 
@@ -185,17 +182,21 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	scope           ENUMERATED {
 	    baseObject              (0),
 	    singleLevel             (1),
-	    wholeSubtree            (2) }
+	    wholeSubtree            (2),
+	    subOrdinates            (3) } -- OpenLDAP extension
 	derefAliases    ENUMERATED {
 	    neverDerefAliases       (0),
 	    derefInSearching        (1),
 	    derefFindingBaseObj     (2),
 	    derefAlways             (3) }
-	sizeLimit       INTEGER , -- (0 .. maxInt),
-	timeLimit       INTEGER , -- (0 .. maxInt),
+	sizeLimit       INTEGER, -- (0 .. maxInt),
+	timeLimit       INTEGER, -- (0 .. maxInt),
 	typesOnly       BOOLEAN,
 	filter          Filter,
-	attributes      AttributeDescriptionList }
+	attributes      AttributeSelection }
+
+    AttributeSelection ::= SEQUENCE OF LDAPString
+		-- The LDAPString is constrained to <attributeSelector> [RFC 4511]
 
     Filter ::= CHOICE {
 	and             [0] SET OF Filter,
@@ -213,9 +214,9 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	type            AttributeDescription,
 	-- at least one must be present
 	substrings      SEQUENCE OF CHOICE {
-	    initial [0] LDAPString,
-	    any     [1] LDAPString,
-	    final   [2] LDAPString } }
+	    initial [0] AssertionValue,    -- can occur at most once
+	    any     [1] AssertionValue,
+	    final   [2] AssertionValue } } -- can occur at most once
 
     MatchingRuleAssertion ::= SEQUENCE {
 	matchingRule    [1] MatchingRuleId OPTIONAL,
@@ -227,11 +228,9 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	objectName      LDAPDN,
 	attributes      PartialAttributeList }
 
-    PartialAttributeList ::= SEQUENCE OF SEQUENCE {
-	type    AttributeDescription,
-	vals    SET OF AttributeValue }
+    PartialAttributeList ::= SEQUENCE OF PartialAttribute
 
-    SearchResultReference ::= [APPLICATION 19] SEQUENCE OF LDAPURL
+    SearchResultReference ::= [APPLICATION 19] SEQUENCE OF URI
 
     SearchResultDone ::= [APPLICATION 5] LDAPResult
 
@@ -243,11 +242,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 			delete  (1),
 			replace (2),
 			increment (3) } -- increment from RFC 4525
-	    modification    AttributeTypeAndValues } }
-
-    AttributeTypeAndValues ::= SEQUENCE {
-	type    AttributeDescription,
-	vals    SET OF AttributeValue }
+	    modification    PartialAttribute } }
 
     ModifyResponse ::= [APPLICATION 7] LDAPResult
 
@@ -255,9 +250,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	objectName      LDAPDN,
 	attributes      AttributeList }
 
-    AttributeList ::= SEQUENCE OF SEQUENCE {
-	type    AttributeDescription,
-	vals    SET OF AttributeValue }
+    AttributeList ::= SEQUENCE OF Attribute
 
     AddResponse ::= [APPLICATION 9] LDAPResult
 
@@ -282,45 +275,45 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     AbandonRequest ::= [APPLICATION 16] MessageID
 
     ExtendedRequest ::= [APPLICATION 23] SEQUENCE {
-	requestName      [0] LDAPOID,
-	requestValue     [1] OCTET STRING OPTIONAL }
+	requestName     [0] LDAPOID,
+	requestValue    [1] OCTET STRING OPTIONAL }
 
     ExtendedResponse ::= [APPLICATION 24] SEQUENCE {
 	COMPONENTS OF LDAPResult,
-	responseName     [10] LDAPOID OPTIONAL,
-	response         [11] OCTET STRING OPTIONAL }
+	responseName    [10] LDAPOID OPTIONAL,
+	response        [11] OCTET STRING OPTIONAL }
 
     IntermediateResponse ::= [APPLICATION 25] SEQUENCE {
-	responseName     [0] LDAPOID OPTIONAL,
-	responseValue    [1] OCTET STRING OPTIONAL }
+	responseName    [0] LDAPOID OPTIONAL,
+	responseValue   [1] OCTET STRING OPTIONAL }
 
 
     -- Virtual List View Control
     VirtualListViewRequest ::= SEQUENCE {
-	beforeCount    INTEGER , --(0 .. maxInt),
-	afterCount     INTEGER , --(0 .. maxInt),
+	beforeCount     INTEGER, --(0 .. maxInt),
+	afterCount      INTEGER, --(0 .. maxInt),
 	CHOICE {
 	    byoffset [0] SEQUENCE {
-	    offset          INTEGER , --(0 .. maxInt),
+	    offset          INTEGER,  --(0 .. maxInt),
 	    contentCount    INTEGER } --(0 .. maxInt) }
 	    byValue [1] AssertionValue }
 	    -- byValue [1] greaterThanOrEqual assertionValue }
 	contextID     OCTET STRING OPTIONAL }
 
     VirtualListViewResponse ::= SEQUENCE {
-	targetPosition    INTEGER , --(0 .. maxInt),
-	contentCount      INTEGER , --(0 .. maxInt),
+	targetPosition    INTEGER, --(0 .. maxInt),
+	contentCount      INTEGER, --(0 .. maxInt),
 	virtualListViewResult ENUMERATED {
-	    success (0),
-	    operatonsError (1),
-	    unwillingToPerform (53),
+	    success                   (0),
+	    operatonsError            (1),
+	    unwillingToPerform       (53),
 	    insufficientAccessRights (50),
-	    busy (51),
-	    timeLimitExceeded (3),
-	    adminLimitExceeded (11),
-	    sortControlMissing (60),
-	    indexRangeError (61),
-	    other (80) }  
+	    busy                     (51),
+	    timeLimitExceeded         (3),
+	    adminLimitExceeded       (11),
+	    sortControlMissing       (60),
+	    indexRangeError          (61),
+	    other                    (80) }
 	contextID     OCTET STRING OPTIONAL     }
 
 
@@ -363,8 +356,8 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     -- RFC-2696 Paged Results Control
     realSearchControlValue ::= SEQUENCE {
 	size            INTEGER, --  (0..maxInt),
-		      -- requested page size from client
-		      -- result set size estimate from server
+			-- requested page size from client
+			-- result set size estimate from server
 	cookie          OCTET STRING }
 
     -- draft-behera-ldap-password-policy-09
@@ -390,31 +383,31 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 
     -- RFC-4370 Proxied Authorization Control
     proxyAuthValue ::= SEQUENCE {
-        proxyDN LDAPDN
+	proxyDN LDAPDN
     }
 
     -- RFC-3296 ManageDsaIT Control
     ManageDsaIT ::= SEQUENCE {
-        dummy INTEGER OPTIONAL   -- it really is unused
+	dummy INTEGER OPTIONAL   -- it really is unused
     }
 
     -- Persistent Search Control
     PersistentSearch ::= SEQUENCE {
-        changeTypes INTEGER,
-        changesOnly BOOLEAN,
-        returnECs BOOLEAN
+	changeTypes INTEGER,
+	changesOnly BOOLEAN,
+	returnECs   BOOLEAN
     }
 
     -- Entry Change Notification Control
     EntryChangeNotification ::= SEQUENCE {
-        changeType ENUMERATED {
-            add         (1),
-            delete      (2),
-            modify      (4),
-            modDN       (8)
-        }
-        previousDN   LDAPDN OPTIONAL,     -- modifyDN ops. only
-        changeNumber INTEGER OPTIONAL     -- if supported
+	changeType ENUMERATED {
+	    add         (1),
+	    delete      (2),
+	    modify      (4),
+	    modDN       (8)
+	}
+	previousDN   LDAPDN OPTIONAL,     -- modifyDN ops. only
+	changeNumber INTEGER OPTIONAL     -- if supported
     }
 
     -- RFC-3876 Matched Values Control
@@ -440,7 +433,7 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     prSearchResultEntry ::= SEQUENCE {
 	objectName      LDAPDN,
 	attributes      PartialAttributeList }
-    
+
     -- RFC-4533 LDAP Content Synchronization Operation
 
     syncUUID ::= OCTET STRING -- (SIZE(16))
@@ -448,47 +441,47 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
     syncCookie ::= OCTET STRING
 
     syncRequestValue ::= SEQUENCE {
-        mode ENUMERATED {
-            -- 0 unused
-            refreshOnly       (1),
-            -- 2 reserved
-            refreshAndPersist (3)
-        }
-        cookie     syncCookie OPTIONAL,
-        reloadHint BOOLEAN OPTIONAL -- DEFAULT FALSE
+	mode ENUMERATED {
+	    -- 0 unused
+	    refreshOnly       (1),
+	    -- 2 reserved
+	    refreshAndPersist (3)
+	}
+	cookie     syncCookie OPTIONAL,
+	reloadHint BOOLEAN OPTIONAL -- DEFAULT FALSE
     }
 
     syncStateValue ::= SEQUENCE {
-        state ENUMERATED {
-            present (0),
-            add (1),
-            modify (2),
-            delete (3)
-        }
-        entryUUID syncUUID,
-        cookie    syncCookie OPTIONAL
+	state ENUMERATED {
+	    present (0),
+	    add     (1),
+	    modify  (2),
+	    delete  (3)
+	}
+	entryUUID syncUUID,
+	cookie    syncCookie OPTIONAL
     }
 
     syncDoneValue ::= SEQUENCE {
-        cookie          syncCookie OPTIONAL,
-        refreshDeletes  BOOLEAN OPTIONAL -- DEFAULT FALSE
+	cookie          syncCookie OPTIONAL,
+	refreshDeletes  BOOLEAN OPTIONAL -- DEFAULT FALSE
     }
 
     syncInfoValue ::= CHOICE {
-          newcookie      [0] syncCookie,
-          refreshDelete  [1] SEQUENCE {
-              cookie         syncCookie OPTIONAL,
-              refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
-          }
-          refreshPresent [2] SEQUENCE {
-              cookie         syncCookie OPTIONAL,
-              refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
-          }
-          syncIdSet      [3] SEQUENCE {
-              cookie         syncCookie OPTIONAL,
-              refreshDeletes BOOLEAN OPTIONAL, -- DEFAULT FALSE
-              syncUUIDs      SET OF syncUUID
-          }
+	newcookie      [0] syncCookie,
+	refreshDelete  [1] SEQUENCE {
+	    cookie         syncCookie OPTIONAL,
+	    refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
+	}
+	refreshPresent [2] SEQUENCE {
+	    cookie         syncCookie OPTIONAL,
+	    refreshDone    BOOLEAN OPTIONAL -- DEFAULT TRUE
+	}
+	syncIdSet      [3] SEQUENCE {
+	    cookie         syncCookie OPTIONAL,
+	    refreshDeletes BOOLEAN OPTIONAL, -- DEFAULT FALSE
+	    syncUUIDs      SET OF syncUUID
+	}
     }
 
 LDAP_ASN
