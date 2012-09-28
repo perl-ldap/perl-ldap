@@ -49,8 +49,12 @@ object; see L<Net::LDAP> for details.
 =item new ( [SOCKPATH] )
 
 Create a new connection. SOCKPATH can optionally be specified, to
-specify the location of the UNIX domain socket to connect to. See
-L<Net::LDAP/new> for details.
+specify the location of the UNIX domain socket to connect to.
+
+If SOCKPATH is not given, the environment variable C<LDAPI_SOCK> is evaluated,
+and if that does not exist, the value C</var/run/ldapi> is used.
+
+See L<Net::LDAP/new> for further details.
 
 =back
 
