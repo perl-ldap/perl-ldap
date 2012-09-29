@@ -58,5 +58,9 @@ as a methods on all C<Net::LDAP> objects.
 Care should be taken when choosing names for the functions to export
 to ensure that they do not clash with others.
 
+=head1 SEE ALSO
+
+L<Net::LDAP::Extra::AD>,
+
 =cut
 
