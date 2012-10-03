@@ -4,10 +4,29 @@ use strict;
 use vars qw($VERSION @EXPORT);
 use Encode;
 use Exporter qw(import);
+use Net::LDAP::RootDSE;
 
-$VERSION = "0.01";
-@EXPORT = qw(reset_ADpassword change_ADpassword);
+$VERSION = "0.02";
+@EXPORT = qw(is_AD is_ADAM reset_ADpassword change_ADpassword);
 
+
+sub is_AD {
+  my $self = shift;
+  my $rootdse = $self->root_dse(attrs => [ qw/supportedCapabilities/ ])
+    or return undef;
+
+  return (grep { $_ eq '1.2.840.113556.1.4.800' } $rootdse->get_value('supportedCapabilities'))
+         ? 1 : 0;
+}
+
+sub is_ADAM {
+  my $self = shift;
+  my $rootdse = $self->root_dse(attrs => [ qw/supportedCapabilities/ ])
+    or return undef;
+
+  return (grep { $_ eq '1.2.840.113556.1.4.1851' } $rootdse->get_value('supportedCapabilities'))
+         ? 1 : 0;
+}
 
 sub reset_ADpassword {
   my ($self, $dn, $newpw, %opt) = @_;
@@ -45,7 +64,9 @@ Net::LDAP::Extra:AD -- AD convenience methods
 
   ...
 
-  $ldap->change_ADpassword($dn, $old_password, $new_password);
+  if ($ldap->is_AD || $ldap->is_ADAM) {
+    $ldap->change_ADpassword($dn, $old_password, $new_password);
+  }
 
 =head1 DESCRIPTION
 
@@ -59,6 +80,22 @@ To do so, it provides the following methods:
 =head1 METHODS
 
 =over 4
+
+=item is_AD ( )
+
+Tell if the LDAP server queried is an Active Directory Domain Controller.
+
+As the check is done by querying the root DSE of the directory,
+it works without being bound to the directory.
+
+=item is_ADAM ( )
+
+Tell if the LDAP server queried is running AD LDS
+(Active Directory Lightweight Directory Services),
+previously known as ADAM (Active Directoy Application Mode).
+
+As the check is done by querying the root DSE of the directory,
+it works without being bound to the directory.
 
 =item change_ADpassword ( DN, OLD_PASSWORD, NEW_PASSWORD )
 
