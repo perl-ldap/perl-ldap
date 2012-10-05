@@ -30,7 +30,7 @@ Net::LDAP - Lightweight Directory Access Protocol
                     );
 
  $result = $ldap->add( 'cn=Barbara Jensen, o=University of Michigan, c=US',
-                       attr => [
+                       attrs => [
                          'cn'   => ['Barbara Jensen', 'Barbs Jensen'],
                 	 'sn'   => 'Jensen',
                 	 'mail' => 'b.jensen@umich.edu',
