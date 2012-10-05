@@ -1313,8 +1313,27 @@ adding the new one.
 When doing it as a user with administrative priviledges replacing
 the unicodePwd's value with a new one is allowed too.
 
+Perl-ldap contains convenience methods for Active Directory that
+allow one to perform this task very easily.
+
 Here's an example that demonstrates setting your own password
 (again almost no error checking):
+
+  use Net::LDAP;
+  use Net::LDAP::Extra qw(AD);
+
+  my $ldap = Net::LDAP->new('ldaps://ads.domain.controller')  or  die "$@";
+
+  my $mesg = $ldap->bind('cn=Joe User,dc=your,dc=ads,dc=domain',
+                         password => $oldPW);
+
+  $mesg = $ldap->change_ADpassword('cn=Joe User,dc=your,dc=ads,dc=domain',
+                                   $oldPW, $newPW);
+
+  $ldap->unbind();
+
+
+And the same for perl-ldap versions before 0.49:
 
   use Net::LDAP;
   use Unicode::Map8;
@@ -1331,7 +1350,7 @@ Here's an example that demonstrates setting your own password
   my $ldap = Net::LDAP->new('ldaps://ads.domain.controller')  or  die "$@";
 
   my $mesg = $ldap->bind('cn=Joe User,dc=your,dc=ads,dc=domain',
-                         password => 'oldPW');
+                         password => $oldPW);
 
   $mesg = $ldap->modify('cn=Joe User,dc=your,dc=ads,dc=domain',
                         changes => [
@@ -1346,7 +1365,12 @@ Here's an example that demonstrates setting your own password
 Perl-ldap does not do server failover, however there are several
 programming options for getting around this situation.
 
-Here is one possible solution.
+Here is one possible solution:
+
+  $ldaps = Net::LDAPS->new([ $ldapserverone, $ldapservertwo ],
+                           port=>636, timeout=>5)  or  die "$@";
+
+For perl-ldap versions before 0.27, thes same goal can be achieved using:
 
   unless ( $ldaps =
             Net::LDAPS->new($ldapserverone,
@@ -1357,11 +1381,6 @@ Here is one possible solution.
               return
               "Can't connect to $ldapserverone or $ldapservertwo via LDAPS: $@";
           }
-
-As of version 0.27 of perl-ldap the above can be expressed much simpler:
-
-  $ldaps = Net::LDAPS->new([ $ldapserverone, $ldapservertwo ],
-                           port=>636, timeout=>5)  or  die "$@";
 
 
 =head1 Using X.509 certificates.
