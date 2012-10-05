@@ -1160,9 +1160,69 @@ in the file.  Then when reading the file, decode the base64 encoded
 string back to binary and then use perl-ldap to store the data
 in the directory.
 
+=item How do I create an account in Active Directory?
+
+Active Directory accounts need some AD-specific attributes
+(only the method we're interested in, no error checking):
+
+  $mesg = $ldap->add( 'cn=John Doe,cn=Users,dc=your,dc=ads,dc=domain',
+                      attrs => [
+                        objectClass => [ qw/top user/ ],
+                        cn => 'John Doe',
+                        sn => 'Doe',
+                        givenName => 'John',
+                        displayName => 'John "the one" Doe',
+                        userAccountControl => 514,	# disabled regular user
+                        sAMAccountName => 'JohnDoe',
+                        userPrincipalName => 'JohnDoe@your.ads.domain'
+                      ]
+                    );
+
+In order to find out what other attributes can be set, interactively
+edit the user in the Active Directory Users and Computers MCC plugin,
+perform an LDAP search operation to find out what changed, and update
+your "add" routine accordingly.
+
+=item How can I create a group in Active Directory?
+
+Similar to accounts, groups need some AD-specific attributes too:
+
+  $mesg = $ldap->add( 'cn=NewGroup,cn=Users,dc=your,dc=ads,dc=domain',
+                      attrs => [
+                        objectClass => [ qw/top group/ ],
+                        cn => 'NewGroup',
+                        sAMAccountName => 'NewGroup',
+                        groupType => 0x80000002		# global, security enabled group
+                      ]
+                    );
+
+
+=item How do I search for disabled accounts in Active Directory
+
+The bit values in C<userAccountcontrol> require the LDAP_MATCHING_RULE_BIT_AND
+matching rule's OID to be used in an extensible filter term:
+
+  $mesg = $ldap->search( base   => 'cn=Users,dc=your,dc=ads,dc=domain',
+                         filter => '(&(objectclass=user)' .
+                                      (userAccountControl:1.2.840.113556.1.4.803:=2))',
+                         attrs  => [ '1.1' ]
+                       );
+
+
+=item How can I search for security groups in Active Directory
+
+With groups, the same applies to the C<groupType> bit-field:
+
+  $mesg = $ldap->search( base   => 'cn=Users,dc=your,dc=ads,dc=domain',
+                         filter => '(&(objectclass=group)' .
+                                      (groupType:1.2.840.113556.1.4.803:=2147483648))',
+                                      # 2147483648 = 0x80000000
+                         attrs  => [ '1.1' ]
+                       );
+
 =head2 How do I create a Microsoft Exchange 5.x user?
 
-This is a solution provide by a perl-ldap user.
+This is a solution provided by a perl-ldap user.
 
 This code works with ActiveState Perl running on WinNT 4. Please note that
 this requires the Win32::Perms module, and needs valid NT account info to
@@ -1317,7 +1377,7 @@ Perl-ldap contains convenience methods for Active Directory that
 allow one to perform this task very easily.
 
 Here's an example that demonstrates setting your own password
-(again almost no error checking):
+from C<$oldPW> to C<$newPW> (again almost no error checking):
 
   use Net::LDAP;
   use Net::LDAP::Extra qw(AD);
@@ -1333,7 +1393,8 @@ Here's an example that demonstrates setting your own password
   $ldap->unbind();
 
 
-And the same for perl-ldap versions before 0.49:
+And the same for perl-ldap versions before 0.49, where everything needs
+to be done by hand:
 
   use Net::LDAP;
   use Unicode::Map8;
