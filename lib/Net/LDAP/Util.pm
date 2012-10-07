@@ -55,7 +55,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.12";
+$VERSION = "0.13";
 
 =item ldap_error_name ( ERR )
 
@@ -135,7 +135,7 @@ my @err2desc = (
   undef,
   undef,
   undef,
-  undef,
+  "Proxy authorization failure",                         # 0x2F LDAP_PROXY_AUTHZ_FAILURE
   "Inappropriate authentication",                        # 0x30 LDAP_INAPPROPRIATE_AUTH
   "Invalid credentials",                                 # 0x31 LDAP_INVALID_CREDENTIALS
   "Insufficient access",                                 # 0x32 LDAP_INSUFFICIENT_ACCESS
