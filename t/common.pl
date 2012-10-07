@@ -163,13 +163,13 @@ sub compare_ldif {
   my($test,$mesg) = splice(@_,0,2);
 
   unless (ok(!$mesg->code, $mesg->error)) {
-    skip(2, $mesg->error);
+    skip($mesg->error, 2);
     return;
   }
 
   my $ldif = Net::LDAP::LDIF->new("$TEMPDIR/${test}-out.ldif","w", lowercase => 1);
   unless (ok($ldif, "Read ${test}-out.ldif")) {
-    skip(1,"Read error");
+    skip("Read error", 1);
     return;
   }
 
