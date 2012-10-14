@@ -9,7 +9,6 @@ use Socket qw(AF_INET AF_INET6 AF_UNSPEC);
 use IO::Socket;
 use IO::Select;
 use Tie::Hash;
-use vars qw($VERSION $LDAP_VERSION @ISA);
 use Convert::ASN1 qw(asn_read);
 use Net::LDAP::Message;
 use Net::LDAP::ASN qw(LDAPResponse);
@@ -31,9 +30,9 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 
 use constant CAN_IPV6 => eval { require IO::Socket::INET6 } ? 1 : 0;
 
-$VERSION 	= "0.49";
-@ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
-$LDAP_VERSION 	= 3;      # default LDAP protocol version
+our $VERSION 	= "0.49";
+our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
+our $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
 # Net::LDAP::Extra will only exist is someone use's the module. But we need
 # to ensure the package stash exists or perl will complain that we inherit

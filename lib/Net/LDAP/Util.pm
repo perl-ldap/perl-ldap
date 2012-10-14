@@ -31,11 +31,10 @@ the L<Net::LDAP> modules.
 
 =cut
 
-use vars qw($VERSION);
 require Exporter;
 require Net::LDAP::Constant;
-@ISA = qw(Exporter);
-@EXPORT_OK = qw(
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(
   ldap_error_name
   ldap_error_text
   ldap_error_desc
@@ -46,7 +45,7 @@ require Net::LDAP::Constant;
   escape_dn_value
   unescape_dn_value
 );
-%EXPORT_TAGS = (
+our %EXPORT_TAGS = (
 	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
 	filter	=> [ qw(escape_filter_value unescape_filter_value) ],
 	dn    	=> [ qw(canonical_dn ldap_explode_dn
@@ -55,7 +54,7 @@ require Net::LDAP::Constant;
 	                escape_dn_value unescape_dn_value) ],
 );
 
-$VERSION = "0.13";
+our $VERSION = "0.14";
 
 =item ldap_error_name ( ERR )
 

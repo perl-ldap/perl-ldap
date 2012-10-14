@@ -4,11 +4,10 @@
 
 package Net::LDAP::Control::VLV;
 
-use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
-@ISA = qw(Net::LDAP::Control);
-$VERSION = "0.03";
+our @ISA = qw(Net::LDAP::Control);
+our $VERSION = "0.04";
 
 use Net::LDAP::ASN qw(VirtualListViewRequest);
 use strict;

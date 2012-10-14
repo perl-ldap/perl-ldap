@@ -1,13 +1,13 @@
 package Net::LDAP::Extra::AD;
 
 use strict;
-use vars qw($VERSION @EXPORT);
+
 use Encode;
 use Exporter qw(import);
 use Net::LDAP::RootDSE;
 
-$VERSION = "0.02";
-@EXPORT = qw(is_AD is_ADAM reset_ADpassword change_ADpassword);
+our $VERSION = "0.03";
+our @EXPORT = qw(is_AD is_ADAM reset_ADpassword change_ADpassword);
 
 
 sub is_AD {

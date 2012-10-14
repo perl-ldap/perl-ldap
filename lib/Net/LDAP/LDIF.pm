@@ -7,7 +7,6 @@ package Net::LDAP::LDIF;
 use strict;
 use SelectSaver;
 require Net::LDAP::Entry;
-use vars qw($VERSION);
 
 use constant CHECK_UTF8 => $] > 5.007;
 
@@ -16,8 +15,8 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
+our $VERSION = "0.19";
 
-$VERSION = "0.18";
 
 my %mode = qw(w > r < a >>);
 

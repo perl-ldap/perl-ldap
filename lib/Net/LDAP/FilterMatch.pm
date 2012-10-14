@@ -16,8 +16,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-use vars qw($VERSION);
-$VERSION   = '0.18';
+our $VERSION   = '0.18';
 
 sub import {
   shift;
@@ -28,8 +27,7 @@ sub import {
 
 package Net::LDAP::Filter;
 
-use vars qw(@approxMatchers);
-@approxMatchers = qw(
+our @approxMatchers = qw(
   String::Approx
   Text::Metaphone
   Text::Soundex

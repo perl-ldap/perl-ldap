@@ -4,11 +4,10 @@
 
 package Net::LDAP::Intermediate::SyncInfo;
 
-use vars qw(@ISA $VERSION);
 use Net::LDAP::Intermediate;
 
-@ISA = qw(Net::LDAP::Intermediate);
-$VERSION = "0.02";
+our @ISA = qw(Net::LDAP::Intermediate);
+our $VERSION = "0.03";
 
 use Net::LDAP::ASN qw(syncInfoValue);
 use strict;

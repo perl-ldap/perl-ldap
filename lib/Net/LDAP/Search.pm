@@ -5,15 +5,15 @@
 package Net::LDAP::Search;
 
 use strict;
-use vars qw(@ISA $VERSION);
+
 use Net::LDAP::Message;
 use Net::LDAP::Entry;
 use Net::LDAP::Intermediate;
 use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
-@ISA = qw(Net::LDAP::Message);
-$VERSION = "0.13";
+our @ISA = qw(Net::LDAP::Message);
+our $VERSION = "0.14";
 
 
 sub first_entry { # compat
