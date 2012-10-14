@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.16";
+our $VERSION = "0.17";
 
 use Exporter qw(import);
 
