@@ -1,5 +1,7 @@
 #!perl
 
+use File::Compare;
+
 BEGIN {
   require "t/common.pl";
 }

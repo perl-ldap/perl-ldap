@@ -58,6 +58,7 @@ use Net::LDAP::LDIF;
 use Net::LDAP::Util qw(canonical_dn);
 use File::Path qw(rmtree);
 use File::Basename qw(basename);
+use File::Compare;
 
 my $pid;
 
@@ -187,17 +188,7 @@ sub compare_ldif {
 
   $ldif->done; # close the file;
 
-  ok(!compare("$TEMPDIR/${test}-out.ldif","data/${test}-cmp.ldif"), "data/${test}-cmp.ldif");
-}
-
-require File::Compare;
-
-sub compare($$) {
-  local(*FH1,*FH2);
-  not( open(FH1,"<".$_[0])
-       && open(FH2,"<".$_[1])
-       && 0 == File::Compare::compare(*FH1,*FH2, -s FH1)
-  );
+  ok(!compare("$TEMPDIR/${test}-out.ldif", "data/${test}-cmp.ldif"), "data/${test}-cmp.ldif");
 }
 
 sub ldif_populate {
