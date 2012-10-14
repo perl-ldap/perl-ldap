@@ -1,11 +1,14 @@
 #!perl
 
-BEGIN {
-  require "t/common.pl";
-  start_server(version => 3);
-}
+use Test::More;
 
-print "1..4\n";
+BEGIN { require "t/common.pl" }
+
+
+start_server(version => 3)
+? plan tests => 4
+: plan skip_all => 'no server';
+
 
 $ldap = client();
 ok($ldap, "client");

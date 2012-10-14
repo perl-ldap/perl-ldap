@@ -1,6 +1,7 @@
 #!perl
 # Testcase contributed by  Julian Onions <Julian.Onions@nexor.co.uk>
 
+use Test::More;
 use Net::LDAP::Filter;
 use Net::LDAP::ASN qw(Filter);
 use Convert::ASN1 qw(asn_dump);
@@ -9,7 +10,9 @@ my $asn = $Filter;
 
 my @tests = do { local $/=""; <DATA> };
 
-print "1..", 4*scalar(@tests), "\n";
+plan tests => 4 * scalar(@tests);
+
+
 my $testno = 0;
 my $test;
 foreach $test (@tests) {
@@ -24,30 +27,23 @@ foreach $test (@tests) {
 
     my $binary = pack("H*", join("", map { /\w+/g } $ber =~ /:((?: [\dA-Fa-f]{2}){1,16})/g));
 
-    $testno ++;
-    print "# ",$filter,"\n";
-    $filt = new Net::LDAP::Filter $filter or print "not ";
-    print "ok $testno\n";
-    $testno ++;
-    my $data = $asn->encode($filt) or print "# ",$asn->error,"\nnot ";
-    print "ok $testno\n";
-    $testno ++;
+    my $filt = new Net::LDAP::Filter $filter;
+    isa_ok($filt, Net::LDAP::Filter, "$filter");;
+
+    my $data = $asn->encode($filt);
+    ok($data, "$filter ASN.1 encode(".($asn->error || 0).')');
+
+    is($data, $binary, "$filter asn_dump");
     unless($data eq $binary) {
-	require Data::Dumper;
-	print Data::Dumper::Dumper($filt);
+	note explain($filt);
 	print "got    ", unpack("H*", $data), "\n";
 	asn_dump(\*STDOUT, $data);
 	print "wanted ", unpack("H*", $binary), "\n";
 	asn_dump(\*STDOUT, $binary);
-
-	print "not "
     }
-    print "ok $testno\n";
-    $testno ++;
 
     my $str = $filt->as_string;
-    print "# ", $str,"\nnot " unless $str eq $filter_out;
-    print "ok $testno\n";
+    is($str, $filter_out, "$filter as_string");
 }
 
 __DATA__

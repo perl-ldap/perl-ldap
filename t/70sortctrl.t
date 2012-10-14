@@ -24,6 +24,8 @@
 
 use vars qw(%sortctrl);
 
+use Test::More tests => 9;
+
 BEGIN { require "t/common.pl" }
 
 use Net::LDAP::LDIF;
@@ -34,75 +36,60 @@ use Net::LDAP::Constant qw(
 	LDAP_SUCCESS
 );
 
-unless ($EXTERNAL_TESTS) {
-  print "1..0 # Skip External tests disabled\n";
-  exit 0;
-}
+SKIP: {
+  skip('External tests disabled', 9)  unless ($EXTERNAL_TESTS);
 
-my($host, $base, $filter, $order) = @sortctrl{qw(host base filter order)};
+  my($host, $base, $filter, $order) = @sortctrl{qw(host base filter order)};
 
-my $ldap = $host && Net::LDAP->new($host, version => 3);
+  my $ldap = $host && Net::LDAP->new($host, version => 3);
 
-unless ($ldap) {
-  print "1..0 # Skip Cannot connect to host\n";
-  exit 0;
-}
+  skip('Cannot connect to host', 9)  unless ($ldap);
 
-my $dse  = $ldap && $ldap->root_dse;
+  my $dse  = $ldap && $ldap->root_dse;
 
-unless ($dse and grep { $_ eq LDAP_CONTROL_SORTREQUEST } $dse->get_value('supportedControl')) {
-  print "1..0 # Skip server does not support LDAP_CONTROL_SORTREQUEST\n";
-  exit;
-}
+  skip('server does not support LDAP_CONTROL_SORTREQUEST', 9)
+    unless ($dse and grep { $_ eq LDAP_CONTROL_SORTREQUEST } $dse->get_value('supportedControl'));
 
-print "1..9\n";
 
-Net::LDAP::LDIF->new(qw(- w))->write_entry($dse);
+  Net::LDAP::LDIF->new(qw(- w))->write_entry($dse);
 
-my $sort = Net::LDAP::Control::Sort->new(order => $order) or print "not ";
-print "ok 1\n";
+  my $sort = Net::LDAP::Control::Sort->new(order => $order);
+  isa_ok($sort, Net::LDAP::Control::Sort, 'Net::LDAP::Control::Sort object');
 
-my $mesg = $ldap->search(
+  my $mesg = $ldap->search(
 	      base	=> $base,
 	      control	=> [$sort],
 	      filter	=> $filter,
 	    );
+  is($mesg->code, LDAP_SUCCESS, 'search result');
 
-print "not " if $mesg->code;
-print "ok 2\n";
+  my ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
+  ok($resp, 'LDAP_CONTROL_SORTRESULT response');
 
-my ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT ) or print "not ";
-print "ok 3\n";
+  ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-$resp && $resp->result == LDAP_SUCCESS or print "not ";
-print "ok 4\n";
+  print "# ",$mesg->count,"\n";
 
-print "# ",$mesg->count,"\n";
+  my $dn1 = join ";", map { $_->dn } $mesg->entries;
 
-my $dn1 = join ";", map { $_->dn } $mesg->entries;
+  $sort = Net::LDAP::Control::Sort->new(order => "-$order");
+  isa_ok($sort, Net::LDAP::Control::Sort, 'Net::LDAP::Control::Sort object (reversse order)');
 
-$sort = Net::LDAP::Control::Sort->new(order => "-$order") or print "not ";
-print "ok 5\n";
-
-$mesg = $ldap->search(
+  $mesg = $ldap->search(
 	  base		=> $base,
 	  control	=> [$sort],
 	  filter	=> $filter,
 	);
+  is($mesg->code, LDAP_SUCCESS, 'search result');
 
-print "not " if $mesg->code;
-print "ok 6\n";
+  ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
+  ok($resp, 'LDAP_CONTROL_SORTRESULT response');
 
-($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT ) or print "not ";
-print "ok 7\n";
+  ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-$resp && $resp->result == LDAP_SUCCESS or print "not ";
-print "ok 8\n";
+  print "# ",$mesg->count,"\n";
 
-print "# ",$mesg->count,"\n";
+  my $dn2 = join ";", map { $_->dn } reverse $mesg->entries;
 
-my $dn2 = join ";", map { $_->dn } reverse $mesg->entries;
-
-print "not " unless $dn1 eq $dn2;
-print "ok 9\n";
-
+  is($dn1, $dn2, 'sort order');
+}

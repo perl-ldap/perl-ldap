@@ -1,11 +1,14 @@
 #!perl
 
-BEGIN {
-  require "t/common.pl";
-  start_server();
-}
+use Test::More;
 
-print "1..3\n";
+BEGIN { require "t/common.pl" }
+
+
+start_server()
+? plan tests => 3
+: plan skip_all => 'no server';
+
 
 $ldap = client();
 ok($ldap, 'client with IPv4/IPv6 auto-selection' .

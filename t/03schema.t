@@ -1,40 +1,36 @@
 #!perl -w
+
+use Test::More tests => 7;
 use Net::LDAP::Schema;
 
-print "1..7\n";
-
 my $schema = Net::LDAP::Schema->new( "data/schema.in" ) or die "Cannot open schema";
-print "ok 1\n";
+isa_ok($schema, Net::LDAP::Schema, 'load schema file');
 
 my @atts = $schema->all_attributes();
-print "not " unless @atts == 55;
-print "ok 2\n";
-
+is(@atts, 55, 'number of attribute types in schema');
 print "The schema contains ", scalar @atts, " attributes\n";
 
 my @ocs = $schema->all_objectclasses();
-print "not " unless @ocs == 22;
-print "ok 3\n";
+is(@ocs, 22, 'number of object classes in schema');
 print "The schema contains ", scalar @ocs, " object classes\n";
 
 @atts = $schema->must( "person" );
-print "not " unless join(' ', sort map $_->{name}, @atts) eq join(' ',sort qw(cn sn objectClass));
-print "ok 4\n";
+is(join(' ', sort map $_->{name}, @atts), join(' ',sort qw(cn sn objectClass)), 'mandatory attributes');
 print "The 'person' OC must have these attributes [",
 		join( ",", map $_->{name}, @atts ),
 		"]\n";
+
 @atts = $schema->may( "mhsOrganizationalUser" );
-print "not " if @atts;
-print "ok 5\n";
+ok(!@atts, 'optional attributes');
 print "The 'mhsOrganizationalUser' OC may have these attributes [",
 		join( ",", map $_->{name}, @atts ),
 		"]\n";
 
-print "not " if defined $schema->attribute('distinguishedName')->{max_length};
-print "ok 6\n";
+ok(! defined($schema->attribute('distinguishedName')->{max_length}), 'infinite length attribute type');
 
-print "not " unless $schema->attribute('userPassword')->{max_length} == 128;
-print "ok 7\n";
+is($schema->attribute('userPassword')->{max_length}, 128, 'attribute type max. length');
 
 use Data::Dumper;
 print Dumper($schema);
+
+0;

@@ -1,5 +1,7 @@
 #!perl -w
 
+use Test::More;
+
 BEGIN {
   for (1,2) { require Net::LDAP::Constant; }
 }
@@ -107,12 +109,13 @@ my @constant = qw(
   LDAP_REFERRAL_LIMIT_EXCEEDED
 );
 
-print "1..", scalar(@constant),"\n";
+plan tests => scalar(@constant);
+
+
 my $i = 0;
-while(my $const = $constant[$i]) {
+while (my $const = $constant[$i]) {
   my $name = ldap_error_name($i);
   $const = sprintf("LDAP error code %d(0x%02X)",$i,$i) unless $const =~ /\D/;
-  print "not " if !$name or $name ne $const;
+  ok($name && $name eq $const, "$const");
   ++$i;
-  print "ok $i  # $name $const\n";
 }

@@ -1,25 +1,18 @@
 #!perl
 
+use Test::More;
 use File::Compare;
 
-BEGIN {
-  require "t/common.pl";
-}
+BEGIN { require "t/common.pl" }
 
-unless (eval { require XML::SAX::Base; 1}) {
-  print "1..0 # XML::SAX::Base not installed\n";
-  exit;
-}
 
-unless (eval { require XML::SAX::Writer; 1}) {
-  print "1..0 # XML::SAX::Writer not installed\n";
-  exit;
-}
+(eval { require XML::SAX::Base } && eval { require XML::SAX::Writer })
+? plan tests => 1
+: plan skip_all => 'XML::SAX::Base and XML::SAX::Writer need to be installed';
+
 
 require Net::LDAP::LDIF;
 require Net::LDAP::DSML;
-
-print "1..1\n";
 
 my $infile   = "data/00-in.ldif";
 my $outfile1 = "$TEMPDIR/05-out1.dsml";

@@ -53,6 +53,7 @@ BEGIN {
   die "$TEMPDIR is not a directory" unless -d $TEMPDIR;
 }
 
+use Test::More;
 use Net::LDAP;
 use Net::LDAP::LDIF;
 use Net::LDAP::Util qw(canonical_dn);
@@ -65,14 +66,11 @@ my $pid;
 sub start_server {
   my %arg = (version => 3, @_);
 
-  unless ($LDAP_VERSION >= $arg{version}
+  return 0
+    unless ($LDAP_VERSION >= $arg{version}
 	and $LDAPD[0] and -x $LDAPD[0]
 	and (!$arg{ssl} or $SSL_PORT)
-	and (!$arg{ipc} or $IPC_SOCK))
-  {
-    print "1..0 # Skip No server\n";
-    exit;
-  }
+	and (!$arg{ipc} or $IPC_SOCK));
 
   if ($CONF_IN and -f $CONF_IN) {
     # Create slapd config file
@@ -96,7 +94,7 @@ sub start_server {
   mkdir($TESTDB, 0777);
   die "$TESTDB is not a directory" unless -d $TESTDB;
 
-  warn "@LDAPD" if $ENV{TEST_VERBOSE};
+  note "@LDAPD"  if $ENV{TEST_VERBOSE};
 
   my $log = $TEMPDIR . "/" . basename($0,'.t');
 
@@ -111,6 +109,7 @@ sub start_server {
   }
 
   sleep 2; # wait for server to start
+  return 1;
 }
 
 sub kill_server {
@@ -209,40 +208,6 @@ sub ldif_populate {
     }
   }
   $ok;
-}
-
-my $number = 0;
-sub ok {
-	my ($condition, $name) = @_;
-
-	my $message = $condition ? "ok " : "not ok ";
-	$message .= ++$number;
-	$message .= " # $name" if defined $name;
-	print $message, "\n";
-	return $condition;
-}
-
-sub is {
-	my ($got, $expected, $name) = @_;
-
-	for ($got, $expected) {
-		$_ = 'undef' unless defined $_;
-	}
-
-	unless (ok($got eq $expected, $name)) {
-		warn "Got: '$got'\nExpected: '$expected'\n" . join(' ', caller) . "\n";
-	}
-}
-
-sub skip {
-	my ($reason, $num) = @_;
-	$reason ||= '';
-	$number ||= 1;
-
-	for (1 .. $num) {
-		$number++;
-		print "ok $number # skip $reason\n";
-	}
 }
 
 1;

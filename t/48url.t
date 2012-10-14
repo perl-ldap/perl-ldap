@@ -1,19 +1,19 @@
 #!perl
 
-BEGIN {
-  require "t/common.pl";
-  start_server();
-}
+use Test::More;
 
-my $num_tests = @URL * 5 + 7;
+BEGIN { require "t/common.pl" }
 
-print "1..$num_tests\n";
+
+start_server()
+? plan tests => scalar(@URL) * 5 + 7
+: plan skip_all => 'no server';
+
 
 $ldap = client();
 ok($ldap, "client");
 
 $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
-
 ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
 
 ok(ldif_populate($ldap, "data/40-in.ldif"), "data/40-in.ldif");
