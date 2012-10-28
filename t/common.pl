@@ -130,9 +130,11 @@ sub client {
   my $ldap;
   my $count;
   local $^W = 0;
+  my %opt = map { $_ => $arg{$_} } grep { exists($arg{$_}) } qw/inet4 inet6 debug/;
+
   if ($arg{ssl}) {
     require Net::LDAPS;
-    until($ldap = Net::LDAPS->new($HOST, port => $SSL_PORT, version => 3)) {
+    until($ldap = Net::LDAPS->new($HOST, %opt, port => $SSL_PORT, version => 3)) {
       die "ldaps://$HOST:$SSL_PORT/ $@" if ++$count > 10;
       sleep 1;
     }
@@ -146,13 +148,13 @@ sub client {
   }
   elsif ($arg{url}) {
     print "Trying $arg{url}\n";
-    until($ldap = Net::LDAP->new($arg{url})) {
+    until($ldap = Net::LDAP->new($arg{url}, %opt)) {
       die "$arg{url} $@" if ++$count > 10;
       sleep 1;
     }
   }
   else {
-    until($ldap = Net::LDAP->new($HOST, port => $PORT, version => $LDAP_VERSION)) {
+    until($ldap = Net::LDAP->new($HOST, %opt, port => $PORT, version => $LDAP_VERSION)) {
       die "ldap://$HOST:$PORT/ $@" if ++$count > 10;
       sleep 1;
     }
