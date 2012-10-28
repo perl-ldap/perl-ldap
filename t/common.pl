@@ -6,8 +6,8 @@ BEGIN {
 
   undef $SERVER_EXE unless $SERVER_EXE and -x $SERVER_EXE;
 
-  # If your host cannot be contacted as localhost, change this
-  $HOST     ||= '127.0.0.1';
+  # fallback for the host to connect - needs to support IPv4 & IPv6
+  $HOST     ||= 'localhost';
 
   # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
