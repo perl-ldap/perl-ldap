@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.21';
+our $VERSION   = '0.22';
 
 sub import {
   shift;
@@ -24,6 +24,8 @@ sub import {
 }
 
 package Net::LDAP::Filter;
+
+use Net::LDAP::Util qw(ldap_explode_dn);
 
 our @approxMatchers = qw(
   String::Approx
@@ -185,6 +187,57 @@ sub _filterMatch($@)
     else {
       # fall back on build-in logic
       $match='_cis_' . $op;
+    }
+
+    return eval( "$match".'($assertion,$op,@values)' ) ;
+  }
+  elsif ($op eq 'extensibleMatch') {
+    my @attrs = $args->{type} ? ( $args->{type} ) : ();
+    my $assertion = $args->{matchValue};
+    my $match;
+    my @values;
+
+    if ($schema) {
+      my $mr;
+
+      # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
+      if (defined($args->{matchingRule})) {
+        my $mrhref = $schema->matchingrule($args->{matchingRule});
+        $mr = $mrhref->{name}  if ($mrhref);
+        # if no attribute was given, get all attribute this matching rule applies to
+        if (!@attrs) {
+          my $mruhref = $schema->matchingruleuse($args->{matchingRule});
+          return undef  if (!$mruhref);
+          @attrs = @{$mruhref->{applies}};
+        }
+      }
+      else {
+        return  undef if (!@attrs);
+        $mr = $schema->matchingrule_for_attribute($attrs[0], 'equality');
+      }
+
+      return undef  if (!$mr);
+      $match = '_'.$mr;
+    }
+    else {
+      # fall back on build-in logic
+      $match = '_cis_equalityMatch';
+    }
+
+    if ($args->{dnAttributes}) {
+      # get matching attributes' values from DN
+      my $exploded = ldap_explode_dn($entry->dn, casefold => 'lower');
+      my %dnattrs;
+      return undef  if (!$exploded);
+      foreach my $elem (@{$exploded}) {
+        map { push(@{$dnattrs{$_}}, $elem->{$_}) } keys(%{$elem});
+      }
+      @values = map { ($dnattrs{$_}) ? @{$dnattrs{$_}} : () } (@attrs) ? @attrs : keys(%dnattrs);
+    }
+    else {
+      # regular case: get matching attributes' values
+      return undef  if (!@attrs);
+      @values = map { $entry->get_value($_); } @attrs;
     }
 
     return eval( "$match".'($assertion,$op,@values)' ) ;
