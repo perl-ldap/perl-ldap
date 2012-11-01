@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.20';
+our $VERSION   = '0.21';
 
 sub import {
   shift;
@@ -50,37 +50,62 @@ sub _cis_approxMatch($$@);
 sub _cis_substrings($$@);
 sub _exact_substrings($$@);
 
-# all known matches from the OL 2.2 schema,
-*_bitStringMatch = \&_exact_equalityMatch;
-*_caseExactIA5Match = \&_exact_equalityMatch;
-*_caseExactIA5SubstringsMatch = \&_exact_substrings;
-*_caseExactMatch = \&_exact_equalityMatch;
-*_caseExactOrderingMatch = \&_exact_orderingMatch;
-*_caseExactSubstringsMatch = \&_exact_substrings;
-*_caseIgnoreIA5Match = \&_cis_equalityMatch;
-*_caseIgnoreIA5SubstringsMatch = \&_cis_substrings;
-*_caseIgnoreMatch = \&_cis_equalityMatch;
-*_caseIgnoreOrderingMatch = \&_cis_orderingMatch;
-*_caseIgnoreSubstringsMatch = \&_cis_substrings;
-*_certificateExactMatch = \&_exact_equalityMatch;
-*_certificateMatch = \&_exact_equalityMatch;
-*_distinguishedNameMatch = \&_exact_equalityMatch;
-*_generalizedTimeMatch = \&_exact_equalityMatch;
-*_generalizedTimeOrderingMatch = \&_exact_orderingMatch;
-*_integerFirstComponentMatch = \&_exact_equalityMatch;
-*_integerMatch = \&_numeric_equalityMatch;
-*_integerOrderingMatch = \&_numeric_orderingMatch;
-*_numericStringMatch = \&_numeric_equalityMatch;
-*_numericStringOrderingMatch = \&_numeric_orderingMatch;
-*_numericStringSubstringsMatch = \&_numeric_substrings;
-*_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch; # this needs to be reworked
-*_objectIdentifierMatch = \&_exact_equalityMatch;
-*_octetStringMatch = \&_exact_equalityMatch;
-*_octetStringOrderingMatch = \&_exact_orderingMatch;
-*_octetStringSubstringsMatch = \&_exact_substrings;
-*_telephoneNumberMatch = \&_exact_equalityMatch;
-*_telephoneNumberSubstringsMatch = \&_exact_substrings;
-*_uniqueMemberMatch = \&_cis_equalityMatch;          # this needs to be reworked
+# all known matches from the OL 2.4 schema,
+#*_allComponentsMatch
+*_attributeCertificateExactMatch      = \&_exact_equalityMatch;
+*_attributeCertificateMatch           = \&_exact_equalityMatch;
+*_authPasswordMatch                   = \&_exact_equalityMatch;	# this needs to be reworked
+*_authzMatch                          = \&_exact_equalityMatch;
+*_bitStringMatch                      = \&_exact_equalityMatch;
+*_caseExactIA5Match                   = \&_exact_equalityMatch;
+*_caseExactIA5SubstringsMatch         = \&_exact_substrings;
+*_caseExactMatch                      = \&_exact_equalityMatch;
+*_caseExactOrderingMatch              = \&_exact_orderingMatch;
+*_caseExactSubstringsMatch            = \&_exact_substrings;
+*_caseIgnoreIA5Match                  = \&_cis_equalityMatch;
+*_caseIgnoreIA5SubstringsMatch        = \&_cis_substrings;
+*_caseIgnoreListMatch                 = \&_cis_equalityMatch;	# this needs to be reworked
+*_caseIgnoreListSubstringsMatch       = \&_cis_substrings;	# this needs to be reworked
+*_caseIgnoreMatch                     = \&_cis_equalityMatch;
+*_caseIgnoreOrderingMatch             = \&_cis_orderingMatch;
+*_caseIgnoreSubstringsMatch           = \&_cis_substrings;
+*_certificateExactMatch               = \&_exact_equalityMatch;
+*_certificateListExactMatch           = \&_exact_equalityMatch;	# this needs to be reworked
+*_certificateListMatch                = \&_exact_equalityMatch;	# this needs to be reworked
+*_certificateMatch                    = \&_exact_equalityMatch;
+#*_componentFilterMatch
+*_CSNMatch                            = \&_exact_equalityMatch;	# this may need to be reworked
+*_CSNOrderingMatch                    = \&_exact_orderingMatch;	# this may need to be reworked
+*_CSNSIDMatch                         = \&_exact_equalityMatch;	# this may need to be reworked
+#*_directoryComponentsMatch
+*_directoryStringApproxMatch          = \&_cis_approxMatch;
+*_distinguishedNameMatch              = \&_exact_equalityMatch;
+#*_dnOneLevelMatch
+#*_dnSubordinateMatch
+#*_dnSubtreeMatch
+#*_dnSuperiorMatch
+*_generalizedTimeMatch                = \&_exact_equalityMatch;
+*_generalizedTimeOrderingMatch        = \&_exact_orderingMatch;
+*_IA5StringApproxMatch                = \&_cis_approxMatch;
+*_integerFirstComponentMatch          = \&_exact_equalityMatch;
+*_integerMatch                        = \&_numeric_equalityMatch;
+*_integerOrderingMatch                = \&_numeric_orderingMatch;
+*_numericStringMatch                  = \&_numeric_equalityMatch;
+*_numericStringOrderingMatch          = \&_numeric_orderingMatch;
+*_numericStringSubstringsMatch        = \&_numeric_substrings;
+*_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch;	# this needs to be reworked
+*_objectIdentifierMatch               = \&_exact_equalityMatch;
+*_octetStringMatch                    = \&_exact_equalityMatch;
+*_octetStringOrderingMatch            = \&_exact_orderingMatch;
+*_octetStringSubstringsMatch          = \&_exact_substrings;
+#*_presentationAddressMatch
+#*_protocolInformationMatch
+#*_rdnMatch
+*_telephoneNumberMatch                = \&_exact_equalityMatch;
+*_telephoneNumberSubstringsMatch      = \&_exact_substrings;
+*_uniqueMemberMatch                   = \&_cis_equalityMatch;	# this needs to be reworked
+*_UUIDMatch                           = \&_exact_equalityMatch;	# this needs to be reworked
+*_UUIDOrderingMatch                   = \&_exact_orderingMatch;	# this needs to be reworked
 
 sub match
 {
