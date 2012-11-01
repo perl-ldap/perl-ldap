@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.19';
+our $VERSION   = '0.20';
 
 sub import {
   shift;
@@ -137,11 +137,11 @@ sub _filterMatch($@)
     my $match;
 
     if ($op eq 'substrings') {
-      $attr = $args->{'type'};
+      $attr = $args->{type};
       # build a regexp as assertion value
       $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
-      $assertion =  '^'. $assertion if (exists $args->{'substrings'}[0]{'initial'});
-      $assertion .= '$'     if (exists $args->{'substrings'}[-1]{'final'});
+      $assertion =  '^'. $assertion  if (exists $args->{'substrings'}[0]{'initial'});
+      $assertion .= '$'              if (exists $args->{'substrings'}[-1]{'final'});
     }
     else {
       $attr = $args->{'attributeDesc'};
@@ -151,10 +151,11 @@ sub _filterMatch($@)
     my @values = $entry->get_value($attr);
 
     # approx match is not standardized in schema
-    if ($schema and ($op ne 'approxMatch') ) {
+    if ($schema and ($op ne 'approxMatch')) {
       # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
-      $match='_' . $schema->matchingrule_for_attribute( $attr, $op2schema{$op})
-        or return undef;
+      my $mr = $schema->matchingrule_for_attribute($attr, $op2schema{$op});
+      return undef  if (!$mr);
+      $match = '_' . $mr;
     }
     else {
       # fall back on build-in logic
