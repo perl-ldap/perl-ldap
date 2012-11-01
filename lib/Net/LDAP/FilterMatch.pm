@@ -1,11 +1,9 @@
-# ===========================================================================
 # Net::LDAP::FilterMatch
 #
 # LDAP entry matching
 #
-# Hans Klunder <hans.klunder@bigfoot.com>
-# Peter Marschall <peter@adpm.de>
-#  Copyright (c) 2005-2006.
+# Copyright (c) 2005-2006 Hans Klunder <hans.klunder@bigfoot.com>
+# Copyright (c) 2005-2012 Peter Marschall <peter@adpm.de>
 #
 # See below for documentation.
 #
@@ -16,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.18';
+our $VERSION   = '0.19';
 
 sub import {
   shift;
@@ -35,6 +33,12 @@ our @approxMatchers = qw(
 
 sub _filterMatch($@);
 
+# specific matching rules
+sub _booleanMatch($$@);
+sub _integerBitAndMatch($$@);
+sub _integerBitOrMatch($$@);
+
+# generic matching rules
 sub _cis_equalityMatch($$@);
 sub _exact_equalityMatch($$@);
 sub _numeric_equalityMatch($$@);
@@ -48,7 +52,6 @@ sub _exact_substrings($$@);
 
 # all known matches from the OL 2.2 schema,
 *_bitStringMatch = \&_exact_equalityMatch;
-*_booleanMatch = \&_cis_equalityMatch;             # this might need to be reworked
 *_caseExactIA5Match = \&_exact_equalityMatch;
 *_caseExactIA5SubstringsMatch = \&_exact_substrings;
 *_caseExactMatch = \&_exact_equalityMatch;
@@ -64,8 +67,6 @@ sub _exact_substrings($$@);
 *_distinguishedNameMatch = \&_exact_equalityMatch;
 *_generalizedTimeMatch = \&_exact_equalityMatch;
 *_generalizedTimeOrderingMatch = \&_exact_orderingMatch;
-*_integerBitAndMatch = \&_exact_equalityMatch;      # this needs to be reworked
-*_integerBitOrMatch = \&_exact_equalityMatch;       # this needs to be reworked
 *_integerFirstComponentMatch = \&_exact_equalityMatch;
 *_integerMatch = \&_numeric_equalityMatch;
 *_integerOrderingMatch = \&_numeric_orderingMatch;
@@ -165,6 +166,38 @@ sub _filterMatch($@)
 
   return undef;	# all other filters => fail with error
 }
+
+# specific matching rules
+
+sub _booleanMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+
+  return undef  if ($assertion !~ /^(?:TRUE|FALSE)$/i);
+  return 1      if (!@_ && $assertion =~ /^FALSE$/i);
+  return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
+}
+
+sub _integerBitAndMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = grep(/^-?\d+$/, @_);
+
+  return (grep { ($assertion & $_) == $assertion } @vals) ? 1 : 0;
+}
+
+sub _integerBitOrMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = grep(/^-?\d+$/, @_);
+
+  return (grep { ($assertion & $_) != 0 } @vals) ? 1 : 0;
+}
+
+# generic matching rules
 
 sub _cis_equalityMatch($$@)
 {
