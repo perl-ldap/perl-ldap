@@ -33,3 +33,18 @@ ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
 compare_ldif("40",$mesg,$mesg->sorted);
 
 
+SKIP: {
+  skip('IO::Socket::SSL not installed')
+    unless (eval { require IO::Socket::SSL; } );
+
+  $mesg = $ldap->start_tls;
+  ok(!$mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
+
+  $mesg = $ldap->start_tls;
+  ok($mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
+
+  $mesg = $ldap->search(base => $BASEDN, filter => 'objectclass=*');
+  ok(!$mesg->code, "search: " . $mesg->code . ": " . $mesg->error);
+
+  compare_ldif("40",$mesg,$mesg->sorted);
+}
