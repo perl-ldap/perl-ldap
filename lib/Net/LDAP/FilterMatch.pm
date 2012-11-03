@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.22';
+our $VERSION   = '0.23';
 
 sub import {
   shift;
@@ -25,7 +25,7 @@ sub import {
 
 package Net::LDAP::Filter;
 
-use Net::LDAP::Util qw(ldap_explode_dn);
+use Net::LDAP::Util qw(canonical_dn ldap_explode_dn);
 
 our @approxMatchers = qw(
   String::Approx
@@ -37,6 +37,7 @@ sub _filterMatch($@);
 
 # specific matching rules
 sub _booleanMatch($$@);
+sub _distinguishedNameMatch($$@);
 sub _integerBitAndMatch($$@);
 sub _integerBitOrMatch($$@);
 
@@ -81,7 +82,6 @@ sub _exact_substrings($$@);
 *_CSNSIDMatch                         = \&_exact_equalityMatch;	# this may need to be reworked
 #*_directoryComponentsMatch
 *_directoryStringApproxMatch          = \&_cis_approxMatch;
-*_distinguishedNameMatch              = \&_exact_equalityMatch;
 #*_dnOneLevelMatch
 #*_dnSubordinateMatch
 #*_dnSubtreeMatch
@@ -256,6 +256,16 @@ sub _booleanMatch($$@)
   return undef  if ($assertion !~ /^(?:TRUE|FALSE)$/i);
   return 1      if (!@_ && $assertion =~ /^FALSE$/i);
   return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
+}
+
+sub _distinguishedNameMatch($$@)
+{
+  my $assertion = canonical_dn(shift);
+  my $op = shift;
+  my @vals = map { canonical_dn($_) } @_;
+
+  return undef  if (!defined($assertion));
+  return grep(/^\Q$assertion\E$/i, @vals) ? 1 : 0;
 }
 
 sub _integerBitAndMatch($$@)
