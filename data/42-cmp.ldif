@@ -144,8 +144,8 @@ dn: cn=Jane Doe, ou=Alumni Association, ou=People, o=University of Michigan, c
 objectclass: OpenLDAPperson
 cn: Jane Doe
 cn: Jane Alverson
-uid: jane
 sn: Doe
+uid: jane
 title: Programmer Analyst, UM Alumni Association
 postaladdress: Alumni Association $ 111 Maple St $ Ann Arbor, MI 48109
 seealso: cn=All Staff, ou=Groups, o=University of Michigan, c=US
