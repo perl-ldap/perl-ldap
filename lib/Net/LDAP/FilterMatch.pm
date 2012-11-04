@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.24';
+our $VERSION   = '0.25';
 
 sub import {
   shift;
@@ -100,7 +100,7 @@ sub _tel_substrings($$@);
 *_numericStringOrderingMatch          = \&_numeric_orderingMatch;
 *_numericStringSubstringsMatch        = \&_numeric_substrings;
 *_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch;	# this needs to be reworked
-*_objectIdentifierMatch               = \&_exact_equalityMatch;
+*_objectIdentifierMatch               = \&_cis_equalityMatch;
 *_octetStringMatch                    = \&_exact_equalityMatch;
 *_octetStringOrderingMatch            = \&_exact_orderingMatch;
 *_octetStringSubstringsMatch          = \&_exact_substrings;
