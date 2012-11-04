@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.23';
+our $VERSION   = '0.24';
 
 sub import {
   shift;
@@ -45,6 +45,7 @@ sub _integerBitOrMatch($$@);
 sub _cis_equalityMatch($$@);
 sub _exact_equalityMatch($$@);
 sub _numeric_equalityMatch($$@);
+sub _tel_equalityMatch($$@);
 sub _cis_orderingMatch($$@);
 sub _numeric_orderingMatch($$@);
 sub _cis_greaterOrEqual($$@);
@@ -52,6 +53,7 @@ sub _cis_lessOrEqual($$@);
 sub _cis_approxMatch($$@);
 sub _cis_substrings($$@);
 sub _exact_substrings($$@);
+sub _tel_substrings($$@);
 
 # all known matches from the OL 2.4 schema,
 #*_allComponentsMatch
@@ -86,6 +88,8 @@ sub _exact_substrings($$@);
 #*_dnSubordinateMatch
 #*_dnSubtreeMatch
 #*_dnSuperiorMatch
+*_facsimileNumberMatch                = \&_tel_equalityMatch;
+*_facsimileNumberSubstringsMatch      = \&_tel_substrings;
 *_generalizedTimeMatch                = \&_exact_equalityMatch;
 *_generalizedTimeOrderingMatch        = \&_exact_orderingMatch;
 *_IA5StringApproxMatch                = \&_cis_approxMatch;
@@ -103,8 +107,8 @@ sub _exact_substrings($$@);
 #*_presentationAddressMatch
 #*_protocolInformationMatch
 #*_rdnMatch
-*_telephoneNumberMatch                = \&_exact_equalityMatch;
-*_telephoneNumberSubstringsMatch      = \&_exact_substrings;
+*_telephoneNumberMatch                = \&_tel_equalityMatch;
+*_telephoneNumberSubstringsMatch      = \&_tel_substrings;
 *_uniqueMemberMatch                   = \&_cis_equalityMatch;	# this needs to be reworked
 *_UUIDMatch                           = \&_exact_equalityMatch;	# this needs to be reworked
 *_UUIDOrderingMatch                   = \&_exact_orderingMatch;	# this needs to be reworked
@@ -312,6 +316,18 @@ sub _numeric_equalityMatch($$@)
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
 }
 
+sub _tel_equalityMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = map { s/\+/00/; s/\D//g; $_ } grep { /^\+?[\d\s-]+$/ } @_;
+
+  $assertion =~ s/^\+/00/;
+  $assertion =~ s/\D//g;
+  return undef  if (!@vals or $assertion =~ /^$/);
+  return (grep { $assertion eq $_ } @vals) ? 1 : 0;
+}
+
 sub _cis_orderingMatch($$@)
 {
   my $assertion = shift;
@@ -376,6 +392,19 @@ sub _exact_substrings($$@)
 
   return 1 if ($regex =~ /^$/);
   return grep(/$regex/, @_) ? 1 : 0;
+}
+
+sub _tel_substrings($$@)
+{
+  my $regex = shift;
+  my $op = shift;
+  my @vals = map { s/\+/00/; s/\D//g; $_ } grep { /^\+?[\d\s-]+$/ } @_;
+
+  $regex =~ s/\\\+/00/;
+  $regex =~ s/\\.//g;
+  $regex =~ s/[^\d\.\*\$\^]//g;
+  return undef  if (!@vals or $regex =~ /^$/);
+  return grep(/$regex/, @vals) ? 1 : 0;
 }
 
 # this one is here in case we don't use schema
