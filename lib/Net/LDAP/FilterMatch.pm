@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.25';
+our $VERSION   = '0.26';
 
 sub import {
   shift;
@@ -125,7 +125,7 @@ sub match
 # map Ops to schema matches
 my %op2schema = qw(
 	equalityMatch	equality
-	greaterOrEqual	equality
+	greaterOrEqual	ordering
 	lessOrEqual	ordering
 	approxMatch	approx
 	substrings	substr
