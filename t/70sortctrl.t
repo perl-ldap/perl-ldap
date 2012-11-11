@@ -5,14 +5,6 @@
 # that the order of entries returned by 'attr' is the exact
 # opposite of '-attr' this is not guaranteed if two entries have
 # the same value for attr.
-#
-# Obviously the filter should be specific enough to ensure that
-# a relatively small set of entries is returned
-#
-# TODO:
-#
-# This test should be expanded to test sort controls with
-# more than one attribute specified.
 
 use Test::More;
 
@@ -27,8 +19,14 @@ use Net::LDAP::Constant qw(
 );
 
 
+# @testcases is a list of ($order => $reversed) tuples
+my @testcases = (
+	[ 'cn:2.5.13.3' => '-cn:2.5.13.3' ] ,
+	[ 'sn:2.5.13.3 uid:2.5.13.3' => '-sn:2.5.13.3 -uid:2.5.13.3' ]
+);
+
 start_server()
-? plan tests => 13
+? plan tests => (4 + scalar(@testcases) * 9)
 : plan skip_all => 'no server';
 
 
@@ -51,43 +49,57 @@ SKIP: {
 
   ok(ldif_populate($ldap, "data/40-in.ldif"), "data/40-in.ldif");
   
-  my $sort = Net::LDAP::Control::Sort->new(order => 'cn:2.5.13.3');
-  isa_ok($sort, Net::LDAP::Control::Sort, 'sort control object');
+  foreach my $elem (@testcases) {
+    my ($ordered,$reversed) = @{$elem};
+    my @attrs = map { s/:.*$//; $_ } split(/\s+/, $ordered);
+    my $sort = Net::LDAP::Control::Sort->new(order => $ordered);
+    isa_ok($sort, Net::LDAP::Control::Sort, "sort control object");
 
-  my $mesg = $ldap->search(
+    my $mesg = $ldap->search(
 	      base	=> $BASEDN,
 	      filter	=> '(objectclass=OpenLDAPperson)',
 	      control	=> [ $sort ],
 	    );
-  is($mesg->code, LDAP_SUCCESS, "search: " . $mesg->code . ": " . $mesg->error);
+    is($mesg->code, LDAP_SUCCESS, "search: " . $mesg->code . ": " . $mesg->error);
 
-  my ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
-  ok($resp, 'LDAP_CONTROL_SORTRESULT response');
+    my ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
+    ok($resp, 'LDAP_CONTROL_SORTRESULT response');
 
-  ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
+    ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-  #print "# ",$mesg->count,"\n";
+    #note $mesg->count;
+    if ($ENV{TEST_VERBOSE}) {
+      foreach my $e ($mesg->entries) {
+        note join(':', map { join(',',$e->get_value($_)) } @attrs);
+      }
+    }
 
-  my $dn1 = join ";", map { $_->dn } $mesg->entries;
+    my $dn1 = join ";", map { $_->dn } $mesg->entries;
 
-  $sort = Net::LDAP::Control::Sort->new(order => "-cn:2.5.13.3");
-  isa_ok($sort, Net::LDAP::Control::Sort, 'sort control object (reverse order)');
+    $sort = Net::LDAP::Control::Sort->new(order => $reversed);
+    isa_ok($sort, Net::LDAP::Control::Sort, "sort control object (reversed)");
 
-  $mesg = $ldap->search(
+    $mesg = $ldap->search(
 	  base		=> $BASEDN,
 	  filter	=> '(objectclass=OpenLDAPperson)',
 	  control	=> [ $sort ],
 	);
-  is($mesg->code, LDAP_SUCCESS, 'search result');
+    is($mesg->code, LDAP_SUCCESS, 'search result');
 
-  ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
-  ok($resp, 'LDAP_CONTROL_SORTRESULT response');
+    ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
+    ok($resp, 'LDAP_CONTROL_SORTRESULT response');
 
-  ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
+    ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-  #print "# ",$mesg->count,"\n";
+    #note $mesg->count;
+    if ($ENV{TEST_VERBOSE}) {
+      foreach my $e (reverse $mesg->entries) {
+        note join(':', map { join(',',$e->get_value($_)) } @attrs);
+      }
+    }
 
-  my $dn2 = join ";", map { $_->dn } reverse $mesg->entries;
+    my $dn2 = join ";", map { $_->dn } reverse $mesg->entries;
 
-  is($dn1, $dn2, 'sort order');
+    is($dn1, $dn2, 'sort order');
+  }
 }
