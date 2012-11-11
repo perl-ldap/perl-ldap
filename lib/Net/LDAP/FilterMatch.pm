@@ -14,7 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-our $VERSION   = '0.26';
+our $VERSION   = '0.27';
 
 sub import {
   shift;
@@ -426,26 +426,27 @@ sub _cis_greaterOrEqual($$@)
 
 sub _cis_approxMatch($$@)
 {
-  my $assertion=shift;
-  my $op=shift;
+  my $assertion = lc(+shift);
+  my $op = shift;
+  my @vals = map(lc, @_);
 
   foreach (@approxMatchers) {
     # print "using $_\n";
     if (/String::Approx/){
-      return String::Approx::amatch($assertion, @_) ? 1 : 0;
+      return String::Approx::amatch($assertion, @vals) ? 1 : 0;
     }
     elsif (/Text::Metaphone/){
       my $metamatch = Text::Metaphone::Metaphone($assertion);
-      return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @_) ? 1 : 0;
+      return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @vals) ? 1 : 0;
     }
     elsif (/Text::Soundex/){
       my $smatch = Text::Soundex::soundex($assertion);
-      return grep((Text::Soundex::soundex($_) eq $smatch), @_) ? 1 : 0;
+      return grep((Text::Soundex::soundex($_) eq $smatch), @vals) ? 1 : 0;
     }
   }
-  #we really have nothing, use plain regexp
-  return 1 if ($assertion =~ /^$/);
-  return grep(/^$assertion$/i, @_) ? 1 : 0;
+  # we really have nothing, use plain regexp
+  return 1  if ($assertion =~ /^$/);
+  return grep(/^$assertion$/i, @vals) ? 1 : 0;
 }
 
 1;

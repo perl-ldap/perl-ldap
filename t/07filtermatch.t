@@ -154,6 +154,15 @@ yes		(cn=*)
 
 ## approx match
 yes		(cn~=Jonathon Doe)
+yes		(cn~=jonathon doe)
+yes		(cn~=jonathan doe)
+yes		(cn~=jonothan doe)
+yes		(cn~=jonathan do)
+yes		(cn~=john doe)
+yes		(cn~=jon doe)
+no		(cn~=jomatan doe)
+no		(cn~=jonatan oe)
+no		(cn~=jon dee)
 
 ## extensible match
 yes		(cn:dn:=John Doe)
