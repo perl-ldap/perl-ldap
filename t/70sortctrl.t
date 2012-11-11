@@ -1,13 +1,5 @@
 #!perl
 #
-# For this test to run you must defined the following in test.cfg
-#   $EXTERNAL_TESTS = 1
-#   %sortctrl with the following entries
-#     host   => name of ldap server
-#     base   => the base for the search
-#     filter => the filter for the search
-#     order  => the attribute name to order by
-#
 # The attribute given must have unique values over the entries
 # returned from the search. This is because this test checks
 # that the order of entries returned by 'attr' is the exact
@@ -22,9 +14,7 @@
 # This test should be expanded to test sort controls with
 # more than one attribute specified.
 
-use vars qw(%sortctrl);
-
-use Test::More tests => 9;
+use Test::More;
 
 BEGIN { require "t/common.pl" }
 
@@ -36,49 +26,57 @@ use Net::LDAP::Constant qw(
 	LDAP_SUCCESS
 );
 
+
+start_server()
+? plan tests => 13
+: plan skip_all => 'no server';
+
+
+$ldap = client();
+isa_ok($ldap, Net::LDAP, "client");
+
+$rootdse = $ldap->root_dse;
+isa_ok($rootdse, Net::LDAP::RootDSE, "root_dse");
+
+
 SKIP: {
-  skip('External tests disabled', 9)  unless ($EXTERNAL_TESTS);
+  skip("RootDSE does not offer sort control", 11)
+    unless($rootdse->supported_control(LDAP_CONTROL_SORTREQUEST));
 
-  my($host, $base, $filter, $order) = @sortctrl{qw(host base filter order)};
+  #$mesg = $ldap->start_tls;
+  #ok(!$mesg->code, "start_tls: " . $mesg->code . ": " . $mesg->error);
 
-  my $ldap = $host && Net::LDAP->new($host, version => 3);
+  $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
+  ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
 
-  skip('Cannot connect to host', 9)  unless ($ldap);
-
-  my $dse  = $ldap && $ldap->root_dse;
-
-  skip('server does not support LDAP_CONTROL_SORTREQUEST', 9)
-    unless ($dse and grep { $_ eq LDAP_CONTROL_SORTREQUEST } $dse->get_value('supportedControl'));
-
-
-  Net::LDAP::LDIF->new(qw(- w))->write_entry($dse);
-
-  my $sort = Net::LDAP::Control::Sort->new(order => $order);
-  isa_ok($sort, Net::LDAP::Control::Sort, 'Net::LDAP::Control::Sort object');
+  ok(ldif_populate($ldap, "data/40-in.ldif"), "data/40-in.ldif");
+  
+  my $sort = Net::LDAP::Control::Sort->new(order => 'cn:2.5.13.3');
+  isa_ok($sort, Net::LDAP::Control::Sort, 'sort control object');
 
   my $mesg = $ldap->search(
-	      base	=> $base,
-	      control	=> [$sort],
-	      filter	=> $filter,
+	      base	=> $BASEDN,
+	      filter	=> '(objectclass=OpenLDAPperson)',
+	      control	=> [ $sort ],
 	    );
-  is($mesg->code, LDAP_SUCCESS, 'search result');
+  is($mesg->code, LDAP_SUCCESS, "search: " . $mesg->code . ": " . $mesg->error);
 
   my ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
   ok($resp, 'LDAP_CONTROL_SORTRESULT response');
 
   ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-  print "# ",$mesg->count,"\n";
+  #print "# ",$mesg->count,"\n";
 
   my $dn1 = join ";", map { $_->dn } $mesg->entries;
 
-  $sort = Net::LDAP::Control::Sort->new(order => "-$order");
-  isa_ok($sort, Net::LDAP::Control::Sort, 'Net::LDAP::Control::Sort object (reversse order)');
+  $sort = Net::LDAP::Control::Sort->new(order => "-cn:2.5.13.3");
+  isa_ok($sort, Net::LDAP::Control::Sort, 'sort control object (reverse order)');
 
   $mesg = $ldap->search(
-	  base		=> $base,
-	  control	=> [$sort],
-	  filter	=> $filter,
+	  base		=> $BASEDN,
+	  filter	=> '(objectclass=OpenLDAPperson)',
+	  control	=> [ $sort ],
 	);
   is($mesg->code, LDAP_SUCCESS, 'search result');
 
@@ -87,7 +85,7 @@ SKIP: {
 
   ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-  print "# ",$mesg->count,"\n";
+  #print "# ",$mesg->count,"\n";
 
   my $dn2 = join ";", map { $_->dn } reverse $mesg->entries;
 
