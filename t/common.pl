@@ -94,7 +94,7 @@ sub start_server {
   mkdir($TESTDB, 0777);
   die "$TESTDB is not a directory" unless -d $TESTDB;
 
-  note "@LDAPD"  if $ENV{TEST_VERBOSE};
+  note("@LDAPD")  if $ENV{TEST_VERBOSE};
 
   my $log = $TEMPDIR . "/" . basename($0,'.t');
 

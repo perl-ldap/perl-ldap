@@ -66,7 +66,7 @@ isa_ok($schema, Net::LDAP::Schema, 'schema object created');
 
 ok($schema->parse('data/schema.in'), "schema loaded: ".($schema->error ? $schema->error : ''));
 
-note 'Schema: ', explain($schema);
+note('Schema: ', explain($schema))  if ($ENV{TEST_VERBOSE});
 
 
 foreach my $elem (@tests) {
@@ -74,7 +74,7 @@ foreach my $elem (@tests) {
   my $filter = Net::LDAP::Filter->new($filterstring);
   isa_ok($filter, Net::LDAP::Filter, 'filter object created');
 
-  #note "$filterstring => ", explain($filter);
+  #note("$filterstring => ", explain($filter));
 
   for my $case (@testcases) {
     my ($op) = grep(/^$case:/, @{$ops});

@@ -69,7 +69,7 @@ sub process_entry
   my $m = shift;
   my $e = shift;
 
-  note $m->mesg_id.':'.$e->dn()  if (ref($e));
+  note($m->mesg_id.':'.$e->dn())  if ($ENV{TEST_VERBOSE} && ref($e));
 }
 
 

@@ -67,10 +67,10 @@ SKIP: {
 
     ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-    #note $mesg->count;
     if ($ENV{TEST_VERBOSE}) {
+      my $rank = 0;
       foreach my $e ($mesg->entries) {
-        note join(':', map { join(',',$e->get_value($_)) } @attrs);
+        note(++$rank, '. ', join(':', map { join(',',$e->get_value($_)) } @attrs));
       }
     }
 
@@ -91,10 +91,10 @@ SKIP: {
 
     ok($resp && $resp->result == LDAP_SUCCESS , 'LDAP_CONTROL_SORTRESULT success');
 
-    #note $mesg->count;
     if ($ENV{TEST_VERBOSE}) {
+      my $rank = 0;
       foreach my $e (reverse $mesg->entries) {
-        note join(':', map { join(',',$e->get_value($_)) } @attrs);
+        note(++$rank,'. ',join(':', map { join(',',$e->get_value($_)) } @attrs));
       }
     }
 

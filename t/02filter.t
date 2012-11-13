@@ -35,7 +35,7 @@ foreach $test (@tests) {
 
     is($data, $binary, "$filter asn_dump");
     unless($data eq $binary) {
-	note explain($filt);
+	note(explain($filt))  if ($ENV{TEST_VERBOSE});
 	print "got    ", unpack("H*", $data), "\n";
 	asn_dump(\*STDOUT, $data);
 	print "wanted ", unpack("H*", $binary), "\n";

@@ -16,7 +16,7 @@ $::destroy = 0;
 {
   my $ldap = Net::LDAP::Dummy->new("host", async => 1);
   $ldap->bind; # create an internal ref loop
-  note explain($ldap->inner)  if $ENV{TEST_VERBOSE};
+  note(explain($ldap->inner))  if $ENV{TEST_VERBOSE};
 }
 ok($::destroy, '');
 
