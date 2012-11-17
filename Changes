@@ -1,3 +1,36 @@
+0.50_01 -- Sat Nov 17 18:05:15 CET 2012
+
+Bug Fixes:
+* RT#80482 fix display of =item inet6 in LDAP.pod
+* RT#66753: new key & cert for SSL server tests
+* RT#79763 Net::LDAP::Util's $VERSION increased
+* t/06constant.t: numbering glitch in t/06constant.t
+* FilterMatch.pm: fix mapping of greaterOrEqual
+* FAQ.pod: small fixes
+
+Enhancements:
+* add constant LDAP_PROXY_AUTHZ_FAILURE
+* FilterMatch.pm: complete overhaul
+  - update matching rules known in OpenLDAP
+  - support matching rules for extensibleMatch
+  - avoid warning if no matching rule is found
+  - add specific implementations for a lot of rules
+* global overhaul towards Perl 5.8 features
+  - declare @ISA and $VERSION as package-local
+  - replace 'use vars' by 'our'.
+* Makefile.PL: overhaul
+* tests: cleanup & extensions
+  - convert to Test::More
+  - t/common.pl: allow client() to take options for Net::LDAP
+  - t/common.pl: get rid of local compare function
+  - t/03schema.t: overhaul, update data/schema.in
+  - t/07filtermatch.t: new, tests for Net::LDAP::FilterMatch
+  - t/40connect.t: new, test for IPv4 / IPv6 connections
+  - reorganize servers tests: rename t/5X*.t -> t/4(X+1)*.t
+  - t/47ipc.t: add TLS tests
+  - t/60cancel.t: new, tests for Net::LDAP::Extension::Cancel
+  - t/70sortctrl.t: make it a server test & add multi-attribute testcase
+
 0.49 -- Sat Oct 5 10:00:30 CEST 2012
 
 Bug Fixes:
