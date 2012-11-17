@@ -4,14 +4,13 @@
 
 package Net::LDAP::Intermediate;
 
-use vars qw($VERSION);
 use strict;
 
 use Net::LDAP::Constant qw(
   LDAP_SYNC_INFO
 );
 
-$VERSION = "0.02";
+our $VERSION = "0.03";
 
 my %Class2ResponseName = (
 

@@ -4,11 +4,12 @@
 # terms as Perl itself.
 
 package Net::LDAPI;
-@Net::LDAPI::ISA = ( 'Net::LDAP' );
-$Net::LDAPI::VERSION = "0.03";
 
 use strict;
 use Net::LDAP;
+
+our @ISA = qw(Net::LDAP);
+our $VERSION = "0.04";
 
 sub new {
   shift->SUPER::new(@_, scheme => 'ldapi');

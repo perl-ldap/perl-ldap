@@ -162,6 +162,7 @@ perl-ldap.
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
 =item inet4 =E<gt> N
+
 =item inet6 =E<gt> N
 
 Try to connect to the server using the specified IP protocol only,

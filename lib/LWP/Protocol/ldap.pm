@@ -11,9 +11,9 @@ use HTTP::Negotiate ();
 use HTTP::Response ();
 use LWP::MediaTypes ();
 require LWP::Protocol;
-@ISA = qw(LWP::Protocol);
 
-$VERSION = "1.22";
+our @ISA = qw(LWP::Protocol);
+our $VERSION = "1.23";
 
 use strict;
 eval {

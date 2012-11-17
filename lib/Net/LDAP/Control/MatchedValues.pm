@@ -4,11 +4,10 @@
 
 package Net::LDAP::Control::MatchedValues;
 
-use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
-@ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+our @ISA = qw(Net::LDAP::Control);
+our $VERSION = "0.02";
 
 use Net::LDAP::ASN qw(ValuesReturnFilter);
 use strict;
@@ -150,11 +149,10 @@ terms as Perl itself.
 
 package Net::LDAP::FilterList;
 
-use vars qw(@ISA $VERSION);
 use Net::LDAP::Filter;
 
-@ISA = qw(Net::LDAP::Filter);
-$VERSION = "0.02";
+our @ISA = qw(Net::LDAP::Filter);
+our $VERSION = "0.03";
 
 # filter       = "(" 1*item ")"
 # item         = simple / present / substring / extensible

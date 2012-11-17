@@ -1160,7 +1160,7 @@ in the file.  Then when reading the file, decode the base64 encoded
 string back to binary and then use perl-ldap to store the data
 in the directory.
 
-=item How do I create an account in Active Directory?
+=head2 How do I create an account in Active Directory?
 
 Active Directory accounts need some AD-specific attributes
 (only the method we're interested in, no error checking):
@@ -1183,7 +1183,7 @@ edit the user in the Active Directory Users and Computers MCC plugin,
 perform an LDAP search operation to find out what changed, and update
 your "add" routine accordingly.
 
-=item How can I create a group in Active Directory?
+=head2 How can I create a group in Active Directory?
 
 Similar to accounts, groups need some AD-specific attributes too:
 
@@ -1197,7 +1197,7 @@ Similar to accounts, groups need some AD-specific attributes too:
                     );
 
 
-=item How do I search for disabled accounts in Active Directory
+=head2 How do I search for disabled accounts in Active Directory
 
 The bit values in C<userAccountcontrol> require the LDAP_MATCHING_RULE_BIT_AND
 matching rule's OID to be used in an extensible filter term:
@@ -1209,7 +1209,7 @@ matching rule's OID to be used in an extensible filter term:
                        );
 
 
-=item How can I search for security groups in Active Directory
+=head2 How can I search for security groups in Active Directory
 
 With groups, the same applies to the C<groupType> bit-field:
 
@@ -1278,7 +1278,7 @@ replace the placeholders.
 
   print ldap_error_name($result->code);
 
-=head2 Ho do I reset a user's password ...
+=head2 How do I reset a user's password ...
 
 =head3 Z<>... in most LDAP servers?
 

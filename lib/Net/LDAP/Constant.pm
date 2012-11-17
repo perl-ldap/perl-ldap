@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-$VERSION = "0.15";
+our $VERSION = "0.17";
 
 use Exporter qw(import);
 
@@ -223,6 +223,10 @@ The specified entry is a leaf entry
 =item LDAP_ALIAS_DEREF_PROBLEM (36)
 
 Server encountered a problem while attempting to dereference an alias
+
+=item LDAP_PROXY_AUTHZ_FAILURE (47)
+
+The user bound is not authorized to assume the reuested identity.
 
 =item LDAP_INAPPROPRIATE_AUTH (48)
 

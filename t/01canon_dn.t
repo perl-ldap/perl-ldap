@@ -1,5 +1,6 @@
 #!perl
 
+use Test::More;
 use Net::LDAP::Util qw(canonical_dn);
 
 # Each line has an opcode and a DN, opcode are
@@ -10,8 +11,9 @@ use Net::LDAP::Util qw(canonical_dn);
 
 my @tests = map { /^(\w+)\s+(.*)/ } <DATA>;
 
-print "1..", scalar(@tests)>>1, "\n";
-my $testno = 0;
+plan tests => scalar(@tests) >> 1;
+
+
 my $refdn;
 while(my($op,$dn) = splice(@tests,0,2)) {
 
@@ -50,7 +52,7 @@ while(my($op,$dn) = splice(@tests,0,2)) {
     warn "Bad opcode $op\n";
   }
 
-  print +($failed ? "not ok " : "ok "),++$testno,"\n";
+  ok(!$failed, "$dn is " . (($op eq 'bad') ? 'illegal' : 'legal'));
 }
 
 

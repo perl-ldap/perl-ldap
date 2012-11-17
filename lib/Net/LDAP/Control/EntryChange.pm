@@ -4,11 +4,10 @@
 
 package Net::LDAP::Control::EntryChange;
 
-use vars qw(@ISA $VERSION);
 use Net::LDAP::Control;
 
-@ISA = qw(Net::LDAP::Control);
-$VERSION = "0.01";
+our @ISA = qw(Net::LDAP::Control);
+our $VERSION = "0.02";
 
 use Net::LDAP::ASN qw(EntryChangeNotification);
 use strict;
