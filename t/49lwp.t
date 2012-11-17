@@ -1,35 +1,37 @@
 #!perl
 
-BEGIN {
-  unless (eval { require LWP::UserAgent; 1 }) {
-    print "1..0 # Skip Need LWP::UserAgent\n";
-    exit;
-  }
-  require "t/common.pl";
-  start_server();
-}
+use Test::More;
+
+BEGIN { require "t/common.pl" }
 
 
-print "1..6\n";
+start_server()
+? plan tests => 6
+: plan skip_all => 'no server';
 
-$ldap = client();
-ok($ldap, "client");
 
-$mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
+SKIP: {
+  skip('LWP::UserAgent not installed', 6)
+    unless (eval { require LWP::UserAgent });
 
-ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
+  $ldap = client();
+  ok($ldap, "client");
 
-ok(ldif_populate($ldap, "data/51-in.ldif"), "data/51-in.ldif");
+  $mesg = $ldap->bind($MANAGERDN, password => $PASSWD);
 
-my $ua = LWP::UserAgent->new;
-my $res;
+  ok(!$mesg->code, "bind: " . $mesg->code . ": " . $mesg->error);
+
+  ok(ldif_populate($ldap, "data/41-in.ldif"), "data/41-in.ldif");
+
+  my $ua = LWP::UserAgent->new;
+  my $res;
 
 # now search the database
 
-$res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?sn=jensen");
-ok($res->content =~ /2 Matches found/);
+  $res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?sn=jensen");
+  ok($res->content =~ /2 Matches found/);
 
-my $expect = <<'LDIF';
+  my $expect = <<'LDIF';
 version: 1
 
 dn: cn=Barbara Jensen,ou=Information Technology Division,ou=People,o=Universit
@@ -74,27 +76,28 @@ facsimileTelephoneNumber: +1 313 555 2177
 telephoneNumber: +1 313 555 0355
 LDIF
 
-$res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)", Accept => 'text/ldif');
-is($res->content,$expect,'ldif result');
+  $res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)", Accept => 'text/ldif');
+  is($res->content,$expect,'ldif result');
 
-$res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)?x-format=ldif");
-is($res->content,$expect,'ldif result');
+  $res = $ua->get("ldap://${HOST}:$PORT/$BASEDN??sub?(sn=jensen)?x-format=ldif");
+  is($res->content,$expect,'ldif result');
+}
 
 __END__
 
 # Exact searching
 $mesg = $ldap->search(base => $BASEDN, filter => 'sn=jensen');
-compare_ldif("51a",$mesg,$mesg->sorted);
+compare_ldif("41a",$mesg,$mesg->sorted);
 
 # Or searching
 $mesg = $ldap->search(base => $BASEDN, filter => '(|(objectclass=groupofnames)(sn=jones))');
-compare_ldif("51b",$mesg,$mesg->sorted);
+compare_ldif("41b",$mesg,$mesg->sorted);
 
 # And searching
 $mesg = $ldap->search(base => $BASEDN, filter => '(&(objectclass=groupofnames)(cn=A*))');
-compare_ldif("51c",$mesg,$mesg->sorted);
+compare_ldif("41c",$mesg,$mesg->sorted);
 
 # Not searching
 $mesg = $ldap->search(base => $BASEDN, filter => '(!(objectclass=person))');
-compare_ldif("51d",$mesg,$mesg->sorted);
+compare_ldif("41d",$mesg,$mesg->sorted);
 

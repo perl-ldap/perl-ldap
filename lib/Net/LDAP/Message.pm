@@ -7,9 +7,8 @@ package Net::LDAP::Message;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_COMPARE_TRUE LDAP_COMPARE_FALSE);
 use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
-use vars qw($VERSION);
 
-$VERSION = "1.11";
+our $VERSION = "1.12";
 
 my $MsgID = 0;
 
@@ -249,8 +248,7 @@ sub Net::LDAP::Compare::is_error {
 
 {
   package Net::LDAP::Message::Dummy;
-  use vars qw(@ISA);
-  @ISA = qw(Net::LDAP::Message);
+  our @ISA = qw(Net::LDAP::Message);
   use Net::LDAP::Constant qw(LDAP_SUCCESS);
 
   sub new {

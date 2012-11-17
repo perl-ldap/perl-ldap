@@ -1,40 +1,60 @@
 #!perl -w
+
+use Test::More tests => 14;
 use Net::LDAP::Schema;
 
-print "1..7\n";
-
 my $schema = Net::LDAP::Schema->new( "data/schema.in" ) or die "Cannot open schema";
-print "ok 1\n";
+isa_ok($schema, Net::LDAP::Schema, 'load schema file');
 
 my @atts = $schema->all_attributes();
-print "not " unless @atts == 55;
-print "ok 2\n";
-
+is(@atts, 265, 'number of attribute types in schema');
 print "The schema contains ", scalar @atts, " attributes\n";
 
 my @ocs = $schema->all_objectclasses();
-print "not " unless @ocs == 22;
-print "ok 3\n";
+is(@ocs, 66, 'number of object classes in schema');
 print "The schema contains ", scalar @ocs, " object classes\n";
 
+my @mrs = $schema->all_matchingrules();
+is(@mrs, 40, 'number of matching rules in schema');
+print "The schema contains ", scalar @mrs, " matching rules\n";
+
+my @mrus = $schema->all_matchingruleuses();
+is(@mrus, 34, 'number of matching rule uses in schema');
+print "The schema contains ", scalar @mrus, " matching rule uses\n";
+
+my @stxs = $schema->all_syntaxes();
+is(@stxs, 32, 'number of LDAP syntaxes in schema');
+print "The schema contains ", scalar @stxs, " LDAP syntaxes\n";
+
+%namechildren = map { $_->{name} => 1 }
+                    grep { grep(/^name$/i, @{$_->{sup}}) }
+                         $schema->all_attributes();
+is(scalar(keys(%namechildren)), 13, "attributes derived from 'name'");
+
 @atts = $schema->must( "person" );
-print "not " unless join(' ', sort map $_->{name}, @atts) eq join(' ',sort qw(cn sn objectClass));
-print "ok 4\n";
+is(join(' ', sort map { lc $_->{name} } @atts),
+   join(' ', sort map lc, qw(cn sn objectClass)), 'mandatory attributes');
 print "The 'person' OC must have these attributes [",
-		join( ",", map $_->{name}, @atts ),
+		join(',', map $_->{name}, @atts),
 		"]\n";
+
 @atts = $schema->may( "mhsOrganizationalUser" );
-print "not " if @atts;
-print "ok 5\n";
+ok(!@atts, 'optional attributes');
 print "The 'mhsOrganizationalUser' OC may have these attributes [",
-		join( ",", map $_->{name}, @atts ),
+		join(',', map $_->{name}, @atts),
 		"]\n";
 
-print "not " if defined $schema->attribute('distinguishedName')->{max_length};
-print "ok 6\n";
+@super = $schema->superclass('OpenLDAPperson');
+is(join(' ', sort map lc, @super),
+   join(' ', sort map lc, qw(pilotPerson inetOrgPerson)), 'superclass');
 
-print "not " unless $schema->attribute('userPassword')->{max_length} == 128;
-print "ok 7\n";
+$mru = $schema->matchingruleuse('generalizedtimematch');
+is(join(' ', sort map lc, @{$mru->{applies}}),
+   join(' ', sort map lc, qw(createTimestamp modifyTimestamp)), 'attribute types a matching rule applies to');
+   
+@binarysyntaxes = map { $_->{name} } grep { $_->{'x-binary-transfer-required'} } $schema->all_syntaxes();
+is(scalar(@binarysyntaxes), 5, "number of syntaxes that need ';binary' appended to the attribute type");
 
-use Data::Dumper;
-print Dumper($schema);
+ok(! defined($schema->attribute('distinguishedName')->{max_length}), 'infinite length attribute type');
+
+is($schema->attribute('userPassword')->{max_length}, 128, 'attribute type max. length');

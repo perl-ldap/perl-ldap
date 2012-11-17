@@ -6,8 +6,8 @@ BEGIN {
 
   undef $SERVER_EXE unless $SERVER_EXE and -x $SERVER_EXE;
 
-  # If your host cannot be contacted as localhost, change this
-  $HOST     ||= '127.0.0.1';
+  # fallback for the host to connect - needs to support IPv4 & IPv6
+  $HOST     ||= 'localhost';
 
   # Where to put temporary files while testing
   # the Makefile is setup to delete temp/ when make clean is run
@@ -53,25 +53,24 @@ BEGIN {
   die "$TEMPDIR is not a directory" unless -d $TEMPDIR;
 }
 
+use Test::More;
 use Net::LDAP;
 use Net::LDAP::LDIF;
 use Net::LDAP::Util qw(canonical_dn);
 use File::Path qw(rmtree);
 use File::Basename qw(basename);
+use File::Compare;
 
 my $pid;
 
 sub start_server {
   my %arg = (version => 3, @_);
 
-  unless ($LDAP_VERSION >= $arg{version}
+  return 0
+    unless ($LDAP_VERSION >= $arg{version}
 	and $LDAPD[0] and -x $LDAPD[0]
 	and (!$arg{ssl} or $SSL_PORT)
-	and (!$arg{ipc} or $IPC_SOCK))
-  {
-    print "1..0 # Skip No server\n";
-    exit;
-  }
+	and (!$arg{ipc} or $IPC_SOCK));
 
   if ($CONF_IN and -f $CONF_IN) {
     # Create slapd config file
@@ -95,7 +94,7 @@ sub start_server {
   mkdir($TESTDB, 0777);
   die "$TESTDB is not a directory" unless -d $TESTDB;
 
-  warn "@LDAPD" if $ENV{TEST_VERBOSE};
+  note("@LDAPD")  if $ENV{TEST_VERBOSE};
 
   my $log = $TEMPDIR . "/" . basename($0,'.t');
 
@@ -110,6 +109,7 @@ sub start_server {
   }
 
   sleep 2; # wait for server to start
+  return 1;
 }
 
 sub kill_server {
@@ -129,9 +129,11 @@ sub client {
   my $ldap;
   my $count;
   local $^W = 0;
+  my %opt = map { $_ => $arg{$_} } grep { exists($arg{$_}) } qw/inet4 inet6 debug/;
+
   if ($arg{ssl}) {
     require Net::LDAPS;
-    until($ldap = Net::LDAPS->new($HOST, port => $SSL_PORT, version => 3)) {
+    until($ldap = Net::LDAPS->new($HOST, %opt, port => $SSL_PORT, version => 3)) {
       die "ldaps://$HOST:$SSL_PORT/ $@" if ++$count > 10;
       sleep 1;
     }
@@ -145,13 +147,13 @@ sub client {
   }
   elsif ($arg{url}) {
     print "Trying $arg{url}\n";
-    until($ldap = Net::LDAP->new($arg{url})) {
+    until($ldap = Net::LDAP->new($arg{url}, %opt)) {
       die "$arg{url} $@" if ++$count > 10;
       sleep 1;
     }
   }
   else {
-    until($ldap = Net::LDAP->new($HOST, port => $PORT, version => $LDAP_VERSION)) {
+    until($ldap = Net::LDAP->new($HOST, %opt, port => $PORT, version => $LDAP_VERSION)) {
       die "ldap://$HOST:$PORT/ $@" if ++$count > 10;
       sleep 1;
     }
@@ -163,13 +165,13 @@ sub compare_ldif {
   my($test,$mesg) = splice(@_,0,2);
 
   unless (ok(!$mesg->code, $mesg->error)) {
-    skip(2, $mesg->error);
+    skip($mesg->error, 2);
     return;
   }
 
   my $ldif = Net::LDAP::LDIF->new("$TEMPDIR/${test}-out.ldif","w", lowercase => 1);
   unless (ok($ldif, "Read ${test}-out.ldif")) {
-    skip(1,"Read error");
+    skip("Read error", 1);
     return;
   }
 
@@ -187,17 +189,7 @@ sub compare_ldif {
 
   $ldif->done; # close the file;
 
-  ok(!compare("$TEMPDIR/${test}-out.ldif","data/${test}-cmp.ldif"), "data/${test}-cmp.ldif");
-}
-
-require File::Compare;
-
-sub compare($$) {
-  local(*FH1,*FH2);
-  not( open(FH1,"<".$_[0])
-       && open(FH2,"<".$_[1])
-       && 0 == File::Compare::compare(*FH1,*FH2, -s FH1)
-  );
+  ok(!compare("$TEMPDIR/${test}-out.ldif", "data/${test}-cmp.ldif"), "data/${test}-cmp.ldif");
 }
 
 sub ldif_populate {
@@ -216,40 +208,6 @@ sub ldif_populate {
     }
   }
   $ok;
-}
-
-my $number = 0;
-sub ok {
-	my ($condition, $name) = @_;
-
-	my $message = $condition ? "ok " : "not ok ";
-	$message .= ++$number;
-	$message .= " # $name" if defined $name;
-	print $message, "\n";
-	return $condition;
-}
-
-sub is {
-	my ($got, $expected, $name) = @_;
-
-	for ($got, $expected) {
-		$_ = 'undef' unless defined $_;
-	}
-
-	unless (ok($got eq $expected, $name)) {
-		warn "Got: '$got'\nExpected: '$expected'\n" . join(' ', caller) . "\n";
-	}
-}
-
-sub skip {
-	my ($reason, $num) = @_;
-	$reason ||= '';
-	$number ||= 1;
-
-	for (1 .. $num) {
-		$number++;
-		print "ok $number # skip $reason\n";
-	}
 }
 
 1;

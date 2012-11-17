@@ -5,12 +5,11 @@
 package Net::LDAP::Extra;
 
 use strict;
-use vars qw($VERSION);
 
 require Net::LDAP;
 require Carp;
 
-$VERSION = "0.01";
+our $VERSION = "0.02";
 
 sub import {
   shift;

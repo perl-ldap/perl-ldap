@@ -3,8 +3,8 @@ package Net::LDAP::Extension::WhoAmI;
 
 require Net::LDAP::Extension;
 
-$VERSION = "0.01";
-@ISA = qw(Net::LDAP::Extension);
+our $VERSION = "0.02";
+our @ISA = qw(Net::LDAP::Extension);
 
 sub Net::LDAP::who_am_i {
   my $ldap = shift;

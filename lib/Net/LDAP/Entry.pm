@@ -7,7 +7,6 @@ package Net::LDAP::Entry;
 use strict;
 use Net::LDAP::ASN qw(LDAPEntry);
 use Net::LDAP::Constant qw(LDAP_LOCAL_ERROR LDAP_OTHER);
-use vars qw($VERSION);
 
 use constant CHECK_UTF8 => $] > 5.007;
 
@@ -16,8 +15,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-
-$VERSION = "0.24";
+our $VERSION = "0.25";
 
 sub new {
   my $self = shift;

@@ -4,7 +4,6 @@
 
 package Net::LDAP::Control;
 
-use vars qw($VERSION);
 use strict;
 
 use Net::LDAP::Constant qw(
@@ -27,7 +26,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ASSERTION
 );
 
-$VERSION = "0.12";
+our $VERSION = "0.13";
 
 my %Pkg2Type = (
 

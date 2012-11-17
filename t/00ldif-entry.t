@@ -4,8 +4,7 @@ BEGIN {
   require "t/common.pl";
 }
 
-
-print "1..16\n";
+use Test::More tests => 16;
 
 use Net::LDAP::LDIF;
 
@@ -162,19 +161,13 @@ ok(!compare($cmpfile,$outfile), $cmpfile);
 $e->add('name' => 'Graham Barr');
 $e->add('name;en-us' => 'Bob');
 
-print "not " unless 
-ok(
-  join(":",sort $e->attributes)
-    eq
-  "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:name;en-us:o:postaladdress:second:st:streetaddress:telephonenumber",
-  "attributes");
+is(join(":",sort $e->attributes),
+   "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:name;en-us:o:postaladdress:second:st:streetaddress:telephonenumber",
+   'attributes');
 
-print "not " unless 
-ok(
-  join(":",sort $e->attributes(nooptions => 1))
-    eq
-  "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:o:postaladdress:second:st:streetaddress:telephonenumber",
-  "attributes - nooptions");
+is(join(":",sort $e->attributes(nooptions => 1)),
+   "associateddomain:counting:description:first:l:lastmodifiedby:lastmodifiedtime:name:o:postaladdress:second:st:streetaddress:telephonenumber",
+   "attributes - nooptions");
 
 $r = $e->get_value('name', asref => 1);
 ok(($r and @$r == 1 and $r->[0] eq 'Graham Barr'), "name eq Graham Barr");

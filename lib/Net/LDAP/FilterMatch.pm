@@ -1,11 +1,9 @@
-# ===========================================================================
 # Net::LDAP::FilterMatch
 #
 # LDAP entry matching
 #
-# Hans Klunder <hans.klunder@bigfoot.com>
-# Peter Marschall <peter@adpm.de>
-#  Copyright (c) 2005-2006.
+# Copyright (c) 2005-2006 Hans Klunder <hans.klunder@bigfoot.com>
+# Copyright (c) 2005-2012 Peter Marschall <peter@adpm.de>
 #
 # See below for documentation.
 #
@@ -16,8 +14,7 @@ use strict;
 use Net::LDAP::Filter;
 use Net::LDAP::Schema;
 
-use vars qw($VERSION);
-$VERSION   = '0.18';
+our $VERSION   = '0.27';
 
 sub import {
   shift;
@@ -28,8 +25,9 @@ sub import {
 
 package Net::LDAP::Filter;
 
-use vars qw(@approxMatchers);
-@approxMatchers = qw(
+use Net::LDAP::Util qw(canonical_dn ldap_explode_dn);
+
+our @approxMatchers = qw(
   String::Approx
   Text::Metaphone
   Text::Soundex
@@ -37,9 +35,17 @@ use vars qw(@approxMatchers);
 
 sub _filterMatch($@);
 
+# specific matching rules
+sub _booleanMatch($$@);
+sub _distinguishedNameMatch($$@);
+sub _integerBitAndMatch($$@);
+sub _integerBitOrMatch($$@);
+
+# generic matching rules
 sub _cis_equalityMatch($$@);
 sub _exact_equalityMatch($$@);
 sub _numeric_equalityMatch($$@);
+sub _tel_equalityMatch($$@);
 sub _cis_orderingMatch($$@);
 sub _numeric_orderingMatch($$@);
 sub _cis_greaterOrEqual($$@);
@@ -47,41 +53,65 @@ sub _cis_lessOrEqual($$@);
 sub _cis_approxMatch($$@);
 sub _cis_substrings($$@);
 sub _exact_substrings($$@);
+sub _tel_substrings($$@);
 
-# all known matches from the OL 2.2 schema,
-*_bitStringMatch = \&_exact_equalityMatch;
-*_booleanMatch = \&_cis_equalityMatch;             # this might need to be reworked
-*_caseExactIA5Match = \&_exact_equalityMatch;
-*_caseExactIA5SubstringsMatch = \&_exact_substrings;
-*_caseExactMatch = \&_exact_equalityMatch;
-*_caseExactOrderingMatch = \&_exact_orderingMatch;
-*_caseExactSubstringsMatch = \&_exact_substrings;
-*_caseIgnoreIA5Match = \&_cis_equalityMatch;
-*_caseIgnoreIA5SubstringsMatch = \&_cis_substrings;
-*_caseIgnoreMatch = \&_cis_equalityMatch;
-*_caseIgnoreOrderingMatch = \&_cis_orderingMatch;
-*_caseIgnoreSubstringsMatch = \&_cis_substrings;
-*_certificateExactMatch = \&_exact_equalityMatch;
-*_certificateMatch = \&_exact_equalityMatch;
-*_distinguishedNameMatch = \&_exact_equalityMatch;
-*_generalizedTimeMatch = \&_exact_equalityMatch;
-*_generalizedTimeOrderingMatch = \&_exact_orderingMatch;
-*_integerBitAndMatch = \&_exact_equalityMatch;      # this needs to be reworked
-*_integerBitOrMatch = \&_exact_equalityMatch;       # this needs to be reworked
-*_integerFirstComponentMatch = \&_exact_equalityMatch;
-*_integerMatch = \&_numeric_equalityMatch;
-*_integerOrderingMatch = \&_numeric_orderingMatch;
-*_numericStringMatch = \&_numeric_equalityMatch;
-*_numericStringOrderingMatch = \&_numeric_orderingMatch;
-*_numericStringSubstringsMatch = \&_numeric_substrings;
-*_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch; # this needs to be reworked
-*_objectIdentifierMatch = \&_exact_equalityMatch;
-*_octetStringMatch = \&_exact_equalityMatch;
-*_octetStringOrderingMatch = \&_exact_orderingMatch;
-*_octetStringSubstringsMatch = \&_exact_substrings;
-*_telephoneNumberMatch = \&_exact_equalityMatch;
-*_telephoneNumberSubstringsMatch = \&_exact_substrings;
-*_uniqueMemberMatch = \&_cis_equalityMatch;          # this needs to be reworked
+# all known matches from the OL 2.4 schema,
+#*_allComponentsMatch
+*_attributeCertificateExactMatch      = \&_exact_equalityMatch;
+*_attributeCertificateMatch           = \&_exact_equalityMatch;
+*_authPasswordMatch                   = \&_exact_equalityMatch;	# this needs to be reworked
+*_authzMatch                          = \&_exact_equalityMatch;
+*_bitStringMatch                      = \&_exact_equalityMatch;
+*_caseExactIA5Match                   = \&_exact_equalityMatch;
+*_caseExactIA5SubstringsMatch         = \&_exact_substrings;
+*_caseExactMatch                      = \&_exact_equalityMatch;
+*_caseExactOrderingMatch              = \&_exact_orderingMatch;
+*_caseExactSubstringsMatch            = \&_exact_substrings;
+*_caseIgnoreIA5Match                  = \&_cis_equalityMatch;
+*_caseIgnoreIA5SubstringsMatch        = \&_cis_substrings;
+*_caseIgnoreListMatch                 = \&_cis_equalityMatch;	# this needs to be reworked
+*_caseIgnoreListSubstringsMatch       = \&_cis_substrings;	# this needs to be reworked
+*_caseIgnoreMatch                     = \&_cis_equalityMatch;
+*_caseIgnoreOrderingMatch             = \&_cis_orderingMatch;
+*_caseIgnoreSubstringsMatch           = \&_cis_substrings;
+*_certificateExactMatch               = \&_exact_equalityMatch;
+*_certificateListExactMatch           = \&_exact_equalityMatch;	# this needs to be reworked
+*_certificateListMatch                = \&_exact_equalityMatch;	# this needs to be reworked
+*_certificateMatch                    = \&_exact_equalityMatch;
+#*_componentFilterMatch
+*_CSNMatch                            = \&_exact_equalityMatch;	# this may need to be reworked
+*_CSNOrderingMatch                    = \&_exact_orderingMatch;	# this may need to be reworked
+*_CSNSIDMatch                         = \&_exact_equalityMatch;	# this may need to be reworked
+#*_directoryComponentsMatch
+*_directoryStringApproxMatch          = \&_cis_approxMatch;
+#*_dnOneLevelMatch
+#*_dnSubordinateMatch
+#*_dnSubtreeMatch
+#*_dnSuperiorMatch
+*_facsimileNumberMatch                = \&_tel_equalityMatch;
+*_facsimileNumberSubstringsMatch      = \&_tel_substrings;
+*_generalizedTimeMatch                = \&_exact_equalityMatch;
+*_generalizedTimeOrderingMatch        = \&_exact_orderingMatch;
+*_IA5StringApproxMatch                = \&_cis_approxMatch;
+*_integerFirstComponentMatch          = \&_exact_equalityMatch;
+*_integerMatch                        = \&_numeric_equalityMatch;
+*_integerOrderingMatch                = \&_numeric_orderingMatch;
+*_numericStringMatch                  = \&_numeric_equalityMatch;
+*_numericStringOrderingMatch          = \&_numeric_orderingMatch;
+*_numericStringSubstringsMatch        = \&_numeric_substrings;
+*_objectIdentifierFirstComponentMatch = \&_exact_equalityMatch;	# this needs to be reworked
+*_objectIdentifierMatch               = \&_cis_equalityMatch;
+*_octetStringMatch                    = \&_exact_equalityMatch;
+*_octetStringOrderingMatch            = \&_exact_orderingMatch;
+*_octetStringSubstringsMatch          = \&_exact_substrings;
+#*_presentationAddressMatch
+#*_protocolInformationMatch
+#*_rdnMatch
+*_telephoneNumberMatch                = \&_tel_equalityMatch;
+*_telephoneNumberSubstringsMatch      = \&_tel_substrings;
+*_uniqueMemberMatch                   = \&_cis_equalityMatch;	# this needs to be reworked
+*_UUIDMatch                           = \&_exact_equalityMatch;	# this needs to be reworked
+*_UUIDOrderingMatch                   = \&_exact_orderingMatch;	# this needs to be reworked
 
 sub match
 {
@@ -95,7 +125,7 @@ sub match
 # map Ops to schema matches
 my %op2schema = qw(
 	equalityMatch	equality
-	greaterOrEqual	equality
+	greaterOrEqual	ordering
 	lessOrEqual	ordering
 	approxMatch	approx
 	substrings	substr
@@ -138,11 +168,11 @@ sub _filterMatch($@)
     my $match;
 
     if ($op eq 'substrings') {
-      $attr = $args->{'type'};
+      $attr = $args->{type};
       # build a regexp as assertion value
       $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
-      $assertion =  '^'. $assertion if (exists $args->{'substrings'}[0]{'initial'});
-      $assertion .= '$'     if (exists $args->{'substrings'}[-1]{'final'});
+      $assertion =  '^'. $assertion  if (exists $args->{'substrings'}[0]{'initial'});
+      $assertion .= '$'              if (exists $args->{'substrings'}[-1]{'final'});
     }
     else {
       $attr = $args->{'attributeDesc'};
@@ -152,10 +182,11 @@ sub _filterMatch($@)
     my @values = $entry->get_value($attr);
 
     # approx match is not standardized in schema
-    if ($schema and ($op ne 'approxMatch') ) {
+    if ($schema and ($op ne 'approxMatch')) {
       # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
-      $match='_' . $schema->matchingrule_for_attribute( $attr, $op2schema{$op})
-        or return undef;
+      my $mr = $schema->matchingrule_for_attribute($attr, $op2schema{$op});
+      return undef  if (!$mr);
+      $match = '_' . $mr;
     }
     else {
       # fall back on build-in logic
@@ -164,9 +195,102 @@ sub _filterMatch($@)
 
     return eval( "$match".'($assertion,$op,@values)' ) ;
   }
+  elsif ($op eq 'extensibleMatch') {
+    my @attrs = $args->{type} ? ( $args->{type} ) : ();
+    my $assertion = $args->{matchValue};
+    my $match;
+    my @values;
+
+    if ($schema) {
+      my $mr;
+
+      # get matchingrule from schema, be sure that matching subs exist for every MR in your schema
+      if (defined($args->{matchingRule})) {
+        my $mrhref = $schema->matchingrule($args->{matchingRule});
+        $mr = $mrhref->{name}  if ($mrhref);
+        # if no attribute was given, get all attribute this matching rule applies to
+        if (!@attrs) {
+          my $mruhref = $schema->matchingruleuse($args->{matchingRule});
+          return undef  if (!$mruhref);
+          @attrs = @{$mruhref->{applies}};
+        }
+      }
+      else {
+        return  undef if (!@attrs);
+        $mr = $schema->matchingrule_for_attribute($attrs[0], 'equality');
+      }
+
+      return undef  if (!$mr);
+      $match = '_'.$mr;
+    }
+    else {
+      # fall back on build-in logic
+      $match = '_cis_equalityMatch';
+    }
+
+    if ($args->{dnAttributes}) {
+      # get matching attributes' values from DN
+      my $exploded = ldap_explode_dn($entry->dn, casefold => 'lower');
+      my %dnattrs;
+      return undef  if (!$exploded);
+      foreach my $elem (@{$exploded}) {
+        map { push(@{$dnattrs{$_}}, $elem->{$_}) } keys(%{$elem});
+      }
+      @values = map { ($dnattrs{$_}) ? @{$dnattrs{$_}} : () } (@attrs) ? @attrs : keys(%dnattrs);
+    }
+    else {
+      # regular case: get matching attributes' values
+      return undef  if (!@attrs);
+      @values = map { $entry->get_value($_); } @attrs;
+    }
+
+    return eval( "$match".'($assertion,$op,@values)' ) ;
+  }
 
   return undef;	# all other filters => fail with error
 }
+
+# specific matching rules
+
+sub _booleanMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+
+  return undef  if ($assertion !~ /^(?:TRUE|FALSE)$/i);
+  return 1      if (!@_ && $assertion =~ /^FALSE$/i);
+  return grep(/^\Q$assertion\E$/i, @_) ? 1 : 0;
+}
+
+sub _distinguishedNameMatch($$@)
+{
+  my $assertion = canonical_dn(shift);
+  my $op = shift;
+  my @vals = map { canonical_dn($_) } @_;
+
+  return undef  if (!defined($assertion));
+  return grep(/^\Q$assertion\E$/i, @vals) ? 1 : 0;
+}
+
+sub _integerBitAndMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = grep(/^-?\d+$/, @_);
+
+  return (grep { ($assertion & $_) == $assertion } @vals) ? 1 : 0;
+}
+
+sub _integerBitOrMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = grep(/^-?\d+$/, @_);
+
+  return (grep { ($assertion & $_) != 0 } @vals) ? 1 : 0;
+}
+
+# generic matching rules
 
 sub _cis_equalityMatch($$@)
 {
@@ -190,6 +314,18 @@ sub _numeric_equalityMatch($$@)
   my $op = shift;
 
   return grep(/^\Q$assertion\E$/, @_) ? 1 : 0;
+}
+
+sub _tel_equalityMatch($$@)
+{
+  my $assertion = shift;
+  my $op = shift;
+  my @vals = map { s/\+/00/; s/\D//g; $_ } grep { /^\+?[\d\s-]+$/ } @_;
+
+  $assertion =~ s/^\+/00/;
+  $assertion =~ s/\D//g;
+  return undef  if (!@vals or $assertion =~ /^$/);
+  return (grep { $assertion eq $_ } @vals) ? 1 : 0;
 }
 
 sub _cis_orderingMatch($$@)
@@ -258,6 +394,19 @@ sub _exact_substrings($$@)
   return grep(/$regex/, @_) ? 1 : 0;
 }
 
+sub _tel_substrings($$@)
+{
+  my $regex = shift;
+  my $op = shift;
+  my @vals = map { s/\+/00/; s/\D//g; $_ } grep { /^\+?[\d\s-]+$/ } @_;
+
+  $regex =~ s/\\\+/00/;
+  $regex =~ s/\\.//g;
+  $regex =~ s/[^\d\.\*\$\^]//g;
+  return undef  if (!@vals or $regex =~ /^$/);
+  return grep(/$regex/, @vals) ? 1 : 0;
+}
+
 # this one is here in case we don't use schema
 
 sub _cis_greaterOrEqual($$@)
@@ -277,26 +426,27 @@ sub _cis_greaterOrEqual($$@)
 
 sub _cis_approxMatch($$@)
 {
-  my $assertion=shift;
-  my $op=shift;
+  my $assertion = lc(+shift);
+  my $op = shift;
+  my @vals = map(lc, @_);
 
   foreach (@approxMatchers) {
     # print "using $_\n";
     if (/String::Approx/){
-      return String::Approx::amatch($assertion, @_) ? 1 : 0;
+      return String::Approx::amatch($assertion, @vals) ? 1 : 0;
     }
     elsif (/Text::Metaphone/){
       my $metamatch = Text::Metaphone::Metaphone($assertion);
-      return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @_) ? 1 : 0;
+      return grep((Text::Metaphone::Metaphone($_) eq $metamatch), @vals) ? 1 : 0;
     }
     elsif (/Text::Soundex/){
       my $smatch = Text::Soundex::soundex($assertion);
-      return grep((Text::Soundex::soundex($_) eq $smatch), @_) ? 1 : 0;
+      return grep((Text::Soundex::soundex($_) eq $smatch), @vals) ? 1 : 0;
     }
   }
-  #we really have nothing, use plain regexp
-  return 1 if ($assertion =~ /^$/);
-  return grep(/^$assertion$/i, @_) ? 1 : 0;
+  # we really have nothing, use plain regexp
+  return 1  if ($assertion =~ /^$/);
+  return grep(/^$assertion$/i, @vals) ? 1 : 0;
 }
 
 1;

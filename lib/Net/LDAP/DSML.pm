@@ -5,13 +5,13 @@
 package Net::LDAP::DSML;
 
 use strict;
-use vars qw(@ISA $VERSION);
+
 use Carp;
 use XML::SAX::Base;
 use Net::LDAP::Entry;
 
-@ISA = qw(XML::SAX::Base);
-$VERSION = "0.13";
+our @ISA = qw(XML::SAX::Base);
+our $VERSION = "0.14";
 
 # OO purists will hate this :)
 my %schema_typemap = qw(
@@ -655,7 +655,7 @@ sub xml_decl {
   $handler->ignorable_whitespace({Data => "\n"});
 }
 
-use vars qw($AUTOLOAD);
+our $AUTOLOAD;
 
 sub DESTROY {}
 
@@ -670,7 +670,7 @@ package Net::LDAP::DSML::output;
 
 sub new { bless {} }
 
-use vars qw($AUTOLOAD);
+our $AUTOLOAD;
 
 sub DESTROY {}
 

@@ -8,10 +8,9 @@ use strict;
 use Net::LDAP qw(LDAP_SASL_BIND_IN_PROGRESS LDAP_DECODING_ERROR LDAP_SUCCESS
 		 LDAP_LOCAL_ERROR);
 use Net::LDAP::Message;
-use vars qw(@ISA $VERSION);
 
-$VERSION = "1.03";
-@ISA = qw(Net::LDAP::Message);
+our $VERSION = "1.04";
+our @ISA = qw(Net::LDAP::Message);
 
 sub _sasl_info {
   my $self = shift;
