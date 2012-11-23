@@ -6,7 +6,7 @@ package Net::LDAP::Filter;
 
 use strict;
 
-our $VERSION = "0.17";
+our $VERSION = "0.18";
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -78,7 +78,7 @@ sub errstr { $ErrStr }
 #   \y  where y is one of ( ) \ *
 sub _unescape {
   $_[0] =~ s/
-	     \\([\da-fA-F]{2}|.)
+	     \\([\da-fA-F]{2}|[()\\*])
 	    /
 	     length($1) == 1
 	       ? $1
