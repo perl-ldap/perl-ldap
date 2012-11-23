@@ -4,7 +4,7 @@ use Test::More;
 
 use Net::LDAP::Entry;
 use Net::LDAP::Filter;
-use Net::LDAP::FilterMatch qw(String::Approx);
+use Net::LDAP::FilterMatch qw(Text::Soundex);
 
 # Each line consists of an OPCODE-LIST and a DN,
 # where
@@ -160,9 +160,9 @@ yes		(cn~=jonothan doe)
 yes		(cn~=jonathan do)
 yes		(cn~=john doe)
 yes		(cn~=jon doe)
-no		(cn~=jomatan doe)
-no		(cn~=jonatan oe)
-no		(cn~=jon dee)
+yes		(cn~=jomatan doe)
+yes		(cn~=jonatan oe)
+yes		(cn~=jon dee)
 
 ## extensible match
 yes		(cn:dn:=John Doe)
