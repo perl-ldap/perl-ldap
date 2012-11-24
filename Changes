@@ -1,3 +1,13 @@
+0.50 -- Sat Nov 24 13:03:45 CET 2012
+
+Bug Fixes:
+* t/07filtermatch.t: use core module Text::Soundex instead of String::Approx
+* Message.pm: fix regression w.r.t. Net::LDAP::Message::Dummy
+
+Enhancements:
+* Makefile.PL: make dependencies reflect reality better
+* LDAP.pm: avoid warning in new() that might have occurred in corner cases
+
 0.50_01 -- Sat Nov 17 18:05:15 CET 2012
 
 Bug Fixes:

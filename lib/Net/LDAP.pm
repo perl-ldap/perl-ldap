@@ -30,7 +30,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 
 use constant CAN_IPV6 => eval { require IO::Socket::INET6 } ? 1 : 0;
 
-our $VERSION 	= "0.50_01";
+our $VERSION 	= "0.50";
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 our $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
