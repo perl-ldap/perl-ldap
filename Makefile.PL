@@ -20,11 +20,23 @@ resources
 
 check_nmake;	# check and download nmake.exe for Win32
 
-requires	'Convert::ASN1' => 0.07;
+requires	'Convert::ASN1' => 0.20;
 
 test_requires	'Test::More';
 
 features
+        'IPv6 support' => [
+		-default => 0,
+                'IO::Socket::INET6' => 0,
+        ],
+	'LDAPS support' => [
+		-default => 0,
+		'IO::Socket::SSL' => 1.26,
+	],
+	'Read/Write LDIF files' => [
+		-default => 0,
+		'MIME::Base64'  => 0,
+	],
 	'SASL authentication' => [
 		-default => 0,
 		'Authen::SASL'  => '2.00',
@@ -37,24 +49,19 @@ features
 		'URI::ldap' => 1.10,
 		recommends 'JSON',
 	],
-	'LDAPS' => [
-		-default => 0,
-		'IO::Socket::SSL' => 1.26,
-	],
 	'Read/Write DSML files' => [
 		-default => 0,
-		'MIME::Base64'  => 0,
+		'MIME::Base64'     => 0,
 		'XML::SAX::Writer' => 0,
-		# dependencies of XML::SAX::Writer:
-		#'Text::Iconv' => 0,
-		#'XML::Filter::BufferText' => 0,
-		#'XML::SAX' => 0,
-		#'XML::NamespaceSupport' => 0,
-		#'File::Temp' => 0
+		'XML::SAX::Base'   => 0,
 	],
-	'Read/Write LDIF files' => [
+	'LWP support for the LDAP protocol family' => [
 		-default => 0,
-		'MIME::Base64'  => 0,
+		'LWP::Protocol'   => 0,
+		'LWP::MediaTypes' => 0,
+		'HTTP::Negotiate' => 0,
+		'HTTP::Response'  => 0,
+		'HTTP::Status'    => 0,
 	];
 
 auto_install_now;

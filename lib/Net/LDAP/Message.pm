@@ -255,7 +255,9 @@ sub Net::LDAP::Compare::is_error {
     my $self   = shift;
     my $type   = ref($self) || $self;
 
-    $self = bless {}, $type;
+    $self = bless {
+      mesgid   => Net::LDAP::Message::NewMesgID(),
+    }, $type;
 
     $self;
   }

@@ -106,10 +106,13 @@ sub new {
 
   foreach my $uri (ref($host) ? @$host : ($host)) {
     my $scheme = $arg->{scheme} || 'ldap';
-    (my $h = $uri) =~ s,^(\w+)://,, and $scheme = $1;
+    my $h = $uri;
+    if (defined($h)) {
+      $h =~ s,^(\w+)://,, and $scheme = $1;
+      $h =~ s,/.*,,; # remove path part
+      $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
+    }
     my $meth = $obj->can("connect_$scheme") or next;
-    $h =~ s,/.*,,; # remove path part
-    $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
     if (&$meth($obj, $h, $arg)) {
       $obj->{net_ldap_uri} = $uri;
       $obj->{net_ldap_scheme} = $scheme;
