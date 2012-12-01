@@ -54,7 +54,7 @@ __END__
 
 =head1 NAME
 
-Net::LDAP::Extra:AD -- AD convenience methods
+Net::LDAP::Extra::AD -- AD convenience methods
 
 =head1 SYNOPSIS
 
