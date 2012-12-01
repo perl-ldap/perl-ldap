@@ -1,3 +1,14 @@
+0.51 -- Sat Dec 1 14:37:35 CET 2012
+
+Bug Fixes:
+* RT#81380: in Filter.pm unescape hexpairs and ( ) \ * only
+* tests: compare files in "text mode"
+* Makefile.PL: mention all requirements for tests
+
+Enhancements:
+* Schema.pod: document attribute_syntax()
+* contrib/schema2ad.pl: new, convert schema file to something AD can digest
+
 0.50 -- Sat Nov 24 13:03:45 CET 2012
 
 Bug Fixes:
