@@ -366,29 +366,36 @@ cn=*a*
 (attr<=fubar)
 0000: A6 0D 04 04 61 74 74 72 04 05 66 75 62 61 72 __ ....attr..fubar
 
+# attribute 'attr' matching 'fubar' using matching rule '1.2.3'
 (attr:1.2.3:=fubar)
 0000: A9 14 81 05 31 2E 32 2E 33 82 04 61 74 74 72 83 ....1.2.3..attr.
 0010: 05 66 75 62 61 72 __ __ __ __ __ __ __ __ __ __ .fubar
 
+# attribute 'attr' in DN matching 'fubar' using default equality matching rule
 (attr:dn:=fubar)
 0000: A9 10 82 04 61 74 74 72 83 05 66 75 62 61 72 84 ....attr..fubar.
 0010: 01 FF __ __ __ __ __ __ __ __ __ __ __ __ __ __ ..
 
+# attribute 'attr' in DN matching 'fubar' using default equality matching rule
 (attr:DN:=fubar)
 0000: A9 11 81 02 44 4E 82 04 61 74 74 72 83 05 66 75 ....DN..attr..fu
 0010: 62 61 72 __ __ __ __ __ __ __ __ __ __ __ __ __ bar
 
+# attribute 'attr' in DN matching 'fubar' using matching rule '1.2.3'
 (attr:dn:1.2.3:=fubar)
 0000: A9 17 81 05 31 2E 32 2E 33 82 04 61 74 74 72 83 ....1.2.3..attr.
 0010: 05 66 75 62 61 72 84 01 FF __ __ __ __ __ __ __ .fubar...
 
+# any attribute matching 'fubar' with matching rule '1.2.3'
 (:1.2.3:=fubar)
 0000: A9 0E 81 05 31 2E 32 2E 33 83 05 66 75 62 61 72 ....1.2.3..fubar
 
+# any attribute matching 'fubar' with matching rule 'caseExactMatch'
 (:caseExactMatch:=fubar)
 0000: A9 17 81 0E 63 61 73 65 45 78 61 63 74 4D 61 74 ....caseExactMat
 0010: 63 68 83 05 66 75 62 61 72 __ __ __ __ __ __ __ ch..fubar
 
+# any attribute from DN matching 'fubar' using matching rule '1.2.3'
 (:dn:1.2.3:=fubar)
 0000: A9 11 81 05 31 2E 32 2E 33 83 05 66 75 62 61 72 ....1.2.3..fubar
 0010: 84 01 FF __ __ __ __ __ __ __ __ __ __ __ __ __ ...
@@ -417,3 +424,49 @@ cn=*a*
 (|(objectClass=*)(name~=))
 0000: A1 17 87 0B 6F 62 6A 65 63 74 43 6C 61 73 73 A8 ....objectClass.
 0010: 08 04 04 6E 61 6D 65 04 00 __ __ __ __ __ __ __ ...name..
+
+# multi-valued RDN
+(member=sn=Doe+givenName=John,ou=People,o=University of Michigan,c=US)
+0000: A3 47 04 06 6D 65 6D 62 65 72 04 3D 73 6E 3D 44 .G..member.=sn=D
+0001: 6F 65 2B 67 69 76 65 6E 4E 61 6D 65 3D 4A 6F 68 oe+givenName=Joh
+0002: 6E 2C 6F 75 3D 50 65 6F 70 6C 65 2C 6F 3D 55 6E n,ou=People,o=Un
+0003: 69 76 65 72 73 69 74 79 20 6F 66 20 4D 69 63 68 iversity of Mich
+0004: 69 67 61 6E 2C 63 3D 55 53 __ __ __ __ __ __ __ igan,c=US
+
+# RDN containing a plus sign
+(dimension=width=2\5c+height=2,unit=meters)
+0000: A3 2A 04 09 64 69 6D 65 6E 73 69 6F 6E 04 1D 77 .*..dimension..w
+0001: 69 64 74 68 3D 32 5C 2B 68 65 69 67 68 74 3D 32 idth=2\+height=2
+0002: 2C 75 6E 69 74 3D 6D 65 74 65 72 73 __ __ __ __ ,unit=meters
+
+# literal asterisk needs to be hexpair-escaped
+(cn=\2a)
+0000: A3 07 04 02 63 6E 04 01 2A __ __ __ __ __ __ __ ....cn..*
+
+# literal backslash needs to be hexpair-escaped
+(cn=\5c)
+0000: A3 07 04 02 63 6E 04 01 5C __ __ __ __ __ __ __ ....cn..\
+
+# literal braces need to be hexpair-escaped
+(cn=\28braces\29)
+0000: A3 0E 04 02 63 6E 04 08 28 62 72 61 63 65 73 29 ....cn..(braces)
+
+# non-ASCII UTF-8 character umlaut-a
+(cn=Hägar)
+0000: A3 0C 04 02 63 6E 04 06 48 C3 A4 67 61 72 __ __ ....cn..H..gar
+(cn=H\c3\a4gar)
+
+# perl-ldap extension - strictly speaking a violation of the RFC
+(cn=\*)
+0000: A3 07 04 02 63 6E 04 01 2A __ __ __ __ __ __ __ ....cn..*
+(cn=\2a)
+
+# perl-ldap extension - strictly speaking a violation of the RFC
+(cn=\\)
+0000: A3 07 04 02 63 6E 04 01 5C __ __ __ __ __ __ __ ....cn..\
+(cn=\5c)
+
+# perl-ldap extension - strictly speaking a violation of the RFC
+(cn=\(braces\))
+0000: A3 0E 04 02 63 6E 04 08 28 62 72 61 63 65 73 29 ....cn..(braces)
+(cn=\28braces\29)

@@ -1,7 +1,7 @@
 #!perl
 
 use Test::More;
-use File::Compare;
+use File::Compare qw(compare_text);
 
 BEGIN { require "t/common.pl" }
 
@@ -48,4 +48,4 @@ truncate(FH, length($txt));
 close(FH);
 }
 
-ok(!compare($cmpfile1,$outfile1), $cmpfile1);
+ok(!compare_text($cmpfile1,$outfile1), $cmpfile1);

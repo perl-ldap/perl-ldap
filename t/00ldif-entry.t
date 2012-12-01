@@ -5,6 +5,7 @@ BEGIN {
 }
 
 use Test::More tests => 16;
+use File::Compare qw(compare_text);
 
 use Net::LDAP::LDIF;
 
@@ -51,9 +52,9 @@ ok($ldif->version == 1, "version == 1");
 Net::LDAP::LDIF->new($outfile1,"w")->write(@entry);
 Net::LDAP::LDIF->new($outfile2,"w", version => 1)->write(@entry);
 
-ok(!compare($cmpfile1,$outfile1), $cmpfile1);
+ok(!compare_text($cmpfile1,$outfile1), $cmpfile1);
 
-ok(!compare($cmpfile2,$outfile2), $cmpfile2);
+ok(!compare_text($cmpfile2,$outfile2), $cmpfile2);
 
 
 is($e->ldif, "\n$entry0_ldif", "ldif method");
@@ -156,7 +157,7 @@ $ldif = Net::LDAP::LDIF->new($outfile,"w");
 $ldif->write($e);
 $ldif->write_cmd($e);
 $ldif->done;
-ok(!compare($cmpfile,$outfile), $cmpfile);
+ok(!compare_text($cmpfile,$outfile), $cmpfile);
 
 $e->add('name' => 'Graham Barr');
 $e->add('name;en-us' => 'Bob');
