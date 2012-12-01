@@ -15,9 +15,10 @@ The files in this directory are
   ldifsort.pl	  Sort an LDIF file by the specified key attribute. 
   ldifuniq.pl	  Cull unique entries from a reference file with
                   respect to a comparison file.
-  recursive-ldap-delete.pl  Recursively delete a branch in an LDAP directory
-  simple-proxy.pl A simple LDAP proxy which can act as a man-in-the-middle
   LWPsearch.pl    A sample application to show the usage of LWP::Protocol::LDAP
+  recursive-ldap-delete.pl  Recursively delete a branch in an LDAP directory
+  schema2ad.pl    convert standard LDAP schema into a format that AD can digest
+  simple-proxy.pl A simple LDAP proxy which can act as a man-in-the-middle
 
 Most files contain a POD with full description and author contacts.
 e.g.

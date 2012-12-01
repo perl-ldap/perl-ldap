@@ -23,6 +23,10 @@ check_nmake;	# check and download nmake.exe for Win32
 requires	'Convert::ASN1' => 0.20;
 
 test_requires	'Test::More';
+test_requires	'File::Basename';
+test_requires	'File::Compare';
+test_requires	'File::Path';
+test_requires	'IO::File';
 
 features
         'IPv6 support' => [
