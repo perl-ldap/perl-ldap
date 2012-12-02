@@ -211,6 +211,51 @@ sub _read_entry {
     if (CHECK_UTF8 && $self->{raw} && ('dn' !~ /$self->{raw}/));
   $entry->dn($dn);
 
+  my @controls = ();
+
+  # optional control: line => change record
+  while (@ldif && ($ldif[0] =~ /^control:\s*/)) {
+    my $control = shift(@ldif);
+
+    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
+      my($oid,$critical,$value) = ($1,$2,$3);
+      my $prefix = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
+
+      $critical = ($critical && $critical =~ /true/) ? 1 : 0;
+
+      # base64 encoded value: decode it
+      if ($prefix && $prefix eq ':') {
+        eval { require MIME::Base64 };
+        if ($@) {
+          $self->_error($@, @ldif);
+          return;
+        }
+        $value = MIME::Base64::decode($value);
+      }
+      # url value: read in file:// url, fail on others
+      elsif ($prefix && $prefix eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
+        $value = $self->_read_url_attribute($value, @ldif);
+        return  if !defined($value);
+      }
+
+      require Net::LDAP::Control;
+      my $ctrl = Net::LDAP::Control->new(type     => $oid,
+                                         value    => $value,
+                                         critical => $critical);
+
+      push(@controls, $ctrl);
+
+      if (!@ldif) {
+        $self->_error('Illegally formatted control line given', @ldif);
+        return;
+      }
+    }
+    else {
+      $self->_error('Illegally formatted control line given', @ldif);
+      return;
+    }
+  }
+
   if ((scalar @ldif) && ($ldif[0] =~ /^changetype:\s*/)) {
     my $changetype = $ldif[0] =~ s/^changetype:\s*//
         ? shift(@ldif) : $self->{changetype};
@@ -307,6 +352,11 @@ sub _read_entry {
     my $vals = [];
     my $attr;
     my $xattr;
+
+    if (@controls) {
+      $self->_error("Controls only allowed with LDIF change entries", @ldif);
+      return;
+    }
 
     foreach my $line (@ldif) {
       $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
