@@ -1504,6 +1504,23 @@ modify will fail with an object class violation error. The inetOrgPerson
 structural object class permits userCertificates, as does the
 strongAuthenticationUser auxiliary object class. Others might also.
 
+=head2 How do I search objects by the contents of certificates.
+
+The directory needs to support one or more of the certificate*Match
+matching rules.
+
+Then using the filter (for certificateExactMatch)
+
+  (userCertificate={ serialNumber 1234, issuer "cn=CA,o=TrustCenter" })
+
+allows searching for the objects containing the attribute userCertificate with
+a certificate matching these criteria.
+
+Please note that the exact syntax of the values for the serialNumber and the
+issuer above may depend on the LDAP server.
+In any case the example above works with OpenLDAP 2.4.33.
+
+
 =head1 ADDITIONAL DIRECTORY AND LDAP RESOURCES.
 
 =head2 URLs.
