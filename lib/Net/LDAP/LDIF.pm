@@ -74,12 +74,6 @@ sub new {
     write_count => ($mode eq '>>' and tell($fh) > 0) ? 1 : 0,
   };
 
-  # fetch glob for URL type attributes (one per LDIF object)
-  if ($mode eq 'r') {
-    require Symbol;
-    $self->{_attr_fh} = Symbol::gensym();
-  }
-
   bless $self, $pkg;
 }
 
@@ -142,8 +136,8 @@ sub _read_url_attribute {
   my $line;
 
   if ($url =~ s/^file:(?:\/\/)?//) {
-    my $fh = $self->{_attr_fh};
-    unless (open($fh, '<'.$url)) {
+    my $fh;
+    unless (open($fh, '<', $url)) {
       $self->_error("can't open $line: $!", @ldif);
       return;
     }
