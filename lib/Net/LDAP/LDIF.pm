@@ -17,8 +17,8 @@ BEGIN {
 
 our $VERSION = '0.19';
 
-
-my %mode = qw(w > r < a >>);
+# allow the letters r,w,a as well as the well-known operators as modes
+my %mode = qw(r < < < w > > > a >> >> >>);
 
 sub new {
   my $pkg = shift;
@@ -28,26 +28,25 @@ sub new {
   my $fh;
   my $opened_fh = 0;
 
+  # harmonize mode, default to reading
+  $mode = $mode{$mode} || '<';
+
   if (ref($file)) {
     $fh = $file;
   }
   else {
     if ($file eq '-') {
-      if ($mode eq 'w') {
-        ($file, $fh) = ('STDOUT', \*STDOUT);
-      }
-      else {
-        ($file, $fh) = ('STDIN', \*STDIN);
-      }
+      ($file,$fh) = ($mode eq '<')
+                    ? ('STDIN', \*STDIN)
+                    : ('STDOUT',\*STDOUT);
     }
     else {
       require Symbol;
       $fh = Symbol::gensym();
-      my $open = $file =~ /^\| | \|$/x
-	? $file
-	: (($mode{$mode} || '<') . $file);
-      open($fh, $open)  or return;
-      $opened_fh = 1;
+      $opened_fh = ($file =~ /^\| | \|$/x)
+                   ? open($fh, $file)
+                   : open($fh, $mode, $file);
+      return  unless ($opened_fh);
     }
   }
 
@@ -72,7 +71,7 @@ sub new {
     file => "$file",
     opened_fh => $opened_fh,
     _eof => 0,
-    write_count => ($mode eq 'a' and tell($fh) > 0) ? 1 : 0,
+    write_count => ($mode eq '>>' and tell($fh) > 0) ? 1 : 0,
   };
 
   # fetch glob for URL type attributes (one per LDIF object)
