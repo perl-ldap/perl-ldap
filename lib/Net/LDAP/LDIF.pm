@@ -141,8 +141,7 @@ sub _read_url_attribute {
   if ($url =~ s/^file:(?:\/\/)?//) {
     my $fh;
     unless (open($fh, '<', $url)) {
-      $self->_error("can't open $line: $!", @ldif);
-      return;
+      return $self->_error("can't open $line: $!", @ldif);
     }
     binmode($fh);
     { # slurp in whole file at once
@@ -151,8 +150,7 @@ sub _read_url_attribute {
     }
     close($fh);
   } else {
-    $self->_error('unsupported URL type', @ldif);
-    return;
+    return $self->_error('unsupported URL type', @ldif);
   }
 
   $line;
@@ -205,12 +203,10 @@ sub _read_entry {
   }
 
   if (@ldif < 1) {
-     $self->_error('LDIF entry is not valid', @ldif);
-     return;
+     return $self->_error('LDIF entry is not valid', @ldif);
   }
   elsif ($ldif[0] !~ /^dn::? */) {
-     $self->_error('First line of LDIF entry does not begin with "dn:"', @ldif);
-     return;
+     return $self->_error('First line of LDIF entry does not begin with "dn:"', @ldif);
   }
 
   my $dn = shift @ldif;
@@ -247,13 +243,11 @@ sub _read_entry {
       push(@controls, $ctrl);
 
       if (!@ldif) {
-        $self->_error('Illegally formatted control line given', @ldif);
-        return;
+        return $self->_error('Illegally formatted control line given', @ldif);
       }
     }
     else {
-      $self->_error('Illegally formatted control line given', @ldif);
-      return;
+      return $self->_error('Illegally formatted control line given', @ldif);
     }
   }
 
@@ -265,8 +259,7 @@ sub _read_entry {
     return $entry  if ($changetype eq 'delete');
 
     unless (@ldif) {
-      $self->_error('LDAP entry is not valid', @ldif);
-      return;
+      return $self->_error('LDAP entry is not valid', @ldif);
     }
 
     while(@ldif) {
@@ -275,8 +268,7 @@ sub _read_entry {
       my $lastattr;
       if($changetype eq 'modify') {
         unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace|increment):\s*([-;\w]+)// ) {
-          $self->_error('LDAP entry is not valid', @ldif);
-          return;
+          return $self->_error('LDAP entry is not valid', @ldif);
         }
         $lastattr = $modattr = $2;
         $modify  = $1;
@@ -308,8 +300,7 @@ sub _read_entry {
         return  if !defined($line);
 
         if( defined($modattr) && $attr ne $modattr ) {
-          $self->_error('LDAP entry is not valid', @ldif);
-          return;
+          return $self->_error('LDAP entry is not valid', @ldif);
         }
 
         if(!defined($lastattr) || $lastattr ne $attr) {
@@ -344,8 +335,7 @@ sub _read_entry {
     my $xattr;
 
     if (@controls) {
-      $self->_error("Controls only allowed with LDIF change entries", @ldif);
-      return;
+      return $self->_error("Controls only allowed with LDIF change entries", @ldif);
     }
 
     foreach my $line (@ldif) {
@@ -381,8 +371,7 @@ sub read_entry {
   my $self = shift;
 
   unless ($self->{fh}) {
-     $self->_error('LDIF file handle not valid');
-     return;
+     return $self->_error('LDIF file handle not valid');
   }
   $self->_read_entry();
 }
@@ -524,8 +513,7 @@ sub _write_entry {
   local($\, $,); # output field and record separators
 
   unless ($self->{fh}) {
-     $self->_error('LDIF file handle not valid');
-     return;
+     return $self->_error('LDIF file handle not valid');
   }
 
   my $fh = $self->{fh};
@@ -664,6 +652,8 @@ sub _error {
    $self->{_err_lines} = join "\n", @errlines;
 
    scalar &{ $onerror{ $self->{onerror} } }($self, $self->{_err_msg})  if $self->{onerror};
+
+   return;
 }
 
 sub _clear_error {
