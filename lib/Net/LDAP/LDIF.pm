@@ -159,6 +159,28 @@ sub _read_url_attribute {
 }
 
 
+# read attribute value (decode it based in its type)
+sub _read_attribute_value {
+  my $self = shift;
+  my $type = shift;
+  my $value = shift;
+  my @ldif = @_;
+
+  # Base64-encoded value: decode it
+  if ($type && $type eq ':') {
+    require MIME::Base64;
+    $value = MIME::Base64::decode($value);
+  }
+  # URL value: read in file:// URL, fail on others
+  elsif ($type && $type eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
+    $value = $self->_read_url_attribute($value, @ldif);
+    return  if !defined($value);
+  }
+
+  $value;
+}
+
+
 # _read_one() is deprecated and will be removed
 # in a future version
 *_read_one = \&_read_entry;
@@ -194,8 +216,7 @@ sub _read_entry {
   my $dn = shift @ldif;
 
   if (length($1)) {	# $1 is the optional colon from above
-    require MIME::Base64;
-    $dn = MIME::Base64::decode($dn);
+    $dn = $self->_read_attribute_value(':', $dn, @ldif);
   }
 
   my $entry = Net::LDAP::Entry->new;
@@ -211,20 +232,13 @@ sub _read_entry {
 
     if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
       my($oid,$critical,$value) = ($1,$2,$3);
-      my $prefix = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
+      my $type = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
 
       $critical = ($critical && $critical =~ /true/) ? 1 : 0;
 
-      # base64 encoded value: decode it
-      if ($prefix && $prefix eq ':') {
-        require MIME::Base64;
-        $value = MIME::Base64::decode($value);
-      }
-      # url value: read in file:// url, fail on others
-      elsif ($prefix && $prefix eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
-        $value = $self->_read_url_attribute($value, @ldif);
-        return  if !defined($value);
-      }
+      $value = $self->_read_attribute_value($type, $value, @ldif)
+        if (defined($value) && $type);
+      return  if !defined($value);
 
       require Net::LDAP::Control;
       my $ctrl = Net::LDAP::Control->new(type     => $oid,
@@ -290,16 +304,9 @@ sub _read_entry {
         $line =~ s/^([-;\w]+):([\<\:]?)\s*// and
 	    ($attr, $xattr) = ($1, $2);
 
-        # base64 encoded attribute: decode it
-        if ($xattr eq ':') {
-          require MIME::Base64;
-          $line = MIME::Base64::decode($line);
-        }
-        # url attribute: read in file:// url, fail on others
-        elsif ($xattr eq '<' and $line =~ s/^(.*?)\s*$/$1/) {
-          $line = $self->_read_url_attribute($line, @ldif);
-          return  if !defined($line);
-        }
+        $line = $self->_read_attribute_value($xattr, $line, @ldif)
+          if ($xattr);
+        return  if !defined($line);
 
         if( defined($modattr) && $attr ne $modattr ) {
           $self->_error('LDAP entry is not valid', @ldif);
@@ -346,16 +353,9 @@ sub _read_entry {
       $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
 	  (($attr, $xattr) = ($1, $2)) or next;
 
-      # base64 encoded attribute: decode it
-      if ($xattr eq ':') {
-        require MIME::Base64;
-        $line = MIME::Base64::decode($line);
-      }
-      # url attribute: read in file:// url, fail on others
-      elsif ($xattr eq '<' and $line =~ s/^(.*?)\s*$/$1/) {
-        $line = $self->_read_url_attribute($line, @ldif);
-        return  if !defined($line);
-      }
+      $line = $self->_read_attribute_value($xattr, $line, @ldif)
+        if ($xattr);
+      return  if !defined($line);
 
       if (CHECK_UTF8 && $self->{raw}) {
         $line = Encode::decode_utf8($line)
