@@ -208,16 +208,15 @@ sub _read_entry {
      $self->_error('LDIF entry is not valid', @ldif);
      return;
   }
-  elsif (not ( $ldif[0] =~ s/^dn:(:?) *//) ) {
+  elsif ($ldif[0] !~ /^dn::? */) {
      $self->_error('First line of LDIF entry does not begin with "dn:"', @ldif);
      return;
   }
 
   my $dn = shift @ldif;
+  my $xattr = $1  if ($dn =~ s/^dn:(:?) *//);
 
-  if (length($1)) {	# $1 is the optional colon from above
-    $dn = $self->_read_attribute_value(':', $dn, @ldif);
-  }
+  $dn = $self->_read_attribute_value($xattr, $dn, @ldif);
 
   my $entry = Net::LDAP::Entry->new;
   $dn = Encode::decode_utf8($dn)
