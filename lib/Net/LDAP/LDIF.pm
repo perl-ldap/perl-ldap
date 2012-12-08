@@ -401,7 +401,7 @@ sub _write_attr {
 
     $v = Encode::encode_utf8($v)
       if (CHECK_UTF8 and Encode::is_utf8($v));
-    if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
+    if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff]| $)/) {
       require MIME::Base64;
       $ln .= ':: ' . MIME::Base64::encode($v, '');
     }
