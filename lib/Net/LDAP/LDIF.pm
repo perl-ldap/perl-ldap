@@ -557,17 +557,12 @@ sub _write_entry {
 
       my $dash = 0;
       # changetype: modify
-      foreach my $chg (@changes) {
-        unless (ref($chg)) {
-          $type = $chg;
-          next;
-        }
-        my $i = 0;
-        while ($i < @$chg) {
+      while (my($action,$attrs) = splice(@changes, 0, 2)) {
+        my @attrs = @$attrs;
+
+        while (my($attr,$val) = splice(@attrs, 0, 2)) {
           $res &&= print $fh "-\n"  if (!$self->{version} && $dash++);
-          my $attr = $chg->[$i++];
-          my $val = $chg->[$i++];
-          $res &&= print $fh $type, ': ', $attr, "\n";
+          $res &&= print $fh "$action: $attr\n";
           $res &&= $self->_write_attr($attr, $val);
           $res &&= print $fh "-\n"  if ($self->{version});
         }
