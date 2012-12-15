@@ -5,7 +5,6 @@
 package Net::LDAP::LDIF;
 
 use strict;
-use SelectSaver;
 require Net::LDAP::Entry;
 
 use constant CHECK_UTF8 => $] > 5.007;
@@ -438,6 +437,7 @@ sub _wrap {
 sub _write_attr {
   my($self, $attr, $val) = @_;
   my $lower = $self->{lowercase};
+  my $fh = $self->{fh};
   my $res = 1;	# result value
 
   foreach my $v (@$val) {
@@ -452,7 +452,7 @@ sub _write_attr {
     else {
       $ln .= ': ' . $v;
     }
-    $res &&= print _wrap($ln, $self->{wrap}), "\n";
+    $res &&= print $fh _wrap($ln, $self->{wrap}), "\n";
   }
   $res;
 }
@@ -480,6 +480,7 @@ sub _write_attrs {
 sub _write_dn {
   my($self, $dn) = @_;
   my $encode = $self->{encode};
+  my $fh = $self->{fh};
 
   $dn = Encode::encode_utf8($dn)
     if (CHECK_UTF8 and Encode::is_utf8($dn));
@@ -500,7 +501,7 @@ sub _write_dn {
   } else {
     $dn = "dn: $dn";
   }
-  print _wrap($dn, $self->{wrap}), "\n";
+  print $fh _wrap($dn, $self->{wrap}), "\n";
 }
 
 # write() is deprecated and will be removed
@@ -519,9 +520,10 @@ sub write_entry {
 
 sub write_version {
   my $self = shift;
+  my $fh = $self->{fh};
   my $res = 1;
 
-  $res &&= print "version: $self->{version}\n"
+  $res &&= print $fh "version: $self->{version}\n"
     if ($self->{version} && !$self->{version_written}++);
 
   return $res;
@@ -538,9 +540,9 @@ sub _write_entry {
      $self->_error('LDIF file handle not valid');
      return;
   }
-  my $saver = SelectSaver->new($self->{fh});
 
   my $fh = $self->{fh};
+
   foreach my $entry (@_) {
     unless (ref $entry) {
        $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
@@ -556,10 +558,10 @@ sub _write_entry {
       next  if $type eq 'modify' and !@changes;
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
-      $res &&= print "\n";
+      $res &&= print $fh "\n";
       $res &&= $self->_write_dn($entry->dn);
 
-      $res &&= print "changetype: $type\n";
+      $res &&= print $fh "changetype: $type\n";
 
       if ($type eq 'delete') {
         next;
@@ -571,7 +573,7 @@ sub _write_entry {
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
         $res &&= $self->_write_attr('newrdn', $entry->get_value('newrdn', asref => 1));
-        $res &&= print 'deleteoldrdn: ', $deleteoldrdn, "\n";
+        $res &&= print $fh 'deleteoldrdn: ', $deleteoldrdn, "\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
         $res &&= $self->_write_attr('newsuperior', $ns)  if defined $ns;
         next;
@@ -585,19 +587,19 @@ sub _write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
-	  $res &&= print "-\n"  if (!$self->{version} && $dash++);
+	  $res &&= print $fh "-\n"  if (!$self->{version} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
-          $res &&= print $type, ': ', $attr, "\n";
+          $res &&= print $fh $type, ': ', $attr, "\n";
           $res &&= $self->_write_attr($attr, $val);
-	  $res &&= print "-\n"  if ($self->{'version'});
+	  $res &&= print $fh "-\n"  if ($self->{'version'});
         }
       }
     }
 
     else {
       $res &&= $self->write_version()  unless $self->{write_count}++;
-      $res &&= print "\n";
+      $res &&= print $fh "\n";
       $res &&= $self->_write_dn($entry->dn);
       $res &&= $self->_write_attrs($entry);
     }
