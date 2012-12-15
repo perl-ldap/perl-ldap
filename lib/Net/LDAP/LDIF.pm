@@ -426,7 +426,7 @@ sub eof {
 }
 
 sub _wrap {
-  my $len=$_[1];	# needs to be >= 2 to avoid division by zero
+  my $len=int($_[1]);	# needs to be >= 2 to avoid division by zero
   return $_[0]  if length($_[0]) <= $len or $len <= 40;
   use integer;
   my $l2 = $len-1;
@@ -436,7 +436,8 @@ sub _wrap {
 }
 
 sub _write_attr {
-  my($attr, $val, $wrap, $lower) = @_;
+  my($self, $attr, $val) = @_;
+  my $lower = $self->{lowercase};
   my $res = 1;	# result value
 
   foreach my $v (@$val) {
@@ -451,7 +452,7 @@ sub _write_attr {
     else {
       $ln .= ': ' . $v;
     }
-    $res &&= print _wrap($ln, $wrap), "\n";
+    $res &&= print _wrap($ln, $self->{wrap}), "\n";
   }
   $res;
 }
@@ -463,20 +464,22 @@ sub _cmpAttrs {
 }
 
 sub _write_attrs {
-  my($entry, $wrap, $lower, $sort) = @_;
+  my($self, $entry) = @_;
   my @attributes = $entry->attributes();
   my $res = 1;	# result value
 
-  @attributes = sort _cmpAttrs @attributes  if ($sort);
+  @attributes = sort _cmpAttrs @attributes  if ($self->{sort});
+
   foreach my $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
-    $res &&= _write_attr($attr, $val, $wrap, $lower);
+    $res &&= $self->_write_attr($attr, $val);
   }
   $res;
 }
 
 sub _write_dn {
-  my($dn, $encode, $wrap) = @_;
+  my($self, $dn) = @_;
+  my $encode = $self->{encode};
 
   $dn = Encode::encode_utf8($dn)
     if (CHECK_UTF8 and Encode::is_utf8($dn));
@@ -497,7 +500,7 @@ sub _write_dn {
   } else {
     $dn = "dn: $dn";
   }
-  print _wrap($dn, $wrap), "\n";
+  print _wrap($dn, $self->{wrap}), "\n";
 }
 
 # write() is deprecated and will be removed
@@ -528,9 +531,6 @@ sub write_version {
 sub _write_entry {
   my $self = shift;
   my $change = shift;
-  my $wrap = int($self->{wrap});
-  my $lower = $self->{lowercase};
-  my $sort = $self->{sort};
   my $res = 1;	# result value
   local($\, $,); # output field and record separators
 
@@ -557,7 +557,7 @@ sub _write_entry {
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
+      $res &&= $self->_write_dn($entry->dn);
 
       $res &&= print "changetype: $type\n";
 
@@ -565,15 +565,15 @@ sub _write_entry {
         next;
       }
       elsif ($type eq 'add') {
-        $res &&= _write_attrs($entry, $wrap, $lower, $sort);
+        $res &&= $self->_write_attrs($entry);
         next;
       }
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        $res &&= _write_attr('newrdn', $entry->get_value('newrdn', asref => 1), $wrap, $lower);
+        $res &&= $self->_write_attr('newrdn', $entry->get_value('newrdn', asref => 1));
         $res &&= print 'deleteoldrdn: ', $deleteoldrdn, "\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= _write_attr('newsuperior', $ns, $wrap, $lower)  if defined $ns;
+        $res &&= $self->_write_attr('newsuperior', $ns)  if defined $ns;
         next;
       }
 
@@ -589,8 +589,8 @@ sub _write_entry {
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           $res &&= print $type, ': ', $attr, "\n";
-          $res &&= _write_attr($attr, $val, $wrap, $lower);
-	  $res &&= print "-\n"  if ($self->{version});
+          $res &&= $self->_write_attr($attr, $val);
+	  $res &&= print "-\n"  if ($self->{'version'});
         }
       }
     }
@@ -598,8 +598,8 @@ sub _write_entry {
     else {
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
-      $res &&= _write_attrs($entry, $wrap, $lower, $sort);
+      $res &&= $self->_write_dn($entry->dn);
+      $res &&= $self->_write_attrs($entry);
     }
   }
 
