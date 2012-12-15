@@ -40,8 +40,6 @@ sub new {
                     : ('STDOUT',\*STDOUT);
     }
     else {
-      require Symbol;
-      $fh = Symbol::gensym();
       $opened_fh = ($file =~ /^\| | \|$/x)
                    ? open($fh, $file)
                    : open($fh, $mode, $file);
