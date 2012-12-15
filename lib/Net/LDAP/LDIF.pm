@@ -256,7 +256,11 @@ sub _read_entry {
         ? shift(@ldif) : $self->{changetype};
     $entry->changetype($changetype);
 
-    return $entry  if ($changetype eq 'delete');
+    if ($changetype eq 'delete') {
+      return $self->_error('LDIF "delete" entry is not valid', @ldif)
+        if (@ldif);
+      return $entry;
+    }
 
     unless (@ldif) {
       return $self->_error('LDAP entry is not valid', @ldif);
