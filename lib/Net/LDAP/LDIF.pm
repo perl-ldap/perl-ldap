@@ -266,7 +266,7 @@ sub _read_entry {
       unless (@ldif);
 
     while (@ldif) {
-      my $modify = $self->{modify};
+      my $action = $self->{modify};
       my $modattr;
       my $lastattr;
       my @values;
@@ -276,89 +276,82 @@ sub _read_entry {
           return $self->_error('LDAP entry is not valid', @ldif);
         }
         $lastattr = $modattr = $2;
-        $modify = $1;
+        $action = $1;
       }
 
       while (@ldif) {
         my $line = shift @ldif;
-        my $attr;
-        my $xattr;
 
         if ($line eq '-') {
-          if (defined $lastattr) {
-            map { $_ = Encode::decode_utf8($_) } @values
-              if (CHECK_UTF8 && $self->{raw} && ($lastattr !~ /$self->{raw}/));
+          return $self->_error('LDAP entry is not valid', @ldif)
+            if (!defined($modattr) || !defined($lastattr));
 
-            $entry->$modify($lastattr, \@values);
-          }
-          undef $lastattr;
-          @values = ();
           last;
         }
 
-        $line =~ s/^([-;\w]+):([\<\:]?)\s*// and
-            ($attr, $xattr) = ($1, $2);
+        if ($line =~ /^([-;\w]+):([\<\:]?)\s*(.*)$/o) {
+          my ($attr,$xattr,$val) = ($1,$2,$3);
 
-        $line = $self->_read_attribute_value($xattr, $line, @ldif)
-          if ($xattr);
-        return  if !defined($line);
+          return $self->_error('LDAP entry is not valid', @ldif)
+            if (defined($modattr) && $attr ne $modattr);
 
-        return $self->_error('LDAP entry is not valid', @ldif)
-          if (defined($modattr) && $attr ne $modattr);
+          $val = $self->_read_attribute_value($xattr, $val, $line)
+            if ($xattr);
+          return  if !defined($val);
 
-        if (!defined($lastattr) || $lastattr ne $attr) {
-          if (defined $lastattr) {
-            map { $_ = Encode::decode_utf8($_) } @values
-              if (CHECK_UTF8 && $self->{raw} && ($lastattr !~ /$self->{raw}/));
+          $val = Encode::decode_utf8($val)
+            if (CHECK_UTF8 && $self->{raw} && ($attr !~ /$self->{raw}/));
 
-            $entry->$modify($lastattr, \@values);
+          if (!defined($lastattr) || $lastattr ne $attr) {
+            $entry->$action($lastattr => \@values)
+              if (defined $lastattr);
+
+            $lastattr = $attr;
+            @values = ();
           }
-          $lastattr = $attr;
-          @values = ($line);
-          next;
+          push(@values, $val);
         }
-        push(@values, $line);
+        else {
+          return $self->_error('LDAP entry is not valid', @ldif);
+        }
       }
-      if (defined $lastattr) {
-        map { $_ = Encode::decode_utf8($_) } @values
-          if (CHECK_UTF8 && $self->{raw} && ($lastattr !~ /$self->{raw}/));
-
-        $entry->$modify($lastattr, \@values);
-      }
+      $entry->$action($lastattr => \@values)
+        if (defined $lastattr);
     }
   }
   # content record (i.e. no 'changetype' line; implicitly treated as 'add')
   else {
-    my @attr;
     my $last = '';
-    my $vals = [];
-    my $attr;
-    my $xattr;
+    my @values;
 
     return $self->_error('Controls only allowed with LDIF change entries', @ldif)
       if (@controls);
 
     foreach my $line (@ldif) {
-      $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
-          (($attr, $xattr) = ($1, $2))  or next;
+      if ($line =~ /^([-;\w]+):([\<\:]?)\s*(.*)$/o) {
+        my($attr,$xattr,$val) = ($1,$2,$3);
 
-      $line = $self->_read_attribute_value($xattr, $line, @ldif)
-        if ($xattr);
-      return  if !defined($line);
+        $last = $attr  if (!$last);
 
-      $line = Encode::decode_utf8($line)
-        if (CHECK_UTF8 && $self->{raw} && ($attr !~ /$self->{raw}/));
+        $val = $self->_read_attribute_value($xattr, $val, $line)
+          if ($xattr);
+        return  if !defined($val);
 
-      if ($attr eq $last) {
-        push(@$vals, $line);
-        next;
+        $val = Encode::decode_utf8($val)
+          if (CHECK_UTF8 && $self->{raw} && ($attr !~ /$self->{raw}/));
+
+        if ($attr ne $last) {
+          $entry->add($last => \@values);
+          @values = ();
+          $last = $attr;
+        }
+        push(@values, $val);
       }
       else {
-        $vals = [$line];
-        push(@attr, $last = $attr, $vals);
+        return $self->_error("illegal LDIF line '$line'", @ldif);
       }
     }
-    $entry->add(@attr);
+    $entry->add($last => \@values);
   }
 
   $self->{_current_entry} = $entry;
