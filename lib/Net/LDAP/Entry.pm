@@ -21,7 +21,7 @@ sub new {
   my $self = shift;
   my $type = ref($self) || $self;
 
-  my $entry = bless { 'changetype' => 'add', changes => [] }, $type;
+  my $entry = bless { changetype => 'add', changes => [] }, $type;
 
   @_ and $entry->dn( shift );
   @_ and $entry->add( @_ );
@@ -265,20 +265,20 @@ sub update {
 
   if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
     if ($self->{changetype} eq 'add') {
-      $mesg = $target->add($self, 'callback' => $cb, %opt);
+      $mesg = $target->add($self, callback => $cb, %opt);
     }
     elsif ($self->{changetype} eq 'delete') {
-      $mesg = $target->delete($self, 'callback' => $cb, %opt);
+      $mesg = $target->delete($self, callback => $cb, %opt);
     }
     elsif ($self->{changetype} =~ /modr?dn/o) {
       my @args = (newrdn => $self->get_value('newrdn') || undef,
                   deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
       my $newsuperior = $self->get_value('newsuperior');
       push(@args, newsuperior => $newsuperior) if $newsuperior;
-      $mesg = $target->moddn($self, @args, 'callback' => $cb, %opt);
+      $mesg = $target->moddn($self, @args, callback => $cb, %opt);
     }
     elsif (@{$self->{changes}}) {
-      $mesg = $target->modify($self, 'changes' => $self->{changes}, 'callback' => $cb, %opt);
+      $mesg = $target->modify($self, changes => $self->{changes}, callback => $cb, %opt);
     }
     else {
       require Net::LDAP::Message;

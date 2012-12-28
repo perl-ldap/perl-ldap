@@ -610,18 +610,18 @@ sub handle {
 }
 
 my %onerror = (
-  'die'   => sub {
+  die   => sub {
                 my $self = shift;
                 require Carp;
                 $self->done;
                 Carp::croak($self->error(@_));
              },
-  'warn'  => sub {
+  warn  => sub {
                 my $self = shift;
                 require Carp;
                 Carp::carp($self->error(@_));
              },
-  'undef' => sub {
+  undef => sub {
                 my $self = shift;
                 require Carp;
                 Carp::carp($self->error(@_)) if $^W;

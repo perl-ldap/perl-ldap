@@ -80,12 +80,9 @@ sub _err_msg {
 }
 
 my %onerror = (
-  'die'   => sub {
-		require Carp;
-		Carp::croak(_err_msg(@_))
-	     },
-  'warn'  => sub { require Carp; Carp::carp(_err_msg(@_)); $_[0] },
-  'undef' => sub { require Carp; Carp::carp(_err_msg(@_)) if $^W; undef },
+  die   => sub { require Carp; Carp::croak(_err_msg(@_)) },
+  warn  => sub { require Carp; Carp::carp(_err_msg(@_)); $_[0] },
+  undef => sub { require Carp; Carp::carp(_err_msg(@_)) if $^W; undef },
 );
 
 sub _error {
@@ -561,7 +558,7 @@ sub add {
 }
 
 
-my %opcode = ( 'add' => 0, 'delete' => 1, 'replace' => 2, 'increment' => 3);
+my %opcode = ( add => 0, delete => 1, replace => 2, increment => 3 );
 
 sub modify {
   my $ldap = shift;

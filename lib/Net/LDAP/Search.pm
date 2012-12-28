@@ -135,9 +135,9 @@ sub sorted {
 	$i++;
       }
 
-      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, "reverse" => 1, separator => "\0"))
+      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, reverse => 1, separator => "\0"))
 		cmp
-	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, "reverse" => 1, separator => "\0"));
+	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, reverse => 1, separator => "\0"));
     }
     map { [ $_ ] } @{$self->{entries}};
 }
