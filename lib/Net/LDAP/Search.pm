@@ -47,12 +47,12 @@ sub decode {
     my $entry = Net::LDAP::Entry->new;
 
     $entry->decode($data, raw => $self->{raw})
-      or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
+      or $self->set_error(LDAP_DECODING_ERROR, "LDAP decode error")
      and return;
 
     push(@{$self->{entries} ||= []}, $entry);
 
-    $self->{callback}->($self,$entry)
+    $self->{callback}->($self, $entry)
       if (defined $self->{callback});
 
     return $self;

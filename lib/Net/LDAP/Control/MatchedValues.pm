@@ -234,7 +234,7 @@ sub parse {
                             ((?:\\.|[^\\()]+)*)
                             \)\s*
                            //xo) {
-      my $item = Net::LDAP::Filter::_encode($1,$2,$3);
+      my $item = Net::LDAP::Filter::_encode($1, $2, $3);
       return undef  if (!$item);
       push(@parsed, $item);
       next;
@@ -247,7 +247,7 @@ sub parse {
 
   if (length $filterlist) {
     # If we have anything left in the filter, then there is a problem
-    $ErrStr = "Bad filterlist, error before " . substr($filterlist,0,20);
+    $ErrStr = "Bad filterlist, error before " . substr($filterlist, 0, 20);
     return undef;
   }
 

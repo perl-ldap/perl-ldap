@@ -20,7 +20,7 @@ my %Class2ResponseName = (
 my %ResponseName2Class = reverse %Class2ResponseName;
 
 sub register {
-  my($class,$responseName) = @_;
+  my($class, $responseName) = @_;
 
   require Carp and Carp::croak("$responseName is already registered to $ResponseName2Class{$responseName}")
     if exists $ResponseName2Class{$responseName} and $ResponseName2Class{$responseName} ne $class;

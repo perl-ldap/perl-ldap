@@ -189,7 +189,7 @@ my @err2desc = (
 
 sub ldap_error_desc {
   my $code = (ref($_[0]) ? $_[0]->code : $_[0]);
-  $err2desc[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
+  $err2desc[$code] || sprintf("LDAP error code %d(0x%02X)", $code, $code);
 }
 
 
@@ -300,10 +300,10 @@ sub canonical_dn($%) {
             #escape insecure characters and optionally MBCs
             if ( $opt{mbcescape} ) {
               $val =~ s/([\x00-\x1f\/\\",=+<>#;\x7f-\xff])/
-                sprintf("\\%02x",ord($1))/xeg;
+                sprintf("\\%02x", ord($1))/xeg;
             } else {
               $val =~ s/([\x00-\x1f\/\\",=+<>#;])/
-                sprintf("\\%02x",ord($1))/xeg;
+                sprintf("\\%02x", ord($1))/xeg;
             }
             #escape leading and trailing whitespace
             $val =~ s/(^\s+|\s+$)/
@@ -449,7 +449,7 @@ sub ldap_explode_dn($%) {
     (?:([;,+])\s*(?=\S)|$)				# separator
     )\s*/gcx)
   {
-    my($type,$val,$sep) = ($1,$2,$3);
+    my($type, $val, $sep) = ($1, $2, $3);
 
     $type =~ s/^oid\.//i;	#remove leading "oid."
 
@@ -512,7 +512,7 @@ sub escape_filter_value(@)
 {
 my @values = @_;
 
-  map { $_ =~ s/([\x00-\x1F\*\(\)\\])/"\\".unpack("H2",$1)/oge; } @values;
+  map { $_ =~ s/([\x00-\x1F\*\(\)\\])/"\\".unpack("H2", $1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
@@ -536,7 +536,7 @@ sub unescape_filter_value(@)
 {
 my @values = @_;
 
-  map { $_ =~ s/\\([0-9a-fA-F]{2})/pack("H2",$1)/oge; } @values;
+  map { $_ =~ s/\\([0-9a-fA-F]{2})/pack("H2", $1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
@@ -566,7 +566,7 @@ sub escape_dn_value(@)
 my @values = @_;
 
   map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
-        $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
+        $_ =~ s/([\x00-\x1F])/"\\".unpack("H2", $1)/oge;
         $_ =~ s/(^ +| +$)/"\\20" x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
@@ -593,7 +593,7 @@ sub unescape_dn_value(@)
 my @values = @_;
 
   map { $_ =~ s/\\([\\",=+<>#;]|[0-9a-fA-F]{2})
-               /(length($1)==1) ? $1 : pack("H2",$1)
+               /(length($1)==1) ? $1 : pack("H2", $1)
                /ogex; } @values;
 
   return(wantarray ? @values : $values[0]);

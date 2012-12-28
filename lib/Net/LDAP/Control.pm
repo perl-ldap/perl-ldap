@@ -67,7 +67,7 @@ my %Pkg2Type = (
 my %Type2Pkg = reverse %Pkg2Type;
 
 sub register {
-  my($class,$oid) = @_;
+  my($class, $oid) = @_;
 
   require Carp and Carp::croak("$oid is already registered to $Type2Pkg{$oid}")
     if exists $Type2Pkg{$oid} and $Type2Pkg{$oid} ne $class;

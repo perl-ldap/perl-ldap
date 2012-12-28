@@ -195,7 +195,7 @@ sub request {
 
     $content .= "</table>" if $index;
     $content .= "<hr>";
-    $content .= $index ? sprintf("%s Match%s found",$index, $index>1 ? "es" : "")
+    $content .= $index ? sprintf("%s Match%s found", $index, $index>1 ? "es" : "")
 		       : "<b>No Matches found</b>";
     $content .= "</body>\n";
   }

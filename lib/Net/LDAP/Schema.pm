@@ -91,7 +91,7 @@ sub dump {
   my $fh = @_ ? shift : \*STDOUT;
   my $entry = $self->{entry} or return;
   require Net::LDAP::LDIF;
-  Net::LDAP::LDIF->new($fh,"w", wrap => 0)->write($entry);
+  Net::LDAP::LDIF->new($fh, "w", wrap => 0)->write($entry);
   1;
 }
 
@@ -127,8 +127,8 @@ sub superclass {
   return @{$elem->{sup} || []};
 }
 
-sub must { _must_or_may(@_,'must') }
-sub may  { _must_or_may(@_,'may')  }
+sub must { _must_or_may(@_, 'must') }
+sub may  { _must_or_may(@_, 'may')  }
 
 #
 # Return must or may attributes for this OC.
@@ -163,7 +163,7 @@ sub _must_or_may {
     push @oc, @$sup;
   }
 
-  my %unique = map { ($_,$_) } $self->attribute(keys %res);
+  my %unique = map { ($_, $_) } $self->attribute(keys %res);
   values %unique;
 }
 
@@ -188,14 +188,14 @@ sub _get {
   wantarray ? @elem : $elem[0];
 }
 
-sub attribute		{ _get(@_,'at')  }
-sub objectclass		{ _get(@_,'oc')  }
-sub syntax		{ _get(@_,'syn') }
-sub matchingrule	{ _get(@_,'mr')  }
-sub matchingruleuse	{ _get(@_,'mru') }
-sub ditstructurerule	{ _get(@_,'dts') }
-sub ditcontentrule	{ _get(@_,'dtc') }
-sub nameform		{ _get(@_,'nfm') }
+sub attribute		{ _get(@_, 'at')  }
+sub objectclass		{ _get(@_, 'oc')  }
+sub syntax		{ _get(@_, 'syn') }
+sub matchingrule	{ _get(@_, 'mr')  }
+sub matchingruleuse	{ _get(@_, 'mru') }
+sub ditstructurerule	{ _get(@_, 'dts') }
+sub ditcontentrule	{ _get(@_, 'dtc') }
+sub nameform		{ _get(@_, 'nfm') }
 
 
 #
@@ -237,7 +237,7 @@ sub nameform		{ _get(@_,'nfm') }
 #
 # These items have no following arguments
 #
-my %flags = map { ($_,1) } qw(
+my %flags = map { ($_, 1) } qw(
 			      single-value
 			      obsolete
 			      collective
@@ -247,13 +247,13 @@ my %flags = map { ($_,1) } qw(
 			      auxiliary
 			     );
 
-my %xat_flags = map { ($_,1) } qw(indexed system-only);
+my %xat_flags = map { ($_, 1) } qw(indexed system-only);
 
 #
 # These items can have lists arguments
 # (name can too, but we treat it special)
 #
-my %listops = map { ($_,1) } qw(must may sup);
+my %listops = map { ($_, 1) } qw(must may sup);
 
 #
 # Map schema attribute names to internal names
@@ -281,7 +281,7 @@ sub _parse_schema {
   return undef unless defined($entry);
 
   keys %type2attr; # reset iterator
-  while (my($type,$attr) = each %type2attr) {
+  while (my($type, $attr) = each %type2attr) {
     my $vals = $entry->get_value($attr, asref => 1);
 
     my %names;
@@ -316,7 +316,7 @@ sub _parse_schema {
                       |
                        '((?:[^']+|'[^\s)])*)'
                       )\s*/xcg;
-      die "Cannot parse [$val] [",substr($val,pos($val)),"]" unless @tokens and pos($val) == length($val);
+      die "Cannot parse [$val] [", substr($val, pos($val)), "]" unless @tokens and pos($val) == length($val);
 
       # remove () from start/end
       shift @tokens if $tokens[0]  eq '(';
@@ -339,7 +339,7 @@ sub _parse_schema {
 	    while (1) {
 	      my $tmp = shift @tokens;
 	      last if $tmp eq ')';
-	      push @arr,$tmp unless $tmp eq '$';
+	      push @arr, $tmp unless $tmp eq '$';
 
               # Drop of end of list ?
 	      die "Cannot parse [$val] {$tag}" unless @tokens;
@@ -395,7 +395,7 @@ sub _parse_schema {
   if (my $xat = $schema->{xat}) {
     foreach my $xat_ref (values %$xat) {
       my $oid = $schema->{oid}{$xat_ref->{oid}} ||= {};
-      while (my($k,$v) = each %$xat_ref) {
+      while (my($k, $v) = each %$xat_ref) {
         $oid->{"x-$k"} = $v unless $k =~ /^(oid|type|name|aliases)$/;
       }
     }

@@ -416,7 +416,7 @@ sub write_entry {
       foreach my $val (@{$attr->{vals}}) {
 	if ($val =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
 	  require MIME::Base64;
-	  $chdata{Data} = MIME::Base64::encode($val,"");
+	  $chdata{Data} = MIME::Base64::encode($val, "");
 	  %attr = ( '{}encoding' => { Value => 'base64', Name => "encoding"} );
 	}
 	else {
@@ -496,7 +496,7 @@ sub write_schema {
       }
     }
     if (my $oid = $attr->{oid}) {
-      @data{qw(Name LocalName)} = ("dsml:object-identifier","object-identifier");
+      @data{qw(Name LocalName)} = ("dsml:object-identifier", "object-identifier");
       $handler->start_element(\%data);
       $handler->characters({Data => $oid});
       $handler->end_element(\%data);
@@ -508,7 +508,7 @@ sub write_schema {
 	substring
     )) {
       defined(my $text = $attr->{$elem}) or next;
-      @data{qw(Name LocalName)} = ("dsml:$elem",$elem);
+      @data{qw(Name LocalName)} = ("dsml:$elem", $elem);
       $handler->start_element(\%data);
       $handler->characters({Data => $text});
       $handler->end_element(\%data);
@@ -578,7 +578,7 @@ sub write_schema {
 	object-identifier
     )) {
       defined(my $text = $oc->{$elem}) or next;
-      @data{qw(Name LocalName)} = ("dsml:$elem",$elem);
+      @data{qw(Name LocalName)} = ("dsml:$elem", $elem);
       $handler->start_element(\%data);
       $handler->characters({Data => $text});
       $handler->end_element(\%data);

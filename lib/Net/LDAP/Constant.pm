@@ -15,7 +15,7 @@ while (<DATA>) {
   last if /^=cut/;
   my $protocol_const = /^=head2 Protocol Constants/ ... /^=head2/;
   next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/;
-  my ($name, $value) = ($1,$2);
+  my ($name, $value) = ($1, $2);
   *{$name} = sub () { $value };
   push @EXPORT_OK, $name;
   $err2name[$value] = $name if $protocol_const;
@@ -29,7 +29,7 @@ while (<DATA>) {
 sub Net::LDAP::Util::ldap_error_name {
   my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
 
-  $err2name[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
+  $err2name[$code] || sprintf("LDAP error code %d(0x%02X)", $code, $code);
 }
 
 
@@ -37,7 +37,7 @@ sub Net::LDAP::Util::ldap_error_text {
   my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
   my $text;
 
-  seek(DATA,0,0);
+  seek(DATA, 0, 0);
   local $/=''; # paragraph mode
   local $_;
   my $n = -1;

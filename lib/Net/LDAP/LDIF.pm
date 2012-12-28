@@ -34,10 +34,10 @@ sub new {
   else {
     if ($file eq "-") {
       if ($mode eq "w") {
-        ($file,$fh) = ("STDOUT",\*STDOUT);
+        ($file, $fh) = ("STDOUT", \*STDOUT);
       }
       else {
-        ($file,$fh) = ("STDIN",\*STDIN);
+        ($file, $fh) = ("STDIN", \*STDIN);
       }
     }
     else {
@@ -46,7 +46,7 @@ sub new {
       my $open = $file =~ /^\| | \|$/x
 	? $file
 	: (($mode{$mode} || "<") . $file);
-      open($fh,$open) or return;
+      open($fh, $open) or return;
       $opened_fh = 1;
     }
   }
@@ -219,7 +219,7 @@ sub _read_entry {
     return $entry if ($changetype eq "delete");
 
     unless (@ldif) {
-      $self->_error("LDAP entry is not valid",@ldif);
+      $self->_error("LDAP entry is not valid", @ldif);
       return;
     }
 
@@ -229,7 +229,7 @@ sub _read_entry {
       my $lastattr;
       if($changetype eq "modify") {
         unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace|increment):\s*([-;\w]+)// ) {
-          $self->_error("LDAP entry is not valid",@ldif);
+          $self->_error("LDAP entry is not valid", @ldif);
           return;
         }
         $lastattr = $modattr = $2;
@@ -338,7 +338,7 @@ sub _read_entry {
       }
       else {
         $vals = [$line];
-        push(@attr,$last=$attr,$vals);
+        push(@attr, $last=$attr, $vals);
       }
     }
     $entry->add(@attr);
@@ -366,7 +366,7 @@ sub read {
   return $self->read_entry() unless wantarray;
 
   my($entry, @entries);
-  push(@entries,$entry) while $entry = $self->read_entry;
+  push(@entries, $entry) while $entry = $self->read_entry;
 
   @entries;
 }
@@ -389,11 +389,11 @@ sub _wrap {
   my $l2 = $len-1;
   my $x = (length($_[0]) - $len) / $l2;
   my $extra = (length($_[0]) == ($l2 * $x + $len)) ? "" : "a*";
-  join("\n ",unpack("a$len" . "a$l2" x $x . $extra,$_[0]));
+  join("\n ", unpack("a$len" . "a$l2" x $x . $extra,$_[0]));
 }
 
 sub _write_attr {
-  my($attr,$val,$wrap,$lower) = @_;
+  my($attr, $val, $wrap, $lower) = @_;
   my $res = 1;	# result value
 
   foreach my $v (@$val) {
@@ -403,12 +403,12 @@ sub _write_attr {
       if (CHECK_UTF8 and Encode::is_utf8($v));
     if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
       require MIME::Base64;
-      $ln .= ":: " . MIME::Base64::encode($v,"");
+      $ln .= ":: " . MIME::Base64::encode($v, "");
     }
     else {
       $ln .= ": " . $v;
     }
-    $res &&= print _wrap($ln,$wrap),"\n";
+    $res &&= print _wrap($ln, $wrap), "\n";
   }
   $res;
 }
@@ -420,20 +420,20 @@ sub _cmpAttrs {
 }
 
 sub _write_attrs {
-  my($entry,$wrap,$lower,$sort) = @_;
+  my($entry, $wrap, $lower, $sort) = @_;
   my @attributes = $entry->attributes();
   my $res = 1;	# result value
 
   @attributes = sort _cmpAttrs @attributes  if ($sort);
   foreach my $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
-    $res &&= _write_attr($attr,$val,$wrap,$lower);
+    $res &&= _write_attr($attr, $val, $wrap, $lower);
   }
   $res;
 }
 
 sub _write_dn {
-  my($dn,$encode,$wrap) = @_;
+  my($dn, $encode, $wrap) = @_;
 
   $dn = Encode::encode_utf8($dn)
     if (CHECK_UTF8 and Encode::is_utf8($dn));
@@ -447,14 +447,14 @@ sub _write_dn {
       $dn = "dn: $dn";
     } elsif ($encode =~ /base64/i) {
       require MIME::Base64;
-      $dn = "dn:: " . MIME::Base64::encode($dn,"");
+      $dn = "dn:: " . MIME::Base64::encode($dn, "");
     } else {
       $dn = "dn: $dn";
     }
   } else {
     $dn = "dn: $dn";
   }
-  print _wrap($dn,$wrap), "\n";
+  print _wrap($dn, $wrap), "\n";
 }
 
 # write() is deprecated and will be removed
@@ -489,7 +489,7 @@ sub _write_entry {
   my $lower = $self->{lowercase};
   my $sort = $self->{sort};
   my $res = 1;	# result value
-  local($\,$,); # output field and record separators
+  local($\, $,); # output field and record separators
 
   unless ($self->{fh}) {
      $self->_error("LDIF file handle not valid");
@@ -514,7 +514,7 @@ sub _write_entry {
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn,$self->{encode},$wrap);
+      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
 
       $res &&= print "changetype: $type\n";
 
@@ -522,15 +522,15 @@ sub _write_entry {
         next;
       }
       elsif ($type eq 'add') {
-        $res &&= _write_attrs($entry,$wrap,$lower,$sort);
+        $res &&= _write_attrs($entry, $wrap, $lower, $sort);
         next;
       }
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        $res &&= _write_attr('newrdn',$entry->get_value('newrdn', asref => 1),$wrap,$lower);
-        $res &&= print 'deleteoldrdn: ', $deleteoldrdn,"\n";
+        $res &&= _write_attr('newrdn', $entry->get_value('newrdn', asref => 1), $wrap, $lower);
+        $res &&= print 'deleteoldrdn: ', $deleteoldrdn, "\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= _write_attr('newsuperior',$ns,$wrap,$lower) if defined $ns;
+        $res &&= _write_attr('newsuperior', $ns, $wrap, $lower) if defined $ns;
         next;
       }
 
@@ -545,8 +545,8 @@ sub _write_entry {
 	  $res &&= print "-\n"  if (!$self->{version} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
-          $res &&= print $type,": ",$attr,"\n";
-          $res &&= _write_attr($attr,$val,$wrap,$lower);
+          $res &&= print $type, ": ", $attr, "\n";
+          $res &&= _write_attr($attr, $val, $wrap, $lower);
 	  $res &&= print "-\n"  if ($self->{version});
         }
       }
@@ -555,8 +555,8 @@ sub _write_entry {
     else {
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn,$self->{encode},$wrap);
-      $res &&= _write_attrs($entry,$wrap,$lower,$sort);
+      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
+      $res &&= _write_attrs($entry, $wrap, $lower, $sort);
     }
   }
 
@@ -571,7 +571,7 @@ sub read_cmd {
   return $self->read_entry() unless wantarray;
 
   my($entry, @entries);
-  push(@entries,$entry) while $entry = $self->read_entry;
+  push(@entries, $entry) while $entry = $self->read_entry;
 
   @entries;
 }
@@ -627,11 +627,11 @@ my %onerror = (
 );
 
 sub _error {
-   my ($self,$errmsg,@errlines) = @_;
+   my ($self, $errmsg, @errlines) = @_;
    $self->{_err_msg} = $errmsg;
-   $self->{_err_lines} = join "\n",@errlines;
+   $self->{_err_lines} = join "\n", @errlines;
 
-   scalar &{ $onerror{ $self->{onerror} } }($self,$self->{_err_msg}) if $self->{onerror};
+   scalar &{ $onerror{ $self->{onerror} } }($self, $self->{_err_msg}) if $self->{onerror};
 }
 
 sub _clear_error {

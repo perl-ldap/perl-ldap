@@ -94,7 +94,7 @@ sub error {
 
 sub set_error {
   my $self = shift;
-  ($self->{resultCode},$self->{errorMessage}) = ($_[0]+0, "$_[1]");
+  ($self->{resultCode}, $self->{errorMessage}) = ($_[0]+0, "$_[1]");
   $self->{callback}->($self)
     if (defined $self->{callback});
   $self;
@@ -122,7 +122,7 @@ sub sync {
 
   until(exists $self->{resultCode}) {
     $err = $ldap->sync($self->mesg_id) or next;
-    $self->set_error($err,"Protocol Error")
+    $self->set_error($err, "Protocol Error")
       unless exists $self->{resultCode};
     return $err;
   }

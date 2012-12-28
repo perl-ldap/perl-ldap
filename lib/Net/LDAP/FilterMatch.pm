@@ -193,7 +193,7 @@ sub _filterMatch($@)
       $match='_cis_' . $op;
     }
 
-    return eval( "$match".'($assertion,$op,@values)' ) ;
+    return eval( "$match".'($assertion, $op, @values)' ) ;
   }
   elsif ($op eq 'extensibleMatch') {
     my @attrs = $args->{type} ? ( $args->{type} ) : ();
@@ -244,7 +244,7 @@ sub _filterMatch($@)
       @values = map { $entry->get_value($_); } @attrs;
     }
 
-    return eval( "$match".'($assertion,$op,@values)' ) ;
+    return eval( "$match".'($assertion, $op, @values)' ) ;
   }
 
   return undef;	# all other filters => fail with error
@@ -415,10 +415,10 @@ sub _cis_greaterOrEqual($$@)
   my $op=shift;
 
   if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
-      return _cis_orderingMatch($assertion,$op,@_);
+      return _cis_orderingMatch($assertion, $op, @_);
   }
   else {
-      return _numeric_orderingMatch($assertion,$op,@_);
+      return _numeric_orderingMatch($assertion, $op, @_);
   }
 }
 

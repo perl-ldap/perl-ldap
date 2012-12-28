@@ -87,11 +87,11 @@ sub _unescape {
   $_[0];
 }
 
-sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x",ord($1))/sge; $t }
+sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x", ord($1))/sge; $t }
 
 # encode a triplet ($attr,$op,$val) representing a single filter item
 sub _encode {
-  my($attr,$op,$val) = @_;
+  my($attr, $op, $val) = @_;
 
   # extensible match
   if ($op eq ':=') {
@@ -101,7 +101,7 @@ sub _encode {
       $ErrStr = "Bad attribute $attr";
       return undef;
     }
-    my($type,$dn,$rule) = ($1,$2,$4);
+    my($type, $dn, $rule) = ($1, $2, $4);
 
     return ( {
       extensibleMatch => {
@@ -182,7 +182,7 @@ sub parse {
     # Process the start of  (<op> (...)(...)), with <op> = [&!|]
 
     if ($filter =~ s/^\(\s*([&!|])\s*//) {
-      push @stack, [$op,$cur];
+      push @stack, [$op, $cur];
       $op = $1;
       $cur = [];
       next;
@@ -195,8 +195,8 @@ sub parse {
 	$ErrStr = "Bad filter, unmatched )";
 	return undef;
       }
-      my($myop,$mydata) = ($op,$cur);
-      ($op,$cur) = @{ pop @stack };
+      my($myop, $mydata) = ($op, $cur);
+      ($op, $cur) = @{ pop @stack };
 	# Need to do more checking here
       push @$cur, { $Op{$myop} => $myop eq '!' ? $mydata->[0] : $mydata };
       next if @stack;
@@ -210,7 +210,7 @@ sub parse {
                         ((?:\\.|[^\\()]+)*)
                         \)\s*
                        //xo) {
-      push(@$cur, _encode($1,$2,$3));
+      push(@$cur, _encode($1, $2, $3));
       next if @stack;
     }
 
@@ -221,7 +221,7 @@ sub parse {
 
   if (length $filter) {
     # If we have anything left in the filter, then there is a problem
-    $ErrStr = "Bad filter, error before " . substr($filter,0,20);
+    $ErrStr = "Bad filter, error before " . substr($filter, 0, 20);
     return undef;
   }
   if (@stack) {
@@ -239,7 +239,7 @@ sub print {
   no strict 'refs'; # select may return a GLOB name
   my $fh = @_ ? shift : select;
 
-  print $fh $self->as_string,"\n";
+  print $fh $self->as_string, "\n";
 }
 
 sub as_string { _string(%{$_[0]}) }
@@ -255,7 +255,7 @@ sub _string {    # prints things of the form (<op> (<list>) ... )
     /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch)/
       and return "(" . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .")";
     /^substrings/ and do {
-      my $str = join("*", "",map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
+      my $str = join("*", "", map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
       $str =~ s/^.// if exists $_[1]->{substrings}[0]{initial};
       $str .= '*' unless exists $_[1]->{substrings}[-1]{final};
       return "($_[1]->{type}=$str)";

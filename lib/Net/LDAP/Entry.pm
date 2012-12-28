@@ -40,10 +40,10 @@ sub clone {
 
   $clone->{changetype} = $self->{changetype};
   my @changes = @{$self->{changes}};
-  while (my($action, $cmd) = splice(@changes,0,2)) {
+  while (my($action, $cmd) = splice(@changes, 0, 2)) {
     my @new_cmd;
     my @cmd = @$cmd;
-    while (my($type, $val) = splice(@cmd,0,2)) {
+    while (my($type, $val) = splice(@cmd, 0, 2)) {
       push @new_cmd, $type, [ @$val ];
     }
     push @{$clone->{changes}}, $action, \@new_cmd;
@@ -55,7 +55,7 @@ sub clone {
 # Build attrs cache, created when needed
 
 sub _build_attrs {
-  +{ map { (lc($_->{type}),$_->{vals}) }  @{$_[0]->{asn}{attributes}} };
+  +{ map { (lc($_->{type}), $_->{vals}) }  @{$_[0]->{asn}{attributes}} };
 }
 
 # If we are passed an ASN structure we really do nothing
@@ -153,7 +153,7 @@ sub add {
   my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while (my($type,$val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
@@ -177,7 +177,7 @@ sub replace {
   my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while (my($type, $val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
@@ -220,7 +220,7 @@ sub delete {
   my $cmd = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while (my($type,$val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
@@ -283,7 +283,7 @@ sub update {
     else {
       require Net::LDAP::Message;
       $mesg = Net::LDAP::Message->new( $target );
-      $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
+      $mesg->set_error(LDAP_LOCAL_ERROR, "No attributes to update");
     }
   }
   elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
@@ -317,8 +317,8 @@ sub dump {
   my $fh = @_ ? shift : select;
 
   my $asn = $self->{asn};
-  print $fh "-" x 72,"\n";
-  print $fh "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
+  print $fh "-" x 72, "\n";
+  print $fh "dn:", $asn->{objectName}, "\n\n" if $asn->{objectName};
 
   my $l = 0;
 
