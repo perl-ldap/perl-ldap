@@ -305,11 +305,10 @@ sub _read_entry {
     my @attr;
     my $last = "";
     my $vals = [];
-    my $line;
     my $attr;
     my $xattr;
 
-    foreach $line (@ldif) {
+    foreach my $line (@ldif) {
       $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
 	  (($attr, $xattr) = ($1, $2)) or next;
 
@@ -395,9 +394,9 @@ sub _wrap {
 
 sub _write_attr {
   my($attr,$val,$wrap,$lower) = @_;
-  my $v;
   my $res = 1;	# result value
-  foreach $v (@$val) {
+
+  foreach my $v (@$val) {
     my $ln = $lower ? lc $attr : $attr;
 
     $v = Encode::encode_utf8($v)
@@ -423,10 +422,10 @@ sub _cmpAttrs {
 sub _write_attrs {
   my($entry,$wrap,$lower,$sort) = @_;
   my @attributes = $entry->attributes();
-  my $attr;
   my $res = 1;	# result value
+
   @attributes = sort _cmpAttrs @attributes  if ($sort);
-  foreach $attr (@attributes) {
+  foreach my $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
     $res &&= _write_attr($attr,$val,$wrap,$lower);
   }
@@ -486,7 +485,6 @@ sub write_version {
 sub _write_entry {
   my $self = shift;
   my $change = shift;
-  my $entry;
   my $wrap = int($self->{wrap});
   my $lower = $self->{lowercase};
   my $sort = $self->{sort};
@@ -500,7 +498,7 @@ sub _write_entry {
   my $saver = SelectSaver->new($self->{fh});
 
   my $fh = $self->{fh};
-  foreach $entry (@_) {
+  foreach my $entry (@_) {
     unless (ref $entry) {
        $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
        $res = 0;

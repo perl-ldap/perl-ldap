@@ -320,7 +320,6 @@ sub dump {
   print $fh "-" x 72,"\n";
   print $fh "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
 
-  my($attr,$val);
   my $l = 0;
 
   for (keys %{ $self->{attrs} ||= _build_attrs($self) }) {
@@ -329,12 +328,11 @@ sub dump {
 
   my $spc = "\n  " . " " x $l;
 
-  foreach $attr (@{$asn->{attributes}}) {
-    $val = $attr->{vals};
+  foreach my $attr (@{$asn->{attributes}}) {
+    my $val = $attr->{vals};
     printf $fh "%${l}s: ", $attr->{type};
-    my($i,$v);
-    $i = 0;
-    foreach $v (@$val) {
+    my $i = 0;
+    foreach my $v (@$val) {
       print $fh $spc if $i++;
       print $fh $v;
     }

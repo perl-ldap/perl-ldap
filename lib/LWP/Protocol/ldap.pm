@@ -151,10 +151,9 @@ sub request {
     require JSON;
 
     my $entry;
-    my $index;
     my %objects;
 
-    for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
+    for (my $index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $dn = $entry->dn;
 
       $objects{$dn} = {};
@@ -172,15 +171,12 @@ sub request {
     $content = "<head><title>Directory Search Results</title></head>\n<body>";
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
-      my $attr;
-
-      $content .= $index ? qq{<tr><th colspan="2"><hr>&nbsp</tr>\n} : "<table>";
+      $content .= $index ? qq{<tr><th colspan="2"><hr>&nbsp</tr>\n} : '<table>';
 
       $content .= qq{<tr><th colspan="2">} . $entry->dn . "</th></tr>\n";
 
-      foreach $attr ($entry->attributes) {
+      foreach my $attr ($entry->attributes) {
         my $vals = $entry->get_value($attr, asref => 1);
-        my $val;
 
         $content .= q{<tr><td align="right" valign="top"};
         $content .= q{ rowspan="} . scalar(@$vals) . q{"}
@@ -188,7 +184,7 @@ sub request {
         $content .= ">" . $attr  . "&nbsp</td>\n";
 
         my $j = 0;
-        foreach $val (@$vals) {
+        foreach my $val (@$vals) {
 	  $val = qq!<a href="$val">$val</a>! if $val =~ /^https?:/;
 	  $val = qq!<a href="mailto:$val">$val</a>! if $val =~ /^[-\w]+\@[-.\w]+$/;
           $content .= "<tr>" if $j++;

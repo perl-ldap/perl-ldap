@@ -575,17 +575,15 @@ sub modify {
 
   my @ops;
   my $opcode;
-  my $op;
 
   if (exists $arg->{changes}) {
-    my $chg;
     my $opcode;
     my $j = 0;
     while($j < @{$arg->{changes}}) {
       return _error($ldap, $mesg, LDAP_PARAM_ERROR,"Bad change type '" . $arg->{changes}[--$j] . "'")
        unless defined($opcode = $opcode{$arg->{changes}[$j++]});
 
-      $chg = $arg->{changes}[$j++];
+      my $chg = $arg->{changes}[$j++];
       if (ref($chg)) {
 	my $i = 0;
 	while ($i < @$chg) {
@@ -602,14 +600,13 @@ sub modify {
     }
   }
   else {
-    foreach $op (qw(add delete replace increment)) {
+    foreach my $op (qw(add delete replace increment)) {
       next unless exists $arg->{$op};
       my $opt = $arg->{$op};
       my $opcode = $opcode{$op};
-      my($k,$v);
 
       if (ref($opt) eq 'HASH') {
-	while (($k,$v) = each %$opt) {
+	while (my ($k,$v) = each %$opt) {
           push @ops, {
 	    operation => $opcode,
 	    modification => {
@@ -620,7 +617,8 @@ sub modify {
 	}
       }
       elsif (ref($opt) eq 'ARRAY') {
-	$k = 0;
+	my $k = 0;
+
 	while ($k < @{$opt}) {
           my $attr = ${$opt}[$k++];
           my $val = $opcode == 1 ? [] : ${$opt}[$k++];
