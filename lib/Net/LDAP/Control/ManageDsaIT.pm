@@ -7,7 +7,7 @@ package Net::LDAP::Control::ManageDsaIT;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 use Net::LDAP::ASN qw(ManageDsaIT);
 use strict;

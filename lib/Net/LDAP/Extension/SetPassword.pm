@@ -4,7 +4,7 @@ package Net::LDAP::Extension::SetPassword;
 require Net::LDAP::Extension;
 
 our @ISA = qw(Net::LDAP::Extension);
-our $VERSION = "0.05";
+our $VERSION = '0.05';
 
 use Convert::ASN1;
 my $passwdModReq = Convert::ASN1->new;

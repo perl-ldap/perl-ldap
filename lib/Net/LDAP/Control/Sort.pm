@@ -7,7 +7,7 @@ package Net::LDAP::Control::Sort;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Net::LDAP::ASN qw(SortRequest);
 use strict;
@@ -43,9 +43,9 @@ sub value {
     }
 
     $self->{order} = [ map {
-      ($_->{reverseOrder} ? "-" : "")
+      ($_->{reverseOrder} ? '-' : '')
       . $_->{type}
-      . (defined($_->{orderingRule}) ? ":$_->{orderingRule}" : "")
+      . (defined($_->{orderingRule}) ? ":$_->{orderingRule}" : '')
     } @{$asn->{order}}];
 
     return $self->{value} = $value;

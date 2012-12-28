@@ -2,7 +2,7 @@ package Net::LDAP::Extension::Refresh;
 require Net::LDAP::Extension;
 
 our @ISA = qw(Net::LDAP::Extension);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Convert::ASN1;
 

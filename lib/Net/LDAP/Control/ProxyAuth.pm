@@ -7,13 +7,13 @@ package Net::LDAP::Control::ProxyAuth;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "1.07";
+our $VERSION = '1.07';
 
 use Net::LDAP::Constant qw(LDAP_CONTROL_PROXYAUTHORIZATION);
 use Net::LDAP::ASN qw(proxyAuthValue);
 use strict;
 
-sub LDAP_CONTROL_PROXYAUTHORIZATION_OLD { "2.16.840.1.113730.3.4.12"; }
+sub LDAP_CONTROL_PROXYAUTHORIZATION_OLD { '2.16.840.1.113730.3.4.12'; }
 
 sub init {
   my($self) = @_;

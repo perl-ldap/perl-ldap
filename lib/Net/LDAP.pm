@@ -30,7 +30,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 
 use constant CAN_IPV6 => eval { require IO::Socket::INET6 } ? 1 : 0;
 
-our $VERSION 	= "0.51";
+our $VERSION 	= '0.51';
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 our $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
@@ -53,7 +53,7 @@ sub _options {
   my $once = 0;
   for my $v (grep { /^-/ } keys %ret) {
     require Carp;
-    $once++  or Carp::carp("deprecated use of leading - for options");
+    $once++  or Carp::carp('deprecated use of leading - for options');
     $ret{substr($v, 1)} = $ret{$v};
   }
 
@@ -75,7 +75,7 @@ sub _dn_options {
 sub _err_msg {
   my $mesg = shift;
   my $errstr = $mesg->dn || '';
-  $errstr .= ": "  if $errstr;
+  $errstr .= ': '  if $errstr;
   $errstr . $mesg->error;
 }
 
@@ -209,7 +209,7 @@ sub _SSL_context_init_args {
       $verify = 0 + (exists $ssl_verify{$v} ? $ssl_verify{$v} : $verify);
 
       if ($verify) {
-        $verifycn_ctx{SSL_verifycn_scheme} = "ldap";
+        $verifycn_ctx{SSL_verifycn_scheme} = 'ldap';
         $verifycn_ctx{SSL_verifycn_name} = $arg->{sslserver}
           if (defined $arg->{sslserver});
       }
@@ -221,13 +221,13 @@ sub _SSL_context_init_args {
 	  $clientkey = $arg->{clientkey};
       } else {
 	  require Carp;
-	  Carp::croak("Setting client public key but not client private key");
+	  Carp::croak('Setting client public key but not client private key');
       }
   }
 
   if ($arg->{checkcrl} && !$arg->{capath}) {
       require Carp;
-      Carp::croak("Cannot check CRL without having CA certificates");
+      Carp::croak('Cannot check CRL without having CA certificates');
   }
 
   if (exists $arg->{keydecrypt}) {
@@ -258,7 +258,7 @@ sub _SSL_context_init_args {
 sub connect_ldapi {
   my ($ldap, $peer, $arg) = @_;
 
-  $peer = $ENV{LDAPI_SOCK} || "/var/run/ldapi"
+  $peer = $ENV{LDAPI_SOCK} || '/var/run/ldapi'
     unless length $peer;
 
   require IO::Socket::UNIX;
@@ -341,7 +341,7 @@ sub unbind {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   $mesg->encode(
     unbindRequest => 1,
@@ -357,7 +357,7 @@ sub unbind {
 
 sub ldapbind {
   require Carp;
-  Carp::carp("->ldapbind deprecated, use ->bind")  if $^W;
+  Carp::carp('->ldapbind deprecated, use ->bind')  if $^W;
   goto &bind;
 }
 
@@ -386,7 +386,7 @@ sub bind {
   my $dn      = delete $arg->{dn} || '';
   my $control = delete $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my %stash = (
     name    => ref($dn) ? $dn->dn : $dn,
@@ -399,18 +399,18 @@ sub bind {
   while (my($param, $type) = each %ptype) {
     if (exists $arg->{$param}) {
       ($auth_type, $passwd) = $type eq 'anon' ? (simple => '') : ($type, $arg->{$param});
-      return _error($ldap, $mesg, LDAP_INAPPROPRIATE_AUTH, "No password, did you mean noauth or anonymous ?")
+      return _error($ldap, $mesg, LDAP_INAPPROPRIATE_AUTH, 'No password, did you mean noauth or anonymous ?')
         if $type eq 'simple' and $passwd eq '';
       last;
     }
   }
 
-  return _error($ldap, $mesg, LDAP_INAPPROPRIATE_AUTH, "No AUTH supplied")
+  return _error($ldap, $mesg, LDAP_INAPPROPRIATE_AUTH, 'No AUTH supplied')
     unless $auth_type;
 
   if ($auth_type eq 'sasl') {
 
-    return _error($ldap, $mesg, LDAP_PARAM_ERROR, "SASL requires LDAPv3")
+    return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'SASL requires LDAPv3')
       if $ldap->{net_ldap_version} < 3;
 
     my $sasl = $passwd;
@@ -429,7 +429,7 @@ sub bind {
 
       $sasl_conn = eval {
         local ($SIG{__DIE__});
-        $sasl->client_new("ldap", $connected_name);
+        $sasl->client_new('ldap', $connected_name);
       };
     }
     else {
@@ -486,7 +486,7 @@ sub search {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $base = $arg->{base} || '';
   my $filter;
@@ -495,7 +495,7 @@ sub search {
     require Net::LDAP::Filter;
     my $f = Net::LDAP::Filter->new;
     $f->parse($filter)
-      or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Bad filter");
+      or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Bad filter');
     $filter = $f;
   }
 
@@ -537,10 +537,10 @@ sub add {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $entry = $arg->{dn}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No DN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No DN specified');
 
   unless (ref $entry) {
     require Net::LDAP::Entry;
@@ -568,10 +568,10 @@ sub modify {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $dn = $arg->{dn}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No DN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No DN specified');
 
   my @ops;
   my $opcode;
@@ -662,10 +662,10 @@ sub delete {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $dn = $arg->{dn}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No DN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No DN specified');
 
   $mesg->encode(
     delRequest => ref($dn) ? $dn->dn : $dn,
@@ -685,13 +685,13 @@ sub moddn {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $dn = $arg->{dn}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No DN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No DN specified');
 
   my $new  = $arg->{newrdn} || $arg->{new}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No NewRDN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No NewRDN specified');
 
   $mesg->encode(
     modDNRequest => {
@@ -717,22 +717,22 @@ sub compare {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   my $dn = $arg->{dn}
-    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, "No DN specified");
+    or return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'No DN specified');
 
   my $attr = exists $arg->{attr}
 		? $arg->{attr}
 		: exists $arg->{attrs} #compat
 		   ? $arg->{attrs}[0]
-		   : "";
+		   : '';
 
   my $value = exists $arg->{value}
 		? $arg->{value}
 		: exists $arg->{attrs} #compat
 		   ? $arg->{attrs}[1]
-		   : "";
+		   : '';
 
 
   $mesg->encode(
@@ -760,7 +760,7 @@ sub abandon {
 
   my $control = $arg->{control}
     and $ldap->{net_ldap_version} < 3
-    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, "Controls require LDAPv3");
+    and return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'Controls require LDAPv3');
 
   $mesg->encode(
     abandonRequest => ref($id) ? $id->mesg_id : $id,
@@ -777,7 +777,7 @@ sub extension {
   require Net::LDAP::Extension;
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
 
-  return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "ExtendedRequest requires LDAPv3")
+  return _error($ldap, $mesg, LDAP_LOCAL_ERROR, 'ExtendedRequest requires LDAPv3')
     if $ldap->{net_ldap_version} < 3;
 
   $mesg->encode(
@@ -809,7 +809,7 @@ sub sync {
 
 sub disconnect {
   my $self = shift;
-  _drop_conn($self, LDAP_USER_CANCELED, "Explicit disconnect");
+  _drop_conn($self, LDAP_USER_CANCELED, 'Explicit disconnect');
 }
 
 sub _sendmesg {
@@ -874,7 +874,7 @@ sub process {
   for ($ready = 1 ; $ready ; $ready = $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending())) {
     my $pdu;
     asn_read($sock, $pdu)
-      or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, "Communications Error");
+      or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, 'Communications Error');
 
     my $debug;
     if ($debug = $ldap->debug) {
@@ -898,7 +898,7 @@ sub process {
       if (my $ext = $result->{protocolOp}{extendedResp}) {
 	if (($ext->{responseName} || '') eq '1.3.6.1.4.1.1466.20036') {
 	  # notice of disconnection
-	  return _drop_conn($ldap, LDAP_SERVER_DOWN, "Notice of Disconnection");
+	  return _drop_conn($ldap, LDAP_SERVER_DOWN, 'Notice of Disconnection');
 	}
       }
 
@@ -1044,10 +1044,10 @@ sub start_tls {
   require Net::LDAP::Extension;
   my $mesg = $ldap->message('Net::LDAP::Extension' => $arg);
 
-  return _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, "TLS already started")
+  return _error($ldap, $mesg, LDAP_OPERATIONS_ERROR, 'TLS already started')
     if $sock->isa('IO::Socket::SSL');
 
-  return _error($ldap, $mesg, LDAP_PARAM_ERROR, "StartTLS requires LDAPv3")
+  return _error($ldap, $mesg, LDAP_PARAM_ERROR, 'StartTLS requires LDAPv3')
     if $ldap->version < 3;
 
   $mesg->encode(
@@ -1126,7 +1126,7 @@ sub TIEHASH {
 sub DESTROY {
   my $ldap = shift;
   my $inner = tied(%$ldap)  or return;
-  _drop_conn($inner, LDAP_UNAVAILABLE, "Implicit disconnect")
+  _drop_conn($inner, LDAP_UNAVAILABLE, 'Implicit disconnect')
     unless --$inner->{net_ldap_refcnt};
 }
 

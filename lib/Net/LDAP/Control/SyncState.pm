@@ -7,7 +7,7 @@ package Net::LDAP::Control::SyncState;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Net::LDAP::ASN qw(syncStateValue);
 use strict;

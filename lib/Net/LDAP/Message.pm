@@ -8,7 +8,7 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_COMPARE_TRUE LDAP_COMPARE_FALSE);
 use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 
-our $VERSION = "1.12";
+our $VERSION = '1.12';
 
 my $MsgID = 0;
 
@@ -122,7 +122,7 @@ sub sync {
 
   until(exists $self->{resultCode}) {
     $err = $ldap->sync($self->mesg_id)  or next;
-    $self->set_error($err, "Protocol Error")
+    $self->set_error($err, 'Protocol Error')
       unless exists $self->{resultCode};
     return $err;
   }
@@ -266,8 +266,8 @@ sub Net::LDAP::Compare::is_error {
   sub decode  { shift }
   sub abandon { shift }
   sub code { shift->{resultCode} || LDAP_SUCCESS }
-  sub error { shift->{errorMessage} || "" }
-  sub dn { "" }
+  sub error { shift->{errorMessage} || '' }
+  sub dn { '' }
   sub done { 1 }
 }
 

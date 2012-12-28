@@ -15,15 +15,15 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = "0.19";
+our $VERSION = '0.19';
 
 
 my %mode = qw(w > r < a >>);
 
 sub new {
   my $pkg = shift;
-  my $file = shift || "-";
-  my $mode = shift || "r";
+  my $file = shift || '-';
+  my $mode = shift || 'r';
   my %opt = @_;
   my $fh;
   my $opened_fh = 0;
@@ -32,12 +32,12 @@ sub new {
     $fh = $file;
   }
   else {
-    if ($file eq "-") {
-      if ($mode eq "w") {
-        ($file, $fh) = ("STDOUT", \*STDOUT);
+    if ($file eq '-') {
+      if ($mode eq 'w') {
+        ($file, $fh) = ('STDOUT', \*STDOUT);
       }
       else {
-        ($file, $fh) = ("STDIN", \*STDIN);
+        ($file, $fh) = ('STDIN', \*STDIN);
       }
     }
     else {
@@ -45,7 +45,7 @@ sub new {
       $fh = Symbol::gensym();
       my $open = $file =~ /^\| | \|$/x
 	? $file
-	: (($mode{$mode} || "<") . $file);
+	: (($mode{$mode} || '<') . $file);
       open($fh, $open)  or return;
       $opened_fh = 1;
     }
@@ -64,7 +64,7 @@ sub new {
   $opt{version} ||= 0;
 
   my $self = {
-    changetype => "modify",
+    changetype => 'modify',
     modify => 'add',
     wrap => 78,
     %opt,
@@ -76,7 +76,7 @@ sub new {
   };
 
   # fetch glob for URL type attributes (one per LDIF object)
-  if ($mode eq "r") {
+  if ($mode eq 'r') {
     require Symbol;
     $self->{_attr_fh} = Symbol::gensym();
   }
@@ -155,7 +155,7 @@ sub _read_url_attribute {
     }
     close($fh);
   } else {
-    $self->_error("unsupported URL type", @ldif);
+    $self->_error('unsupported URL type', @ldif);
     return;
   }
 
@@ -175,7 +175,7 @@ sub _read_entry {
   @ldif = $self->_read_lines;
 
   unless (@ldif) {	# empty records are errors if not at eof
-    $self->_error("illegal empty LDIF entry")  if (!$self->eof());
+    $self->_error('illegal empty LDIF entry')  if (!$self->eof());
     return;
   }
 
@@ -187,11 +187,11 @@ sub _read_entry {
   }
 
   if (@ldif < 1) {
-     $self->_error("LDIF entry is not valid", @ldif);
+     $self->_error('LDIF entry is not valid', @ldif);
      return;
   }
   elsif (not ( $ldif[0] =~ s/^dn:(:?) *//) ) {
-     $self->_error("First line of LDIF entry does not begin with 'dn:'", @ldif);
+     $self->_error('First line of LDIF entry does not begin with "dn:"', @ldif);
      return;
   }
 
@@ -216,10 +216,10 @@ sub _read_entry {
         ? shift(@ldif) : $self->{changetype};
     $entry->changetype($changetype);
 
-    return $entry  if ($changetype eq "delete");
+    return $entry  if ($changetype eq 'delete');
 
     unless (@ldif) {
-      $self->_error("LDAP entry is not valid", @ldif);
+      $self->_error('LDAP entry is not valid', @ldif);
       return;
     }
 
@@ -227,9 +227,9 @@ sub _read_entry {
       my $modify = $self->{modify};
       my $modattr;
       my $lastattr;
-      if($changetype eq "modify") {
+      if($changetype eq 'modify') {
         unless ( (my $tmp = shift @ldif) =~ s/^(add|delete|replace|increment):\s*([-;\w]+)// ) {
-          $self->_error("LDAP entry is not valid", @ldif);
+          $self->_error('LDAP entry is not valid', @ldif);
           return;
         }
         $lastattr = $modattr = $2;
@@ -241,7 +241,7 @@ sub _read_entry {
         my $attr;
 	my $xattr;
 
-        if ($line eq "-") {
+        if ($line eq '-') {
           if (defined $lastattr) {
 	    if (CHECK_UTF8 && $self->{raw}) {
   	      map { $_ = Encode::decode_utf8($_) } @values
@@ -273,7 +273,7 @@ sub _read_entry {
         }
 
         if( defined($modattr) && $attr ne $modattr ) {
-          $self->_error("LDAP entry is not valid", @ldif);
+          $self->_error('LDAP entry is not valid', @ldif);
           return;
         }
 
@@ -303,7 +303,7 @@ sub _read_entry {
 
   else {
     my @attr;
-    my $last = "";
+    my $last = '';
     my $vals = [];
     my $attr;
     my $xattr;
@@ -352,7 +352,7 @@ sub read_entry {
   my $self = shift;
 
   unless ($self->{fh}) {
-     $self->_error("LDIF file handle not valid");
+     $self->_error('LDIF file handle not valid');
      return;
   }
   $self->_read_entry();
@@ -388,8 +388,8 @@ sub _wrap {
   use integer;
   my $l2 = $len-1;
   my $x = (length($_[0]) - $len) / $l2;
-  my $extra = (length($_[0]) == ($l2 * $x + $len)) ? "" : "a*";
-  join("\n ", unpack("a$len" . "a$l2" x $x . $extra,$_[0]));
+  my $extra = (length($_[0]) == ($l2 * $x + $len)) ? '' : 'a*';
+  join("\n ", unpack("a$len" . "a$l2" x $x . $extra, $_[0]));
 }
 
 sub _write_attr {
@@ -403,10 +403,10 @@ sub _write_attr {
       if (CHECK_UTF8 and Encode::is_utf8($v));
     if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
       require MIME::Base64;
-      $ln .= ":: " . MIME::Base64::encode($v, "");
+      $ln .= ':: ' . MIME::Base64::encode($v, '');
     }
     else {
-      $ln .= ": " . $v;
+      $ln .= ': ' . $v;
     }
     $res &&= print _wrap($ln, $wrap), "\n";
   }
@@ -447,7 +447,7 @@ sub _write_dn {
       $dn = "dn: $dn";
     } elsif ($encode =~ /base64/i) {
       require MIME::Base64;
-      $dn = "dn:: " . MIME::Base64::encode($dn, "");
+      $dn = 'dn:: ' . MIME::Base64::encode($dn, '');
     } else {
       $dn = "dn: $dn";
     }
@@ -492,7 +492,7 @@ sub _write_entry {
   local($\, $,); # output field and record separators
 
   unless ($self->{fh}) {
-     $self->_error("LDIF file handle not valid");
+     $self->_error('LDIF file handle not valid');
      return;
   }
   my $saver = SelectSaver->new($self->{fh});
@@ -545,7 +545,7 @@ sub _write_entry {
 	  $res &&= print "-\n"  if (!$self->{version} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
-          $res &&= print $type, ": ", $attr, "\n";
+          $res &&= print $type, ': ', $attr, "\n";
           $res &&= _write_attr($attr, $val, $wrap, $lower);
 	  $res &&= print "-\n"  if ($self->{version});
         }

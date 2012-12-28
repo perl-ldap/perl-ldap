@@ -11,7 +11,7 @@ use XML::SAX::Base;
 use Net::LDAP::Entry;
 
 our @ISA = qw(XML::SAX::Base);
-our $VERSION = "0.14";
+our $VERSION = '0.14';
 
 # OO purists will hate this :)
 my %schema_typemap = qw(
@@ -124,7 +124,7 @@ schema_element:
 
     my $value;
 
-    if (defined($value = $Attrs->{"{}type"}{Value})) {
+    if (defined($value = $Attrs->{'{}type'}{Value})) {
       $elem->{lc $value} = 1;
     }
 
@@ -138,7 +138,7 @@ schema_element:
     }
 
     $elem->{superior} = $value
-      if defined($value = $Attrs->{"{}superior"}{Value});
+      if defined($value = $Attrs->{'{}superior'}{Value});
 
     return;
   }
@@ -247,7 +247,7 @@ schema_element:
       $name = $oid;
     }
     else {
-	croak "Schema element without a name or object-identifier";
+	croak 'Schema element without a name or object-identifier';
     }
 
     $elem->{oid} ||= $name;
@@ -392,12 +392,12 @@ sub write_entry {
   foreach my $entry (@_) {
     my $asn = $entry->asn;
     @data{qw(Name LocalName)} = qw(dsml:entry entry);
-    %attr = ( '{}dn' => { Value => $asn->{objectName}, Name => "dn"} );
+    %attr = ( '{}dn' => { Value => $asn->{objectName}, Name => 'dn'} );
     $handler->start_element(\%data);
 
     foreach my $attr ( @{$asn->{attributes}} ) {
       my $name = $attr->{type};
-      my $is_oc = lc($name) eq "objectclass";
+      my $is_oc = lc($name) eq 'objectclass';
 
       if ($is_oc) {
 	@data{qw(Name LocalName)} = qw(dsml:objectclass objectclass);
@@ -407,7 +407,7 @@ sub write_entry {
       }
       else {
 	@data{qw(Name LocalName)} = qw(dsml:attr attr);
-	%attr = ( "{}name" => { Value => $name, Name => "name" } );
+	%attr = ( '{}name' => { Value => $name, Name => 'name' } );
 	$handler->start_element(\%data);
 	@data{qw(Name LocalName)} = qw(dsml:value value);
       }
@@ -416,8 +416,8 @@ sub write_entry {
       foreach my $val (@{$attr->{vals}}) {
 	if ($val =~ /(^[ :]|[\x00-\x1f\x7f-\xff])/) {
 	  require MIME::Base64;
-	  $chdata{Data} = MIME::Base64::encode($val, "");
-	  %attr = ( '{}encoding' => { Value => 'base64', Name => "encoding"} );
+	  $chdata{Data} = MIME::Base64::encode($val, '');
+	  %attr = ( '{}encoding' => { Value => 'base64', Name => 'encoding'} );
 	}
 	else {
 	  $chdata{Data} = $val;
@@ -463,8 +463,8 @@ sub write_schema {
 
     if (my $sup = $attr->{superior}) {
       my $sup_a = $schema->attribute($sup);
-      $attr{"{}superior"} = {
-	Value => "#" . ($sup_a ? $sup_a->{name} : $sup),
+      $attr{'{}superior'} = {
+	Value => '#' . ($sup_a ? $sup_a->{name} : $sup),
 	Name  => 'superior'
       };
     }
@@ -473,7 +473,7 @@ sub write_schema {
 	Value => 'true', Name => $flag
       }  if $attr->{$flag};
     }
-    $attr{"{}user-modification"} = {
+    $attr{'{}user-modification'} = {
       Value => 'false',
       Name => 'user-modification',
     }  unless $attr->{'user-modification'};
@@ -496,7 +496,7 @@ sub write_schema {
       }
     }
     if (my $oid = $attr->{oid}) {
-      @data{qw(Name LocalName)} = ("dsml:object-identifier", "object-identifier");
+      @data{qw(Name LocalName)} = ('dsml:object-identifier', 'object-identifier');
       $handler->start_element(\%data);
       $handler->characters({Data => $oid});
       $handler->end_element(\%data);
@@ -537,19 +537,19 @@ sub write_schema {
 
     if (my $sup = $oc->{superior}) {
       my $sup_a = $schema->objectclass($sup);
-      $attr{"{}superior"} = {
-	Value => "#" . ($sup_a ? $sup_a->{name} : $sup),
+      $attr{'{}superior'} = {
+	Value => '#' . ($sup_a ? $sup_a->{name} : $sup),
 	Name  => 'superior'
       };
     }
     if (my $type = (grep { $oc->{$_} } qw(structural abstract auxilary))[0]) {
-      $attr{"{}type"} = {
+      $attr{'{}type'} = {
 	Value => $type,
 	Name  => 'type',
       };
     }
     if ($oc->{obsolete}) {
-      $attr{"{}type"} = {
+      $attr{'{}type'} = {
 	Value => 'true',
 	Name  => 'obsolete',
       };

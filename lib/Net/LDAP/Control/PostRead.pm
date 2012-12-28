@@ -7,7 +7,7 @@ package Net::LDAP::Control::PostRead;
 use Net::LDAP::Control::PreRead;
 
 our @ISA = qw(Net::LDAP::Control::PreRead);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 1;
 

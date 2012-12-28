@@ -15,7 +15,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = "0.25";
+our $VERSION = '0.25';
 
 sub new {
   my $self = shift;
@@ -95,13 +95,13 @@ sub dn {
 
 sub get_attribute {
   require Carp;
-  Carp::carp("->get_attribute deprecated, use ->get_value")  if $^W;
+  Carp::carp('->get_attribute deprecated, use ->get_value')  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
 sub get {
   require Carp;
-  Carp::carp("->get deprecated, use ->get_value")  if $^W;
+  Carp::carp('->get deprecated, use ->get_value')  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
@@ -283,7 +283,7 @@ sub update {
     else {
       require Net::LDAP::Message;
       $mesg = Net::LDAP::Message->new( $target );
-      $mesg->set_error(LDAP_LOCAL_ERROR, "No attributes to update");
+      $mesg->set_error(LDAP_LOCAL_ERROR, 'No attributes to update');
     }
   }
   elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
@@ -302,9 +302,9 @@ sub ldif {
   my %opt = @_;
 
   require Net::LDAP::LDIF;
-  open(my $fh, ">", \my $buffer);
+  open(my $fh, '>', \my $buffer);
   my $change = exists $opt{change} ? $opt{change} : $self->changes ? 1 : 0;
-  my $ldif = Net::LDAP::LDIF->new($fh, "w", change => $change);
+  my $ldif = Net::LDAP::LDIF->new($fh, 'w', change => $change);
   $ldif->write_entry($self);
   return $buffer;
 }
@@ -317,8 +317,8 @@ sub dump {
   my $fh = @_ ? shift : select;
 
   my $asn = $self->{asn};
-  print $fh "-" x 72, "\n";
-  print $fh "dn:", $asn->{objectName}, "\n\n"  if $asn->{objectName};
+  print $fh '-' x 72, "\n";
+  print $fh 'dn:', $asn->{objectName}, "\n\n"  if $asn->{objectName};
 
   my $l = 0;
 
@@ -326,7 +326,7 @@ sub dump {
     $l = length  if length > $l;
   }
 
-  my $spc = "\n  " . " " x $l;
+  my $spc = "\n  " . ' ' x $l;
 
   foreach my $attr (@{$asn->{attributes}}) {
     my $val = $attr->{vals};

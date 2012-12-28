@@ -8,7 +8,7 @@ use Net::LDAP::ASN qw(SortResult);
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 sub init {
   my($self) = @_;

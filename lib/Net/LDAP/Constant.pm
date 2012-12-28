@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-our $VERSION = "0.17";
+our $VERSION = '0.17';
 
 use Exporter qw(import);
 
@@ -29,7 +29,7 @@ while (<DATA>) {
 sub Net::LDAP::Util::ldap_error_name {
   my $code = 0 + (ref($_[0]) ? $_[0]->code : $_[0]);
 
-  $err2name[$code] || sprintf("LDAP error code %d(0x%02X)", $code, $code);
+  $err2name[$code] || sprintf('LDAP error code %d(0x%02X)', $code, $code);
 }
 
 

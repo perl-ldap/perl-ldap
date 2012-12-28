@@ -6,7 +6,7 @@ use Encode;
 use Exporter qw(import);
 use Net::LDAP::RootDSE;
 
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 our @EXPORT = qw(is_AD is_ADAM reset_ADpassword change_ADpassword);
 
 

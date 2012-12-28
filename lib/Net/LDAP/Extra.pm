@@ -9,7 +9,7 @@ use strict;
 require Net::LDAP;
 require Carp;
 
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 sub import {
   shift;

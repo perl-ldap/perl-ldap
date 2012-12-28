@@ -9,7 +9,7 @@ use strict;
 use Net::LDAP;
 
 our @ISA = qw(Net::LDAP);
-our $VERSION = "0.04";
+our $VERSION = '0.04';
 
 sub new {
   shift->SUPER::new(@_, scheme => 'ldapi');

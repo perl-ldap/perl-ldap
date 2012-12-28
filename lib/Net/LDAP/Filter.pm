@@ -6,7 +6,7 @@ package Net::LDAP::Filter;
 
 use strict;
 
-our $VERSION = "0.18";
+our $VERSION = '0.18';
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -87,7 +87,7 @@ sub _unescape {
   $_[0];
 }
 
-sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x", ord($1))/sge; $t }
+sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf('\\%02x', ord($1))/sge; $t }
 
 # encode a triplet ($attr,$op,$val) representing a single filter item
 sub _encode {
@@ -167,14 +167,14 @@ sub parse {
 
   # a filter is required
   if (!defined $filter) {
-    $ErrStr = "Undefined filter";
+    $ErrStr = 'Undefined filter';
     return undef;
   }
 
   # Algorithm depends on /^\(/;
   $filter =~ s/^\s*//;
 
-  $filter = "(" . $filter . ")"
+  $filter = '(' . $filter . ')'
     unless $filter =~ /^\(/;
 
   while (length($filter)) {
@@ -192,7 +192,7 @@ sub parse {
 
     elsif ($filter =~ s/^\)\s*//o) {
       unless (@stack) {
-	$ErrStr = "Bad filter, unmatched )";
+	$ErrStr = 'Bad filter, unmatched )';
 	return undef;
       }
       my($myop, $mydata) = ($op, $cur);
@@ -221,11 +221,11 @@ sub parse {
 
   if (length $filter) {
     # If we have anything left in the filter, then there is a problem
-    $ErrStr = "Bad filter, error before " . substr($filter, 0, 20);
+    $ErrStr = 'Bad filter, error before ' . substr($filter, 0, 20);
     return undef;
   }
   if (@stack) {
-    $ErrStr = "Bad filter, unmatched (";
+    $ErrStr = 'Bad filter, unmatched (';
     return undef;
   }
 
@@ -245,27 +245,27 @@ sub print {
 sub as_string { _string(%{$_[0]}) }
 
 sub _string {    # prints things of the form (<op> (<list>) ... )
-  my $str = "";
+  my $str = '';
 
   for ($_[0]) {
-    /^and/  and return "(&" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^or/   and return "(|" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^not/  and return "(!" . _string(%{$_[1]}) . ")";
+    /^and/  and return '(&' . join('', map { _string(%$_) } @{$_[1]}) . ')';
+    /^or/   and return '(|' . join('', map { _string(%$_) } @{$_[1]}) . ')';
+    /^not/  and return '(!' . _string(%{$_[1]}) . ')';
     /^present/  and return "($_[1]=*)";
     /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch)/
-      and return "(" . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .")";
+      and return '(' . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .')';
     /^substrings/  and do {
-      my $str = join("*", "", map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
+      my $str = join('*', '', map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
       $str =~ s/^.//  if exists $_[1]->{substrings}[0]{initial};
       $str .= '*'  unless exists $_[1]->{substrings}[-1]{final};
       return "($_[1]->{type}=$str)";
     };
     /^extensibleMatch/  and do {
-      my $str = "(";
+      my $str = '(';
       $str .= $_[1]->{type}  if defined $_[1]->{type};
-      $str .= ":dn"  if $_[1]->{dnAttributes};
+      $str .= ':dn'  if $_[1]->{dnAttributes};
       $str .= ":$_[1]->{matchingRule}"  if defined $_[1]->{matchingRule};
-      $str .= ":=" . _escape($_[1]->{matchValue}) . ")";
+      $str .= ':=' . _escape($_[1]->{matchValue}) . ')';
       return $str;
     };
   }

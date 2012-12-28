@@ -6,7 +6,7 @@ package Net::LDAP::Schema;
 
 use strict;
 
-our $VERSION = "0.9906";
+our $VERSION = '0.9906';
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -56,7 +56,7 @@ sub parse {
   }
   elsif ( -f $arg ) {
     require Net::LDAP::LDIF;
-    my $ldif = Net::LDAP::LDIF->new( $arg, "r" );
+    my $ldif = Net::LDAP::LDIF->new( $arg, 'r' );
     $entry = $ldif->read();
     unless ( $entry ) {
       $schema->_error("Cannot parse LDIF from file [$arg]");
@@ -91,7 +91,7 @@ sub dump {
   my $fh = @_ ? shift : \*STDOUT;
   my $entry = $self->{entry} or return;
   require Net::LDAP::LDIF;
-  Net::LDAP::LDIF->new($fh, "w", wrap => 0)->write($entry);
+  Net::LDAP::LDIF->new($fh, 'w', wrap => 0)->write($entry);
   1;
 }
 
@@ -122,7 +122,7 @@ sub superclass {
   my $oc = shift;
 
   my $elem = $self->objectclass( $oc )
-    or return scalar _error($self, "Not an objectClass");
+    or return scalar _error($self, 'Not an objectClass');
 
   return @{$elem->{sup} || []};
 }
@@ -141,9 +141,9 @@ sub _must_or_may {
   #
   # If called with an entry, get the OC names and continue
   #
-  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
+  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], 'Net::LDAP::Entry' ) ) {
     my $entry = $oc[0];
-    @oc = $entry->get_value( "objectclass" )
+    @oc = $entry->get_value( 'objectclass' )
       or return;
   }
 
