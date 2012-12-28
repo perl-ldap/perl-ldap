@@ -96,11 +96,11 @@ Net::LDAP::Control::SyncRequest - LDAPv3 Sync Request control object
    my $entry = shift;
    my @controls = $message->control;
 
-   if($controls[0]->isa('Net::LDAP::Control::SyncState')) {
+   if ($controls[0]->isa('Net::LDAP::Control::SyncState')) {
      print "Received Sync State Control\n";
      print $entry->dn()."\n";
      print 'State: '.$controls[0]->state."\n".', entryUUID: '.$controls[0]->entryUUID.', cookie: '.$controls[0]->cookie;
-   } elsif($controls[0]->isa('Net::LDAP::Control::SyncDone')) {
+   } elsif ($controls[0]->isa('Net::LDAP::Control::SyncDone')) {
      print "Received Sync Done Control\n";
      print 'Cookie: '.$controls[0]->cookie.', refreshDeletes: '.$controls[0]->refreshDeletes;
    }

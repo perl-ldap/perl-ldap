@@ -11,7 +11,7 @@ use Exporter qw(import);
 my @err2name;
 
 local $_;
-while(<DATA>) {
+while (<DATA>) {
   last if /^=cut/;
   my $protocol_const = /^=head2 Protocol Constants/ ... /^=head2/;
   next unless /^=item\s+(LDAP_\S+)\s+\((.*)\)/;
@@ -41,7 +41,7 @@ sub Net::LDAP::Util::ldap_error_text {
   local $/=''; # paragraph mode
   local $_;
   my $n = -1;
-  while(<DATA>) {
+  while (<DATA>) {
     last if /^=head2/ and ++$n;
     last if /^=cut/;
     next if $n;

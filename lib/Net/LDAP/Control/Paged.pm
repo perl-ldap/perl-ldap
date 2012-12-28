@@ -81,7 +81,7 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
  );
 
  my $cookie;
- while(1) {
+ while (1) {
    # Perform search
    my $mesg = $ldap->search( @args );
 

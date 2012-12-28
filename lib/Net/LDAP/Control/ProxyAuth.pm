@@ -116,7 +116,7 @@ Net::LDAP::Control::ProxyAuth - LDAPv3 Proxy Authorization control object
 	   control  => [ $auth ],
  );
 
- while(1) {
+ while (1) {
    # Perform search
    my $mesg = $ldap->search( @args );
 

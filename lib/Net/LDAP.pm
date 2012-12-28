@@ -396,7 +396,7 @@ sub bind {
   my($auth_type,$passwd) = scalar(keys %$arg) ? () : (simple => '');
 
   keys %ptype; # Reset iterator
-  while(my($param,$type) = each %ptype) {
+  while (my($param,$type) = each %ptype) {
     if (exists $arg->{$param}) {
       ($auth_type,$passwd) = $type eq 'anon' ? (simple => '') : ($type,$arg->{$param});
       return _error($ldap, $mesg, LDAP_INAPPROPRIATE_AUTH, "No password, did you mean noauth or anonymous ?")
@@ -579,7 +579,7 @@ sub modify {
   if (exists $arg->{changes}) {
     my $opcode;
     my $j = 0;
-    while($j < @{$arg->{changes}}) {
+    while ($j < @{$arg->{changes}}) {
       return _error($ldap, $mesg, LDAP_PARAM_ERROR,"Bad change type '" . $arg->{changes}[--$j] . "'")
        unless defined($opcode = $opcode{$arg->{changes}[$j++]});
 
@@ -838,7 +838,7 @@ sub _sendmesg {
   #  or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!")
   my $to_send = \( $mesg->pdu );
   my $offset = 0;
-  while($offset < length($$to_send)) {
+  while ($offset < length($$to_send)) {
     my $n = syswrite($socket, substr($$to_send, $offset, 15000), 15000)
       or return _error($ldap, $mesg, LDAP_LOCAL_ERROR,"$!");
     $offset += $n;
@@ -872,7 +872,7 @@ sub process {
   my $sel = IO::Select->new($sock);
   my $ready;
 
-  for( $ready = 1 ; $ready ; $ready = $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending())) {
+  for ($ready = 1 ; $ready ; $ready = $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending())) {
     my $pdu;
     asn_read($sock, $pdu)
       or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, "Communications Error");

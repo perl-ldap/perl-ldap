@@ -652,14 +652,14 @@ shift each entry in turn. For example
   # How many entries were returned from the search
   my $max = $mesg->count;
 
-  for( my $index = 0 ; $index < $max ; $index++) {
+  for (my $index = 0 ; $index < $max ; $index++) {
     my $entry = $mesg->entry($index);
     # ...
   }
 
   # or as a stack
 
-  while( my $entry = $mesg->shift_entry) {
+  while (my $entry = $mesg->shift_entry) {
     # ...
   }
 
@@ -765,7 +765,7 @@ Example:
   # How many entries were returned from the search
   my $max = $mesg->count;
 
-  for( my $index = 0 ; $index < $max ; $index++)
+  for (my $index = 0 ; $index < $max ; $index++)
   {
     my $entry = $mesg->entry($index);
     my $dn = $entry->dn; # Obtain DN of this entry

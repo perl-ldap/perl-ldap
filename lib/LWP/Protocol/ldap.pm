@@ -128,7 +128,7 @@ sub request {
     open(my $fh, ">", \$content);
     my $ldif = Net::LDAP::LDIF->new($fh, "w", version => 1);
 
-    while(my $entry = $mesg->shift_entry) {
+    while (my $entry = $mesg->shift_entry) {
       $ldif->write_entry($entry);
     }
     $ldif->done;
@@ -141,7 +141,7 @@ sub request {
     my $dsml = Net::LDAP::DSML->new(output => $fh, pretty_print => 1);
 
     $dsml->start_dsml();
-    while(my $entry = $mesg->shift_entry) {
+    while (my $entry = $mesg->shift_entry) {
       $dsml->write_entry($entry);
     }
     $dsml->end_dsml();

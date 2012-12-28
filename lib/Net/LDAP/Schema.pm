@@ -39,7 +39,7 @@ sub parse {
   %$schema = ();
 
   my $entry;
-  if( ref $arg ) {
+  if ( ref $arg ) {
     if (UNIVERSAL::isa($arg, 'Net::LDAP::Entry')) {
       $entry = $arg;
     }
@@ -54,11 +54,11 @@ sub parse {
       return undef;
     }
   }
-  elsif( -f $arg ) {
+  elsif ( -f $arg ) {
     require Net::LDAP::LDIF;
     my $ldif = Net::LDAP::LDIF->new( $arg, "r" );
     $entry = $ldif->read();
-    unless( $entry ) {
+    unless ( $entry ) {
       $schema->_error("Cannot parse LDIF from file [$arg]");
       return undef;
     }
@@ -281,7 +281,7 @@ sub _parse_schema {
   return undef unless defined($entry);
 
   keys %type2attr; # reset iterator
-  while(my($type,$attr) = each %type2attr) {
+  while (my($type,$attr) = each %type2attr) {
     my $vals = $entry->get_value($attr, asref => 1);
 
     my %names;
@@ -326,7 +326,7 @@ sub _parse_schema {
       my $oid = $schema_entry{oid} = shift @tokens;
 
       my $flags = ($type eq 'xat') ? \%xat_flags : \%flags;
-      while(@tokens) {
+      while (@tokens) {
 	my $tag = lc shift @tokens;
 
 	if (exists $flags->{$tag}) {
@@ -336,7 +336,7 @@ sub _parse_schema {
 	  if (($schema_entry{$tag} = shift @tokens) eq '(') {
 	    my @arr;
 	    $schema_entry{$tag} = \@arr;
-	    while(1) {
+	    while (1) {
 	      my $tmp = shift @tokens;
 	      last if $tmp eq ')';
 	      push @arr,$tmp unless $tmp eq '$';

@@ -177,7 +177,7 @@ sub replace {
   my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while(my($type, $val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_,0,2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
@@ -220,15 +220,15 @@ sub delete {
   my $cmd = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while(my($type,$val) = splice(@_,0,2)) {
+  while (my($type,$val) = splice(@_,0,2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
       my %values;
       @values{(ref($val) ? @$val : $val)} = ();
 
-      unless( @{$attrs->{$lc_type}}
-        = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
+      unless (@{$attrs->{$lc_type}}
+              = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
       {
 	delete $attrs->{$lc_type};
 	@{$self->{asn}{attributes}}
