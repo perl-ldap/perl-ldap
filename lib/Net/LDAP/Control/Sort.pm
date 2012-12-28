@@ -86,7 +86,7 @@ sub order {
 
     my @order = (@_ == 1) ? split(/\s+/, $_[0]) : @_;
 
-    delete $self->{'value'};
+    delete $self->{value};
     delete $self->{order};
     delete $self->{error};
 

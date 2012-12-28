@@ -170,13 +170,13 @@ sub _filterMatch($@)
     if ($op eq 'substrings') {
       $attr = $args->{type};
       # build a regexp as assertion value
-      $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
-      $assertion =  '^'. $assertion  if (exists $args->{'substrings'}[0]{'initial'});
-      $assertion .= '$'              if (exists $args->{'substrings'}[-1]{'final'});
+      $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{substrings}});
+      $assertion =  '^'. $assertion  if (exists $args->{substrings}[0]{initial});
+      $assertion .= '$'              if (exists $args->{substrings}[-1]{final});
     }
     else {
-      $attr = $args->{'attributeDesc'};
-      $assertion = $args->{'assertionValue'}
+      $attr = $args->{attributeDesc};
+      $assertion = $args->{assertionValue}
     }
 
     my @values = $entry->get_value($attr);

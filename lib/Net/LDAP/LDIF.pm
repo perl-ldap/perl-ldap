@@ -52,16 +52,16 @@ sub new {
   }
 
   # Default the encoding of DNs to 'none' unless the user specifies
-  $opt{'encode'} = 'none' unless exists $opt{'encode'};
+  $opt{encode} = 'none' unless exists $opt{encode};
 
   # Default the error handling to die
-  $opt{'onerror'} = 'die' unless exists $opt{'onerror'};
+  $opt{onerror} = 'die' unless exists $opt{onerror};
 
   # sanitize options
-  $opt{'lowercase'} ||= 0;
-  $opt{'change'} ||= 0;
-  $opt{'sort'} ||= 0;
-  $opt{'version'} ||= 0;
+  $opt{lowercase} ||= 0;
+  $opt{change} ||= 0;
+  $opt{sort} ||= 0;
+  $opt{version} ||= 0;
 
   my $self = {
     changetype => "modify",
@@ -86,7 +86,7 @@ sub new {
 
 sub _read_lines {
   my $self = shift;
-  my $fh = $self->{'fh'};
+  my $fh = $self->{fh};
   my @ldif = ();
   my $entry = '';
   my $in_comment = 0;
@@ -180,7 +180,7 @@ sub _read_entry {
   }
 
   if (@ldif and $ldif[0] =~ /^version:\s+(\d+)/) {
-    $self->{'version'} = $1;
+    $self->{version} = $1;
     shift @ldif;
     return $self->_read_entry
       unless @ldif;
@@ -213,7 +213,7 @@ sub _read_entry {
 
   if ((scalar @ldif) && ($ldif[0] =~ /^changetype:\s*/)) {
     my $changetype = $ldif[0] =~ s/^changetype:\s*//
-        ? shift(@ldif) : $self->{'changetype'};
+        ? shift(@ldif) : $self->{changetype};
     $entry->changetype($changetype);
 
     return $entry if ($changetype eq "delete");
@@ -224,7 +224,7 @@ sub _read_entry {
     }
 
     while(@ldif) {
-      my $modify = $self->{'modify'};
+      my $modify = $self->{modify};
       my $modattr;
       my $lastattr;
       if($changetype eq "modify") {
@@ -352,7 +352,7 @@ sub _read_entry {
 sub read_entry {
   my $self = shift;
 
-  unless ($self->{'fh'}) {
+  unless ($self->{fh}) {
      $self->_error("LDIF file handle not valid");
      return;
   }
@@ -476,8 +476,8 @@ sub write_version {
   my $self = shift;
   my $res = 1;
 
-  $res &&= print "version: $self->{'version'}\n"
-    if ($self->{'version'} && !$self->{version_written}++);
+  $res &&= print "version: $self->{version}\n"
+    if ($self->{version} && !$self->{version_written}++);
 
   return $res;
 }
@@ -487,19 +487,19 @@ sub _write_entry {
   my $self = shift;
   my $change = shift;
   my $entry;
-  my $wrap = int($self->{'wrap'});
-  my $lower = $self->{'lowercase'};
-  my $sort = $self->{'sort'};
+  my $wrap = int($self->{wrap});
+  my $lower = $self->{lowercase};
+  my $sort = $self->{sort};
   my $res = 1;	# result value
   local($\,$,); # output field and record separators
 
-  unless ($self->{'fh'}) {
+  unless ($self->{fh}) {
      $self->_error("LDIF file handle not valid");
      return;
   }
-  my $saver = SelectSaver->new($self->{'fh'});
+  my $saver = SelectSaver->new($self->{fh});
 
-  my $fh = $self->{'fh'};
+  my $fh = $self->{fh};
   foreach $entry (@_) {
     unless (ref $entry) {
        $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
@@ -516,7 +516,7 @@ sub _write_entry {
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
+      $res &&= _write_dn($entry->dn,$self->{encode},$wrap);
 
       $res &&= print "changetype: $type\n";
 
@@ -544,12 +544,12 @@ sub _write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
-	  $res &&= print "-\n"  if (!$self->{'version'} && $dash++);
+	  $res &&= print "-\n"  if (!$self->{version} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
           $res &&= print $type,": ",$attr,"\n";
           $res &&= _write_attr($attr,$val,$wrap,$lower);
-	  $res &&= print "-\n"  if ($self->{'version'});
+	  $res &&= print "-\n"  if ($self->{version});
         }
       }
     }
@@ -557,7 +557,7 @@ sub _write_entry {
     else {
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
-      $res &&= _write_dn($entry->dn,$self->{'encode'},$wrap);
+      $res &&= _write_dn($entry->dn,$self->{encode},$wrap);
       $res &&= _write_attrs($entry,$wrap,$lower,$sort);
     }
   }
@@ -665,8 +665,8 @@ sub current_lines {
 
 sub version {
   my $self = shift;
-  return $self->{'version'} unless @_;
-  $self->{'version'} = shift || 0;
+  return $self->{version} unless @_;
+  $self->{version} = shift || 0;
 }
 
 sub next_lines {

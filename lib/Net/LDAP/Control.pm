@@ -85,7 +85,7 @@ sub new {
   my $oid  = (@_ & 1) ? shift : undef;
   my %args = @_;
 
-  $args{'type'} ||= $oid || $Pkg2Type{$pkg} || '';
+  $args{type} ||= $oid || $Pkg2Type{$pkg} || '';
 
   unless ($args{type} =~ /^\d+(?:\.\d+)+$/) {
     $args{error} = 'Invalid OID';

@@ -186,13 +186,13 @@ sub connect_ldaps {
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
-  $ldap->{'net_ldap_socket'} = IO::Socket::SSL->new(
+  $ldap->{net_ldap_socket} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $port,
     LocalAddr       => $arg->{localaddr} || undef,
     Proto    	    => 'tcp',
     Domain          => $domain,
-    Timeout  	    => defined $arg->{'timeout'} ? $arg->{'timeout'} : 120,
+    Timeout  	    => defined $arg->{timeout} ? $arg->{timeout} : 120,
     _SSL_context_init_args($arg)
   ) or return undef;
 
@@ -207,52 +207,52 @@ sub _SSL_context_init_args {
   my %verifycn_ctx = ();
   my ($clientcert,$clientkey,$passwdcb);
 
-  if (exists $arg->{'verify'}) {
-      my $v = lc $arg->{'verify'};
+  if (exists $arg->{verify}) {
+      my $v = lc $arg->{verify};
       $verify = 0 + (exists $ssl_verify{$v} ? $ssl_verify{$v} : $verify);
 
       if ($verify) {
         $verifycn_ctx{SSL_verifycn_scheme} = "ldap";
-        $verifycn_ctx{SSL_verifycn_name} = $arg->{'sslserver'}
-          if (defined $arg->{'sslserver'});
+        $verifycn_ctx{SSL_verifycn_name} = $arg->{sslserver}
+          if (defined $arg->{sslserver});
       }
   }
 
-  if (exists $arg->{'clientcert'}) {
-      $clientcert = $arg->{'clientcert'};
-      if (exists $arg->{'clientkey'}) {
-	  $clientkey = $arg->{'clientkey'};
+  if (exists $arg->{clientcert}) {
+      $clientcert = $arg->{clientcert};
+      if (exists $arg->{clientkey}) {
+	  $clientkey = $arg->{clientkey};
       } else {
 	  require Carp;
 	  Carp::croak("Setting client public key but not client private key");
       }
   }
 
-  if ($arg->{'checkcrl'} && !$arg->{'capath'}) {
+  if ($arg->{checkcrl} && !$arg->{capath}) {
       require Carp;
       Carp::croak("Cannot check CRL without having CA certificates");
   }
 
-  if (exists $arg->{'keydecrypt'}) {
-      $passwdcb = $arg->{'keydecrypt'};
+  if (exists $arg->{keydecrypt}) {
+      $passwdcb = $arg->{keydecrypt};
   }
 
   # allow deprecated "sslv2/3" in addition to IO::Socket::SSL's "sslv23"
-  if (defined $arg->{'sslversion'}) {
-      $arg->{'sslversion'} =~ s:sslv2/3:sslv23:io;
+  if (defined $arg->{sslversion}) {
+      $arg->{sslversion} =~ s:sslv2/3:sslv23:io;
   }
 
   (
-    SSL_cipher_list     => defined $arg->{'ciphers'} ? $arg->{'ciphers'} : 'ALL',
-    SSL_ca_file         => exists  $arg->{'cafile'}  ? $arg->{'cafile'}  : '',
-    SSL_ca_path         => exists  $arg->{'capath'}  ? $arg->{'capath'}  : '',
+    SSL_cipher_list     => defined $arg->{ciphers} ? $arg->{ciphers} : 'ALL',
+    SSL_ca_file         => exists  $arg->{cafile}  ? $arg->{cafile}  : '',
+    SSL_ca_path         => exists  $arg->{capath}  ? $arg->{capath}  : '',
     SSL_key_file        => $clientcert ? $clientkey : undef,
     SSL_passwd_cb       => $passwdcb,
-    SSL_check_crl       => $arg->{'checkcrl'} ? 1 : 0,
+    SSL_check_crl       => $arg->{checkcrl} ? 1 : 0,
     SSL_use_cert        => $clientcert ? 1 : 0,
     SSL_cert_file       => $clientcert,
     SSL_verify_mode     => $verify,
-    SSL_version         => defined $arg->{'sslversion'} ? $arg->{'sslversion'} :
+    SSL_version         => defined $arg->{sslversion} ? $arg->{sslversion} :
                            'sslv23',
     %verifycn_ctx,
   );
@@ -298,8 +298,8 @@ sub async {
   my $ldap = shift;
 
   @_
-    ? ($ldap->{'net_ldap_async'},$ldap->{'net_ldap_async'} = shift)[0]
-    : $ldap->{'net_ldap_async'};
+    ? ($ldap->{net_ldap_async},$ldap->{net_ldap_async} = shift)[0]
+    : $ldap->{net_ldap_async};
 }
 
 sub debug {
@@ -684,7 +684,7 @@ sub delete {
 sub moddn {
   my $ldap = shift;
   my $arg  = &_dn_options;
-  my $del  = $arg->{deleteoldrdn} || $arg->{'delete'} || 0;
+  my $del  = $arg->{deleteoldrdn} || $arg->{delete} || 0;
   my $newsup = $arg->{newsuperior};
 
   my $mesg = $ldap->message('Net::LDAP::ModDN' => $arg);
@@ -696,7 +696,7 @@ sub moddn {
   my $dn = $arg->{dn}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No DN specified");
 
-  my $new  = $arg->{newrdn} || $arg->{'new'}
+  my $new  = $arg->{newrdn} || $arg->{new}
     or return _error($ldap, $mesg, LDAP_PARAM_ERROR,"No NewRDN specified");
 
   $mesg->encode(
@@ -973,8 +973,8 @@ sub schema {
   my $base;
   my $mesg;
 
-  if (exists $arg{'dn'}) {
-    $base = $arg{'dn'};
+  if (exists $arg{dn}) {
+    $base = $arg{dn};
   }
   else {
     my $root = $self->root_dse( attrs => ['subschemaSubentry'] )
@@ -1071,7 +1071,7 @@ sub start_tls {
   delete $ldap->{net_ldap_root_dse};
 
   $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
-  $arg->{sslserver} = $ldap->{'net_ldap_host'} unless defined $arg->{sslserver};
+  $arg->{sslserver} = $ldap->{net_ldap_host} unless defined $arg->{sslserver};
 
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
   my $sock_class = ref($sock);

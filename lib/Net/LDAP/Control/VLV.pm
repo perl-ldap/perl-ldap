@@ -16,7 +16,7 @@ sub init {
   my($self) = @_;
 
   # VLVREQUEST should always have a critical of true
-  $self->{'critical'} = 1 unless exists $self->{'critical'};
+  $self->{critical} = 1 unless exists $self->{critical};
 
   if (exists $self->{value}) {
     $self->value($self->{value});

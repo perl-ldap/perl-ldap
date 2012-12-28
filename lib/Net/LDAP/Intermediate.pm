@@ -38,7 +38,7 @@ sub new {
   my $responseName  = (@_ & 1) ? shift : undef;
   my %args = @_;
 
-  $args{'responseName'} ||= $responseName || $Class2ResponseName{$class} || '';
+  $args{responseName} ||= $responseName || $Class2ResponseName{$class} || '';
 
   unless ($args{responseName} =~ /^\d+(?:\.\d+)+$/) {
     $args{error} = 'Invalid responseName';

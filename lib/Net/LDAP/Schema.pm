@@ -89,7 +89,7 @@ sub parse {
 sub dump {
   my $self = shift;
   my $fh = @_ ? shift : \*STDOUT;
-  my $entry = $self->{'entry'} or return;
+  my $entry = $self->{entry} or return;
   require Net::LDAP::LDIF;
   Net::LDAP::LDIF->new($fh,"w", wrap => 0)->write($entry);
   1;
@@ -447,10 +447,10 @@ sub matchingrule_for_attribute {
     my $attrtype = $self->attribute( $attr );
     if (exists $attrtype->{$matchtype}) {
 	return $attrtype->{$matchtype};
-    } elsif (exists $attrtype->{'sup'}) {
+    } elsif (exists $attrtype->{sup}) {
 	# the assumption is that all superiors result in the same ruleset
 	return $self->matchingrule_for_attribute(
-				 	 $attrtype->{'sup'}[0],
+				 	 $attrtype->{sup}[0],
 					 $matchtype);
     }
     return undef;

@@ -140,9 +140,9 @@ sub get_value {
 sub changetype {
 
   my $self = shift;
-  return $self->{'changetype'} unless @_;
-  $self->{'changes'} = [];
-  $self->{'changetype'} = shift;
+  return $self->{changetype} unless @_;
+  $self->{changes} = [];
+  $self->{changetype} = shift;
   return $self;
 }
 
@@ -150,7 +150,7 @@ sub changetype {
 
 sub add {
   my $self  = shift;
-  my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while (my($type,$val) = splice(@_,0,2)) {
@@ -166,7 +166,7 @@ sub add {
 
   }
 
-  push(@{$self->{'changes'}}, 'add', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'add', $cmd) if $cmd;
 
   return $self;
 }
@@ -174,7 +174,7 @@ sub add {
 
 sub replace {
   my $self  = shift;
-  my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type, $val) = splice(@_,0,2)) {
@@ -203,7 +203,7 @@ sub replace {
     }
   }
 
-  push(@{$self->{'changes'}}, 'replace', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'replace', $cmd) if $cmd;
 
   return $self;
 }
@@ -217,7 +217,7 @@ sub delete {
     return;
   }
 
-  my $cmd = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
   while(my($type,$val) = splice(@_,0,2)) {
@@ -248,7 +248,7 @@ sub delete {
     }
   }
 
-  push(@{$self->{'changes'}}, 'delete', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'delete', $cmd) if $cmd;
 
   return $self;
 }
@@ -264,21 +264,21 @@ sub update {
                  $user_cb->(@_) if $user_cb };
 
   if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
-    if ($self->{'changetype'} eq 'add') {
+    if ($self->{changetype} eq 'add') {
       $mesg = $target->add($self, 'callback' => $cb, %opt);
     }
-    elsif ($self->{'changetype'} eq 'delete') {
+    elsif ($self->{changetype} eq 'delete') {
       $mesg = $target->delete($self, 'callback' => $cb, %opt);
     }
-    elsif ($self->{'changetype'} =~ /modr?dn/o) {
+    elsif ($self->{changetype} =~ /modr?dn/o) {
       my @args = (newrdn => $self->get_value('newrdn') || undef,
                   deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
       my $newsuperior = $self->get_value('newsuperior');
       push(@args, newsuperior => $newsuperior) if $newsuperior;
       $mesg = $target->moddn($self, @args, 'callback' => $cb, %opt);
     }
-    elsif (@{$self->{'changes'}}) {
-      $mesg = $target->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, %opt);
+    elsif (@{$self->{changes}}) {
+      $mesg = $target->modify($self, 'changes' => $self->{changes}, 'callback' => $cb, %opt);
     }
     else {
       require Net::LDAP::Message;
@@ -363,7 +363,7 @@ sub asn {
 }
 
 sub changes {
-  my $ref = shift->{'changes'};
+  my $ref = shift->{changes};
   $ref ? @$ref : ();
 }
 

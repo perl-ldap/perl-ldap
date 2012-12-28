@@ -24,8 +24,8 @@ sub first_entry { # compat
 
 sub next_entry { # compat
   my $self = shift;
-  $self->entry( defined $self->{'CurrentEntry'}
-		? $self->{'CurrentEntry'} + 1
+  $self->entry( defined $self->{CurrentEntry}
+		? $self->{CurrentEntry} + 1
 		: 0);
 }
 
@@ -59,7 +59,7 @@ sub decode {
   }
   elsif ($data = delete $result->{protocolOp}{searchResRef}) {
 
-    push(@{$self->{'reference'} ||= []}, @$data);
+    push(@{$self->{reference} ||= []}, @$data);
 
     $self->{callback}->($self, bless $data, 'Net::LDAP::Reference')
       if (defined $self->{callback});
@@ -147,14 +147,14 @@ sub references {
 
   $self->sync unless exists $self->{resultCode};
 
-  return unless exists $self->{'reference'} && ref($self->{'reference'});
+  return unless exists $self->{reference} && ref($self->{reference});
 
-  @{$self->{'reference'} || []}
+  @{$self->{reference} || []}
 }
 
 sub as_struct {
   my $self = shift;
-  my %result = map { ( $_->dn, ($_->{'attrs'} || $_->_build_attrs) ) } entries($self);
+  my %result = map { ( $_->dn, ($_->{attrs} || $_->_build_attrs) ) } entries($self);
   return \%result;
 }
 

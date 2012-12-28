@@ -150,7 +150,7 @@ sub decode { # $self, $pdu, $control
     if (defined $self->{callback}) {
       $self->{callback}->($self, $intermediate);
     } else {
-      push(@{$self->{'intermediate'} ||= []}, $intermediate);
+      push(@{$self->{intermediate} ||= []}, $intermediate);
     }
 
     return $self;
