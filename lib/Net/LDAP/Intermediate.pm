@@ -47,7 +47,7 @@ sub new {
 
   if ($class eq __PACKAGE__ and exists $ResponseName2Class{$args{responseName}}) {
     $class = $ResponseName2Class{$args{responseName}};
-    eval "require $class" or die $@;
+    eval "require $class"  or die $@;
   }
 
   delete $args{error};
@@ -63,7 +63,7 @@ sub from_asn {
 
   if ($class eq __PACKAGE__ and exists $ResponseName2Class{$asn->{responseName}}) {
     $class = $ResponseName2Class{$asn->{responseName}};
-    eval "require $class" or die $@;
+    eval "require $class"  or die $@;
   }
 
   delete $asn->{error};
@@ -81,7 +81,7 @@ sub responseName  { shift->{responseName} }
 
 sub responseValue    {
   my $self = shift;
-  $self->{responseValue} = shift if @_;
+  $self->{responseValue} = shift  if @_;
   $self->{responseValue} || undef
 }
 

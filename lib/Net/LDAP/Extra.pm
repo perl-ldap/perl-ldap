@@ -16,7 +16,7 @@ sub import {
   local $SIG{__DIE__} = \&Carp::croak;
   foreach (@_) {
     my $file = "Net/LDAP/Extra/$_.pm";
-    next if exists $INC{$file};
+    next  if exists $INC{$file};
     require $file;
     "Net::LDAP::Extra::$_"->import;
   }

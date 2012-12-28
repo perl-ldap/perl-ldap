@@ -95,13 +95,13 @@ sub dn {
 
 sub get_attribute {
   require Carp;
-  Carp::carp("->get_attribute deprecated, use ->get_value") if $^W;
+  Carp::carp("->get_attribute deprecated, use ->get_value")  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
 sub get {
   require Carp;
-  Carp::carp("->get deprecated, use ->get_value") if $^W;
+  Carp::carp("->get deprecated, use ->get_value")  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
@@ -140,7 +140,7 @@ sub get_value {
 sub changetype {
 
   my $self = shift;
-  return $self->{changetype} unless @_;
+  return $self->{changetype}  unless @_;
   $self->{changes} = [];
   $self->{changetype} = shift;
   return $self;
@@ -166,7 +166,7 @@ sub add {
 
   }
 
-  push(@{$self->{changes}}, 'add', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'add', $cmd)  if $cmd;
 
   return $self;
 }
@@ -203,7 +203,7 @@ sub replace {
     }
   }
 
-  push(@{$self->{changes}}, 'replace', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'replace', $cmd)  if $cmd;
 
   return $self;
 }
@@ -244,11 +244,11 @@ sub delete {
       @{$self->{asn}{attributes}}
 	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
-      push @$cmd, $type, [] if $cmd;
+      push @$cmd, $type, []  if $cmd;
     }
   }
 
-  push(@{$self->{changes}}, 'delete', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'delete', $cmd)  if $cmd;
 
   return $self;
 }
@@ -260,8 +260,8 @@ sub update {
   my %opt = @_;
   my $mesg;
   my $user_cb = delete $opt{callback};
-  my $cb = sub { $self->changetype('modify') unless $_[0]->code;
-                 $user_cb->(@_) if $user_cb };
+  my $cb = sub { $self->changetype('modify')  unless $_[0]->code;
+                 $user_cb->(@_)  if $user_cb };
 
   if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
     if ($self->{changetype} eq 'add') {
@@ -274,7 +274,7 @@ sub update {
       my @args = (newrdn => $self->get_value('newrdn') || undef,
                   deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
       my $newsuperior = $self->get_value('newsuperior');
-      push(@args, newsuperior => $newsuperior) if $newsuperior;
+      push(@args, newsuperior => $newsuperior)  if $newsuperior;
       $mesg = $target->moddn($self, @args, callback => $cb, %opt);
     }
     elsif (@{$self->{changes}}) {
@@ -318,12 +318,12 @@ sub dump {
 
   my $asn = $self->{asn};
   print $fh "-" x 72, "\n";
-  print $fh "dn:", $asn->{objectName}, "\n\n" if $asn->{objectName};
+  print $fh "dn:", $asn->{objectName}, "\n\n"  if $asn->{objectName};
 
   my $l = 0;
 
   for (keys %{ $self->{attrs} ||= _build_attrs($self) }) {
-    $l = length if length > $l;
+    $l = length  if length > $l;
   }
 
   my $spc = "\n  " . " " x $l;
@@ -333,7 +333,7 @@ sub dump {
     printf $fh "%${l}s: ", $attr->{type};
     my $i = 0;
     foreach my $v (@$val) {
-      print $fh $spc if $i++;
+      print $fh $spc  if $i++;
       print $fh $v;
     }
     print $fh "\n";

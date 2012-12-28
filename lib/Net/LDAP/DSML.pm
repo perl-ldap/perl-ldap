@@ -76,7 +76,7 @@ sub start_element {
 
   (my $tag = lc $data->{Name}) =~ s/^dsml://;
 
-  my $label = $start_jumptable{$tag} or return;
+  my $label = $start_jumptable{$tag}  or return;
   my $state = $self->{reader};
   goto $label;
 
@@ -120,7 +120,7 @@ schema_element:
     my $Attrs = $data->{Attributes};
     my $id = $Attrs->{'{}id'}{Value};
     my $elem = $state->{elem} = { type => $schema_typemap{$tag} };
-    $state->{id}{$id} = $elem if $id;
+    $state->{id}{$id} = $elem  if $id;
 
     my $value;
 
@@ -134,7 +134,7 @@ schema_element:
 	user-modification
     )) {
       my $value = $Attrs->{"{}$attr"}{Value};
-      $elem->{$attr} = 1 if defined $value and $value =~ /^true$/i;
+      $elem->{$attr} = 1  if defined $value and $value =~ /^true$/i;
     }
 
     $elem->{superior} = $value
@@ -155,9 +155,9 @@ schema_syntax:
   {
     my $elem = $state->{elem};
     my $bound = $data->{Attributes}{'{}bound'}{Value};
-    $elem->{max_length} = $bound if defined $bound;
+    $elem->{max_length} = $bound  if defined $bound;
 
-    $elem->{$tag} = '' unless exists $elem->{$tag};
+    $elem->{$tag} = ''  unless exists $elem->{$tag};
     $state->{value} = \$elem->{$tag};
     return;
   }
@@ -165,7 +165,7 @@ schema_syntax:
 schema_value:
   {
     my $elem = $state->{elem};
-    $elem->{$tag} = '' unless exists $elem->{$tag};
+    $elem->{$tag} = ''  unless exists $elem->{$tag};
     $state->{value} = \$elem->{$tag};
     return;
   }
@@ -174,7 +174,7 @@ schema_attr:
   {
     my $Attrs = $data->{Attributes};
     my $required = $data->{Attributes}{'{}required'}{Value} || 'false';
-    my $ref = $data->{Attributes}{'{}ref'}{Value} or return;
+    my $ref = $data->{Attributes}{'{}ref'}{Value}  or return;
     my $type = $required =~ /^false$/i ? 'may' : 'must';
     push @{$state->{elem}{$type}}, $ref;
     return;
@@ -203,7 +203,7 @@ sub end_element {
   my ($self, $data) = @_;
   (my $tag = lc $data->{Name}) =~ s/^dsml://;
 
-  my $label = $end_jumptable{$tag} or return;
+  my $label = $end_jumptable{$tag}  or return;
   my $state = $self->{reader};
   goto $label;
 
@@ -241,7 +241,7 @@ schema_element:
 
     if (my $aliases = $elem->{name}) {
       $name = $elem->{name} = shift @$aliases;
-      $elem->{aliases} = $aliases if @$aliases;
+      $elem->{aliases} = $aliases  if @$aliases;
     }
     elsif ($oid) {
       $name = $oid;
@@ -329,7 +329,7 @@ sub _dsml_context {
     $handler->end_prefix_mapping({
       NamespaceURI => 'http://www.dsml.org/DSML',
       Prefix       => 'dsml'
-    }) if $old eq 'dsml';
+    })  if $old eq 'dsml';
   }
 
   if (!$new) {
@@ -337,7 +337,7 @@ sub _dsml_context {
     delete $self->{writer}{context};
   }
   elsif (!@$context or $context->[-1] ne $new) {
-    $self->_dsml_context('dsml') unless $new eq 'dsml' or @$context;
+    $self->_dsml_context('dsml')  unless $new eq 'dsml' or @$context;
     push @$context, $new;
     my %data = (
       Name	   => "dsml:$new",
@@ -368,13 +368,13 @@ sub _dsml_context {
 sub start_dsml {
   my $self = shift;
 
-  $self->_dsml_context('') if $self->{writer}{context};
+  $self->_dsml_context('')  if $self->{writer}{context};
   $self->_dsml_context('dsml');
 }
 
 sub end_dsml {
   my $self = shift;
-  $self->_dsml_context('') if $self->{writer} and $self->{writer}{context};
+  $self->_dsml_context('')  if $self->{writer} and $self->{writer}{context};
 }
 
 sub write_entry {
@@ -471,12 +471,12 @@ sub write_schema {
     foreach my $flag (qw(obsolete single-value)) {
       $attr{"{}$flag"} = {
 	Value => 'true', Name => $flag
-      } if $attr->{$flag};
+      }  if $attr->{$flag};
     }
     $attr{"{}user-modification"} = {
       Value => 'false',
       Name => 'user-modification',
-    } unless $attr->{'user-modification'};
+    }  unless $attr->{'user-modification'};
 
     @data{qw(Name LocalName)} = qw(dsml:attribute-type attribute-type);
     $handler->start_element(\%data);
@@ -507,7 +507,7 @@ sub write_schema {
 	ordering
 	substring
     )) {
-      defined(my $text = $attr->{$elem}) or next;
+      defined(my $text = $attr->{$elem})  or next;
       @data{qw(Name LocalName)} = ("dsml:$elem", $elem);
       $handler->start_element(\%data);
       $handler->characters({Data => $text});
@@ -531,7 +531,7 @@ sub write_schema {
 
   foreach my $oc ($schema->all_objectclasses) {
     my $id = $oc->{name};
-    $id = $oc->{'object-identifier'} if $id{$id};
+    $id = $oc->{'object-identifier'}  if $id{$id};
 
     %attr = ( '{}id' => { Value => "#$id", Name => 'id'});
 
@@ -577,7 +577,7 @@ sub write_schema {
 	description
 	object-identifier
     )) {
-      defined(my $text = $oc->{$elem}) or next;
+      defined(my $text = $oc->{$elem})  or next;
       @data{qw(Name LocalName)} = ("dsml:$elem", $elem);
       $handler->start_element(\%data);
       $handler->characters({Data => $text});
@@ -594,7 +594,7 @@ sub write_schema {
 	  Name => 'ref'
 	},
       );
-      my $mmref = $oc->{$mm} or next;
+      my $mmref = $oc->{$mm}  or next;
       foreach my $attr (@$mmref) {
 	my $a_ref = $schema->attribute($attr);
 	$attr{'{}ref'}{Value} = $a_ref ? $a_ref->{name} : $attr;
@@ -712,10 +712,11 @@ Net::LDAP::DSML -- A DSML Writer for Net::LDAP
  #
  my $file = "testdsml.xml";
 
- my $io = IO::File->new($file,"w") or die ("failed to open $file as filehandle.$!\n");
+ my $io = IO::File->new($file,"w")
+     or die ("failed to open $file as filehandle.$!\n");
 
  my $dsml = Net::LDAP::DSML->new(output => $io, pretty_print => 1 )
-      or die ("DSML object creation problem using an output file.\n");
+     or die ("DSML object creation problem using an output file.\n");
  #      OR
  #
  # For file i/o
@@ -748,7 +749,7 @@ Net::LDAP::DSML -- A DSML Writer for Net::LDAP
 				       }
                             );
 
- die ("search failed with ",$mesg->code(),"\n") if $mesg->code();
+ die ("search failed with ",$mesg->code(),"\n")  if $mesg->code();
 
  For directory schema;
 

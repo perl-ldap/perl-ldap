@@ -46,16 +46,16 @@ sub new {
       my $open = $file =~ /^\| | \|$/x
 	? $file
 	: (($mode{$mode} || "<") . $file);
-      open($fh, $open) or return;
+      open($fh, $open)  or return;
       $opened_fh = 1;
     }
   }
 
   # Default the encoding of DNs to 'none' unless the user specifies
-  $opt{encode} = 'none' unless exists $opt{encode};
+  $opt{encode} = 'none'  unless exists $opt{encode};
 
   # Default the error handling to die
-  $opt{onerror} = 'die' unless exists $opt{onerror};
+  $opt{onerror} = 'die'  unless exists $opt{onerror};
 
   # sanitize options
   $opt{lowercase} ||= 0;
@@ -216,7 +216,7 @@ sub _read_entry {
         ? shift(@ldif) : $self->{changetype};
     $entry->changetype($changetype);
 
-    return $entry if ($changetype eq "delete");
+    return $entry  if ($changetype eq "delete");
 
     unless (@ldif) {
       $self->_error("LDAP entry is not valid", @ldif);
@@ -363,10 +363,10 @@ sub read_entry {
 sub read {
   my $self = shift;
 
-  return $self->read_entry() unless wantarray;
+  return $self->read_entry()  unless wantarray;
 
   my($entry, @entries);
-  push(@entries, $entry) while $entry = $self->read_entry;
+  push(@entries, $entry)  while $entry = $self->read_entry;
 
   @entries;
 }
@@ -384,7 +384,7 @@ sub eof {
 
 sub _wrap {
   my $len=$_[1];	# needs to be >= 2 to avoid division by zero
-  return $_[0] if length($_[0]) <= $len or $len <= 40;
+  return $_[0]  if length($_[0]) <= $len or $len <= 40;
   use integer;
   my $l2 = $len-1;
   my $x = (length($_[0]) - $len) / $l2;
@@ -510,7 +510,7 @@ sub _write_entry {
       my $type = $entry->changetype;
 
       # Skip entry if there is nothing to write
-      next if $type eq 'modify' and !@changes;
+      next  if $type eq 'modify' and !@changes;
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
       $res &&= print "\n";
@@ -530,7 +530,7 @@ sub _write_entry {
         $res &&= _write_attr('newrdn', $entry->get_value('newrdn', asref => 1), $wrap, $lower);
         $res &&= print 'deleteoldrdn: ', $deleteoldrdn, "\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= _write_attr('newsuperior', $ns, $wrap, $lower) if defined $ns;
+        $res &&= _write_attr('newsuperior', $ns, $wrap, $lower)  if defined $ns;
         next;
       }
 
@@ -568,10 +568,10 @@ sub _write_entry {
 sub read_cmd {
   my $self = shift;
 
-  return $self->read_entry() unless wantarray;
+  return $self->read_entry()  unless wantarray;
 
   my($entry, @entries);
-  push(@entries, $entry) while $entry = $self->read_entry;
+  push(@entries, $entry)  while $entry = $self->read_entry;
 
   @entries;
 }
@@ -622,7 +622,7 @@ my %onerror = (
   undef => sub {
                 my $self = shift;
                 require Carp;
-                Carp::carp($self->error(@_)) if $^W;
+                Carp::carp($self->error(@_))  if $^W;
              },
 );
 
@@ -631,7 +631,7 @@ sub _error {
    $self->{_err_msg} = $errmsg;
    $self->{_err_lines} = join "\n", @errlines;
 
-   scalar &{ $onerror{ $self->{onerror} } }($self, $self->{_err_msg}) if $self->{onerror};
+   scalar &{ $onerror{ $self->{onerror} } }($self, $self->{_err_msg})  if $self->{onerror};
 }
 
 sub _clear_error {
@@ -663,7 +663,7 @@ sub current_lines {
 
 sub version {
   my $self = shift;
-  return $self->{version} unless @_;
+  return $self->{version}  unless @_;
   $self->{version} = shift || 0;
 }
 

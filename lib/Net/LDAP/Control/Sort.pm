@@ -91,7 +91,7 @@ sub order {
     delete $self->{error};
 
     foreach (@order) {
-      next if /^-?[^:]+(?::.+)?$/;
+      next  if /^-?[^:]+(?::.+)?$/;
 
       $self->{error} = "Bad order argument '$_'";
       return;
@@ -125,7 +125,7 @@ Net::LDAP::Control::Sort - Server Side Sort (SSS) control object
 
  ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
 
- print "Results are sorted\n" if $resp and !$resp->result;
+ print "Results are sorted\n"  if $resp and !$resp->result;
 
 =head1 DESCRIPTION
 

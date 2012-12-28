@@ -18,7 +18,7 @@ sub init {
   }
   else {
     $self->{asn} = { sortResult => delete $self->{result} };
-    $self->{asn}{attributeType} = delete $self->{attr} if exists $self->{attr};
+    $self->{asn}{attributeType} = delete $self->{attr}  if exists $self->{attr};
   }
 
   $self;
@@ -72,7 +72,7 @@ Net::LDAP::Control::SortResult - Server Side Sort (SSS) result control object
    if ($resp->result) {
      my $attr = $resp->attr;
      print "Problem sorting, ",ldap_error_name($resp->result);
-     print " ($attr)" if $attr;
+     print " ($attr)"  if $attr;
      print "\n";
    }
    else {

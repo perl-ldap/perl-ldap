@@ -24,9 +24,9 @@ my $init_failed = $@ ? $@ : undef;
 sub request {
   my($self, $request, $proxy, $arg, $size, $timeout) = @_;
 
-  $size = 4096 unless $size;
+  $size = 4096  unless $size;
 
-  LWP::Debug::trace('()') if defined &LWP::Debug::trace;
+  LWP::Debug::trace('()')  if defined &LWP::Debug::trace;
 
   # check proxy
   if (defined $proxy) {
@@ -185,15 +185,15 @@ sub request {
 
         my $j = 0;
         foreach my $val (@$vals) {
-	  $val = qq!<a href="$val">$val</a>! if $val =~ /^https?:/;
-	  $val = qq!<a href="mailto:$val">$val</a>! if $val =~ /^[-\w]+\@[-.\w]+$/;
-          $content .= "<tr>" if $j++;
+	  $val = qq!<a href="$val">$val</a>!  if $val =~ /^https?:/;
+	  $val = qq!<a href="mailto:$val">$val</a>!  if $val =~ /^[-\w]+\@[-.\w]+$/;
+          $content .= "<tr>"  if $j++;
           $content .= "<td>" . $val . "</td></tr>\n";
         }
       }
     }
 
-    $content .= "</table>" if $index;
+    $content .= "</table>"  if $index;
     $content .= "<hr>";
     $content .= $index ? sprintf("%s Match%s found", $index, $index>1 ? "es" : "")
 		       : "<b>No Matches found</b>";

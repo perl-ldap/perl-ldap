@@ -60,7 +60,7 @@ sub reloadHint {
 
 sub value {
   my $self = shift;
-  return $self->{value} if exists $self->{value};
+  return $self->{value}  if exists $self->{value};
   $self->{value} = $syncRequestValue->encode($self->{asn});
 }
 

@@ -278,7 +278,7 @@ sub _parse_schema {
   my $schema = shift;
   my $entry = shift;
 
-  return undef unless defined($entry);
+  return undef  unless defined($entry);
 
   keys %type2attr; # reset iterator
   while (my($type, $attr) = each %type2attr) {
@@ -287,14 +287,14 @@ sub _parse_schema {
     my %names;
     $schema->{$type} = \%names;		# Save reference to hash of names => element
 
-    next unless $vals;			# Just leave empty ref if nothing
+    next  unless $vals;			# Just leave empty ref if nothing
 
     foreach my $val (@$vals) {
       #
       # The following statement takes care of defined attributes
       # that have no data associated with them.
       #
-      next if $val eq '';
+      next  if $val eq '';
 
       #
       # We assume that each value can be turned into an OID, a canonical
@@ -316,11 +316,12 @@ sub _parse_schema {
                       |
                        '((?:[^']+|'[^\s)])*)'
                       )\s*/xcg;
-      die "Cannot parse [$val] [", substr($val, pos($val)), "]" unless @tokens and pos($val) == length($val);
+      die "Cannot parse [$val] [", substr($val, pos($val)), "]"
+        unless @tokens and pos($val) == length($val);
 
       # remove () from start/end
-      shift @tokens if $tokens[0]  eq '(';
-      pop   @tokens if $tokens[-1] eq ')';
+      shift @tokens  if $tokens[0]  eq '(';
+      pop   @tokens  if $tokens[-1] eq ')';
 
       # The first token is the OID
       my $oid = $schema_entry{oid} = shift @tokens;
@@ -338,11 +339,11 @@ sub _parse_schema {
 	    $schema_entry{$tag} = \@arr;
 	    while (1) {
 	      my $tmp = shift @tokens;
-	      last if $tmp eq ')';
-	      push @arr, $tmp unless $tmp eq '$';
+	      last  if $tmp eq ')';
+	      push @arr, $tmp  unless $tmp eq '$';
 
               # Drop of end of list ?
-	      die "Cannot parse [$val] {$tag}" unless @tokens;
+	      die "Cannot parse [$val] {$tag}"  unless @tokens;
 	    }
 	  }
 
@@ -373,13 +374,13 @@ sub _parse_schema {
       if (ref $schema_entry{name}) {
 	my $aliases;
 	$schema_entry{name} = shift @{$aliases = $schema_entry{name}};
-	$schema_entry{aliases} = $aliases if @$aliases;
+	$schema_entry{aliases} = $aliases  if @$aliases;
       }
 
       #
       # Store the elements by OID
       #
-      $schema->{oid}->{$oid} = \%schema_entry unless $type eq 'xat';
+      $schema->{oid}->{$oid} = \%schema_entry  unless $type eq 'xat';
 
       #
       # We also index elements by name within each type
@@ -396,7 +397,7 @@ sub _parse_schema {
     foreach my $xat_ref (values %$xat) {
       my $oid = $schema->{oid}{$xat_ref->{oid}} ||= {};
       while (my($k, $v) = each %$xat_ref) {
-        $oid->{"x-$k"} = $v unless $k =~ /^(oid|type|name|aliases)$/;
+        $oid->{"x-$k"} = $v  unless $k =~ /^(oid|type|name|aliases)$/;
       }
     }
   }

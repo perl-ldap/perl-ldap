@@ -20,13 +20,13 @@ sub init {
   } else {
     $self->{asn} = {};
     $self->{asn}{newcookie} =
-      delete $self->{newcookie} if exists $self->{newcookie};
+      delete $self->{newcookie}  if exists $self->{newcookie};
     $self->{asn}{refreshDelete} =
-      delete $self->{refreshDelete} if exists $self->{refreshDelete};
+      delete $self->{refreshDelete}  if exists $self->{refreshDelete};
     $self->{asn}{refreshPresent} =
-      delete $self->{refreshPresent} if exists $self->{refreshPresent};
+      delete $self->{refreshPresent}  if exists $self->{refreshPresent};
     $self->{asn}{syncIdSet} =
-      delete $self->{syncIdSet} if exists $self->{syncIdSet};
+      delete $self->{syncIdSet}  if exists $self->{syncIdSet};
   }
   #$self->{asn}{refreshDelete}{refreshDone} defaults to TRUE
   if (defined($self->{asn}{refreshDelete})) {

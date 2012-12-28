@@ -11,7 +11,7 @@ our $VERSION = "1.03";
 sub response_name {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{responseName}
     ? $self->{responseName}
@@ -22,7 +22,7 @@ sub response_name {
 sub response {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{response}
     ? $self->{response}

@@ -19,7 +19,7 @@ our $VERSION   = '0.27';
 sub import {
   shift;
 
-  push(@_, @Net::LDAP::Filter::approxMatchers) unless @_;
+  push(@_, @Net::LDAP::Filter::approxMatchers)  unless @_;
   @Net::LDAP::Filter::approxMatchers = grep { eval "require $_" } @_ ;
 }
 
@@ -216,7 +216,7 @@ sub _filterMatch($@)
         }
       }
       else {
-        return  undef if (!@attrs);
+        return undef  if (!@attrs);
         $mr = $schema->matchingrule_for_attribute($attrs[0], 'equality');
       }
 
@@ -381,7 +381,7 @@ sub _cis_substrings($$@)
   my $regex=shift;
   my $op=shift;
 
-  return 1 if ($regex =~ /^$/);
+  return 1  if ($regex =~ /^$/);
   return grep(/$regex/i, @_) ? 1 : 0;
 }
 
@@ -390,7 +390,7 @@ sub _exact_substrings($$@)
   my $regex=shift;
   my $op=shift;
 
-  return 1 if ($regex =~ /^$/);
+  return 1  if ($regex =~ /^$/);
   return grep(/$regex/, @_) ? 1 : 0;
 }
 

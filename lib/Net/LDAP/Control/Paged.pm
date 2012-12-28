@@ -86,10 +86,10 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
    my $mesg = $ldap->search( @args );
 
    # Only continue on LDAP_SUCCESS
-   $mesg->code and last;
+   $mesg->code  and last;
 
    # Get cookie from paged control
-   my($resp)  = $mesg->control( LDAP_CONTROL_PAGED ) or last;
+   my($resp)  = $mesg->control( LDAP_CONTROL_PAGED )  or last;
    $cookie    = $resp->cookie or last;
 
    # Set cookie in paged control

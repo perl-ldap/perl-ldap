@@ -199,7 +199,7 @@ sub parse {
       ($op, $cur) = @{ pop @stack };
 	# Need to do more checking here
       push @$cur, { $Op{$myop} => $myop eq '!' ? $mydata->[0] : $mydata };
-      next if @stack;
+      next  if @stack;
     }
 
     # process (attr op string)
@@ -211,7 +211,7 @@ sub parse {
                         \)\s*
                        //xo) {
       push(@$cur, _encode($1, $2, $3));
-      next if @stack;
+      next  if @stack;
     }
 
     # If we get here then there is an error in the filter string
@@ -248,23 +248,23 @@ sub _string {    # prints things of the form (<op> (<list>) ... )
   my $str = "";
 
   for ($_[0]) {
-    /^and/ and return "(&" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^or/  and return "(|" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^not/ and return "(!" . _string(%{$_[1]}) . ")";
-    /^present/ and return "($_[1]=*)";
+    /^and/  and return "(&" . join("", map { _string(%$_) } @{$_[1]}) . ")";
+    /^or/   and return "(|" . join("", map { _string(%$_) } @{$_[1]}) . ")";
+    /^not/  and return "(!" . _string(%{$_[1]}) . ")";
+    /^present/  and return "($_[1]=*)";
     /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch)/
       and return "(" . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .")";
-    /^substrings/ and do {
+    /^substrings/  and do {
       my $str = join("*", "", map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
-      $str =~ s/^.// if exists $_[1]->{substrings}[0]{initial};
-      $str .= '*' unless exists $_[1]->{substrings}[-1]{final};
+      $str =~ s/^.//  if exists $_[1]->{substrings}[0]{initial};
+      $str .= '*'  unless exists $_[1]->{substrings}[-1]{final};
       return "($_[1]->{type}=$str)";
     };
-    /^extensibleMatch/ and do {
+    /^extensibleMatch/  and do {
       my $str = "(";
-      $str .= $_[1]->{type} if defined $_[1]->{type};
-      $str .= ":dn" if $_[1]->{dnAttributes};
-      $str .= ":$_[1]->{matchingRule}" if defined $_[1]->{matchingRule};
+      $str .= $_[1]->{type}  if defined $_[1]->{type};
+      $str .= ":dn"  if $_[1]->{dnAttributes};
+      $str .= ":$_[1]->{matchingRule}"  if defined $_[1]->{matchingRule};
       $str .= ":=" . _escape($_[1]->{matchValue}) . ")";
       return $str;
     };

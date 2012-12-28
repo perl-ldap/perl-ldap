@@ -85,10 +85,10 @@ sub pp_error {
 
 sub value {
   my $self = shift;
-  return $self->{value} if exists $self->{value};
+  return $self->{value}  if exists $self->{value};
   my $asn = $self->{asn};
   # Return undef if all optional values are missing
-  return undef unless $asn and (defined $asn->{error} or $asn->{warning});
+  return undef  unless $asn and (defined $asn->{error} or $asn->{warning});
   $self->{value} = $ppControlResponse->encode($self->{asn});
 }
 
@@ -119,9 +119,9 @@ Net::LDAP::Control::PasswordPolicy - LDAPv3 Password Policy control object
 
  if (defined($resp)) {
    my $v = $resp->pp_error;
-   print "Password policy error $v\n" if defined $v;
+   print "Password policy error $v\n"  if defined $v;
    $v = $resp->time_before_expiration;
-   print "Password expires in $v second(s)\n" if defined $v;
+   print "Password expires in $v second(s)\n"  if defined $v;
  }
 
 =head1 DESCRIPTION

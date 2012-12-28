@@ -53,7 +53,7 @@ sub _options {
   my $once = 0;
   for my $v (grep { /^-/ } keys %ret) {
     require Carp;
-    $once++ or Carp::carp("deprecated use of leading - for options");
+    $once++  or Carp::carp("deprecated use of leading - for options");
     $ret{substr($v, 1)} = $ret{$v};
   }
 
@@ -68,21 +68,21 @@ sub _options {
 }
 
 sub _dn_options {
-  unshift @_, 'dn' if @_ & 1;
+  unshift @_, 'dn'  if @_ & 1;
   &_options;
 }
 
 sub _err_msg {
   my $mesg = shift;
   my $errstr = $mesg->dn || '';
-  $errstr .= ": " if $errstr;
+  $errstr .= ": "  if $errstr;
   $errstr . $mesg->error;
 }
 
 my %onerror = (
   die   => sub { require Carp; Carp::croak(_err_msg(@_)) },
   warn  => sub { require Carp; Carp::carp(_err_msg(@_)); $_[0] },
-  undef => sub { require Carp; Carp::carp(_err_msg(@_)) if $^W; undef },
+  undef => sub { require Carp; Carp::carp(_err_msg(@_))  if $^W; undef },
 );
 
 sub _error {
@@ -97,7 +97,7 @@ sub _error {
 sub new {
   my $self = shift;
   my $type = ref($self) || $self;
-  my $host = shift if @_ % 2;
+  my $host = shift  if @_ % 2;
   my $arg  = &_options;
   my $obj  = bless {}, $type;
 
@@ -109,7 +109,7 @@ sub new {
       $h =~ s,/.*,,; # remove path part
       $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
     }
-    my $meth = $obj->can("connect_$scheme") or next;
+    my $meth = $obj->can("connect_$scheme")  or next;
     if (&$meth($obj, $h, $arg)) {
       $obj->{net_ldap_uri} = $uri;
       $obj->{net_ldap_scheme} = $scheme;
@@ -117,7 +117,7 @@ sub new {
     }
   }
 
-  return undef unless $obj->{net_ldap_socket};
+  return undef  unless $obj->{net_ldap_socket};
 
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
@@ -125,7 +125,7 @@ sub new {
   $obj->{raw} = $arg->{raw}  if ($arg->{raw});
 
   if (defined(my $onerr = $arg->{onerror})) {
-    $onerr = $onerror{$onerr} if exists $onerror{$onerr};
+    $onerr = $onerror{$onerr}  if exists $onerror{$onerr};
     $obj->{net_ldap_onerror} = $onerr;
   }
 
@@ -302,7 +302,7 @@ sub async {
 sub debug {
   my $ldap = shift;
 
-  require Convert::ASN1::Debug if $_[0];
+  require Convert::ASN1::Debug  if $_[0];
 
   @_
     ? ($ldap->{net_ldap_debug}, $ldap->{net_ldap_debug} = shift)[0]
@@ -357,7 +357,7 @@ sub unbind {
 
 sub ldapbind {
   require Carp;
-  Carp::carp("->ldapbind deprecated, use ->bind") if $^W;
+  Carp::carp("->ldapbind deprecated, use ->bind")  if $^W;
   goto &bind;
 }
 
@@ -601,7 +601,7 @@ sub modify {
   }
   else {
     foreach my $op (qw(add delete replace increment)) {
-      next unless exists $arg->{$op};
+      next  unless exists $arg->{$op};
       my $opt = $arg->{$op};
       my $opcode = $opcode{$op};
 
@@ -649,8 +649,7 @@ sub modify {
       modification => \@ops
     },
     controls => $control
-  )
-    or return _error($ldap, $mesg, LDAP_ENCODING_ERROR, "$@");
+  ) or return _error($ldap, $mesg, LDAP_ENCODING_ERROR, "$@");
 
   $ldap->_sendmesg($mesg);
 }
@@ -752,7 +751,7 @@ sub compare {
 
 sub abandon {
   my $ldap = shift;
-  unshift @_, 'id' if @_ & 1;
+  unshift @_, 'id'  if @_ & 1;
   my $arg = &_options;
 
   my $id = $arg->{id};
@@ -798,11 +797,11 @@ sub sync {
   my $table = $ldap->{net_ldap_mesg};
   my $err   = LDAP_SUCCESS;
 
-  return $err unless defined $table;
+  return $err  unless defined $table;
 
-  $mid = $mid->mesg_id if ref($mid);
+  $mid = $mid->mesg_id  if ref($mid);
   while (defined($mid) ? exists $table->{$mid} : %$table) {
-    last if $err = $ldap->process($mid);
+    last  if $err = $ldap->process($mid);
   }
 
   $err;
@@ -830,7 +829,7 @@ sub _sendmesg {
   }
 
   my $socket = $ldap->socket
-      or return _error($ldap, $mesg, LDAP_SERVER_DOWN, "$!");
+    or return _error($ldap, $mesg, LDAP_SERVER_DOWN, "$!");
 
   # send packets in sizes that IO::Socket::SSL can chew
   # originally it was:
@@ -856,7 +855,7 @@ sub _sendmesg {
 
     if ($sync) {
       my $err = $ldap->sync($mid);
-      return _error($ldap, $mesg, $err, $@) if $err;
+      return _error($ldap, $mesg, $err, $@)  if $err;
     }
   }
 
@@ -868,7 +867,7 @@ sub _sendmesg {
 sub process {
   my $ldap = shift;
   my $what = shift;
-  my $sock = $ldap->socket or return LDAP_SERVER_DOWN;
+  my $sock = $ldap->socket  or return LDAP_SERVER_DOWN;
   my $sel = IO::Select->new($sock);
   my $ready;
 
@@ -903,14 +902,14 @@ sub process {
 	}
       }
 
-      print STDERR "Unexpected PDU, ignored\n" if $debug & 10;
+      print STDERR "Unexpected PDU, ignored\n"  if $debug & 10;
       next;
     }
 
-    $mesg->decode($result) or
-      return $mesg->code;
+    $mesg->decode($result)
+      or return $mesg->code;
 
-    last if defined $what && $what == $mid;
+    last  if defined $what && $what == $mid;
   }
 
   # FIXME: in CLDAP here we need to check if any message has timed out
@@ -925,11 +924,11 @@ sub _drop_conn {
   my ($self, $err, $etxt) = @_;
 
   my $sock = delete $self->{net_ldap_socket};
-  close($sock) if $sock;
+  close($sock)  if $sock;
 
   if (my $msgs = delete $self->{net_ldap_mesg}) {
     foreach my $mesg (values %$msgs) {
-      next unless (defined $mesg);
+      next  unless (defined $mesg);
       $mesg->set_error($err, $etxt);
     }
   }
@@ -1018,7 +1017,7 @@ sub root_dse {
 		)];
   my $root = $arg{attrs} && $ldap->{net_ldap_root_dse};
 
-  return $root if $root;
+  return $root  if $root;
 
   my $mesg = $ldap->search(
     base   => '',
@@ -1029,9 +1028,9 @@ sub root_dse {
 
   require Net::LDAP::RootDSE;
   $root = $mesg->entry;
-  bless $root, 'Net::LDAP::RootDSE' if $root; # Naughty, but there you go :-)
+  bless $root, 'Net::LDAP::RootDSE'  if $root; # Naughty, but there you go :-)
 
-  $ldap->{net_ldap_root_dse} = $root unless $arg{attrs};
+  $ldap->{net_ldap_root_dse} = $root  unless $arg{attrs};
 
   return $root;
 }
@@ -1065,8 +1064,8 @@ sub start_tls {
 
   delete $ldap->{net_ldap_root_dse};
 
-  $arg->{sslversion} = 'tlsv1' unless defined $arg->{sslversion};
-  $arg->{sslserver} = $ldap->{net_ldap_host} unless defined $arg->{sslserver};
+  $arg->{sslversion} = 'tlsv1'  unless defined $arg->{sslversion};
+  $arg->{sslserver} = $ldap->{net_ldap_host}  unless defined $arg->{sslserver};
 
   IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
   my $sock_class = ref($sock);
@@ -1109,7 +1108,7 @@ sub version {
 
 sub outer {
   my $self = shift;
-  return $self if tied(%$self);
+  return $self  if tied(%$self);
   my %outer;
   tie %outer, ref($self), $self;
   ++$self->{net_ldap_refcnt};
@@ -1126,7 +1125,7 @@ sub TIEHASH {
 
 sub DESTROY {
   my $ldap = shift;
-  my $inner = tied(%$ldap) or return;
+  my $inner = tied(%$ldap)  or return;
   _drop_conn($inner, LDAP_UNAVAILABLE, "Implicit disconnect")
     unless --$inner->{net_ldap_refcnt};
 }

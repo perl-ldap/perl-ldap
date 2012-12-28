@@ -115,11 +115,11 @@ sub pop_entry {
 sub sorted {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
-  return unless exists $self->{entries} && ref($self->{entries});
+  return  unless exists $self->{entries} && ref($self->{entries});
 
-  return @{$self->{entries}} unless @{$self->{entries}} > 1;
+  return @{$self->{entries}}  unless @{$self->{entries}} > 1;
 
   require Net::LDAP::Util;
 
@@ -145,9 +145,9 @@ sub sorted {
 sub references {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
-  return unless exists $self->{reference} && ref($self->{reference});
+  return  unless exists $self->{reference} && ref($self->{reference});
 
   @{$self->{reference} || []}
 }
@@ -161,7 +161,7 @@ sub as_struct {
 sub entries {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   @{$self->{entries} || []}
 }

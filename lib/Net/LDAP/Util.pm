@@ -18,7 +18,7 @@ Net::LDAP::Util - Utility functions
 
   $mesg = $ldap->search( .... );
 
-  die "Error ",ldap_error_name($mesg) if $mesg->code;
+  die "Error ",ldap_error_name($mesg)  if $mesg->code;
 
 =head1 DESCRIPTION
 
@@ -274,7 +274,7 @@ Separator to use between RDNs. Defaults to comma (',').
 sub canonical_dn($%) {
   my ($dn, %opt) = @_;
 
-  return $dn unless defined $dn and $dn ne '';
+  return $dn  unless defined $dn and $dn ne '';
 
   # create array of hash representation
   my $rdns = ref($dn) eq 'ARRAY'
@@ -423,8 +423,8 @@ If TRUE, the RDN sequence is reversed.
 
 sub ldap_explode_dn($%) {
   my ($dn, %opt) = @_;
-  return undef unless defined $dn;
-  return [] if $dn eq '';
+  return undef  unless defined $dn;
+  return []  if $dn eq '';
 
   my $pair = qr/\\(?:[\\"+,;<> #=]|[0-9A-F]{2})/i;
 
