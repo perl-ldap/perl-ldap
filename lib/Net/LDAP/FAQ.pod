@@ -1242,6 +1242,65 @@ or via group nesting.
                          attrs  => [ '1.1' ]
                        );
 
+=head2 How do I search for all members of a large group in AD?
+
+AD normally restricts the number of attribute values returned in one query.
+The exact number depends on the AD server version: it was ~1000 in Win2000,
+1500 in Win2003 and is 5000 in Win2008 & Win2008R2.
+
+Performing the same standard search again will yield the same values again.
+
+So, how can you get all members of a really large AD group?
+
+The trick to use here is to use Microsoft's I<range option> when searching,
+i.e instead of doing one search for plain C<member>, perform multiple searches
+for e.g. C<member;range=1000-*> where the range starting index increases accordingly:
+
+  my $mesg;
+  my @members;
+  my $index = 0;
+
+  while ($index ne '*') {
+    $mesg = $ldap->search( base   => 'cn=Testgroup,dc=your,dc=ads,dc=domain',
+                           filter => '(objectclass=group)',
+                           scope  => 'base',
+                           attrs  => ($index > 0) ? "member;range=$index-*" : 'member'
+                         );
+    if ($mesg->code == LDAP_SUCCESS) {
+      my $entry = $mesg->entry(0);
+      my $attr;
+
+      # large group: let's do the range option dance
+      if (($attr) = grep(/^member;range=/, $entry->attributes)) {
+        push(@members, $entry->get_value($attr));
+
+        if ($attr =~ /^member;range=\d+-(.*)$/) {
+          $index = $1;
+          $index++  if ($index ne '*');
+        }
+      }
+      # small group: no need for the range dance
+      else {
+        @members = $entry->get_value('member');
+        last;
+      }
+    }
+    # failure
+    else {
+      last;
+    }
+  }
+
+  if ($mesg->code == LDAP_SUCCESS) {
+    # success: @members contains the members of the group
+  }
+  else {
+    # failure: deal with the error in $mesg
+  }
+
+See L<http://msdn.microsoft.com/en-us/library/windows/desktop/aa367017.aspx>
+for more details.
+
 =head2 How do I create a Microsoft Exchange 5.x user?
 
 This is a solution provided by a perl-ldap user.
