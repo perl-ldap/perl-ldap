@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Convert::ASN1;
 
@@ -427,12 +427,6 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	type            [2] AttributeDescription OPTIONAL,
 	--- at least one of the above must be present
 	matchValue      [3] AssertionValue }
-
-    -- RFC-4527 Pre-/Post-read Control
-    -- note: this is SearchResultEntry without the APPLICATION tag
-    prSearchResultEntry ::= SEQUENCE {
-	objectName      LDAPDN,
-	attributes      PartialAttributeList }
 
     -- RFC-4533 LDAP Content Synchronization Operation
 
