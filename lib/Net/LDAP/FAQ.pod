@@ -1220,6 +1220,28 @@ With groups, the same applies to the C<groupType> bit-field:
                          attrs  => [ '1.1' ]
                        );
 
+=head2 How can I search for all members of a group in AD (including group nesting)?
+
+AD allows you to find all members of a specified group, the direct members
+plus those that are member of the group via group nesting.
+
+The trick to this is the special C<LDAP_MATCHING_RULE_IN_CHAIN> matching rule:
+
+  $mesg = $ldap->search( base   => 'cn=Users,dc=your,dc=ads,dc=domain',
+                         filter => '(memberOf:1.2.840.113556.1.4.1941:=cn=Testgroup,dc=your,dc=ads,dc=domain)',
+                         attrs  => [ '1.1' ]
+                       );
+
+=head2 How can I search for all groups one user is a member of in AD (including group nesting)?
+
+Similarly you can search for all the groups one user is member of, either directly
+or via group nesting.
+
+  $mesg = $ldap->search( base   => 'dc=your,dc=ads,dc=domain',
+                         filter => '(member:1.2.840.113556.1.4.1941:=cn=TestUser,ou=Users,dc=your,dc=ads,dc=domain)',
+                         attrs  => [ '1.1' ]
+                       );
+
 =head2 How do I create a Microsoft Exchange 5.x user?
 
 This is a solution provided by a perl-ldap user.
