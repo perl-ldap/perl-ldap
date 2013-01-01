@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 
 our @ISA = qw(LWP::Protocol);
-our $VERSION = "1.23";
+our $VERSION = '1.23';
 
 use strict;
 eval {
@@ -24,9 +24,9 @@ my $init_failed = $@ ? $@ : undef;
 sub request {
   my($self, $request, $proxy, $arg, $size, $timeout) = @_;
 
-  $size = 4096 unless $size;
+  $size = 4096  unless $size;
 
-  LWP::Debug::trace('()') if defined &LWP::Debug::trace;
+  LWP::Debug::trace('()')  if defined &LWP::Debug::trace;
 
   # check proxy
   if (defined $proxy) {
@@ -61,7 +61,7 @@ sub request {
                          $init_failed);
   }
 
-  my ($user, $password) = defined($userinfo) ? split(":", $userinfo, 2) : ();
+  my ($user, $password) = defined($userinfo) ? split(':', $userinfo, 2) : ();
   my %extn     = $url->extensions;
   my $tls     = exists($extn{'x-tls'}) ? 1 : 0;
   my $format = lc($extn{'x-format'} || 'html');
@@ -79,7 +79,7 @@ sub request {
       # we only accept Basic authorization for now
       if ($authorization =~ /^Basic\s+([A-Z0-9+\/=]+)$/i) {
         require MIME::Base64;
-        ($user, $password) = split(":", MIME::Base64::decode_base64($1), 2);
+        ($user, $password) = split(':', MIME::Base64::decode_base64($1), 2);
       }
     }
   }
@@ -88,7 +88,7 @@ sub request {
   my $ldap = new Net::LDAP($url->as_string);
   if (!$ldap) {
     return $self->_error(HTTP_BAD_REQUEST,
-                         "Connection to LDAP server failed", "$@");
+                         'Connection to LDAP server failed', "$@");
   }
 
   # optional: startTLS
@@ -116,7 +116,7 @@ sub request {
   return $self->_ldap_error($mesg)  if ($mesg->code);
 
   # Create an initial response object
-  my $response = HTTP::Response->new(HTTP_OK, "Document follows");
+  my $response = HTTP::Response->new(HTTP_OK, 'Document follows');
   $response->request($request);
 
   # return data in the format requested
@@ -125,10 +125,10 @@ sub request {
   if ($format eq 'ldif') {
     require Net::LDAP::LDIF;
 
-    open(my $fh, ">", \$content);
-    my $ldif = Net::LDAP::LDIF->new($fh, "w", version => 1);
+    open(my $fh, '>', \$content);
+    my $ldif = Net::LDAP::LDIF->new($fh, 'w', version => 1);
 
-    while(my $entry = $mesg->shift_entry) {
+    while (my $entry = $mesg->shift_entry) {
       $ldif->write_entry($entry);
     }
     $ldif->done;
@@ -137,11 +137,11 @@ sub request {
   elsif ($format eq 'dsml') {
     require Net::LDAP::DSML;
 
-    open(my $fh, ">", \$content);
+    open(my $fh, '>', \$content);
     my $dsml = Net::LDAP::DSML->new(output => $fh, pretty_print => 1);
 
     $dsml->start_dsml();
-    while(my $entry = $mesg->shift_entry) {
+    while (my $entry = $mesg->shift_entry) {
       $dsml->write_entry($entry);
     }
     $dsml->end_dsml();
@@ -151,10 +151,9 @@ sub request {
     require JSON;
 
     my $entry;
-    my $index;
     my %objects;
 
-    for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
+    for (my $index = 0 ; $entry = $mesg->entry($index); $index++) {
       my $dn = $entry->dn;
 
       $objects{$dn} = {};
@@ -172,35 +171,32 @@ sub request {
     $content = "<head><title>Directory Search Results</title></head>\n<body>";
 
     for ($index = 0 ; $entry = $mesg->entry($index); $index++) {
-      my $attr;
-
-      $content .= $index ? qq{<tr><th colspan="2"><hr>&nbsp</tr>\n} : "<table>";
+      $content .= $index ? qq{<tr><th colspan="2"><hr>&nbsp</tr>\n} : '<table>';
 
       $content .= qq{<tr><th colspan="2">} . $entry->dn . "</th></tr>\n";
 
-      foreach $attr ($entry->attributes) {
+      foreach my $attr ($entry->attributes) {
         my $vals = $entry->get_value($attr, asref => 1);
-        my $val;
 
         $content .= q{<tr><td align="right" valign="top"};
         $content .= q{ rowspan="} . scalar(@$vals) . q{"}
           if (@$vals > 1);
-        $content .= ">" . $attr  . "&nbsp</td>\n";
+        $content .= '>' . $attr  . "&nbsp</td>\n";
 
         my $j = 0;
-        foreach $val (@$vals) {
-	  $val = qq!<a href="$val">$val</a>! if $val =~ /^https?:/;
-	  $val = qq!<a href="mailto:$val">$val</a>! if $val =~ /^[-\w]+\@[-.\w]+$/;
-          $content .= "<tr>" if $j++;
+        foreach my $val (@$vals) {
+	  $val = qq!<a href="$val">$val</a>!  if $val =~ /^https?:/;
+	  $val = qq!<a href="mailto:$val">$val</a>!  if $val =~ /^[-\w]+\@[-.\w]+$/;
+          $content .= "<tr>"  if $j++;
           $content .= "<td>" . $val . "</td></tr>\n";
         }
       }
     }
 
-    $content .= "</table>" if $index;
-    $content .= "<hr>";
-    $content .= $index ? sprintf("%s Match%s found",$index, $index>1 ? "es" : "")
-		       : "<b>No Matches found</b>";
+    $content .= '</table>'  if $index;
+    $content .= '<hr>';
+    $content .= $index ? sprintf('%s Match%s found', $index, $index>1 ? 'es' : '')
+		       : '<b>No Matches found</b>';
     $content .= "</body>\n";
   }
   $response->header('Content-Type' => $mime_type.'; charset=utf-8');
@@ -227,7 +223,7 @@ sub _error
   my $res = HTTP::Response->new($code, $message);
 
   if ($content) {
-    $res->content_type("text/plain");
+    $res->content_type('text/plain');
     $res->content($content);
   }
 

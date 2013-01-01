@@ -7,7 +7,7 @@ package Net::LDAP::Control::MatchedValues;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 use Net::LDAP::ASN qw(ValuesReturnFilter);
 use strict;
@@ -152,7 +152,7 @@ package Net::LDAP::FilterList;
 use Net::LDAP::Filter;
 
 our @ISA = qw(Net::LDAP::Filter);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 # filter       = "(" 1*item ")"
 # item         = simple / present / substring / extensible
@@ -234,7 +234,7 @@ sub parse {
                             ((?:\\.|[^\\()]+)*)
                             \)\s*
                            //xo) {
-      my $item = Net::LDAP::Filter::_encode($1,$2,$3);
+      my $item = Net::LDAP::Filter::_encode($1, $2, $3);
       return undef  if (!$item);
       push(@parsed, $item);
       next;
@@ -247,7 +247,7 @@ sub parse {
 
   if (length $filterlist) {
     # If we have anything left in the filter, then there is a problem
-    $ErrStr = "Bad filterlist, error before " . substr($filterlist,0,20);
+    $ErrStr = "Bad filterlist, error before " . substr($filterlist, 0, 20);
     return undef;
   }
 

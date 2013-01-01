@@ -7,9 +7,9 @@ package Net::LDAP::Control::PreRead;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.03';
 
-use Net::LDAP::ASN qw(AttributeDescriptionList prSearchResultEntry);
+use Net::LDAP::ASN qw(AttributeSelection SearchResultEntry);
 use Net::LDAP::Entry;
 use strict;
 
@@ -31,7 +31,7 @@ sub init {
 sub attrs {
   my $self = shift;
 
-  $self->{asn} ||= $AttributeDescriptionList->decode($self->{value});
+  $self->{asn} ||= $AttributeSelection->decode($self->{value});
   if (@_) {
     delete $self->{value};
     return $self->{asn} = [ @_ ];
@@ -46,7 +46,7 @@ sub entry {
   my $entry;
 
   if ($self->{value}) {
-    my $data = $prSearchResultEntry->decode($self->{value});
+    my $data = $SearchResultEntry->decode($self->{value});
 
     $entry = Net::LDAP::Entry->new;
     $entry->decode($data, raw => $opt{raw} || $self->{raw});
@@ -60,7 +60,7 @@ sub value {
 
   exists $self->{value}
     ? $self->{value}
-    : $self->{value} = $AttributeDescriptionList->encode($self->{asn});
+    : $self->{value} = $AttributeSelection->encode($self->{asn});
 }
 
 1;

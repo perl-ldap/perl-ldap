@@ -7,7 +7,7 @@ package Net::LDAP::Control::VLVResponse;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.04";
+our $VERSION = '0.04';
 
 use Net::LDAP::ASN qw(VirtualListViewResponse);
 use strict;

@@ -9,7 +9,7 @@ use Net::LDAP qw(LDAP_SASL_BIND_IN_PROGRESS LDAP_DECODING_ERROR LDAP_SUCCESS
 		 LDAP_LOCAL_ERROR);
 use Net::LDAP::Message;
 
-our $VERSION = "1.04";
+our $VERSION = '1.04';
 our @ISA = qw(Net::LDAP::Message);
 
 sub _sasl_info {
@@ -21,7 +21,7 @@ sub decode {
   my $self = shift;
   my $result = shift;
   my $bind = $result->{protocolOp}{bindResponse}
-     or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
+    or $self->set_error(LDAP_DECODING_ERROR, 'LDAP decode error')
     and return;
 
   my $sasl = $self->{sasl};
@@ -30,9 +30,9 @@ sub decode {
   my $resp;
   if ($bind->{resultCode} == LDAP_SASL_BIND_IN_PROGRESS or
      ($bind->{resultCode} == LDAP_SUCCESS and $bind->{serverSaslCreds})) {
-	$sasl or $self->set_error(LDAP_LOCAL_ERROR,"no sasl object"), return;
+	$sasl or $self->set_error(LDAP_LOCAL_ERROR, 'no sasl object'), return;
 	($resp) = $sasl->client_step($bind->{serverSaslCreds})
-	  or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error"), return;
+	  or $self->set_error(LDAP_DECODING_ERROR, 'LDAP decode error'), return;
   }
 
   if ($sasl and $bind->{resultCode} == LDAP_SUCCESS) {

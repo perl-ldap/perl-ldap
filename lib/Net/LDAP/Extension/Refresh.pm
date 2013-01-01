@@ -2,7 +2,7 @@ package Net::LDAP::Extension::Refresh;
 require Net::LDAP::Extension;
 
 our @ISA = qw(Net::LDAP::Extension);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Convert::ASN1;
 
@@ -53,7 +53,7 @@ Net::LDAP::Extension::Refresh - LDAPv3 Refresh extension object (RFC 2589)
 
  $mesg = $ldap->refresh(entryName => 'cn=dynamic,dc=example,dc=com',
         requestTtl => 100);
- die "error :", $mesg->code(), ": ", $mesg->error() if($mesg->code());
+ die "error :", $mesg->code(), ": ", $mesg->error()  if ($mesg->code());
  print "TTL changed to ", $mesg->get_ttl(), "\n";
 
 =head1 DESCRIPTION

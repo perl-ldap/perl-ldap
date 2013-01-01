@@ -15,13 +15,13 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = "0.25";
+our $VERSION = '0.25';
 
 sub new {
   my $self = shift;
   my $type = ref($self) || $self;
 
-  my $entry = bless { 'changetype' => 'add', changes => [] }, $type;
+  my $entry = bless { changetype => 'add', changes => [] }, $type;
 
   @_ and $entry->dn( shift );
   @_ and $entry->add( @_ );
@@ -40,10 +40,10 @@ sub clone {
 
   $clone->{changetype} = $self->{changetype};
   my @changes = @{$self->{changes}};
-  while (my($action, $cmd) = splice(@changes,0,2)) {
+  while (my($action, $cmd) = splice(@changes, 0, 2)) {
     my @new_cmd;
     my @cmd = @$cmd;
-    while (my($type, $val) = splice(@cmd,0,2)) {
+    while (my($type, $val) = splice(@cmd, 0, 2)) {
       push @new_cmd, $type, [ @$val ];
     }
     push @{$clone->{changes}}, $action, \@new_cmd;
@@ -55,7 +55,7 @@ sub clone {
 # Build attrs cache, created when needed
 
 sub _build_attrs {
-  +{ map { (lc($_->{type}),$_->{vals}) }  @{$_[0]->{asn}{attributes}} };
+  +{ map { (lc($_->{type}), $_->{vals}) }  @{$_[0]->{asn}{attributes}} };
 }
 
 # If we are passed an ASN structure we really do nothing
@@ -95,13 +95,13 @@ sub dn {
 
 sub get_attribute {
   require Carp;
-  Carp::carp("->get_attribute deprecated, use ->get_value") if $^W;
+  Carp::carp('->get_attribute deprecated, use ->get_value')  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
 sub get {
   require Carp;
-  Carp::carp("->get deprecated, use ->get_value") if $^W;
+  Carp::carp('->get deprecated, use ->get_value')  if $^W;
   shift->get_value(@_, asref => !wantarray);
 }
 
@@ -140,9 +140,9 @@ sub get_value {
 sub changetype {
 
   my $self = shift;
-  return $self->{'changetype'} unless @_;
-  $self->{'changes'} = [];
-  $self->{'changetype'} = shift;
+  return $self->{changetype}  unless @_;
+  $self->{changes} = [];
+  $self->{changetype} = shift;
   return $self;
 }
 
@@ -150,10 +150,10 @@ sub changetype {
 
 sub add {
   my $self  = shift;
-  my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while (my($type,$val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
@@ -166,7 +166,7 @@ sub add {
 
   }
 
-  push(@{$self->{'changes'}}, 'add', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'add', $cmd)  if $cmd;
 
   return $self;
 }
@@ -174,10 +174,10 @@ sub add {
 
 sub replace {
   my $self  = shift;
-  my $cmd   = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while(my($type, $val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
@@ -203,7 +203,7 @@ sub replace {
     }
   }
 
-  push(@{$self->{'changes'}}, 'replace', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'replace', $cmd)  if $cmd;
 
   return $self;
 }
@@ -217,18 +217,18 @@ sub delete {
     return;
   }
 
-  my $cmd = $self->{'changetype'} eq 'modify' ? [] : undef;
+  my $cmd = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
-  while(my($type,$val) = splice(@_,0,2)) {
+  while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
 
     if (defined($val) and (!ref($val) or @$val)) {
       my %values;
       @values{(ref($val) ? @$val : $val)} = ();
 
-      unless( @{$attrs->{$lc_type}}
-        = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
+      unless (@{$attrs->{$lc_type}}
+              = grep { !exists $values{$_} } @{$attrs->{$lc_type}})
       {
 	delete $attrs->{$lc_type};
 	@{$self->{asn}{attributes}}
@@ -244,11 +244,11 @@ sub delete {
       @{$self->{asn}{attributes}}
 	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
-      push @$cmd, $type, [] if $cmd;
+      push @$cmd, $type, []  if $cmd;
     }
   }
 
-  push(@{$self->{'changes'}}, 'delete', $cmd) if $cmd;
+  push(@{$self->{changes}}, 'delete', $cmd)  if $cmd;
 
   return $self;
 }
@@ -260,30 +260,30 @@ sub update {
   my %opt = @_;
   my $mesg;
   my $user_cb = delete $opt{callback};
-  my $cb = sub { $self->changetype('modify') unless $_[0]->code;
-                 $user_cb->(@_) if $user_cb };
+  my $cb = sub { $self->changetype('modify')  unless $_[0]->code;
+                 $user_cb->(@_)  if $user_cb };
 
   if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
-    if ($self->{'changetype'} eq 'add') {
-      $mesg = $target->add($self, 'callback' => $cb, %opt);
+    if ($self->{changetype} eq 'add') {
+      $mesg = $target->add($self, callback => $cb, %opt);
     }
-    elsif ($self->{'changetype'} eq 'delete') {
-      $mesg = $target->delete($self, 'callback' => $cb, %opt);
+    elsif ($self->{changetype} eq 'delete') {
+      $mesg = $target->delete($self, callback => $cb, %opt);
     }
-    elsif ($self->{'changetype'} =~ /modr?dn/o) {
+    elsif ($self->{changetype} =~ /modr?dn/o) {
       my @args = (newrdn => $self->get_value('newrdn') || undef,
                   deleteoldrdn => $self->get_value('deleteoldrdn') || undef);
       my $newsuperior = $self->get_value('newsuperior');
-      push(@args, newsuperior => $newsuperior) if $newsuperior;
-      $mesg = $target->moddn($self, @args, 'callback' => $cb, %opt);
+      push(@args, newsuperior => $newsuperior)  if $newsuperior;
+      $mesg = $target->moddn($self, @args, callback => $cb, %opt);
     }
-    elsif (@{$self->{'changes'}}) {
-      $mesg = $target->modify($self, 'changes' => $self->{'changes'}, 'callback' => $cb, %opt);
+    elsif (@{$self->{changes}}) {
+      $mesg = $target->modify($self, changes => $self->{changes}, callback => $cb, %opt);
     }
     else {
       require Net::LDAP::Message;
       $mesg = Net::LDAP::Message->new( $target );
-      $mesg->set_error(LDAP_LOCAL_ERROR,"No attributes to update");
+      $mesg->set_error(LDAP_LOCAL_ERROR, 'No attributes to update');
     }
   }
   elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
@@ -302,9 +302,9 @@ sub ldif {
   my %opt = @_;
 
   require Net::LDAP::LDIF;
-  open(my $fh, ">", \my $buffer);
+  open(my $fh, '>', \my $buffer);
   my $change = exists $opt{change} ? $opt{change} : $self->changes ? 1 : 0;
-  my $ldif = Net::LDAP::LDIF->new($fh, "w", change => $change);
+  my $ldif = Net::LDAP::LDIF->new($fh, 'w', change => $change);
   $ldif->write_entry($self);
   return $buffer;
 }
@@ -317,25 +317,23 @@ sub dump {
   my $fh = @_ ? shift : select;
 
   my $asn = $self->{asn};
-  print $fh "-" x 72,"\n";
-  print $fh "dn:",$asn->{objectName},"\n\n" if $asn->{objectName};
+  print $fh '-' x 72, "\n";
+  print $fh 'dn:', $asn->{objectName}, "\n\n"  if $asn->{objectName};
 
-  my($attr,$val);
   my $l = 0;
 
   for (keys %{ $self->{attrs} ||= _build_attrs($self) }) {
-    $l = length if length > $l;
+    $l = length  if length > $l;
   }
 
-  my $spc = "\n  " . " " x $l;
+  my $spc = "\n  " . ' ' x $l;
 
-  foreach $attr (@{$asn->{attributes}}) {
-    $val = $attr->{vals};
+  foreach my $attr (@{$asn->{attributes}}) {
+    my $val = $attr->{vals};
     printf $fh "%${l}s: ", $attr->{type};
-    my($i,$v);
-    $i = 0;
-    foreach $v (@$val) {
-      print $fh $spc if $i++;
+    my $i = 0;
+    foreach my $v (@$val) {
+      print $fh $spc  if $i++;
       print $fh $v;
     }
     print $fh "\n";
@@ -363,7 +361,7 @@ sub asn {
 }
 
 sub changes {
-  my $ref = shift->{'changes'};
+  my $ref = shift->{changes};
   $ref ? @$ref : ();
 }
 

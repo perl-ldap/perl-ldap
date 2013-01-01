@@ -26,7 +26,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ASSERTION
 );
 
-our $VERSION = "0.13";
+our $VERSION = '0.13';
 
 my %Pkg2Type = (
 
@@ -67,7 +67,7 @@ my %Pkg2Type = (
 my %Type2Pkg = reverse %Pkg2Type;
 
 sub register {
-  my($class,$oid) = @_;
+  my($class, $oid) = @_;
 
   require Carp and Carp::croak("$oid is already registered to $Type2Pkg{$oid}")
     if exists $Type2Pkg{$oid} and $Type2Pkg{$oid} ne $class;
@@ -85,7 +85,7 @@ sub new {
   my $oid  = (@_ & 1) ? shift : undef;
   my %args = @_;
 
-  $args{'type'} ||= $oid || $Pkg2Type{$pkg} || '';
+  $args{type} ||= $oid || $Pkg2Type{$pkg} || '';
 
   unless ($args{type} =~ /^\d+(?:\.\d+)+$/) {
     $args{error} = 'Invalid OID';
@@ -94,7 +94,7 @@ sub new {
 
   if ($pkg eq __PACKAGE__ and exists $Type2Pkg{$args{type}}) {
     $pkg = $Type2Pkg{$args{type}};
-    eval "require $pkg" or die $@;
+    eval "require $pkg"  or die $@;
   }
 
   delete $args{error};
@@ -110,7 +110,7 @@ sub from_asn {
 
   if ($class eq __PACKAGE__ and exists $Type2Pkg{$asn->{type}}) {
     $class = $Type2Pkg{$asn->{type}};
-    eval "require $class" or die $@;
+    eval "require $class"  or die $@;
   }
 
   delete $asn->{error};
@@ -121,19 +121,19 @@ sub from_asn {
 sub to_asn {
   my $self = shift;
   $self->value; # Ensure value is there
-  delete $self->{critical} unless $self->{critical};
+  delete $self->{critical}  unless $self->{critical};
   $self;
 }
 
 sub critical {
   my $self = shift;
-  $self->{critical} = shift if @_;
+  $self->{critical} = shift  if @_;
   $self->{critical} || 0;
 }
 
 sub value    {
   my $self = shift;
-  $self->{value} = shift if @_;
+  $self->{value} = shift  if @_;
   $self->{value} || undef
 }
 

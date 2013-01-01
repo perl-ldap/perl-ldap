@@ -7,7 +7,7 @@ package Net::LDAP::Control::VLV;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.04";
+our $VERSION = '0.04';
 
 use Net::LDAP::ASN qw(VirtualListViewRequest);
 use strict;
@@ -16,7 +16,7 @@ sub init {
   my($self) = @_;
 
   # VLVREQUEST should always have a critical of true
-  $self->{'critical'} = 1 unless exists $self->{'critical'};
+  $self->{critical} = 1  unless exists $self->{critical};
 
   if (exists $self->{value}) {
     $self->value($self->{value});
@@ -239,7 +239,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
  $mesg = $ldap->search( @args );
 
  # Get VLV response control
- ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE ) or die;
+ ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE )  or die;
  $vlv->response( $resp );
 
  # Set the control to get the last 20 entries
@@ -248,7 +248,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
  $mesg = $ldap->search( @args );
 
  # Get VLV response control
- ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE ) or die;
+ ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE )  or die;
  $vlv->response( $resp );
 
  # Now get the previous page
@@ -257,7 +257,7 @@ Net::LDAP::Control::VLV - LDAPv3 Virtual List View control object
  $mesg = $ldap->search( @args );
 
  # Get VLV response control
- ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE ) or die;
+ ($resp)  = $mesg->control( LDAP_CONTROL_VLVRESPONSE )  or die;
  $vlv->response( $resp );
 
  # Now page with first entry starting with "B" in the middle

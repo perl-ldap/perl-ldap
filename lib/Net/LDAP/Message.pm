@@ -8,13 +8,13 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_COMPARE_TRUE LDAP_COMPARE_FALSE);
 use Net::LDAP::ASN qw(LDAPRequest);
 use strict;
 
-our $VERSION = "1.12";
+our $VERSION = '1.12';
 
 my $MsgID = 0;
 
 # We do this here so when we add threading we can lock it
 sub NewMesgID {
-  $MsgID = 1 if ++$MsgID > 65535;
+  $MsgID = 1  if ++$MsgID > 65535;
   $MsgID;
 }
 
@@ -37,7 +37,7 @@ sub new {
 sub code {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{resultCode}
     ? $self->{resultCode}
@@ -53,7 +53,7 @@ sub done {
 sub dn {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{matchedDN}
     ? $self->{matchedDN}
@@ -63,7 +63,7 @@ sub dn {
 sub referrals {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{referral}
     ? @{$self->{referral}}
@@ -73,7 +73,7 @@ sub referrals {
 sub server_error {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{errorMessage}
     ? $self->{errorMessage}
@@ -94,7 +94,7 @@ sub error {
 
 sub set_error {
   my $self = shift;
-  ($self->{resultCode},$self->{errorMessage}) = ($_[0]+0, "$_[1]");
+  ($self->{resultCode}, $self->{errorMessage}) = ($_[0]+0, "$_[1]");
   $self->{callback}->($self)
     if (defined $self->{callback});
   $self;
@@ -121,8 +121,8 @@ sub sync {
   my $err;
 
   until(exists $self->{resultCode}) {
-    $err = $ldap->sync($self->mesg_id) or next;
-    $self->set_error($err,"Protocol Error")
+    $err = $ldap->sync($self->mesg_id)  or next;
+    $self->set_error($err, 'Protocol Error')
       unless exists $self->{resultCode};
     return $err;
   }
@@ -150,7 +150,7 @@ sub decode { # $self, $pdu, $control
     if (defined $self->{callback}) {
       $self->{callback}->($self, $intermediate);
     } else {
-      push(@{$self->{'intermediate'} ||= []}, $intermediate);
+      push(@{$self->{intermediate} ||= []}, $intermediate);
     }
 
     return $self;
@@ -170,7 +170,7 @@ sub decode { # $self, $pdu, $control
 sub abandon {
   my $self = shift;
 
-  return if exists $self->{resultCode}; # already complete
+  return  if exists $self->{resultCode}; # already complete
 
   my $ldap = $self->{parent};
 
@@ -180,7 +180,7 @@ sub abandon {
 sub saslref {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   exists $self->{sasl}
     ? $self->{sasl}
@@ -266,8 +266,8 @@ sub Net::LDAP::Compare::is_error {
   sub decode  { shift }
   sub abandon { shift }
   sub code { shift->{resultCode} || LDAP_SUCCESS }
-  sub error { shift->{errorMessage} || "" }
-  sub dn { "" }
+  sub error { shift->{errorMessage} || '' }
+  sub dn { '' }
   sub done { 1 }
 }
 

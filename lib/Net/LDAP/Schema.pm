@@ -6,7 +6,7 @@ package Net::LDAP::Schema;
 
 use strict;
 
-our $VERSION = "0.9906";
+our $VERSION = '0.9906';
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
@@ -39,7 +39,7 @@ sub parse {
   %$schema = ();
 
   my $entry;
-  if( ref $arg ) {
+  if ( ref $arg ) {
     if (UNIVERSAL::isa($arg, 'Net::LDAP::Entry')) {
       $entry = $arg;
     }
@@ -54,11 +54,11 @@ sub parse {
       return undef;
     }
   }
-  elsif( -f $arg ) {
+  elsif ( -f $arg ) {
     require Net::LDAP::LDIF;
-    my $ldif = Net::LDAP::LDIF->new( $arg, "r" );
+    my $ldif = Net::LDAP::LDIF->new( $arg, 'r' );
     $entry = $ldif->read();
-    unless( $entry ) {
+    unless ( $entry ) {
       $schema->_error("Cannot parse LDIF from file [$arg]");
       return undef;
     }
@@ -89,9 +89,9 @@ sub parse {
 sub dump {
   my $self = shift;
   my $fh = @_ ? shift : \*STDOUT;
-  my $entry = $self->{'entry'} or return;
+  my $entry = $self->{entry} or return;
   require Net::LDAP::LDIF;
-  Net::LDAP::LDIF->new($fh,"w", wrap => 0)->write($entry);
+  Net::LDAP::LDIF->new($fh, 'w', wrap => 0)->write($entry);
   1;
 }
 
@@ -122,13 +122,13 @@ sub superclass {
   my $oc = shift;
 
   my $elem = $self->objectclass( $oc )
-    or return scalar _error($self, "Not an objectClass");
+    or return scalar _error($self, 'Not an objectClass');
 
   return @{$elem->{sup} || []};
 }
 
-sub must { _must_or_may(@_,'must') }
-sub may  { _must_or_may(@_,'may')  }
+sub must { _must_or_may(@_, 'must') }
+sub may  { _must_or_may(@_, 'may')  }
 
 #
 # Return must or may attributes for this OC.
@@ -141,9 +141,9 @@ sub _must_or_may {
   #
   # If called with an entry, get the OC names and continue
   #
-  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], "Net::LDAP::Entry" ) ) {
+  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], 'Net::LDAP::Entry' ) ) {
     my $entry = $oc[0];
-    @oc = $entry->get_value( "objectclass" )
+    @oc = $entry->get_value( 'objectclass' )
       or return;
   }
 
@@ -163,7 +163,7 @@ sub _must_or_may {
     push @oc, @$sup;
   }
 
-  my %unique = map { ($_,$_) } $self->attribute(keys %res);
+  my %unique = map { ($_, $_) } $self->attribute(keys %res);
   values %unique;
 }
 
@@ -188,14 +188,14 @@ sub _get {
   wantarray ? @elem : $elem[0];
 }
 
-sub attribute		{ _get(@_,'at')  }
-sub objectclass		{ _get(@_,'oc')  }
-sub syntax		{ _get(@_,'syn') }
-sub matchingrule	{ _get(@_,'mr')  }
-sub matchingruleuse	{ _get(@_,'mru') }
-sub ditstructurerule	{ _get(@_,'dts') }
-sub ditcontentrule	{ _get(@_,'dtc') }
-sub nameform		{ _get(@_,'nfm') }
+sub attribute		{ _get(@_, 'at')  }
+sub objectclass		{ _get(@_, 'oc')  }
+sub syntax		{ _get(@_, 'syn') }
+sub matchingrule	{ _get(@_, 'mr')  }
+sub matchingruleuse	{ _get(@_, 'mru') }
+sub ditstructurerule	{ _get(@_, 'dts') }
+sub ditcontentrule	{ _get(@_, 'dtc') }
+sub nameform		{ _get(@_, 'nfm') }
 
 
 #
@@ -237,7 +237,7 @@ sub nameform		{ _get(@_,'nfm') }
 #
 # These items have no following arguments
 #
-my %flags = map { ($_,1) } qw(
+my %flags = map { ($_, 1) } qw(
 			      single-value
 			      obsolete
 			      collective
@@ -247,13 +247,13 @@ my %flags = map { ($_,1) } qw(
 			      auxiliary
 			     );
 
-my %xat_flags = map { ($_,1) } qw(indexed system-only);
+my %xat_flags = map { ($_, 1) } qw(indexed system-only);
 
 #
 # These items can have lists arguments
 # (name can too, but we treat it special)
 #
-my %listops = map { ($_,1) } qw(must may sup);
+my %listops = map { ($_, 1) } qw(must may sup);
 
 #
 # Map schema attribute names to internal names
@@ -278,23 +278,23 @@ sub _parse_schema {
   my $schema = shift;
   my $entry = shift;
 
-  return undef unless defined($entry);
+  return undef  unless defined($entry);
 
   keys %type2attr; # reset iterator
-  while(my($type,$attr) = each %type2attr) {
+  while (my($type, $attr) = each %type2attr) {
     my $vals = $entry->get_value($attr, asref => 1);
 
     my %names;
     $schema->{$type} = \%names;		# Save reference to hash of names => element
 
-    next unless $vals;			# Just leave empty ref if nothing
+    next  unless $vals;			# Just leave empty ref if nothing
 
     foreach my $val (@$vals) {
       #
       # The following statement takes care of defined attributes
       # that have no data associated with them.
       #
-      next if $val eq '';
+      next  if $val eq '';
 
       #
       # We assume that each value can be turned into an OID, a canonical
@@ -316,17 +316,18 @@ sub _parse_schema {
                       |
                        '((?:[^']+|'[^\s)])*)'
                       )\s*/xcg;
-      die "Cannot parse [$val] [",substr($val,pos($val)),"]" unless @tokens and pos($val) == length($val);
+      die "Cannot parse [$val] [", substr($val, pos($val)), "]"
+        unless @tokens and pos($val) == length($val);
 
       # remove () from start/end
-      shift @tokens if $tokens[0]  eq '(';
-      pop   @tokens if $tokens[-1] eq ')';
+      shift @tokens  if $tokens[0]  eq '(';
+      pop   @tokens  if $tokens[-1] eq ')';
 
       # The first token is the OID
       my $oid = $schema_entry{oid} = shift @tokens;
 
       my $flags = ($type eq 'xat') ? \%xat_flags : \%flags;
-      while(@tokens) {
+      while (@tokens) {
 	my $tag = lc shift @tokens;
 
 	if (exists $flags->{$tag}) {
@@ -336,13 +337,13 @@ sub _parse_schema {
 	  if (($schema_entry{$tag} = shift @tokens) eq '(') {
 	    my @arr;
 	    $schema_entry{$tag} = \@arr;
-	    while(1) {
+	    while (1) {
 	      my $tmp = shift @tokens;
-	      last if $tmp eq ')';
-	      push @arr,$tmp unless $tmp eq '$';
+	      last  if $tmp eq ')';
+	      push @arr, $tmp  unless $tmp eq '$';
 
               # Drop of end of list ?
-	      die "Cannot parse [$val] {$tag}" unless @tokens;
+	      die "Cannot parse [$val] {$tag}"  unless @tokens;
 	    }
 	  }
 
@@ -373,13 +374,13 @@ sub _parse_schema {
       if (ref $schema_entry{name}) {
 	my $aliases;
 	$schema_entry{name} = shift @{$aliases = $schema_entry{name}};
-	$schema_entry{aliases} = $aliases if @$aliases;
+	$schema_entry{aliases} = $aliases  if @$aliases;
       }
 
       #
       # Store the elements by OID
       #
-      $schema->{oid}->{$oid} = \%schema_entry unless $type eq 'xat';
+      $schema->{oid}->{$oid} = \%schema_entry  unless $type eq 'xat';
 
       #
       # We also index elements by name within each type
@@ -395,8 +396,8 @@ sub _parse_schema {
   if (my $xat = $schema->{xat}) {
     foreach my $xat_ref (values %$xat) {
       my $oid = $schema->{oid}{$xat_ref->{oid}} ||= {};
-      while (my($k,$v) = each %$xat_ref) {
-        $oid->{"x-$k"} = $v unless $k =~ /^(oid|type|name|aliases)$/;
+      while (my($k, $v) = each %$xat_ref) {
+        $oid->{"x-$k"} = $v  unless $k =~ /^(oid|type|name|aliases)$/;
       }
     }
   }
@@ -447,10 +448,10 @@ sub matchingrule_for_attribute {
     my $attrtype = $self->attribute( $attr );
     if (exists $attrtype->{$matchtype}) {
 	return $attrtype->{$matchtype};
-    } elsif (exists $attrtype->{'sup'}) {
+    } elsif (exists $attrtype->{sup}) {
 	# the assumption is that all superiors result in the same ruleset
 	return $self->matchingrule_for_attribute(
-				 	 $attrtype->{'sup'}[0],
+				 	 $attrtype->{sup}[0],
 					 $matchtype);
     }
     return undef;

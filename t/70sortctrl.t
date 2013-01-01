@@ -38,7 +38,7 @@ isa_ok($rootdse, Net::LDAP::RootDSE, "root_dse");
 
 
 SKIP: {
-  skip("RootDSE does not offer sort control", 11)
+  skip("RootDSE does not offer sort control", 2 + scalar(@testcases) * 9)
     unless($rootdse->supported_control(LDAP_CONTROL_SORTREQUEST));
 
   #$mesg = $ldap->start_tls;

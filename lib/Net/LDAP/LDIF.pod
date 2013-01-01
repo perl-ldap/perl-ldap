@@ -7,7 +7,7 @@ Net::LDAP::LDIF - LDIF reading and writing
  use Net::LDAP::LDIF;
 
  $ldif = Net::LDAP::LDIF->new( "file.ldif", "r", onerror => 'undef' );
- while( not $ldif->eof ( ) ) {
+ while ( not $ldif->eof ( ) ) {
    $entry = $ldif->read_entry ( );
    if ( $ldif->error ( ) ) {
      print "Error msg: ", $ldif->error ( ), "\n";

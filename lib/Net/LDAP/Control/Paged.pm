@@ -7,7 +7,7 @@ package Net::LDAP::Control::Paged;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Net::LDAP::ASN qw(realSearchControlValue);
 use strict;
@@ -81,15 +81,15 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
  );
 
  my $cookie;
- while(1) {
+ while (1) {
    # Perform search
    my $mesg = $ldap->search( @args );
 
    # Only continue on LDAP_SUCCESS
-   $mesg->code and last;
+   $mesg->code  and last;
 
    # Get cookie from paged control
-   my($resp)  = $mesg->control( LDAP_CONTROL_PAGED ) or last;
+   my($resp)  = $mesg->control( LDAP_CONTROL_PAGED )  or last;
    $cookie    = $resp->cookie or last;
 
    # Set cookie in paged control
