@@ -1,3 +1,21 @@
+0.52 -- Tue Jan 1 13:54:22 CET 2013
+
+Bug Fixes:
+* fix PreRead & PostRead controls
+* AD.pm: fix typo in documentation
+
+Enhancements:
+* add tests for PreRead & PostRead controls
+* FAQ.pm: example for certificateExactMatch
+* coding style overhaul:
+  * use single-quoted strings where possible
+  * 2 SPACEs before postfix if,unless,or,and
+  * SPACE after comma
+  * SPACE between if,elsif,unless,while,for and (
+  * make private lexical variables more private
+  * unquote identifiers before =>
+  * unquote identifiers used as hash keys
+
 0.51 -- Sat Dec 1 14:37:35 CET 2012
 
 Bug Fixes:
