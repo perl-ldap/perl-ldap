@@ -7,7 +7,7 @@ package Net::LDAP::Control::EntryChange;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 use Net::LDAP::ASN qw(EntryChangeNotification);
 use strict;

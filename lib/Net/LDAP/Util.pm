@@ -18,7 +18,7 @@ Net::LDAP::Util - Utility functions
 
   $mesg = $ldap->search( .... );
 
-  die "Error ",ldap_error_name($mesg) if $mesg->code;
+  die "Error ",ldap_error_name($mesg)  if $mesg->code;
 
 =head1 DESCRIPTION
 
@@ -54,7 +54,7 @@ our %EXPORT_TAGS = (
 	                escape_dn_value unescape_dn_value) ],
 );
 
-our $VERSION = "0.14";
+our $VERSION = '0.14';
 
 =item ldap_error_name ( ERR )
 
@@ -87,43 +87,28 @@ error code.
 =cut
 
 my @err2desc = (
-  "Success",                                             # 0x00 LDAP_SUCCESS
-  "Operations error",                                    # 0x01 LDAP_OPERATIONS_ERROR
-  "Protocol error",                                      # 0x02 LDAP_PROTOCOL_ERROR
-  "Timelimit exceeded",                                  # 0x03 LDAP_TIMELIMIT_EXCEEDED
-  "Sizelimit exceeded",                                  # 0x04 LDAP_SIZELIMIT_EXCEEDED
-  "Compare false",                                       # 0x05 LDAP_COMPARE_FALSE
-  "Compare true",                                        # 0x06 LDAP_COMPARE_TRUE
-  "Strong authentication not supported",                 # 0x07 LDAP_STRONG_AUTH_NOT_SUPPORTED
-  "Strong authentication required",                      # 0x08 LDAP_STRONG_AUTH_REQUIRED
-  "Partial results and referral received",               # 0x09 LDAP_PARTIAL_RESULTS
-  "Referral received",                                   # 0x0a LDAP_REFERRAL
-  "Admin limit exceeded",                                # 0x0b LDAP_ADMIN_LIMIT_EXCEEDED
-  "Critical extension not available",                    # 0x0c LDAP_UNAVAILABLE_CRITICAL_EXT
-  "Confidentiality required",                            # 0x0d LDAP_CONFIDENTIALITY_REQUIRED
-  "SASL bind in progress",                               # 0x0e LDAP_SASL_BIND_IN_PROGRESS
+  'Success',                                             # 0x00 LDAP_SUCCESS
+  'Operations error',                                    # 0x01 LDAP_OPERATIONS_ERROR
+  'Protocol error',                                      # 0x02 LDAP_PROTOCOL_ERROR
+  'Timelimit exceeded',                                  # 0x03 LDAP_TIMELIMIT_EXCEEDED
+  'Sizelimit exceeded',                                  # 0x04 LDAP_SIZELIMIT_EXCEEDED
+  'Compare false',                                       # 0x05 LDAP_COMPARE_FALSE
+  'Compare true',                                        # 0x06 LDAP_COMPARE_TRUE
+  'Strong authentication not supported',                 # 0x07 LDAP_STRONG_AUTH_NOT_SUPPORTED
+  'Strong authentication required',                      # 0x08 LDAP_STRONG_AUTH_REQUIRED
+  'Partial results and referral received',               # 0x09 LDAP_PARTIAL_RESULTS
+  'Referral received',                                   # 0x0a LDAP_REFERRAL
+  'Admin limit exceeded',                                # 0x0b LDAP_ADMIN_LIMIT_EXCEEDED
+  'Critical extension not available',                    # 0x0c LDAP_UNAVAILABLE_CRITICAL_EXT
+  'Confidentiality required',                            # 0x0d LDAP_CONFIDENTIALITY_REQUIRED
+  'SASL bind in progress',                               # 0x0e LDAP_SASL_BIND_IN_PROGRESS
   undef,
-  "No such attribute",                                   # 0x10 LDAP_NO_SUCH_ATTRIBUTE
-  "Undefined attribute type",                            # 0x11 LDAP_UNDEFINED_TYPE
-  "Inappropriate matching",                              # 0x12 LDAP_INAPPROPRIATE_MATCHING
-  "Constraint violation",                                # 0x13 LDAP_CONSTRAINT_VIOLATION
-  "Type or value exists",                                # 0x14 LDAP_TYPE_OR_VALUE_EXISTS
-  "Invalid syntax",                                      # 0x15 LDAP_INVALID_SYNTAX
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  undef,
-  "No such object",                                      # 0x20 LDAP_NO_SUCH_OBJECT
-  "Alias problem",                                       # 0x21 LDAP_ALIAS_PROBLEM
-  "Invalid DN syntax",                                   # 0x22 LDAP_INVALID_DN_SYNTAX
-  "Object is a leaf",                                    # 0x23 LDAP_IS_LEAF
-  "Alias dereferencing problem",                         # 0x24 LDAP_ALIAS_DEREF_PROBLEM
+  'No such attribute',                                   # 0x10 LDAP_NO_SUCH_ATTRIBUTE
+  'Undefined attribute type',                            # 0x11 LDAP_UNDEFINED_TYPE
+  'Inappropriate matching',                              # 0x12 LDAP_INAPPROPRIATE_MATCHING
+  'Constraint violation',                                # 0x13 LDAP_CONSTRAINT_VIOLATION
+  'Type or value exists',                                # 0x14 LDAP_TYPE_OR_VALUE_EXISTS
+  'Invalid syntax',                                      # 0x15 LDAP_INVALID_SYNTAX
   undef,
   undef,
   undef,
@@ -134,62 +119,77 @@ my @err2desc = (
   undef,
   undef,
   undef,
-  "Proxy authorization failure",                         # 0x2F LDAP_PROXY_AUTHZ_FAILURE
-  "Inappropriate authentication",                        # 0x30 LDAP_INAPPROPRIATE_AUTH
-  "Invalid credentials",                                 # 0x31 LDAP_INVALID_CREDENTIALS
-  "Insufficient access",                                 # 0x32 LDAP_INSUFFICIENT_ACCESS
-  "DSA is busy",                                         # 0x33 LDAP_BUSY
-  "DSA is unavailable",                                  # 0x34 LDAP_UNAVAILABLE
-  "DSA is unwilling to perform",                         # 0x35 LDAP_UNWILLING_TO_PERFORM
-  "Loop detected",                                       # 0x36 LDAP_LOOP_DETECT
+  'No such object',                                      # 0x20 LDAP_NO_SUCH_OBJECT
+  'Alias problem',                                       # 0x21 LDAP_ALIAS_PROBLEM
+  'Invalid DN syntax',                                   # 0x22 LDAP_INVALID_DN_SYNTAX
+  'Object is a leaf',                                    # 0x23 LDAP_IS_LEAF
+  'Alias dereferencing problem',                         # 0x24 LDAP_ALIAS_DEREF_PROBLEM
   undef,
   undef,
   undef,
   undef,
   undef,
-  "Sort control missing",                                # 0x3C LDAP_SORT_CONTROL_MISSING
-  "Index range error",                                   # 0x3D LDAP_INDEX_RANGE_ERROR
-  undef,
-  undef,
-  "Naming violation",                                    # 0x40 LDAP_NAMING_VIOLATION
-  "Object class violation",                              # 0x41 LDAP_OBJECT_CLASS_VIOLATION
-  "Operation not allowed on nonleaf",                    # 0x42 LDAP_NOT_ALLOWED_ON_NONLEAF
-  "Operation not allowed on RDN",                        # 0x43 LDAP_NOT_ALLOWED_ON_RDN
-  "Already exists",                                      # 0x44 LDAP_ALREADY_EXISTS
-  "Cannot modify object class",                          # 0x45 LDAP_NO_OBJECT_CLASS_MODS
-  "Results too large",                                   # 0x46 LDAP_RESULTS_TOO_LARGE
-  "Affects multiple servers",                            # 0x47 LDAP_AFFECTS_MULTIPLE_DSAS
   undef,
   undef,
   undef,
   undef,
-  "VLV error",                                           # 0x4C LDAP_VLV_ERROR
+  undef,
+  'Proxy authorization failure',                         # 0x2F LDAP_PROXY_AUTHZ_FAILURE
+  'Inappropriate authentication',                        # 0x30 LDAP_INAPPROPRIATE_AUTH
+  'Invalid credentials',                                 # 0x31 LDAP_INVALID_CREDENTIALS
+  'Insufficient access',                                 # 0x32 LDAP_INSUFFICIENT_ACCESS
+  'DSA is busy',                                         # 0x33 LDAP_BUSY
+  'DSA is unavailable',                                  # 0x34 LDAP_UNAVAILABLE
+  'DSA is unwilling to perform',                         # 0x35 LDAP_UNWILLING_TO_PERFORM
+  'Loop detected',                                       # 0x36 LDAP_LOOP_DETECT
   undef,
   undef,
   undef,
-  "Unknown error",                                       # 0x50 LDAP_OTHER
-  "Can't contact LDAP server",                           # 0x51 LDAP_SERVER_DOWN
-  "Local error",                                         # 0x52 LDAP_LOCAL_ERROR
-  "Encoding error",                                      # 0x53 LDAP_ENCODING_ERROR
-  "Decoding error",                                      # 0x54 LDAP_DECODING_ERROR
-  "Timed out",                                           # 0x55 LDAP_TIMEOUT
-  "Unknown authentication method",                       # 0x56 LDAP_AUTH_UNKNOWN
-  "Bad search filter",                                   # 0x57 LDAP_FILTER_ERROR
-  "Canceled",                                            # 0x58 LDAP_USER_CANCELED
-  "Bad parameter to an ldap routine",                    # 0x59 LDAP_PARAM_ERROR
-  "Out of memory",                                       # 0x5a LDAP_NO_MEMORY
-  "Can't connect to the LDAP server",                    # 0x5b LDAP_CONNECT_ERROR
-  "Not supported by this version of the LDAP protocol",  # 0x5c LDAP_NOT_SUPPORTED
-  "Requested LDAP control not found",                    # 0x5d LDAP_CONTROL_NOT_FOUND
-  "No results returned",                                 # 0x5e LDAP_NO_RESULTS_RETURNED
-  "More results to return",                              # 0x5f LDAP_MORE_RESULTS_TO_RETURN
-  "Client detected loop",                                # 0x60 LDAP_CLIENT_LOOP
-  "Referral hop limit exceeded",                         # 0x61 LDAP_REFERRAL_LIMIT_EXCEEDED
+  undef,
+  undef,
+  'Sort control missing',                                # 0x3C LDAP_SORT_CONTROL_MISSING
+  'Index range error',                                   # 0x3D LDAP_INDEX_RANGE_ERROR
+  undef,
+  undef,
+  'Naming violation',                                    # 0x40 LDAP_NAMING_VIOLATION
+  'Object class violation',                              # 0x41 LDAP_OBJECT_CLASS_VIOLATION
+  'Operation not allowed on nonleaf',                    # 0x42 LDAP_NOT_ALLOWED_ON_NONLEAF
+  'Operation not allowed on RDN',                        # 0x43 LDAP_NOT_ALLOWED_ON_RDN
+  'Already exists',                                      # 0x44 LDAP_ALREADY_EXISTS
+  'Cannot modify object class',                          # 0x45 LDAP_NO_OBJECT_CLASS_MODS
+  'Results too large',                                   # 0x46 LDAP_RESULTS_TOO_LARGE
+  'Affects multiple servers',                            # 0x47 LDAP_AFFECTS_MULTIPLE_DSAS
+  undef,
+  undef,
+  undef,
+  undef,
+  'VLV error',                                           # 0x4C LDAP_VLV_ERROR
+  undef,
+  undef,
+  undef,
+  'Unknown error',                                       # 0x50 LDAP_OTHER
+  'Can\'t contact LDAP server',                           # 0x51 LDAP_SERVER_DOWN
+  'Local error',                                         # 0x52 LDAP_LOCAL_ERROR
+  'Encoding error',                                      # 0x53 LDAP_ENCODING_ERROR
+  'Decoding error',                                      # 0x54 LDAP_DECODING_ERROR
+  'Timed out',                                           # 0x55 LDAP_TIMEOUT
+  'Unknown authentication method',                       # 0x56 LDAP_AUTH_UNKNOWN
+  'Bad search filter',                                   # 0x57 LDAP_FILTER_ERROR
+  'Canceled',                                            # 0x58 LDAP_USER_CANCELED
+  'Bad parameter to an ldap routine',                    # 0x59 LDAP_PARAM_ERROR
+  'Out of memory',                                       # 0x5a LDAP_NO_MEMORY
+  'Can\'t connect to the LDAP server',                    # 0x5b LDAP_CONNECT_ERROR
+  'Not supported by this version of the LDAP protocol',  # 0x5c LDAP_NOT_SUPPORTED
+  'Requested LDAP control not found',                    # 0x5d LDAP_CONTROL_NOT_FOUND
+  'No results returned',                                 # 0x5e LDAP_NO_RESULTS_RETURNED
+  'More results to return',                              # 0x5f LDAP_MORE_RESULTS_TO_RETURN
+  'Client detected loop',                                # 0x60 LDAP_CLIENT_LOOP
+  'Referral hop limit exceeded',                         # 0x61 LDAP_REFERRAL_LIMIT_EXCEEDED
 );
 
 sub ldap_error_desc {
   my $code = (ref($_[0]) ? $_[0]->code : $_[0]);
-  $err2desc[$code] || sprintf("LDAP error code %d(0x%02X)",$code,$code);
+  $err2desc[$code] || sprintf('LDAP error code %d(0x%02X)', $code, $code);
 }
 
 
@@ -274,7 +274,7 @@ Separator to use between RDNs. Defaults to comma (',').
 sub canonical_dn($%) {
   my ($dn, %opt) = @_;
 
-  return $dn unless defined $dn and $dn ne '';
+  return $dn  unless defined $dn and $dn ne '';
 
   # create array of hash representation
   my $rdns = ref($dn) eq 'ARRAY'
@@ -295,19 +295,19 @@ sub canonical_dn($%) {
           my $val = $rdn->{$_};
 
           if ( ref($val) ) {
-            $val = '#' . unpack("H*", $$val);
+            $val = '#' . unpack('H*', $$val);
           } else {
             #escape insecure characters and optionally MBCs
             if ( $opt{mbcescape} ) {
               $val =~ s/([\x00-\x1f\/\\",=+<>#;\x7f-\xff])/
-                sprintf("\\%02x",ord($1))/xeg;
+                sprintf('\\%02x', ord($1))/xeg;
             } else {
               $val =~ s/([\x00-\x1f\/\\",=+<>#;])/
-                sprintf("\\%02x",ord($1))/xeg;
+                sprintf('\\%02x', ord($1))/xeg;
             }
             #escape leading and trailing whitespace
             $val =~ s/(^\s+|\s+$)/
-              "\\20" x length $1/xeg;
+              '\\20' x length $1/xeg;
             #compact multiple spaces
             $val =~ s/\s+/ /g;
           }
@@ -423,8 +423,8 @@ If TRUE, the RDN sequence is reversed.
 
 sub ldap_explode_dn($%) {
   my ($dn, %opt) = @_;
-  return undef unless defined $dn;
-  return [] if $dn eq '';
+  return undef  unless defined $dn;
+  return []  if $dn eq '';
 
   my $pair = qr/\\(?:[\\"+,;<> #=]|[0-9A-F]{2})/i;
 
@@ -449,7 +449,7 @@ sub ldap_explode_dn($%) {
     (?:([;,+])\s*(?=\S)|$)				# separator
     )\s*/gcx)
   {
-    my($type,$val,$sep) = ($1,$2,$3);
+    my($type, $val, $sep) = ($1, $2, $3);
 
     $type =~ s/^oid\.//i;	#remove leading "oid."
 
@@ -512,7 +512,7 @@ sub escape_filter_value(@)
 {
 my @values = @_;
 
-  map { $_ =~ s/([\x00-\x1F\*\(\)\\])/"\\".unpack("H2",$1)/oge; } @values;
+  map { $_ =~ s/([\x00-\x1F\*\(\)\\])/'\\'.unpack('H2', $1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
@@ -536,7 +536,7 @@ sub unescape_filter_value(@)
 {
 my @values = @_;
 
-  map { $_ =~ s/\\([0-9a-fA-F]{2})/pack("H2",$1)/oge; } @values;
+  map { $_ =~ s/\\([0-9a-fA-F]{2})/pack('H2', $1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
@@ -566,8 +566,8 @@ sub escape_dn_value(@)
 my @values = @_;
 
   map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
-        $_ =~ s/([\x00-\x1F])/"\\".unpack("H2",$1)/oge;
-        $_ =~ s/(^ +| +$)/"\\20" x length($1)/oge; } @values;
+        $_ =~ s/([\x00-\x1F])/'\\'.unpack('H2', $1)/oge;
+        $_ =~ s/(^ +| +$)/'\\20' x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
 }
@@ -593,7 +593,7 @@ sub unescape_dn_value(@)
 my @values = @_;
 
   map { $_ =~ s/\\([\\",=+<>#;]|[0-9a-fA-F]{2})
-               /(length($1)==1) ? $1 : pack("H2",$1)
+               /(length($1)==1) ? $1 : pack('H2', $1)
                /ogex; } @values;
 
   return(wantarray ? @values : $values[0]);

@@ -13,7 +13,7 @@ use Net::LDAP::Filter;
 use Net::LDAP::Constant qw(LDAP_SUCCESS LDAP_DECODING_ERROR);
 
 our @ISA = qw(Net::LDAP::Message);
-our $VERSION = "0.14";
+our $VERSION = '0.14';
 
 
 sub first_entry { # compat
@@ -24,8 +24,8 @@ sub first_entry { # compat
 
 sub next_entry { # compat
   my $self = shift;
-  $self->entry( defined $self->{'CurrentEntry'}
-		? $self->{'CurrentEntry'} + 1
+  $self->entry( defined $self->{CurrentEntry}
+		? $self->{CurrentEntry} + 1
 		: 0);
 }
 
@@ -47,19 +47,19 @@ sub decode {
     my $entry = Net::LDAP::Entry->new;
 
     $entry->decode($data, raw => $self->{raw})
-      or $self->set_error(LDAP_DECODING_ERROR,"LDAP decode error")
+      or $self->set_error(LDAP_DECODING_ERROR, 'LDAP decode error')
      and return;
 
     push(@{$self->{entries} ||= []}, $entry);
 
-    $self->{callback}->($self,$entry)
+    $self->{callback}->($self, $entry)
       if (defined $self->{callback});
 
     return $self;
   }
   elsif ($data = delete $result->{protocolOp}{searchResRef}) {
 
-    push(@{$self->{'reference'} ||= []}, @$data);
+    push(@{$self->{reference} ||= []}, @$data);
 
     $self->{callback}->($self, bless $data, 'Net::LDAP::Reference')
       if (defined $self->{callback});
@@ -67,7 +67,7 @@ sub decode {
     return $self;
   }
 
-  $self->set_error(LDAP_DECODING_ERROR, "LDAP decode error");
+  $self->set_error(LDAP_DECODING_ERROR, 'LDAP decode error');
   return;
 }
 
@@ -115,11 +115,11 @@ sub pop_entry {
 sub sorted {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
-  return unless exists $self->{entries} && ref($self->{entries});
+  return  unless exists $self->{entries} && ref($self->{entries});
 
-  return @{$self->{entries}} unless @{$self->{entries}} > 1;
+  return @{$self->{entries}}  unless @{$self->{entries}} > 1;
 
   require Net::LDAP::Util;
 
@@ -135,9 +135,9 @@ sub sorted {
 	$i++;
       }
 
-      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, "reverse" => 1, separator => "\0"))
+      $v ||= ($a->[1] ||= Net::LDAP::Util::canonical_dn( $a->[0]->dn, reverse => 1, separator => "\0"))
 		cmp
-	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, "reverse" => 1, separator => "\0"));
+	     ($b->[1] ||= Net::LDAP::Util::canonical_dn( $b->[0]->dn, reverse => 1, separator => "\0"));
     }
     map { [ $_ ] } @{$self->{entries}};
 }
@@ -145,23 +145,23 @@ sub sorted {
 sub references {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
-  return unless exists $self->{'reference'} && ref($self->{'reference'});
+  return  unless exists $self->{reference} && ref($self->{reference});
 
-  @{$self->{'reference'} || []}
+  @{$self->{reference} || []}
 }
 
 sub as_struct {
   my $self = shift;
-  my %result = map { ( $_->dn, ($_->{'attrs'} || $_->_build_attrs) ) } entries($self);
+  my %result = map { ( $_->dn, ($_->{attrs} || $_->_build_attrs) ) } entries($self);
   return \%result;
 }
 
 sub entries {
   my $self = shift;
 
-  $self->sync unless exists $self->{resultCode};
+  $self->sync  unless exists $self->{resultCode};
 
   @{$self->{entries} || []}
 }

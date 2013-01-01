@@ -10,7 +10,7 @@ use Net::LDAP::Constant qw(
   LDAP_SYNC_INFO
 );
 
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 my %Class2ResponseName = (
 
@@ -20,7 +20,7 @@ my %Class2ResponseName = (
 my %ResponseName2Class = reverse %Class2ResponseName;
 
 sub register {
-  my($class,$responseName) = @_;
+  my($class, $responseName) = @_;
 
   require Carp and Carp::croak("$responseName is already registered to $ResponseName2Class{$responseName}")
     if exists $ResponseName2Class{$responseName} and $ResponseName2Class{$responseName} ne $class;
@@ -38,7 +38,7 @@ sub new {
   my $responseName  = (@_ & 1) ? shift : undef;
   my %args = @_;
 
-  $args{'responseName'} ||= $responseName || $Class2ResponseName{$class} || '';
+  $args{responseName} ||= $responseName || $Class2ResponseName{$class} || '';
 
   unless ($args{responseName} =~ /^\d+(?:\.\d+)+$/) {
     $args{error} = 'Invalid responseName';
@@ -47,7 +47,7 @@ sub new {
 
   if ($class eq __PACKAGE__ and exists $ResponseName2Class{$args{responseName}}) {
     $class = $ResponseName2Class{$args{responseName}};
-    eval "require $class" or die $@;
+    eval "require $class"  or die $@;
   }
 
   delete $args{error};
@@ -63,7 +63,7 @@ sub from_asn {
 
   if ($class eq __PACKAGE__ and exists $ResponseName2Class{$asn->{responseName}}) {
     $class = $ResponseName2Class{$asn->{responseName}};
-    eval "require $class" or die $@;
+    eval "require $class"  or die $@;
   }
 
   delete $asn->{error};
@@ -81,7 +81,7 @@ sub responseName  { shift->{responseName} }
 
 sub responseValue    {
   my $self = shift;
-  $self->{responseValue} = shift if @_;
+  $self->{responseValue} = shift  if @_;
   $self->{responseValue} || undef
 }
 

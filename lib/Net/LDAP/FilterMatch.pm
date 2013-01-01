@@ -19,7 +19,7 @@ our $VERSION   = '0.27';
 sub import {
   shift;
 
-  push(@_, @Net::LDAP::Filter::approxMatchers) unless @_;
+  push(@_, @Net::LDAP::Filter::approxMatchers)  unless @_;
   @Net::LDAP::Filter::approxMatchers = grep { eval "require $_" } @_ ;
 }
 
@@ -170,13 +170,13 @@ sub _filterMatch($@)
     if ($op eq 'substrings') {
       $attr = $args->{type};
       # build a regexp as assertion value
-      $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{'substrings'}});
-      $assertion =  '^'. $assertion  if (exists $args->{'substrings'}[0]{'initial'});
-      $assertion .= '$'              if (exists $args->{'substrings'}[-1]{'final'});
+      $assertion = join('.*', map { "\Q$_\E" } map { values %$_ } @{$args->{substrings}});
+      $assertion =  '^'. $assertion  if (exists $args->{substrings}[0]{initial});
+      $assertion .= '$'              if (exists $args->{substrings}[-1]{final});
     }
     else {
-      $attr = $args->{'attributeDesc'};
-      $assertion = $args->{'assertionValue'}
+      $attr = $args->{attributeDesc};
+      $assertion = $args->{assertionValue}
     }
 
     my @values = $entry->get_value($attr);
@@ -193,7 +193,7 @@ sub _filterMatch($@)
       $match='_cis_' . $op;
     }
 
-    return eval( "$match".'($assertion,$op,@values)' ) ;
+    return eval( "$match".'($assertion, $op, @values)' ) ;
   }
   elsif ($op eq 'extensibleMatch') {
     my @attrs = $args->{type} ? ( $args->{type} ) : ();
@@ -216,7 +216,7 @@ sub _filterMatch($@)
         }
       }
       else {
-        return  undef if (!@attrs);
+        return undef  if (!@attrs);
         $mr = $schema->matchingrule_for_attribute($attrs[0], 'equality');
       }
 
@@ -244,7 +244,7 @@ sub _filterMatch($@)
       @values = map { $entry->get_value($_); } @attrs;
     }
 
-    return eval( "$match".'($assertion,$op,@values)' ) ;
+    return eval( "$match".'($assertion, $op, @values)' ) ;
   }
 
   return undef;	# all other filters => fail with error
@@ -381,7 +381,7 @@ sub _cis_substrings($$@)
   my $regex=shift;
   my $op=shift;
 
-  return 1 if ($regex =~ /^$/);
+  return 1  if ($regex =~ /^$/);
   return grep(/$regex/i, @_) ? 1 : 0;
 }
 
@@ -390,7 +390,7 @@ sub _exact_substrings($$@)
   my $regex=shift;
   my $op=shift;
 
-  return 1 if ($regex =~ /^$/);
+  return 1  if ($regex =~ /^$/);
   return grep(/$regex/, @_) ? 1 : 0;
 }
 
@@ -415,10 +415,10 @@ sub _cis_greaterOrEqual($$@)
   my $op=shift;
 
   if (grep(!/^-?\d+$/o, $assertion, @_)) {	# numerical values only => compare numerically
-      return _cis_orderingMatch($assertion,$op,@_);
+      return _cis_orderingMatch($assertion, $op, @_);
   }
   else {
-      return _numeric_orderingMatch($assertion,$op,@_);
+      return _numeric_orderingMatch($assertion, $op, @_);
   }
 }
 

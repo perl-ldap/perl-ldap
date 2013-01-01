@@ -7,7 +7,7 @@ package Net::LDAP::Control::Sort;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.03";
+our $VERSION = '0.03';
 
 use Net::LDAP::ASN qw(SortRequest);
 use strict;
@@ -43,9 +43,9 @@ sub value {
     }
 
     $self->{order} = [ map {
-      ($_->{reverseOrder} ? "-" : "")
+      ($_->{reverseOrder} ? '-' : '')
       . $_->{type}
-      . (defined($_->{orderingRule}) ? ":$_->{orderingRule}" : "")
+      . (defined($_->{orderingRule}) ? ":$_->{orderingRule}" : '')
     } @{$asn->{order}}];
 
     return $self->{value} = $value;
@@ -86,12 +86,12 @@ sub order {
 
     my @order = (@_ == 1) ? split(/\s+/, $_[0]) : @_;
 
-    delete $self->{'value'};
+    delete $self->{value};
     delete $self->{order};
     delete $self->{error};
 
     foreach (@order) {
-      next if /^-?[^:]+(?::.+)?$/;
+      next  if /^-?[^:]+(?::.+)?$/;
 
       $self->{error} = "Bad order argument '$_'";
       return;
@@ -125,7 +125,7 @@ Net::LDAP::Control::Sort - Server Side Sort (SSS) control object
 
  ($resp) = $mesg->control( LDAP_CONTROL_SORTRESULT );
 
- print "Results are sorted\n" if $resp and !$resp->result;
+ print "Results are sorted\n"  if $resp and !$resp->result;
 
 =head1 DESCRIPTION
 

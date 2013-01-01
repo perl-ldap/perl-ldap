@@ -7,7 +7,7 @@ package Net::LDAP::Control::Assertion;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 use Net::LDAP::Filter;
 use Net::LDAP::ASN qw(Filter);

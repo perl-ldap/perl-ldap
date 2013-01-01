@@ -6,7 +6,7 @@ package Net::LDAP::Filter;
 
 use strict;
 
-our $VERSION = "0.18";
+our $VERSION = '0.18';
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -87,11 +87,11 @@ sub _unescape {
   $_[0];
 }
 
-sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf("\\%02x",ord($1))/sge; $t }
+sub _escape { (my $t = $_[0]) =~ s/([\\\(\)\*\0-\37\177-\377])/sprintf('\\%02x', ord($1))/sge; $t }
 
 # encode a triplet ($attr,$op,$val) representing a single filter item
 sub _encode {
-  my($attr,$op,$val) = @_;
+  my($attr, $op, $val) = @_;
 
   # extensible match
   if ($op eq ':=') {
@@ -101,7 +101,7 @@ sub _encode {
       $ErrStr = "Bad attribute $attr";
       return undef;
     }
-    my($type,$dn,$rule) = ($1,$2,$4);
+    my($type, $dn, $rule) = ($1, $2, $4);
 
     return ( {
       extensibleMatch => {
@@ -167,14 +167,14 @@ sub parse {
 
   # a filter is required
   if (!defined $filter) {
-    $ErrStr = "Undefined filter";
+    $ErrStr = 'Undefined filter';
     return undef;
   }
 
   # Algorithm depends on /^\(/;
   $filter =~ s/^\s*//;
 
-  $filter = "(" . $filter . ")"
+  $filter = '(' . $filter . ')'
     unless $filter =~ /^\(/;
 
   while (length($filter)) {
@@ -182,7 +182,7 @@ sub parse {
     # Process the start of  (<op> (...)(...)), with <op> = [&!|]
 
     if ($filter =~ s/^\(\s*([&!|])\s*//) {
-      push @stack, [$op,$cur];
+      push @stack, [$op, $cur];
       $op = $1;
       $cur = [];
       next;
@@ -192,14 +192,14 @@ sub parse {
 
     elsif ($filter =~ s/^\)\s*//o) {
       unless (@stack) {
-	$ErrStr = "Bad filter, unmatched )";
+	$ErrStr = 'Bad filter, unmatched )';
 	return undef;
       }
-      my($myop,$mydata) = ($op,$cur);
-      ($op,$cur) = @{ pop @stack };
+      my($myop, $mydata) = ($op, $cur);
+      ($op, $cur) = @{ pop @stack };
 	# Need to do more checking here
       push @$cur, { $Op{$myop} => $myop eq '!' ? $mydata->[0] : $mydata };
-      next if @stack;
+      next  if @stack;
     }
 
     # process (attr op string)
@@ -210,8 +210,8 @@ sub parse {
                         ((?:\\.|[^\\()]+)*)
                         \)\s*
                        //xo) {
-      push(@$cur, _encode($1,$2,$3));
-      next if @stack;
+      push(@$cur, _encode($1, $2, $3));
+      next  if @stack;
     }
 
     # If we get here then there is an error in the filter string
@@ -221,11 +221,11 @@ sub parse {
 
   if (length $filter) {
     # If we have anything left in the filter, then there is a problem
-    $ErrStr = "Bad filter, error before " . substr($filter,0,20);
+    $ErrStr = 'Bad filter, error before ' . substr($filter, 0, 20);
     return undef;
   }
   if (@stack) {
-    $ErrStr = "Bad filter, unmatched (";
+    $ErrStr = 'Bad filter, unmatched (';
     return undef;
   }
 
@@ -239,33 +239,33 @@ sub print {
   no strict 'refs'; # select may return a GLOB name
   my $fh = @_ ? shift : select;
 
-  print $fh $self->as_string,"\n";
+  print $fh $self->as_string, "\n";
 }
 
 sub as_string { _string(%{$_[0]}) }
 
 sub _string {    # prints things of the form (<op> (<list>) ... )
-  my $str = "";
+  my $str = '';
 
   for ($_[0]) {
-    /^and/ and return "(&" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^or/  and return "(|" . join("", map { _string(%$_) } @{$_[1]}) . ")";
-    /^not/ and return "(!" . _string(%{$_[1]}) . ")";
-    /^present/ and return "($_[1]=*)";
+    /^and/  and return '(&' . join('', map { _string(%$_) } @{$_[1]}) . ')';
+    /^or/   and return '(|' . join('', map { _string(%$_) } @{$_[1]}) . ')';
+    /^not/  and return '(!' . _string(%{$_[1]}) . ')';
+    /^present/  and return "($_[1]=*)";
     /^(equalityMatch|greaterOrEqual|lessOrEqual|approxMatch)/
-      and return "(" . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .")";
-    /^substrings/ and do {
-      my $str = join("*", "",map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
-      $str =~ s/^.// if exists $_[1]->{substrings}[0]{initial};
-      $str .= '*' unless exists $_[1]->{substrings}[-1]{final};
+      and return '(' . $_[1]->{attributeDesc} . $Rop{$1} . _escape($_[1]->{assertionValue})  .')';
+    /^substrings/  and do {
+      my $str = join('*', '', map { _escape($_) } map { values %$_ } @{$_[1]->{substrings}});
+      $str =~ s/^.//  if exists $_[1]->{substrings}[0]{initial};
+      $str .= '*'  unless exists $_[1]->{substrings}[-1]{final};
       return "($_[1]->{type}=$str)";
     };
-    /^extensibleMatch/ and do {
-      my $str = "(";
-      $str .= $_[1]->{type} if defined $_[1]->{type};
-      $str .= ":dn" if $_[1]->{dnAttributes};
-      $str .= ":$_[1]->{matchingRule}" if defined $_[1]->{matchingRule};
-      $str .= ":=" . _escape($_[1]->{matchValue}) . ")";
+    /^extensibleMatch/  and do {
+      my $str = '(';
+      $str .= $_[1]->{type}  if defined $_[1]->{type};
+      $str .= ':dn'  if $_[1]->{dnAttributes};
+      $str .= ":$_[1]->{matchingRule}"  if defined $_[1]->{matchingRule};
+      $str .= ':=' . _escape($_[1]->{matchValue}) . ')';
       return $str;
     };
   }

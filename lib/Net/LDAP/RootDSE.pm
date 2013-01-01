@@ -8,7 +8,7 @@ package Net::LDAP::RootDSE;
 use Net::LDAP::Entry;
 
 our @ISA = qw(Net::LDAP::Entry);
-our $VERSION = "0.02";
+our $VERSION = '0.02';
 
 use strict;
 
