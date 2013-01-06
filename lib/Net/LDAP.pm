@@ -5,7 +5,7 @@
 package Net::LDAP;
 
 use strict;
-use Socket qw(AF_INET AF_INET6 AF_UNSPEC);
+use Socket qw(AF_INET AF_INET6 AF_UNSPEC SOL_SOCKET SO_KEEPALIVE);
 use IO::Socket;
 use IO::Select;
 use Tie::Hash;
@@ -118,6 +118,9 @@ sub new {
   }
 
   return undef  unless $obj->{net_ldap_socket};
+
+  $obj->{net_ldap_socket}->setsockopt(SOL_SOCKET, SO_KEEPALIVE, $arg->{keepalive} ? 1 : 0)
+    if (defined($arg->{keepalive}));
 
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
