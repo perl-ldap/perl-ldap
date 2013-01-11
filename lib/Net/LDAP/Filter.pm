@@ -6,7 +6,7 @@ package Net::LDAP::Filter;
 
 use strict;
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
@@ -268,6 +268,26 @@ sub _string {    # prints things of the form (<op> (<list>) ... )
       $str .= ':=' . _escape($_[1]->{matchValue}) . ')';
       return $str;
     };
+  }
+
+  die "Internal error $_[0]";
+}
+
+sub negate {
+  my $self = shift;
+
+  %{$self} = _negate(%{$self});
+
+  $self;
+}
+
+sub _negate {    # negate a filter tree
+  for ($_[0]) {
+    /^and/  and return ( 'or' => [ map { { _negate(%$_) }; } @{$_[1]} ] );
+    /^or/   and return ( 'and' => [ map { { _negate(%$_) }; } @{$_[1]} ] );
+    /^not/  and return %{$_[1]};
+    /^(present|equalityMatch|greaterOrEqual|lessOrEqual|approxMatch|substrings|extensibleMatch)/
+      and  do return ( 'not' => { $_[0 ], $_[1] } );
   }
 
   die "Internal error $_[0]";

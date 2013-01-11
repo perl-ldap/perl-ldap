@@ -41,6 +41,23 @@ Return the filter in text form.
 Print the text representation of the filter to FH, or the currently
 selected output handle if FH is not given.
 
+=item negate ( )
+
+Logically negate/invert the filter object so that it matches the opposite
+set of entries as the original.
+
+Instead of simply negating the text form by surrounding it with the B<not>
+operator, the negation is done by recursively applying I<De Morgan's law>.
+
+Here is an example:
+
+ (|(&(cn=A)(cn=B))(|(!(cn=C))(cn=D)))
+
+gets negated to
+
+ (&(|(!(cn=A))(!(cn=B)))(&(cn=C)(!(cn=D))))
+
+
 =back
 
 =head1 FILTER SYNTAX
