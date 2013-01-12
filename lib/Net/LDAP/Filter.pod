@@ -18,9 +18,10 @@ associated escaping mechanisms.
 
 =over 4
 
-=item new ( FILTER )
+=item new ( [ FILTER ] )
 
-Create a new object and parse FILTER.
+Create a new object.
+If FILTER is given, parse it.
 
 =back
 
@@ -30,7 +31,8 @@ Create a new object and parse FILTER.
 
 =item parse ( FILTER )
 
-Parse FILTER. The next call to ber will return this filter encoded.
+Parse FILTER, updating the object to represent it.
+The next call to ber will return this filter encoded.
 
 =item as_string
 
