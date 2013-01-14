@@ -80,7 +80,7 @@ Cancel an outstanding operation. C<OPERATION> may be a number or an
 object which is a sub-class of L<Net::LDAP::Message>, returned from a
 previous method call.
 
-OPTIONS is a list of key/value pairs. The following keys are reconized:
+OPTIONS is a list of key/value pairs. The following keys are recognized:
 
 =over 4
 
