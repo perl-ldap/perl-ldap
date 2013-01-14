@@ -589,6 +589,12 @@ LWP::Protocol::ldap, LWP::Protocol::ldaps, or LWP::Protocol::ldapi modules.
 If you need it, you can optain the latest releases from
  http://search.cpan.org/search?module=JSON
 
+=item Time::Local
+
+This module is optional, and only required if you want to convert
+between UNIX time and generalizedTime using the functions provided
+in Net::LDAP::Util.
+
 =item XML::SAX and XML::SAX::Writer
 
 If you want to parse or write DSMLv1 documents with Net::LDAP::DSML

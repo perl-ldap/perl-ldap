@@ -52,6 +52,10 @@ features
 		-default => 0,
 		'URI::ldap' => 1.10,
 	],
+	'Time conversion functions' => [
+		-default => 0,
+		'Time::Local' => 0,
+	],
 	'Read/Write DSML files' => [
 		-default => 0,
 		'MIME::Base64'     => 0,	# core module since Perl 5.7.3
