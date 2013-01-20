@@ -105,7 +105,7 @@ sub new {
     my $scheme = $arg->{scheme} || 'ldap';
     my $h = $uri;
     if (defined($h)) {
-      $h =~ s,^(\w+)://,, and $scheme = $1;
+      $h =~ s,^(\w+)://,, and $scheme = lc($1);
       $h =~ s,/.*,,; # remove path part
       $h =~ s/%([A-Fa-f0-9]{2})/chr(hex($1))/eg; # unescape
     }
