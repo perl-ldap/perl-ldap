@@ -89,6 +89,14 @@ Port to connect to on the remote server. May be overridden by C<HOST>.
 Connection scheme to use when not using an URI as C<HOST>.
 (Default: ldap)
 
+=item keepalive =E<gt> 1
+
+If given, set the socket's SO_KEEPALIVE option depending on
+the boolean value of the option.
+(Default: use system default)
+
+Failures in changing the socket's SO_KEEPALIVE option are ignored.
+
 =item timeout =E<gt> N
 
 Timeout passed to L<IO::Socket> when connecting the remote server.

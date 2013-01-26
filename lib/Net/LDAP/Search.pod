@@ -41,8 +41,8 @@ This method will block until the whole search request has finished.
 
 =item entry ( INDEX )
 
-Return the N'th entry, which will be a L<Net::LDAP::Entry> object. If
-INDEX is greater than the total number of entries returned then
+Return the N'th entry (zero-based), which will be a L<Net::LDAP::Entry> object.
+If INDEX is greater or equal than the total number of entries returned then
 C<undef> will be returned.
 
 This method will block until the search request has returned enough

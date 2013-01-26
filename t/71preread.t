@@ -54,7 +54,7 @@ SKIP: {
     ok(!$mesg->code, "search: ". $mesg->code . ": " . $mesg->error);
 
     my $entry = $mesg->entry(0);
-    my $origValue = join(':', map { sort $entry->get_attribute($_) } @{$test->{attrs}});
+    my $origValue = join(':', map { sort $entry->get_value($_) } @{$test->{attrs}});
 
     $control = Net::LDAP::Control::PreRead->new(attrs => $test->{attrs});
     isa_ok($control, Net::LDAP::Control::PreRead, "control object");
@@ -71,7 +71,7 @@ SKIP: {
     $entry = $previous->entry();
     isa_ok($entry, Net::LDAP::Entry, "entry object");
 
-    my $prereadValue = join(':', map { sort $entry->get_attribute($_) } @{$test->{attrs}});
+    my $prereadValue = join(':', map { sort $entry->get_value($_) } @{$test->{attrs}});
     is($prereadValue, $origValue, "value in PreRead control matches");
   }
 }

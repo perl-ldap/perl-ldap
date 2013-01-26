@@ -72,7 +72,7 @@ by another method:
 
 Send a refresh operation for an object.
 
-OPTIONS is a list of key/value pairs. The following keys are reconized:
+OPTIONS is a list of key/value pairs. The following keys are recognized:
 
 =over 4
 

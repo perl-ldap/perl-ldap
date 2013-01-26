@@ -106,7 +106,11 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
 =head1 DESCRIPTION
 
 C<Net::LDAP::Control::Paged> provides an interface for the creation and manipulation
-of objects that represent the C<pagedResultsControl> as described by RFC-2696.
+of objects that represent the C<pagedResultsControl> as described by RFC 2696.
+
+The control is allowed on LDAP search requests (L<Net::LDAP/search>) only.
+On other operations it will - depending on the value of the parameter
+C<critical> - either be ignored or lead to errors.
 
 =head1 CONSTRUCTOR ARGUMENTS
 

@@ -44,6 +44,7 @@ our @EXPORT_OK = qw(
   unescape_filter_value
   escape_dn_value
   unescape_dn_value
+  ldap_url_parse
 );
 our %EXPORT_TAGS = (
 	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
@@ -52,9 +53,10 @@ our %EXPORT_TAGS = (
 	                escape_dn_value unescape_dn_value) ],
 	escape 	=> [ qw(escape_filter_value unescape_filter_value
 	                escape_dn_value unescape_dn_value) ],
+	url   	=> [ qw(ldap_url_parse) ],
 );
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 =item ldap_error_name ( ERR )
 
@@ -599,6 +601,125 @@ my @values = @_;
   return(wantarray ? @values : $values[0]);
 }
 
+
+=item ldap_url_parse ( LDAP-URL [, OPTIONS ] )
+
+Parse an B<LDAP-URL> conforming to RFC 4516 into a hash containing its elements.
+
+For easy cooperation with LDAP queries, the hash keys for the elements
+used in LDAP search operations are named after the parameters to
+L<Net::LDAP/search>.
+
+In extension to RFC 4516, the socket path for URLs with the scheme C<ldapi>
+will be stored in the hash key named C<path>.
+
+If any element is omitted, the result depends on the setting of the option
+C<defaults>.
+
+B<OPTIONS> is a list of key/value pairs with the following keys recognized:
+
+=over 4
+
+=item defaults
+
+A boolean option that determines whether default values according to RFC 4516
+shall be returned for missing URL elements.
+
+If set to TRUE, default values are returned, with C<ldap_url_parse>
+using the following defaults in extension to RFC 4516.
+
+=over 4
+
+=item *
+
+The default port for C<ldaps> URLs is C<636>.
+
+=item *
+
+The default path for C<ldapi> URLs is the contents of the environment variable
+C<LDAPI_SOCK>. If that is not defined or empty, then C</var/run/ldapi> is used.
+
+This is consistent with the behaviour of L<Net::LDAP/new>.
+
+=item *
+
+The default C<host> name for C<ldap> and C<ldaps> URLs is C<localhost>.
+
+=back
+
+When set to FALSE, no default values are used.
+
+This leaves all keys in th resulting hash undefined where the corresponding
+URL element is empty.
+
+To distinguish between an empty base DN and an undefined base DN,
+C<ldap_parse_url> uses the slash between the host:port resp. path
+part of the URL and the base DN part of the URL.
+With the slash present, the hash key C<base> is set to the empty string,
+without it, it is left undefined.
+
+Leaving away the C<defaults> option entirely is equivalent to setting it to TRUE.
+
+=back
+
+Returns the hash in list mode, or the reference to the hash in scalar mode.
+
+=cut
+
+## parse an LDAP URL into its various elements
+# Synopsis: {$elementref,%elements} = ldap_url_parse($url)
+sub ldap_url_parse($@)
+{
+my $url = shift;
+my %opt = @_;
+
+  eval { require URI };
+  return wantarray ? () : undef
+    if ($@);
+
+  my $uri = URI->new($url);
+  return wantarray ? () : undef
+    unless ($uri && ref($uri) =~ /^URI::ldap[is]?$/);
+
+  $opt{defaults} = 1  unless (exists($opt{defaults}));
+
+  my %elements = ( scheme => $uri->scheme );
+
+  $uri = $uri->canonical;	# canonical form
+  $url = $uri->as_string;	# normalize
+
+  if ($elements{scheme} eq 'ldapi') {
+    $elements{path} = $uri->un_path || $ENV{LDAPI_SOCK} || '/var/run/ldapi'
+      if ($opt{defaults} || $uri->un_path);
+  }
+  else {
+    $elements{host} = $uri->host || 'localhost'
+      if ($opt{defaults} || $uri->host);
+
+    $elements{port} = $uri->port || ($elements{scheme} eq 'ldaps' ? 636 : 389)
+      if ($opt{defaults} || $uri->port);
+  }
+
+  $elements{base}       = $uri->dn
+      if ($opt{defaults} || $uri->dn || $url =~ m{^ldap[is]?://[^/]*/});
+
+  $elements{attrs}      = [ $uri->attributes ]
+      if ($opt{defaults} || $uri->attributes);
+
+  $elements{scope}      = $uri->scope
+      if ($opt{defaults} || $uri->_scope);
+
+  $elements{filter}     = $uri->filter
+      if ($opt{defaults} || $uri->_filter);
+
+  $elements{extensions} = [ $uri->extensions ]
+      if ($opt{defaults} || $uri->extensions);
+
+  #return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "unhandled critical URL extension")
+  #  if (grep(/^!/, keys(%extns)));
+
+  return wantarray ? %elements : \%elements;
+}
 
 =back
 

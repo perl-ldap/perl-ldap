@@ -139,7 +139,7 @@ authorization or data confidentiality, a single C<Proxy Authorization Control>
 may be included in any search, compare, modify, add, delete, or moddn or
 extended operation.
 
-As cqrequired by the RFC, the criticality of this control is automatically set to
+As required by the RFC, the criticality of this control is automatically set to
 TRUE in order to protect clients from submitting requests with other identities
 that they intend to.
 
