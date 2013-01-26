@@ -66,7 +66,7 @@ SKIP: {
     $entry = $previous->entry();
     isa_ok($entry, Net::LDAP::Entry, "entry object");
 
-    my $postreadValue = join(':', map { sort $entry->get_attribute($_) } @{$test->{attrs}});
+    my $postreadValue = join(':', map { sort $entry->get_value($_) } @{$test->{attrs}});
 
     $mesg = $ldap->search(base => @{$test->{dn}} ? $test->{dn}[0] : '',
                           filter => '(objectclass=*)',
@@ -75,7 +75,7 @@ SKIP: {
     ok(!$mesg->code, "search: ". $mesg->code . ": " . $mesg->error);
 
     $entry = $mesg->entry(0);
-    my $origValue = join(':', map { sort $entry->get_attribute($_) } @{$test->{attrs}});
+    my $origValue = join(':', map { sort $entry->get_value($_) } @{$test->{attrs}});
     is($postreadValue, $origValue, "value in PostRead control matches");
   }
 }
