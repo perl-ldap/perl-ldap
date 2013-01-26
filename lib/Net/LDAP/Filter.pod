@@ -18,9 +18,10 @@ associated escaping mechanisms.
 
 =over 4
 
-=item new ( FILTER )
+=item new ( [ FILTER ] )
 
-Create a new object and parse FILTER.
+Create a new object.
+If FILTER is given, parse it.
 
 =back
 
@@ -30,7 +31,8 @@ Create a new object and parse FILTER.
 
 =item parse ( FILTER )
 
-Parse FILTER. The next call to ber will return this filter encoded.
+Parse FILTER, updating the object to represent it.
+The next call to ber will return this filter encoded.
 
 =item as_string
 
@@ -40,6 +42,23 @@ Return the filter in text form.
 
 Print the text representation of the filter to FH, or the currently
 selected output handle if FH is not given.
+
+=item negate ( )
+
+Logically negate/invert the filter object so that it matches the opposite
+set of entries as the original.
+
+Instead of simply negating the text form by surrounding it with the B<not>
+operator, the negation is done by recursively applying I<De Morgan's law>.
+
+Here is an example:
+
+ (|(&(cn=A)(cn=B))(|(!(cn=C))(cn=D)))
+
+gets negated to
+
+ (&(|(!(cn=A))(!(cn=B)))(&(cn=C)(!(cn=D))))
+
 
 =back
 

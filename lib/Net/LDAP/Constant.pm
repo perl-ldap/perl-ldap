@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 use Exporter qw(import);
 
@@ -629,6 +629,60 @@ Indicates that the server supports language tag range options (RFC 3866)
 =item LDAP_FEATURE_MODIFY_INCREMENT (1.3.6.1.1.14)
 
 Indicates if the server supports the Modify Increment extension (RFC 4525)
+
+=back
+
+=head2 Active Directory Capability OIDs
+
+The following constants are specific to Microsoft Active Directory.
+They serve to denote capabilities via the non-standard attribute
+C<supportedCapabilities> in the Root DSE.
+
+=over 4
+
+=item LDAP_CAP_ACTIVE_DIRECTORY (1.2.840.113556.1.4.800)
+
+Indicates that the LDAP server is running Active Directory
+and is running as AD DS.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_LDAP_INTEG (1.2.840.113556.1.4.1791)
+
+Indicates that the LDAP server on the DC is capable of signing and sealing
+on an NTLM authenticated connection, and that the server is capable of
+performing subsequent binds on a signed or sealed connection.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_V51 (1.2.840.113556.1.4.1670)
+
+On an Active Directory DC operating as AD DS, the presence of this capability
+indicates that the LDAP server is running at least the Windows 2003.
+
+On an Active Directory DC operating as AD LDS, the presence of this capability
+indicates that the LDAP server is running at least the Windows 2008.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_ADAM (1.2.840.113556.1.4.1851)
+
+Indicates that the LDAP server is running Active Directory as AD LDS.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_ADAM_DIGEST (1.2.840.113556.1.4.1880)
+
+Indicates on a DC operating as AD LDS,
+that the DC accepts DIGEST-MD5 binds for AD LDS security principals.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_PARTIAL_SECRETS (1.2.840.113556.1.4.1920)
+
+Indicates that the Active Directory DC operating as AD DS, is an RODC.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_V60 (1.2.840.113556.1.4.1935)
+
+Indicates that the LDAP server is running at least the Windows 2008.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_V61_R2 (1.2.840.113556.1.4.2080)
+
+Indicates that the LDAP server is running at least the Windows 2008 R2.
+
+=item LDAP_CAP_ACTIVE_DIRECTORY_W8 (1.2.840.113556.1.4.2237)
+
+Indicates that the LDAP server is running at least the Windows 2012.
 
 =back
 
