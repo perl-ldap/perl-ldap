@@ -1,3 +1,17 @@
+0.53 -- Sat Jan 26 18:23:35 CET 2013
+
+Bug Fixes:
+* various clarification & fixes in documentation
+* t/7{1pre,2post}read.t: don't use deprecated methods
+
+Enhancements:
+* Filter.pm: new method negate()
+* Util.pm: new function ldap_url_parse()
+* RT#77716: LDAP.pm: new option keepalive for new()
+* LDAP.pm: convert scheme to lowercase in new()
+* FAQ.pod: how to search all members of a large AD group
+* FAQ.pod: how to do nested group searches in AD
+
 0.52 -- Tue Jan 1 13:54:22 CET 2013
 
 Bug Fixes:
