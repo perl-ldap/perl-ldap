@@ -479,47 +479,30 @@ have make installed.
 
 =head2 What other modules will I need?
 
-perl-ldap does use other modules. Some are required, but some are
-optional (ie required to use certain features)
+perl-ldap uses other Perl modules. Some are required, but some are
+optional (i.e. required to use certain features only).
+
+If you are using a Linux system, many of the distributions
+have packages that you can install using the distribution's
+package management tools (e.g. apt, rpm, ...).
+
+Alternatively, you may use your favorite web search engine
+to find the package that you need.
 
 =over 4
 
 =item Convert::ASN1
 
-This module is required for perl-ldap to work.
+This module converts between Perl data structures and ASN.1, and
+is required for perl-ldap to work.
 
 You can obtain the latest release from
   http://search.cpan.org/search?module=Convert::ASN1
 
-=item Authen::SASL
+=item OpenSSL and IO::Socket::SSL
 
-This module is optional.  You only need to install Authen::SASL
-if you want to use the SASL authentication method.
-
-You can obtain the latest release from
-  http://search.cpan.org/search?module=Authen::SASL
-
-=item Digest::MD5
-
-This module is optional. It also requires a C compiler when installing.
-You only need to install Digest::MD5 if you want to use the SASL
-DIGEST-MD5 authentication method.
-
-You can obtain the latest release from
-  http://search.cpan.org/search?module=Digest::MD5
-
-=item URI::ldap
-
-This module is optional. You only need to install URI::ldap if you are
-going to need to parse ldap referrals. L<Net::LDAP> does not do this
-automatically yet, so this module is not used by perl-ldap.
-
-You can obtain the latest release from
-  http://search.cpan.org/search?module=URI::ldap
-
-=item OpenSSL and IO::Socket::SSL for Net::LDAPS
-
-If you want to use Net::LDAP::LDAPS you will need this module
+If you want to use encrypted connections, either via L<start_tls|Net::LDAP/start_tls>
+or L<LDAPS connections|Net::LDAP::LDAPS>, you will need this module
 and the OpenSSL software package.
 
 You can obtain the latest release of IO::Socket::SSL from
@@ -528,13 +511,88 @@ You can obtain the latest release of IO::Socket::SSL from
 You can obtain the latest release of OpenSSL from
   http://www.openssl.org/
 
-If you are using a Linux system, many of the distributions
-have RPM packages that you can install.  Use your favorite
-web search engine to find the package that you need.
+=item IO::Socket::INET6
+
+For connecting to LDAP servers via IPv6, IO::Socket::INET6 is required.
+Its presence is detected at runtime, so that perl-ldap can be installed
+without it, and automatically gains IPv6 support as soon as
+IO::Socket::INET6 gets installed.
+
+You can obtain the latest releases from
+  http://search.cpan.org/search?module=IO::Socket::INET6
+
+=item Authen::SASL
+
+This module is optional.  You only need to install Authen::SASL
+if you want to use the SASL authentication methods.
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=Authen::SASL
+
+=item Digest::MD5
+
+This module is optional. It also requires a C compiler when installing.
+You only need to install Digest::MD5 if you want to use the SASL
+DIGEST-MD5 authentication mechanism.
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=Digest::MD5
+
+As Digest::MD5 is part of the Perl core modules since Perl 5.7.3,
+you only need a C compiler if you want to install a version that is
+newer than the version distributed with your Perl installation.
+
+=item Digest::HMAC_MD5
+
+This optional module is required only if you want to use the SASL
+CRAM-MD5 authentication mechanism.
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=Digest::HMAC_MD5
+
+=item GSSAPI
+
+This optional module is required only if you want to use the SASL
+GSSAPI authentication mechanism (e.g. for Kerberos authentication).
+
+You can obtain the latest release from
+  http://search.cpan.org/search?module=GSSAPI
+
+=item URI::ldap, URI::ldaps, and URI::ldapi
+
+These modules are optional. You only need to install them if you
+want to parse ldap://, ldaps:// or ldapi:// URIs using
+L<ldap_parse_uri in Net::LDAP::Util|Net::LDAP::Util/ldap_parse_uri>.
+or use LWP::Protocol::ldap, LWP::Protocol::ldaps, or LWP::Protocol::ldapi.
+
+You can obtain the latest releases from
+  http://search.cpan.org/search?module=URI::ldap
+  http://search.cpan.org/search?module=URI::ldaps
+  http://search.cpan.org/search?module=URI::ldapi
+
+=item LWP::Protocol, LWP::MediaTypes, HTTP::Negotiate, and HTTP::Response
+
+These optional modules are needed if you want to use perl-ldap's
+LWP::Protocol::ldap, LWP::Protocol::ldaps, or LWP::Protocol::ldapi modules.
+
+You can obtain the latest releases from
+ http://search.cpan.org/search?module=LWP::Protocol
+ http://search.cpan.org/search?module=LWP::MediaTypes
+ http://search.cpan.org/search?module=HTTP::Negotiate
+ http://search.cpan.org/search?module=HTTP::Response
+
+=item JSON
+
+This optional module is required for JSON-formatted output of perl-ldap's
+LWP::Protocol::ldap, LWP::Protocol::ldaps, or LWP::Protocol::ldapi modules.
+
+If you need it, you can optain the latest releases from
+ http://search.cpan.org/search?module=JSON
 
 =item XML::SAX and XML::SAX::Writer
 
-If you want to use Net::LDAP::DSML you will need these modules.
+If you want to parse or write DSMLv1 documents with Net::LDAP::DSML
+to you will need these optional modules.
 
 You can obtain the latest releases from
   http://search.cpan.org/search?module=XML::SAX
