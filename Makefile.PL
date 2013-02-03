@@ -39,23 +39,22 @@ features
 	],
 	'Read/Write LDIF files' => [
 		-default => 0,
-		'MIME::Base64'  => 0,
+		'MIME::Base64'  => 0,		# core module since Perl 5.7.3
 	],
 	'SASL authentication' => [
 		-default => 0,
 		'Authen::SASL'  => '2.00',
-		recommends 'Digest::MD5',	# for DIGEST-MD5 SASL mech
+		recommends 'Digest::MD5',	# for DIGEST-MD5 SASL mech, core since Perl 5.7.3
 		recommends 'Digest::HMAC_MD5',	# for CRAM-MD5 SASL mech
 		recommends 'GSSAPI',		# for GSSAPI SASL mech
 	],
 	'LDAP URLs' => [
 		-default => 0,
 		'URI::ldap' => 1.10,
-		recommends 'JSON',
 	],
 	'Read/Write DSML files' => [
 		-default => 0,
-		'MIME::Base64'     => 0,
+		'MIME::Base64'     => 0,	# core module since Perl 5.7.3
 		'XML::SAX::Writer' => 0,
 		'XML::SAX::Base'   => 0,
 	],
@@ -66,6 +65,7 @@ features
 		'HTTP::Negotiate' => 0,
 		'HTTP::Response'  => 0,
 		'HTTP::Status'    => 0,
+		recommends 'JSON',
 	];
 
 auto_install_now;
