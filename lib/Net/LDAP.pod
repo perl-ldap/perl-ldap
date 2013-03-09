@@ -928,7 +928,7 @@ B<Example>
 
  my $root = $ldap->root_dse;
  # get naming Context
- $root->get_value( 'namingContext', asref => 1 );
+ $root->get_value( 'namingContexts', asref => 1 );
  # get supported LDAP versions
  $root->supported_version;
 
