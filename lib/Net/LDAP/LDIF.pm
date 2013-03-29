@@ -16,19 +16,20 @@ BEGIN {
 
 our $VERSION = '0.20';
 
-# allow the letters r,w,a as well as the well-known operators as modes
-my %mode = qw(r < < < w > > > a >> >> >>);
+# allow the letters r,w,a as mode letters
+my %modes = qw(r <  r+ +<  w >  w+ +>  a >>  a+ +>>);
 
 sub new {
   my $pkg = shift;
   my $file = shift || '-';
-  my $mode = shift || 'r';
+  my $mode = @_ % 2 ? shift || 'r' : 'r';
   my %opt = @_;
   my $fh;
   my $opened_fh = 0;
 
-  # harmonize mode, default to reading
-  $mode = $mode{$mode} || '<';
+  # harmonize mode
+  $mode = $modes{$mode}
+    if (defined($modes{$mode}));
 
   if (ref($file)) {
     $fh = $file;
@@ -68,7 +69,7 @@ sub new {
     file => "$file",
     opened_fh => $opened_fh,
     _eof => 0,
-    write_count => ($mode eq '>>' and tell($fh) > 0) ? 1 : 0,
+    write_count => ($mode =~ /^\s*\+?>>/ and tell($fh) > 0) ? 1 : 0,
   };
 
   bless $self, $pkg;
