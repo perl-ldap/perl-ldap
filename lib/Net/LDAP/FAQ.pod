@@ -92,7 +92,7 @@ You can download it from CPAN by following the "Download" link on:
 
 Example;
 
- http://search.cpan.org/CPAN/authors/id/M/MA/MARSCHAP/perl-ldap-0.44.tar.gz
+ http://search.cpan.org/CPAN/authors/id/M/MA/MARSCHAP/perl-ldap-0.54.tar.gz
 
 =item Git - fork on GitHub
 
@@ -1688,6 +1688,10 @@ https://github.com/russoz/Net-LDAP-SimpleServer
 
 LemonLDAP::NG - Web SingleSignOn solution & SAML IdP in Perl
 http://lemonldap-ng.org/
+
+Dancer::Plugin::LDAP - LDAP plugin for Dancer micro framework
+http://search.cpan.org/search?module=Dancer::Plugin::LDAP
+https://github.com/racke/Dancer-Plugin-LDAP
 
 Directory Services Mark Language (DSML)
 http://www.oasis-open.org/specs/
