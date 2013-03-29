@@ -1,3 +1,20 @@
+0.54 -- Fri Mar 29 12:07:40 CET 2013
+
+Bug Fixes:
+* RT#73202: LDIF.pm: Base64-encode values ending in spaces
+* RT#83815: fix typo/bug in example for root_dse
+
+Enhancements:
+* FAQ.pod: mention Dancer::Plugin::LDAP, update example
+* Extra/eDirectory.pm: new; extensions for eDirectory
+* Constant.pm: add constants for Novell eDirectory
+* LDIF.pm: clean up handling of mode parameter
+* LDIF.pm: partially support controls when reading
+* Util.pm: add time conversion functions
+* Makefile.PL: update recommends, add comments on core modules
+* FAQ.pod: update info on required/optional modules
+* LDAP.pod,FAQ.pod: harmonize documentation of scope values
+
 0.53 -- Sat Jan 26 18:23:35 CET 2013
 
 Bug Fixes:

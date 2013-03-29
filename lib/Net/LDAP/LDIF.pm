@@ -15,7 +15,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 # allow the letters r,w,a as well as the well-known operators as modes
 my %mode = qw(r < < < w > > > a >> >> >>);
