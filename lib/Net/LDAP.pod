@@ -580,7 +580,7 @@ The result is an object of class L<Net::LDAP::Search>.
 The DN that is the base object entry relative to which the search is
 to be performed.
 
-=item scope =E<gt> 'base' | 'one' | 'sub' | 'children'
+=item scope =E<gt> 'base' | 'one' | 'sub' | 'subtree' | 'children'
 
 By default the search is performed on the whole tree below
 the specified base object. This maybe changed by specifying a C<scope>
@@ -597,6 +597,8 @@ Search only the base object.
 Search the entries immediately below the base object.
 
 =item sub
+
+=item subtree
 
 Search the whole tree below (and including) the base object. This is
 the default.
@@ -926,7 +928,7 @@ B<Example>
 
  my $root = $ldap->root_dse;
  # get naming Context
- $root->get_value( 'namingContext', asref => 1 );
+ $root->get_value( 'namingContexts', asref => 1 );
  # get supported LDAP versions
  $root->supported_version;
 

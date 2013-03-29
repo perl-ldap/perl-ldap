@@ -17,8 +17,8 @@ BEGIN {
 
 our $VERSION = '0.19';
 
-
-my %mode = qw(w > r < a >>);
+# allow the letters r,w,a as well as the well-known operators as modes
+my %mode = qw(r < < < w > > > a >> >> >>);
 
 sub new {
   my $pkg = shift;
@@ -28,26 +28,25 @@ sub new {
   my $fh;
   my $opened_fh = 0;
 
+  # harmonize mode, default to reading
+  $mode = $mode{$mode} || '<';
+
   if (ref($file)) {
     $fh = $file;
   }
   else {
     if ($file eq '-') {
-      if ($mode eq 'w') {
-        ($file, $fh) = ('STDOUT', \*STDOUT);
-      }
-      else {
-        ($file, $fh) = ('STDIN', \*STDIN);
-      }
+      ($file,$fh) = ($mode eq '<')
+                    ? ('STDIN', \*STDIN)
+                    : ('STDOUT',\*STDOUT);
     }
     else {
       require Symbol;
       $fh = Symbol::gensym();
-      my $open = $file =~ /^\| | \|$/x
-	? $file
-	: (($mode{$mode} || '<') . $file);
-      open($fh, $open)  or return;
-      $opened_fh = 1;
+      $opened_fh = ($file =~ /^\| | \|$/x)
+                   ? open($fh, $file)
+                   : open($fh, $mode, $file);
+      return  unless ($opened_fh);
     }
   }
 
@@ -72,7 +71,7 @@ sub new {
     file => "$file",
     opened_fh => $opened_fh,
     _eof => 0,
-    write_count => ($mode eq 'a' and tell($fh) > 0) ? 1 : 0,
+    write_count => ($mode eq '>>' and tell($fh) > 0) ? 1 : 0,
   };
 
   # fetch glob for URL type attributes (one per LDIF object)
@@ -211,6 +210,51 @@ sub _read_entry {
     if (CHECK_UTF8 && $self->{raw} && ('dn' !~ /$self->{raw}/));
   $entry->dn($dn);
 
+  my @controls = ();
+
+  # optional control: line => change record
+  while (@ldif && ($ldif[0] =~ /^control:\s*/)) {
+    my $control = shift(@ldif);
+
+    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
+      my($oid,$critical,$value) = ($1,$2,$3);
+      my $prefix = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
+
+      $critical = ($critical && $critical =~ /true/) ? 1 : 0;
+
+      # base64 encoded value: decode it
+      if ($prefix && $prefix eq ':') {
+        eval { require MIME::Base64 };
+        if ($@) {
+          $self->_error($@, @ldif);
+          return;
+        }
+        $value = MIME::Base64::decode($value);
+      }
+      # url value: read in file:// url, fail on others
+      elsif ($prefix && $prefix eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
+        $value = $self->_read_url_attribute($value, @ldif);
+        return  if !defined($value);
+      }
+
+      require Net::LDAP::Control;
+      my $ctrl = Net::LDAP::Control->new(type     => $oid,
+                                         value    => $value,
+                                         critical => $critical);
+
+      push(@controls, $ctrl);
+
+      if (!@ldif) {
+        $self->_error('Illegally formatted control line given', @ldif);
+        return;
+      }
+    }
+    else {
+      $self->_error('Illegally formatted control line given', @ldif);
+      return;
+    }
+  }
+
   if ((scalar @ldif) && ($ldif[0] =~ /^changetype:\s*/)) {
     my $changetype = $ldif[0] =~ s/^changetype:\s*//
         ? shift(@ldif) : $self->{changetype};
@@ -308,6 +352,11 @@ sub _read_entry {
     my $attr;
     my $xattr;
 
+    if (@controls) {
+      $self->_error("Controls only allowed with LDIF change entries", @ldif);
+      return;
+    }
+
     foreach my $line (@ldif) {
       $line =~ s/^([-;\w]+):([\<\:]?)\s*// &&
 	  (($attr, $xattr) = ($1, $2)) or next;
@@ -401,7 +450,7 @@ sub _write_attr {
 
     $v = Encode::encode_utf8($v)
       if (CHECK_UTF8 and Encode::is_utf8($v));
-    if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff])/) {
+    if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff]| $)/) {
       require MIME::Base64;
       $ln .= ':: ' . MIME::Base64::encode($v, '');
     }
