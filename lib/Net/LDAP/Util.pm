@@ -45,6 +45,8 @@ our @EXPORT_OK = qw(
   escape_dn_value
   unescape_dn_value
   ldap_url_parse
+  generalizedTime_to_time
+  time_to_generalizedTime
 );
 our %EXPORT_TAGS = (
 	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
@@ -54,6 +56,7 @@ our %EXPORT_TAGS = (
 	escape 	=> [ qw(escape_filter_value unescape_filter_value
 	                escape_dn_value unescape_dn_value) ],
 	url   	=> [ qw(ldap_url_parse) ],
+	time	=> [ qw(generalizedTime_to_time time_to_generalizedTime) ],
 );
 
 our $VERSION = '0.15';
@@ -720,6 +723,155 @@ my %opt = @_;
 
   return wantarray ? %elements : \%elements;
 }
+
+
+=item generalizedTime_to_time ( GENERALIZEDTIME )
+
+Convert the generalizedTime string B<GENERALIZEDTIME>, which is expected
+to match the template C<YYYYmmddHH[MM[SS]][(./,)d...](Z|(+/-)HH[MM])>
+to a floating point number compatible with UNIX time
+(i.e. the integral part of the number is a UNIX time).
+
+Returns an extended UNIX time or C<undef> on error.
+
+Times in years smaller than 1000 will lead to C<undef> being returned.
+This restriction is a direct effect of the year value interpretation rules
+in Time::Local.
+
+B<Note:> this function depends on Perl's implementation of time and Time::Local.
+See L<Time::Local/Limits of time_t>, L<Time::Local/Negative Epoch Values>, and
+L<perlport/gmtime> for restrictions in older versions of Perl.
+
+=cut
+
+sub generalizedTime_to_time($)
+{
+my $generalizedTime = shift;
+
+  if ($generalizedTime =~ /^\s*(\d{4})(\d{2})(\d{2})
+                               (\d{2})(?:(\d{2})(\d{2})?)?
+                               (?:[.,](\d+))?\s*(Z|[+-]\d{2}(?:\d{2})?)\s*$/x) {
+    my ($year,$month,$day,$hour,$min,$sec,$dec,$offset) = ($1,$2,$3,$4,$5,$6,$7,$8);
+
+    # Time::Local's timegm() interpret years strangely
+    if ($year >= 1000) {
+      $dec = "0.$dec";
+
+      # decimals in case of missing minutes / seconds - see RFC 4517
+      if (!defined($min)) {
+        $min = 0;
+
+        if ($dec) {
+          $min = int(60 * $dec);
+          $dec = sprintf('%.4f', 60 * $dec - $min);
+        }
+      }
+      if (!defined($sec)) {
+        $sec = 0;
+
+        if ($dec) {
+          $sec = int(60 * $dec);
+          $dec = sprintf('%.2f', 60 * $dec - $sec);
+        }
+      }
+
+      eval { require Time::Local; };
+      unless ($@) {
+        my $time;
+
+        eval { $time = Time::Local::timegm($sec,$min,$hour,$day,$month-1,$year); };
+        unless ($@) {
+          if ($offset =~ /^([+-])(\d{2})(\d{2})?$/) {
+            my ($direction,$hourdelta,$mindelta) = ($1,$2,$3);
+
+            $mindelta = 0  if (!$mindelta);
+            $time += ($direction eq '-')
+                     ? 3600 * $hourdelta + 60 * $mindelta
+                     : -3600 * $hourdelta - 60 * $mindelta;
+          }
+
+          # make decimal part directional
+          if ($dec != 0) {
+            if ($time < 0) {
+              $dec = 1 - $dec;
+              $time++; 
+            }
+            $dec =~ s/^0\.//;
+            $time .= ".$dec";
+          }
+
+          return $time;
+        }
+      }
+    }
+  }
+
+  return undef;
+}
+
+
+=item time_to_generalizedTime ( TIME [, OPTIONS ] )
+
+Convert the UNIX time B<TIME> to a generalizedTime string.
+
+In extension to UNIX times, B<TIME> may be a floating point number,
+the decimal part will be used for the resulting generalizedTime.
+
+B<OPTIONS> is a list of key/value pairs. The following keys are recognized:
+
+=over 4
+
+=item AD
+
+Take care of an ActiveDirectory peculiarity to always require decimals.
+
+=back
+
+Returns the generalizedTime string, or C<undef> on error.
+
+Times before BC or after year 9999 result in C<undef>
+as they cannot be represented in the generalizedTime format.
+
+B<Note:> this function depends on  Perl's implementation of gmtime.
+See L<Time::Local/Limits of time_t>, L<Time::Local/Negative Epoch Values>, and
+L<perlport/gmtime> for restrictions in older versions of Perl.
+
+=cut
+
+sub time_to_generalizedTime($;@)
+{
+my $arg = shift;
+my %opt = @_;
+
+  if ($arg =~ /^(\-?\d*)(?:[.,](\d*))?$/) {
+    my ($time, $dec) = ($1, $2);
+
+    $dec = defined($dec) ? "0.$dec" : 0;
+
+    # decimal part of time is directional: make sure to have it positive
+    if ($time < 0 && $dec != 0) {
+      $time--;
+      $dec = 1 - $dec;
+    }
+
+    $time = int($time);
+
+    my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = gmtime(int($time));
+
+    # generalizedTime requires 4-digit year without sign
+    return undef  if ($year < -1900 || $year > 8099);
+
+    $dec =~ s/^0?\.(\d*?)0*$/$1/;
+
+    return sprintf("%04d%02d%02d%02d%02d%02d%sZ",
+                   $year+1900, $month+1, $mday, $hour, $min, $sec,
+                   # AD peculiarity: if there are no decimals, add .0 as decimals
+                   ($dec ? ('.'.$dec) : ($opt{AD} ? '.0' : '')));
+  }
+
+  return undef;
+}
+
 
 =back
 
