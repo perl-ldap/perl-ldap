@@ -593,7 +593,11 @@ Indicates that the server supports the Refresh extension (RFC 2589)
 
 Indicates the server supports the Cancel extension (RFC 3909)
 
+=back
+
 =head3 Novell eDirectory Extension OIDs
+
+=over 4
 
 =item LDAP_EXTENSION_NDSTOLDAP (2.16.840.1.113719.1.27.100.2)
 
