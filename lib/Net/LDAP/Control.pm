@@ -24,6 +24,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_SYNC_STATE
   LDAP_CONTROL_SYNC_DONE
   LDAP_CONTROL_ASSERTION
+  LDAP_CONTROL_RELAX
 );
 
 our $VERSION = '0.13';
@@ -57,6 +58,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::SyncState'	=> LDAP_CONTROL_SYNC_STATE,
   'Net::LDAP::Control::SyncDone'	=> LDAP_CONTROL_SYNC_DONE,
   'Net::LDAP::Control::Assertion'	=> LDAP_CONTROL_ASSERTION,
+  'Net::LDAP::Control::Relax'		=> LDAP_CONTROL_RELAX,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
