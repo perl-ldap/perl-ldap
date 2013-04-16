@@ -12,7 +12,7 @@ Net::LDAP - Lightweight Directory Access Protocol
 
  $mesg = $ldap->search( # perform a search
                         base   => "c=US",
-                        filter => "(&(sn=Barr) (o=Texas Instruments))"
+                        filter => "(&(sn=Barr)(o=Texas Instruments))"
                       );
 
  $mesg->code && die $mesg->error;
