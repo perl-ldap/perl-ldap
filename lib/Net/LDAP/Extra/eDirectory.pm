@@ -10,7 +10,7 @@ use Net::LDAP::RootDSE;
 require Net::LDAP::Extension;
 
 our @ISA = qw(Net::LDAP::Extension);
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our @EXPORT = qw(is_eDirectory
                  list_replicas

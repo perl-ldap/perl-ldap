@@ -1,3 +1,17 @@
+0.55 -- Tue Apr 23 11:18:15 CEST 2013
+
+Bug Fixes:
+RT#84410: PersistentSearch.pm: use $message->pop_entry() in example
+RT#84774: Constant.pm: unbreak Novell eDirectory constants
+
+Enhancements:
+Control/ManageDsaIT.pm: update documentation & simplify a bit
+Control/Relax.pm: new
+Constant.pm: add LDAP_CONTROL_RELAX
+LDAP.pod: omit space from filter in synopsis
+FAQ.pod: don't talk of "2 lines" when there's only one
+Extra/eDirectory.pm: fix typo, space police
+
 0.54 -- Fri Mar 29 12:07:40 CET 2013
 
 Bug Fixes:
