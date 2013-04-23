@@ -9,7 +9,6 @@ use Net::LDAP::Control;
 our @ISA = qw(Net::LDAP::Control);
 our $VERSION = '0.02';
 
-use Net::LDAP::ASN qw(ManageDsaIT);
 use strict;
 
 sub init {
@@ -54,6 +53,14 @@ Net::LDAP::Control::ManageDsaIT - LDAPv3 Manage DSA-IT control object
 C<Net::LDAP::Control::ManageDsaIT> provides an interface for the creation
 and manipulation of objects that represent the C<ManageDsaIT> control as
 described by RFC 3296.
+
+It allows the manipulation of referral and other special objects as normal
+entries.
+
+The control is appropriate for LDAP search, compare and all update requests,
+including add, delete, modify, and modifyDN (rename) [RFC4511].
+
+Its criticality may be TRUE or FALSE; it has no value.
 
 =head1 CONSTRUCTOR ARGUMENTS
 

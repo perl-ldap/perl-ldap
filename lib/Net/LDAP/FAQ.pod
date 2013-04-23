@@ -928,11 +928,11 @@ Example:
     }
    }
    #
-   # For large search requests the following 2 lines of code
-   # may be very important, they will reduce the amount of memory
+   # For large search requests the following line of code
+   # may be very important, it will reduce the amount of memory
    # used by the search results.
    #
-   # If the user is not worried about memory useage then the 2 lines
+   # If the user is not worried about memory usage then the line
    # of code can be omitted.
    #
    $mesg->pop_entry;

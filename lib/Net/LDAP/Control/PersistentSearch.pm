@@ -97,6 +97,9 @@ Net::LDAP::Control::PersistentSearch - LDAPv3 Persistent Search control object
    my $entry = shift;
 
    print $entry->dn()."\n";
+
+   # reduce memory usage
+   $message->pop_entry();
  }
 
 
