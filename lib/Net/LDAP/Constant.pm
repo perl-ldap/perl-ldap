@@ -466,6 +466,8 @@ Refresh Required.
 
 =item LDAP_CONTROL_REFERRALS (1.2.840.113556.1.4.616)
 
+=item LDAP_CONTROL_RELAX (1.3.6.1.4.1.4203.666.5.12)
+
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
 
 =item LDAP_CONTROL_PERMISSIVEMODIFY (1.2.840.113556.1.4.1413)
@@ -593,7 +595,11 @@ Indicates that the server supports the Refresh extension (RFC 2589)
 
 Indicates the server supports the Cancel extension (RFC 3909)
 
+=back
+
 =head3 Novell eDirectory Extension OIDs
+
+=over 4
 
 =item LDAP_EXTENSION_NDSTOLDAP (2.16.840.1.113719.1.27.100.2)
 
