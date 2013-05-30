@@ -318,11 +318,16 @@ overridden with the C<sasl_authenticate_with> option.
 
 =item sasl_authenticate_with =E<gt> TYPE
 
-When binding with a SASL mechanism, if set to the string C<IP>, the
-hostname passed by C<Net::LDAP> to C<client_new> will be the result
-of calling C<peerhost> on the socket.
+When binding with a SASL mechanism, if set to the string
+C<CONNECTED_IP>, the hostname passed by C<Net::LDAP> to C<client_new>
+will be the result of calling C<peerhost> on the socket.
 
-If neither this nor the default is not correct for your environment,
+When binding with a SASL mechanism, if set to the string
+C<CONNECTED_NAME>, the hostname passed by C<Net::LDAP> to C<client_new>
+will be the result of performing a reverse dns lookup on the
+C<peerhost> on the socket.
+
+If neither of these nor the default is correct for your environment,
 consider calling C<client_new> and passing the client connection
 object.
 
