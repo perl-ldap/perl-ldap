@@ -569,6 +569,8 @@ sub _write_entry {
     }
   }
 
+  $self->_error($!)  if (!$res && $!);
+
   $res;
 }
 
