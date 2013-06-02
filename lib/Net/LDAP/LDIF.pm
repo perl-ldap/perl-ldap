@@ -39,6 +39,11 @@ sub new {
       ($file,$fh) = ($mode eq '<')
                     ? ('STDIN', \*STDIN)
                     : ('STDOUT',\*STDOUT);
+
+      if ($mode =~ /(:.*$)/) {
+        my $layer = $1;
+        binmode($file, $layer);
+      }
     }
     else {
       $opened_fh = ($file =~ /^\| | \|$/x)
