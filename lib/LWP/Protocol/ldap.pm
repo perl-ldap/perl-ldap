@@ -13,7 +13,7 @@ use LWP::MediaTypes ();
 require LWP::Protocol;
 
 our @ISA = qw(LWP::Protocol);
-our $VERSION = '1.23';
+our $VERSION = '1.24';
 
 use strict;
 eval {

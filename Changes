@@ -1,3 +1,21 @@
+0.56 -- Sat Jun 8 13:14:47 CEST 2013
+
+Bug Fixes:
+* RT#85941: LDAP.pm: new method data_ready()
+* RT#84886: Control/Relax.pm: fix typo in documentation
+
+Enhancements:
+* FAQ.pod: add more directory servers
+* t/07filtermatch.t: skip some tests unless Text::Soundex is installed
+* t/74matchedvalues.t: new, tests for MatchedValues control
+* t/73assert.t: new, tests for Assertion control
+* LDIF.pm: overhaul
+  - flexibilize mode handling, accept PerlIO layers
+  - get rid of dependency on Symbol & SelectSaver
+  - convert _write_... to object methods
+  - use indirect file handles for URLs
+* LWP/Protocol/ldap.pm: use regex as 1st arg to split()
+
 0.55 -- Tue Apr 23 11:18:15 CEST 2013
 
 Bug Fixes:
