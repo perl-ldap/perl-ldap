@@ -309,10 +309,26 @@ of L<Authen::SASL> or an L<Authen::SASL> client connection by calling
 C<client_new> on an L<Authen::SASL> object.
 
 If passed an L<Authen::SASL> object then C<client_new> will be
-called to create a client connection object. The hostname passed
-by C<Net::LDAP> to C<client_new> is the result of calling C<peerhost>
-on the socket. If this is not correct for your environment, consider
-calling C<client_new> and passing the client connection object.
+called to create a client connection object.
+The hostname passed by C<Net::LDAP> to C<client_new> can be set using
+the C<sasl_host> option below.
+If this is not correct for your environment, consider calling C<client_new>
+yourself and passing the client connection object as C<SASLOBJ>.
+
+=item sasl_host =E<gt> SASLHOST
+
+When binding using SASL, allow the hostname used in the SASL
+communication to differ from the hostname connected to.
+
+If C<SASLHOST> evaluates to TRUE, then it is used as the SASL hostname.
+
+If it evaluates to FALSE, then the value is determined by
+calling C<peerhost> on the socket.
+In older versions of Net::LDAP this was the standard behaviour,
+but it turned out to cause more trouble than it fixed.
+
+When the option is not given, the SASL host name used defaults to the
+host name / IP address taken from the C<HOST> parameter when connecting.
 
 =back
 
