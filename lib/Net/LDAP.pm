@@ -424,15 +424,28 @@ sub bind {
       # If we're talking to a round-robin, the canonical name of
       # the host we are talking to might not match the name we
       # requested
-      my $connected_name;
-      if ($ldap->{net_ldap_socket}->can('peerhost')) {
-        $connected_name = $ldap->{net_ldap_socket}->peerhost;
+      # In that case passing sasl_authenticate_with => 'connected_ip'
+      # into bind allows us to pass the IP address of our peer to
+      # sasl so that it can perform a reverse dns lookup to determine
+      # the name against we wish to authenticate.
+      # It's also true that some kerberos installations disable
+      # reverse dns lookups (e.g. mit rdns=no).
+      # In that case passing sasl_authenticate_with => 'connected_name'
+      # into bind will cause us to perform our own DNS resolution of the
+      # IP address of our peer, and pass that to sasl.
+      my $service_name = $ldap->{net_ldap_host};
+      if (exists $arg->{sasl_authenticate_with}) {
+          if (lc($arg->{sasl_authenticate_with}) eq 'connected_ip') {
+              $service_name = $ldap->{net_ldap_socket}->peerhost;
+          } elsif (lc($arg->{sasl_authenticate_with}) eq 'connected_name') {
+              my $iaddr = inet_aton($ldap->{net_ldap_socket}->peerhost);
+              $service_name = gethostbyaddr($iaddr, AF_INET);
+          }
       }
-      $connected_name ||= $ldap->{net_ldap_host};
 
       $sasl_conn = eval {
         local ($SIG{__DIE__});
-        $sasl->client_new('ldap', $connected_name);
+        $sasl->client_new('ldap', $service_name);
       };
     }
     else {
