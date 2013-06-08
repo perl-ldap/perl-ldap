@@ -33,17 +33,22 @@ in one go.
 
 =over 4
 
-=item new ( FILE )
+=item new ( FILE [[, MODE ], OPTIONS ] )
 
-Open the file read-only. C<FILE> may be the name of a file or an
-already open filehandle. If C<FILE> begins or ends with a C<|> then
-C<FILE> will be passed directly to C<open>.
+Open the file with the given mode.
 
-=item new ( FILE, MODE, OPTIONS )
+C<FILE> may be the name of a file or an already open filehandle. If C<FILE>
+begins or ends with a C<|> then C<FILE> will be passed directly to C<open>.
 
-Open the file with the given C<MODE>, eg "w" or "a". C<FILE> may be
-the name of a file or an already open filehandle. If C<FILE> begins or
-ends with a C<|> then C<FILE> will be passed directly to C<open>.
+C<MODE> can be any of the modes allowed for Perl's L<open()|perlfunc/open>
+function, potentially extended by PerlIO layers as described in
+L<perlopentut|perlopentut/IO Layers>.
+Alternatively, it can be one of the mode indicators C<r>, C<r+>, C<w>,
+C<w+>, C<a>, C<a+> known from C's L<fopen()|fopen> function, which get mapped to
+their Perl counterparts.
+If C<MODE> is omitted, it defaults to C<r> for reading.
+
+C<OPTIONS> is a list of name/value pairs, recognizing:
 
 =over 4
 

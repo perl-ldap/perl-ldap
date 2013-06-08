@@ -1721,6 +1721,9 @@ http://directory.apache.org/
 CriticalPath
 http://www.cp.net/
 
+ForgeRock's OpenDS - LDAPv3 server with additional REST APIs
+http://www.forgerock.com/opendj.html
+
 IBM Tivoli Directory Server
 http://www-01.ibm.com/software/tivoli/products/directory-server/
 
@@ -1747,6 +1750,9 @@ http://www.optimalidm.com/products/vis/Virtual-Directory-Server-VDS.aspx
 
 Quest One Quick Connect Virtual Directory Server - LDAP virtual directory
 http://www.quest.com/quest-one-quick-connect-virtual-directory-server/
+
+UnboundID's Identity data platform
+https://www.unboundid.com/
 
 Virtual Directory Blogger
 https://virtualdirectory.wordpress.com/
