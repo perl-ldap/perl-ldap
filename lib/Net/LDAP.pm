@@ -867,6 +867,14 @@ sub _sendmesg {
     : $mesg;
 }
 
+sub data_ready {
+  my $ldap = shift;
+  my $sock = $ldap->socket  or return;
+  my $sel = IO::Select->new($sock);
+
+  return defined $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending());
+}
+
 sub process {
   my $ldap = shift;
   my $what = shift;

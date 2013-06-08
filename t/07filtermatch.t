@@ -76,17 +76,22 @@ foreach my $elem (@tests) {
 
   #note("$filterstring => ", explain($filter));
 
-  for my $case (@testcases) {
-    my ($op) = grep(/^$case:/, @{$ops});
+  SKIP: {
+    eval { require Text::Soundex };
+    skip("Text::Soundex not installed", scalar(@testcases))  if ($@);
 
-    ($op) = grep(/^[^:]+$/, @{$ops})  if (!$op);
-    $op =~ s/^$case://;
+    for my $case (@testcases) {
+      my ($op) = grep(/^$case:/, @{$ops});
 
-    my $match = $filter->match($entry, $case eq 'schema' ? $schema : undef);
-    foreach ($op) {
-      /fail/      &&  ok(!defined($match), "$filterstring should cause failure in $case mode");
-      /yes/       &&  ok($match, "$filterstring should match in $case mode");
-      /(todo|no)/ &&  ok(!$match, "$filterstring should not match in $case mode");
+      ($op) = grep(/^[^:]+$/, @{$ops})  if (!$op);
+      $op =~ s/^$case://;
+
+      my $match = $filter->match($entry, $case eq 'schema' ? $schema : undef);
+      foreach ($op) {
+        /fail/      &&  ok(!defined($match), "$filterstring should cause failure in $case mode");
+        /yes/       &&  ok($match, "$filterstring should match in $case mode");
+        /(todo|no)/ &&  ok(!$match, "$filterstring should not match in $case mode");
+      }
     }
   }
 }

@@ -5,7 +5,6 @@
 package Net::LDAP::LDIF;
 
 use strict;
-use SelectSaver;
 require Net::LDAP::Entry;
 
 use constant CHECK_UTF8 => $] > 5.007;
@@ -17,19 +16,20 @@ BEGIN {
 
 our $VERSION = '0.20';
 
-# allow the letters r,w,a as well as the well-known operators as modes
-my %mode = qw(r < < < w > > > a >> >> >>);
+# allow the letters r,w,a as mode letters
+my %modes = qw(r <  r+ +<  w >  w+ +>  a >>  a+ +>>);
 
 sub new {
   my $pkg = shift;
   my $file = shift || '-';
-  my $mode = shift || 'r';
+  my $mode = @_ % 2 ? shift || 'r' : 'r';
   my %opt = @_;
   my $fh;
   my $opened_fh = 0;
 
-  # harmonize mode, default to reading
-  $mode = $mode{$mode} || '<';
+  # harmonize mode
+  $mode = $modes{$mode}
+    if (defined($modes{$mode}));
 
   if (ref($file)) {
     $fh = $file;
@@ -39,10 +39,13 @@ sub new {
       ($file,$fh) = ($mode eq '<')
                     ? ('STDIN', \*STDIN)
                     : ('STDOUT',\*STDOUT);
+
+      if ($mode =~ /(:.*$)/) {
+        my $layer = $1;
+        binmode($file, $layer);
+      }
     }
     else {
-      require Symbol;
-      $fh = Symbol::gensym();
       $opened_fh = ($file =~ /^\| | \|$/x)
                    ? open($fh, $file)
                    : open($fh, $mode, $file);
@@ -71,14 +74,8 @@ sub new {
     file => "$file",
     opened_fh => $opened_fh,
     _eof => 0,
-    write_count => ($mode eq '>>' and tell($fh) > 0) ? 1 : 0,
+    write_count => ($mode =~ /^\s*\+?>>/ and tell($fh) > 0) ? 1 : 0,
   };
-
-  # fetch glob for URL type attributes (one per LDIF object)
-  if ($mode eq 'r') {
-    require Symbol;
-    $self->{_attr_fh} = Symbol::gensym();
-  }
 
   bless $self, $pkg;
 }
@@ -142,8 +139,8 @@ sub _read_url_attribute {
   my $line;
 
   if ($url =~ s/^file:(?:\/\/)?//) {
-    my $fh = $self->{_attr_fh};
-    unless (open($fh, '<'.$url)) {
+    my $fh;
+    unless (open($fh, '<', $url)) {
       $self->_error("can't open $line: $!", @ldif);
       return;
     }
@@ -432,7 +429,7 @@ sub eof {
 }
 
 sub _wrap {
-  my $len=$_[1];	# needs to be >= 2 to avoid division by zero
+  my $len=int($_[1]);	# needs to be >= 2 to avoid division by zero
   return $_[0]  if length($_[0]) <= $len or $len <= 40;
   use integer;
   my $l2 = $len-1;
@@ -442,7 +439,9 @@ sub _wrap {
 }
 
 sub _write_attr {
-  my($attr, $val, $wrap, $lower) = @_;
+  my($self, $attr, $val) = @_;
+  my $lower = $self->{lowercase};
+  my $fh = $self->{fh};
   my $res = 1;	# result value
 
   foreach my $v (@$val) {
@@ -457,7 +456,7 @@ sub _write_attr {
     else {
       $ln .= ': ' . $v;
     }
-    $res &&= print _wrap($ln, $wrap), "\n";
+    $res &&= print $fh _wrap($ln, $self->{wrap}), "\n";
   }
   $res;
 }
@@ -469,20 +468,23 @@ sub _cmpAttrs {
 }
 
 sub _write_attrs {
-  my($entry, $wrap, $lower, $sort) = @_;
+  my($self, $entry) = @_;
   my @attributes = $entry->attributes();
   my $res = 1;	# result value
 
-  @attributes = sort _cmpAttrs @attributes  if ($sort);
+  @attributes = sort _cmpAttrs @attributes  if ($self->{sort});
+
   foreach my $attr (@attributes) {
     my $val = $entry->get_value($attr, asref => 1);
-    $res &&= _write_attr($attr, $val, $wrap, $lower);
+    $res &&= $self->_write_attr($attr, $val);
   }
   $res;
 }
 
 sub _write_dn {
-  my($dn, $encode, $wrap) = @_;
+  my($self, $dn) = @_;
+  my $encode = $self->{encode};
+  my $fh = $self->{fh};
 
   $dn = Encode::encode_utf8($dn)
     if (CHECK_UTF8 and Encode::is_utf8($dn));
@@ -503,7 +505,7 @@ sub _write_dn {
   } else {
     $dn = "dn: $dn";
   }
-  print _wrap($dn, $wrap), "\n";
+  print $fh _wrap($dn, $self->{wrap}), "\n";
 }
 
 # write() is deprecated and will be removed
@@ -522,9 +524,10 @@ sub write_entry {
 
 sub write_version {
   my $self = shift;
+  my $fh = $self->{fh};
   my $res = 1;
 
-  $res &&= print "version: $self->{version}\n"
+  $res &&= print $fh "version: $self->{version}\n"
     if ($self->{version} && !$self->{version_written}++);
 
   return $res;
@@ -534,9 +537,6 @@ sub write_version {
 sub _write_entry {
   my $self = shift;
   my $change = shift;
-  my $wrap = int($self->{wrap});
-  my $lower = $self->{lowercase};
-  my $sort = $self->{sort};
   my $res = 1;	# result value
   local($\, $,); # output field and record separators
 
@@ -544,9 +544,9 @@ sub _write_entry {
      $self->_error('LDIF file handle not valid');
      return;
   }
-  my $saver = SelectSaver->new($self->{fh});
 
   my $fh = $self->{fh};
+
   foreach my $entry (@_) {
     unless (ref $entry) {
        $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
@@ -562,24 +562,24 @@ sub _write_entry {
       next  if $type eq 'modify' and !@changes;
 
       $res &&= $self->write_version()  unless $self->{write_count}++;
-      $res &&= print "\n";
-      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
+      $res &&= print $fh "\n";
+      $res &&= $self->_write_dn($entry->dn);
 
-      $res &&= print "changetype: $type\n";
+      $res &&= print $fh "changetype: $type\n";
 
       if ($type eq 'delete') {
         next;
       }
       elsif ($type eq 'add') {
-        $res &&= _write_attrs($entry, $wrap, $lower, $sort);
+        $res &&= $self->_write_attrs($entry);
         next;
       }
       elsif ($type =~ /modr?dn/o) {
         my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        $res &&= _write_attr('newrdn', $entry->get_value('newrdn', asref => 1), $wrap, $lower);
-        $res &&= print 'deleteoldrdn: ', $deleteoldrdn, "\n";
+        $res &&= $self->_write_attr('newrdn', $entry->get_value('newrdn', asref => 1));
+        $res &&= print $fh 'deleteoldrdn: ', $deleteoldrdn, "\n";
         my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= _write_attr('newsuperior', $ns, $wrap, $lower)  if defined $ns;
+        $res &&= $self->_write_attr('newsuperior', $ns)  if defined $ns;
         next;
       }
 
@@ -591,21 +591,21 @@ sub _write_entry {
         }
         my $i = 0;
         while ($i < @$chg) {
-	  $res &&= print "-\n"  if (!$self->{version} && $dash++);
+	  $res &&= print $fh "-\n"  if (!$self->{version} && $dash++);
           my $attr = $chg->[$i++];
           my $val = $chg->[$i++];
-          $res &&= print $type, ': ', $attr, "\n";
-          $res &&= _write_attr($attr, $val, $wrap, $lower);
-	  $res &&= print "-\n"  if ($self->{version});
+          $res &&= print $fh $type, ': ', $attr, "\n";
+          $res &&= $self->_write_attr($attr, $val);
+	  $res &&= print $fh "-\n"  if ($self->{'version'});
         }
       }
     }
 
     else {
       $res &&= $self->write_version()  unless $self->{write_count}++;
-      $res &&= print "\n";
-      $res &&= _write_dn($entry->dn, $self->{encode}, $wrap);
-      $res &&= _write_attrs($entry, $wrap, $lower, $sort);
+      $res &&= print $fh "\n";
+      $res &&= $self->_write_dn($entry->dn);
+      $res &&= $self->_write_attrs($entry);
     }
   }
 

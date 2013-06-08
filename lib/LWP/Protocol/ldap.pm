@@ -61,7 +61,7 @@ sub request {
                          $init_failed);
   }
 
-  my ($user, $password) = defined($userinfo) ? split(':', $userinfo, 2) : ();
+  my ($user, $password) = defined($userinfo) ? split(/:/, $userinfo, 2) : ();
   my %extn     = $url->extensions;
   my $tls     = exists($extn{'x-tls'}) ? 1 : 0;
   my $format = lc($extn{'x-format'} || 'html');
@@ -79,7 +79,7 @@ sub request {
       # we only accept Basic authorization for now
       if ($authorization =~ /^Basic\s+([A-Z0-9+\/=]+)$/i) {
         require MIME::Base64;
-        ($user, $password) = split(':', MIME::Base64::decode_base64($1), 2);
+        ($user, $password) = split(/:/, MIME::Base64::decode_base64($1), 2);
       }
     }
   }
