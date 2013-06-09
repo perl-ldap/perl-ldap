@@ -656,7 +656,7 @@ This leaves all keys in th resulting hash undefined where the corresponding
 URL element is empty.
 
 To distinguish between an empty base DN and an undefined base DN,
-C<ldap_parse_url> uses the slash between the host:port resp. path
+C<ldap_url_parse> uses the slash between the host:port resp. path
 part of the URL and the base DN part of the URL.
 With the slash present, the hash key C<base> is set to the empty string,
 without it, it is left undefined.
