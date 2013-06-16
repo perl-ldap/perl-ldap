@@ -1523,7 +1523,7 @@ For the password modify operation to succeed SSL is required.
 When changing the password for the user bound to the directory
 ADS expects it to be done by deleting the old password and
 adding the new one.
-When doing it as a user with administrative priviledges replacing
+When doing it as a user with administrative privileges replacing
 the unicodePwd's value with a new one is allowed too.
 
 Perl-ldap contains convenience methods for Active Directory that
