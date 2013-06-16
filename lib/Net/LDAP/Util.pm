@@ -677,12 +677,10 @@ my $url = shift;
 my %opt = @_;
 
   eval { require URI };
-  return wantarray ? () : undef
-    if ($@);
+  return  if ($@);
 
   my $uri = URI->new($url);
-  return wantarray ? () : undef
-    unless ($uri && ref($uri) =~ /^URI::ldap[is]?$/);
+  return  unless ($uri && ref($uri) =~ /^URI::ldap[is]?$/);
 
   $opt{defaults} = 1  unless (exists($opt{defaults}));
 
