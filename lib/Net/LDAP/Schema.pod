@@ -159,7 +159,7 @@ returns the list of names of the immediate superclasses.
 
 =item attribute_syntax ( NAME )
 
-Given an attribute name, return the actual syntax taking into accountr
+Given an attribute name, return the actual syntax taking into account
 attribute supertypes.
 
 =item matchingrule_for_attribute ( NAME, RULE )
