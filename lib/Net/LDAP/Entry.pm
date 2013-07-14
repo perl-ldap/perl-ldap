@@ -288,7 +288,7 @@ sub update {
   }
   elsif (eval { $target->isa('Net::LDAP::LDIF') }) {
     require Net::LDAP::Message;
-    $target->write_entry($self, %opt);
+    $target->write_entry($self);
     $mesg = Net::LDAP::Message::Dummy->new();
     $mesg->set_error(LDAP_OTHER, $target->error())
       if ($target->error());
