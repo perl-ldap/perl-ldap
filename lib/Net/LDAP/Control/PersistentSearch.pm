@@ -138,7 +138,7 @@ If it is not given it defaults to 15 meaning all changes.
 
 =item changesOnly
 
-A boolean value telling whether the server may return
+A Boolean value telling whether the server may return
 entries that match the search criteria.
 
 If C<TRUE> the server must not return return any existing

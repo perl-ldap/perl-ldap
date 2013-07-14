@@ -735,7 +735,7 @@ Net::LDAP::DSML -- A DSML Writer for Net::LDAP
 
  my @data = ();
  $dsml = Net::LDAP::DSML->new(output => \@data, pretty_print => 1)
-     or die ("DSML object cration problem using an output array.\n");
+     or die ("DSML object creation problem using an output array.\n");
 
 
   my $mesg = $ldap->search(
@@ -791,7 +791,7 @@ four types:
 
 A producer of DSML must be able to produce documents of type 1.
 A producer of DSML may, in addition, be able to produce documents of
-types 2 thru 4.
+types 2 through 4.
 
 A producer that can produce documents of type 1 is said to be a level
 1 producer. A producer than can produce documents of all four types is

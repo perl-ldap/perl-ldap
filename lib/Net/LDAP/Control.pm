@@ -190,7 +190,7 @@ ARGS is a list of name/value pairs, valid arguments are:
 
 =item critical
 
-A boolean value, if TRUE and the control is unrecognized by the server or
+A Boolean value, if TRUE and the control is unrecognized by the server or
 is inappropriate for the requested operation then the server will return
 an error and the operation will not be performed.
 

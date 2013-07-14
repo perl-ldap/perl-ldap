@@ -92,7 +92,7 @@ Connection scheme to use when not using an URI as C<HOST>.
 =item keepalive =E<gt> 1
 
 If given, set the socket's SO_KEEPALIVE option depending on
-the boolean value of the option.
+the Boolean value of the option.
 (Default: use system default)
 
 Failures in changing the socket's SO_KEEPALIVE option are ignored.
@@ -733,7 +733,7 @@ so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
 
 If this option is not given or the version of Perl Net::LDAP is running on
-is too old strings are encodeed the same as in earlier versions of perl-ldap.
+is too old strings are encoded the same as in earlier versions of perl-ldap.
 
 The value provided here overwrites the value inherited from the constructor.
 
@@ -865,7 +865,7 @@ B<Example>
 
 =item done ( )
 
-Convencience alias for C<unbind()>, named after the clean-up method
+Convenience alias for C<unbind()>, named after the clean-up method
 of L<Net::LDAP::LDIF>.
 
 =back
@@ -1048,7 +1048,7 @@ being requested.
 
 =item critical =E<gt> FLAG
 
-critical is optional and should be a boolean value, if it is not specified
+critical is optional and should be a Boolean value, if it is not specified
 then it is assumed to be I<false>.
 
 =item value =E<gt> VALUE

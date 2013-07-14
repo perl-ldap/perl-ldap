@@ -114,7 +114,7 @@ Net::LDAP::Control::PasswordPolicy - LDAPv3 Password Policy control object
                       password => "secret",
                       control => [ $pp ] );
 
- # Get password policy reponse
+ # Get password policy response
  my($resp)  = $mesg->control( LDAP_CONTROL_PASSWORDPOLICY );
 
  if (defined($resp)) {

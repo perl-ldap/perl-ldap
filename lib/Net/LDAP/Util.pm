@@ -500,7 +500,7 @@ sub ldap_explode_dn($%) {
 Escapes the given B<VALUES> according to RFC 4515 so that they
 can be safely used in LDAP filters.
 
-Any control characters with an ACII code E<lt> 32 as well as the
+Any control characters with an ASCII code E<lt> 32 as well as the
 characters with special meaning in LDAP filters "*", "(", ")",
 and "\" the backslash are converted into the representation
 of a backslash followed by two hex digits representing the
@@ -582,7 +582,7 @@ my @values = @_;
 
 Undoes the conversion done by B<escape_dn_value()>.
 
-Any escape sequence starting with a baskslash - hexpair or
+Any escape sequence starting with a backslash - hexpair or
 special character - will be transformed back to the
 corresponding character.
 
@@ -625,7 +625,7 @@ B<OPTIONS> is a list of key/value pairs with the following keys recognized:
 
 =item defaults
 
-A boolean option that determines whether default values according to RFC 4516
+A Boolean option that determines whether default values according to RFC 4516
 shall be returned for missing URL elements.
 
 If set to TRUE, default values are returned, with C<ldap_url_parse>

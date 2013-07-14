@@ -3006,7 +3006,7 @@ foreach $ahash ( @$ocs)
  
    foreach $var (@hkeys)
    {
-   # Step thru the hash keys
+   # Step through the hash keys
   
    next if ( $var =~ /type/);  # do not care about type
 
@@ -3570,7 +3570,7 @@ $Global{'hlist'} = $Global{'histWindow'}->Scrolled('HList',
 
                foreach $varr (@hkeys)
                {
-                # Step thru the hash keys
+                # Step through the hash keys
   
                 next if ( $varr =~ /name/);  # already done name.
                 next if ( $varr =~ /type/);  # do not care about type
@@ -6987,7 +6987,7 @@ The I<Process Messages> text window is where process messages
 will be displayed.  The messages are indicators of what is
 happening during the execution of the program.  By selecting 
 a line of text and moving the cursor up or down, the user
-can scroll thru the messages.
+can scroll through the messages.
 
 This panel can be considered to be under construction.
 
