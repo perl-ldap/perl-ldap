@@ -829,33 +829,33 @@ Example:
                        scope  => 'sub',
                        filter => "sn=smith",
                       );
-  #
-  # At this point the user can get the returned data as an array
-  # or as a stack.
-  # In this example we will use an array
+ #
+ # At this point the user can get the returned data as an array
+ # or as a stack.
+ # In this example we will use an array
 
-  # How many entries were returned from the search
-  my $max = $mesg->count;
+ # How many entries were returned from the search
+ my $max = $mesg->count;
 
-  for (my $index = 0 ; $index < $max ; $index++)
-  {
-    my $entry = $mesg->entry($index);
-    my $dn = $entry->dn; # Obtain DN of this entry
+ for (my $index = 0 ; $index < $max ; $index++)
+ {
+   my $entry = $mesg->entry($index);
+   my $dn = $entry->dn; # Obtain DN of this entry
 
-    @attrs = $entry->attributes; # Obtain attributes for this entry.
-    foreach my $var (@attrs)
-    {
+   @attrs = $entry->attributes; # Obtain attributes for this entry.
+   foreach my $var (@attrs)
+   {
      #get a list of values for a given attribute
      $attr = $entry->get_value( $var, asref => 1 );
      if ( defined($attr) )
      {
-         foreach my $value ( @$attr )
-         {
-          print "$var: $value\n";  # Print each value for the attribute.
-         }
+       foreach my $value ( @$attr )
+       {
+         print "$var: $value\n";  # Print each value for the attribute.
+       }
      }
-    }
-  }
+   }
+ }
 
 As you can see the example is straightforward, but there is one
 drawback to this approach.  You must wait until all entries for the
