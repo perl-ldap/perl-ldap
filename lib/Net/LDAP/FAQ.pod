@@ -661,7 +661,7 @@ So, for example, to determine the result of the bind operation.
     # Handle error codes here
   }
 
-=head2 How can I set the LDAP version of a connection to my ldap server?
+=head2 How can I set the LDAP version of a connection to my LDAP server?
 
 This is done by adding the version option when connecting or binding
 to the LDAP server.

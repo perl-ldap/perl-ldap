@@ -27,9 +27,9 @@ for information regarding supported objectclasses, attributes and syntaxes.
 
 =head1 METHODS
 
-Where a method is stated as taking the 'name or oid' of a schema item (which
+Where a method is stated as taking the 'name or OID' of a schema item (which
 may be an object class, attribute or syntax) then a case-insensitive name
-or raw oid (object identifier, in dotted numeric string form, e.g. 2.5.4.0)
+or raw OID (object identifier, in dotted numeric string form, e.g. 2.5.4.0)
 may be supplied.
 
 Each returned item of schema (eg an attribute definition) is returned
@@ -121,7 +121,7 @@ Returns the last error encountered when parsing the schema.
 
 =item may ( OBJECTCLASS )
 
-Given an argument which is the name or oid of a known object class,
+Given an argument which is the name or OID of a known object class,
 returns a list of HASHes describing the attributes which are optional
 in the class.
 
@@ -130,7 +130,7 @@ in the class.
 
 =item must ( OBJECTCLASS )
 
-Given an argument which is the name or oid of a known object class,
+Given an argument which is the name or OID of a known object class,
 returns a list of HASHes describing the attributes which are mandatory
 in the class.
 
@@ -154,7 +154,7 @@ Returns true on success and C<undef> on error.
 
 =item superclass ( NAME )
 
-Given an argument which is the name or oid of a known objectclass,
+Given an argument which is the name or OID of a known objectclass,
 returns the list of names of the immediate superclasses.
 
 =item attribute_syntax ( NAME )

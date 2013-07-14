@@ -61,7 +61,7 @@ protocol.
 
 Creates a new B<Net::LDAP> object and opens a connection to the named host.
 
-C<HOST> may be a host name or an IP number. TCP port may be specified
+C<HOST> may be a host name or an IP address. TCP port may be specified
 after the host name followed by a colon (such as localhost:10389). The
 default TCP port for LDAP is 389.
 
@@ -512,7 +512,7 @@ entry, it will be created.
 Atomically increment the existing value in each given attribute by the
 provided C<VALUE>. The attributes need to have integer syntax, or be
 otherwise "incrementable". Note this will only work if the server
-advertizes support for LDAP_FEATURE_MODIFY_INCREMENT. Use
+advertises support for LDAP_FEATURE_MODIFY_INCREMENT. Use
 L<Net::LDAP::RootDSE/supported_feature> to check this.
 
   $mesg = $ldap->modify( $dn,
@@ -756,7 +756,7 @@ B<Example>
 Calling this method will convert the existing connection to using
 Transport Layer Security (TLS), which provides an encrypted
 connection. This is I<only> possible if the connection uses LDAPv3,
-and requires that the server advertizes support for
+and requires that the server advertises support for
 LDAP_EXTENSION_START_TLS. Use
 L<Net::LDAP::RootDSE/supported_extension> to check this.
 
