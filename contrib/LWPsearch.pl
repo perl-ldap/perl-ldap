@@ -76,7 +76,7 @@ The output depends on the option B<-f|--format>.
 
 =item B<-f|--format> {C<dsml>|C<html>|C<json>|C<ldif>}
 
-Specifies the the output format to use.
+Specifies the output format to use.
 
 For the format C<json> to work, the Perl module C<JSON> needs to be installed.
 

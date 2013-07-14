@@ -384,7 +384,7 @@ It also performs the following operations on the given DN:
 =item *
 
 Unescape "\" followed by ",", "+", """, "\", "E<lt>", "E<gt>", ";",
-"#", "=", " ", or a hexpair and and strings beginning with "#".
+"#", "=", " ", or a hexpair and strings beginning with "#".
 
 =item *
 

@@ -991,7 +991,7 @@ For LDAPI connections the socket path is returned.
 
 =item port ( )
 
-Returns the the port connected to or C<undef> in case of LDAPI connections.
+Returns the port connected to or C<undef> in case of LDAPI connections.
 
 =item uri ( )
 

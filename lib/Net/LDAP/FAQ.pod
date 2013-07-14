@@ -697,7 +697,7 @@ can obtain information about the result and also the individual
 entries.
 
 The first thing to check is if the search was successful. This is done
-with with the method $mesg-E<gt>code. This method will return the
+with the method $mesg-E<gt>code. This method will return the
 status code that the server returned. A success will yield a zero
 value, but there are other values, some of which could also be
 considered a success.  See L<Net::LDAP::Constant>

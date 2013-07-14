@@ -109,7 +109,7 @@ server that a copy of the original entry before the update is to be returned.
 After the successful completion of the operation, the accompanying C<Pre-Read
 response control> allows one to retrieve the original value from the server's response.
 
-One use case of this control control may be to obtain replaced or deleted
+One use case of this control may be to obtain replaced or deleted
 values of modified attributes or a copy of the entry being deleted.
 
 
