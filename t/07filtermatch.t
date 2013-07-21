@@ -8,7 +8,7 @@ use Net::LDAP::FilterMatch qw(Text::Soundex);
 
 # Each line consists of an OPCODE-LIST and a DN,
 # where
-# - OPCODE-LIST is a comma spearated list of OPCODES,
+# - OPCODE-LIST is a comma separated list of OPCODES,
 #   each potentially prefixed with a TESTCASE prefix followed by :
 #     OPCODE-LIST = OPCODE (, [ TESTCASE:] OPCODE )+
 # - within the OPCODE-LIST each TESTCASE prefix needs to be unique

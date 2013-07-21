@@ -133,12 +133,12 @@ The server requires authentication be performed with a SASL mechanism
 =item LDAP_PARTIAL_RESULTS (9)
 
 Returned to version 2 clients when a referral is returned. The response
-will contain a list of URL's for other servers.
+will contain a list of URLs for other servers.
 
 =item LDAP_REFERRAL (10)
 
 The server is referring the client to another server. The response will
-contain a list of URL's
+contain a list of URLs
 
 =item LDAP_ADMIN_LIMIT_EXCEEDED (11)
 
@@ -226,7 +226,7 @@ Server encountered a problem while attempting to dereference an alias
 
 =item LDAP_PROXY_AUTHZ_FAILURE (47)
 
-The user bound is not authorized to assume the reuested identity.
+The user bound is not authorized to assume the requested identity.
 
 =item LDAP_INAPPROPRIATE_AUTH (48)
 
@@ -396,7 +396,7 @@ There are more results in the chain of results.
 
 =item LDAP_CLIENT_LOOP (96)
 
-A loop has been detected. For example when following referals.
+A loop has been detected. For example when following referrals.
 
 =item LDAP_REFERRAL_LIMIT_EXCEEDED (97)
 
@@ -479,6 +479,8 @@ Refresh Required.
 =item LDAP_CONTROL_ASSERTION (1.3.6.1.1.12)
 
 =item LDAP_CONTROL_DONTUSECOPY (1.3.6.1.1.22)
+
+=item LDAP_CONTROL_NOOP (1.3.6.1.4.1.4203.666.5.2)
 
 =item LDAP_CONTROL_SYNC (1.3.6.1.4.1.4203.1.9.1.1)
 

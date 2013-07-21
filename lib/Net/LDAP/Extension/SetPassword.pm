@@ -99,7 +99,7 @@ of the user currently associated with the LDAP session.
 This option, if present, must contain the current password of the user
 for whom this operation is performed.
 
-It depends on the server's implementation in which cirumstances this
+It depends on the server's implementation in which circumstances this
 option is allowed to be missing.
 
 =item newpasswd

@@ -384,7 +384,7 @@ It also performs the following operations on the given DN:
 =item *
 
 Unescape "\" followed by ",", "+", """, "\", "E<lt>", "E<gt>", ";",
-"#", "=", " ", or a hexpair and and strings beginning with "#".
+"#", "=", " ", or a hexpair and strings beginning with "#".
 
 =item *
 
@@ -500,7 +500,7 @@ sub ldap_explode_dn($%) {
 Escapes the given B<VALUES> according to RFC 4515 so that they
 can be safely used in LDAP filters.
 
-Any control characters with an ACII code E<lt> 32 as well as the
+Any control characters with an ASCII code E<lt> 32 as well as the
 characters with special meaning in LDAP filters "*", "(", ")",
 and "\" the backslash are converted into the representation
 of a backslash followed by two hex digits representing the
@@ -582,7 +582,7 @@ my @values = @_;
 
 Undoes the conversion done by B<escape_dn_value()>.
 
-Any escape sequence starting with a baskslash - hexpair or
+Any escape sequence starting with a backslash - hexpair or
 special character - will be transformed back to the
 corresponding character.
 
@@ -625,7 +625,7 @@ B<OPTIONS> is a list of key/value pairs with the following keys recognized:
 
 =item defaults
 
-A boolean option that determines whether default values according to RFC 4516
+A Boolean option that determines whether default values according to RFC 4516
 shall be returned for missing URL elements.
 
 If set to TRUE, default values are returned, with C<ldap_url_parse>
@@ -656,7 +656,7 @@ This leaves all keys in th resulting hash undefined where the corresponding
 URL element is empty.
 
 To distinguish between an empty base DN and an undefined base DN,
-C<ldap_parse_url> uses the slash between the host:port resp. path
+C<ldap_url_parse> uses the slash between the host:port resp. path
 part of the URL and the base DN part of the URL.
 With the slash present, the hash key C<base> is set to the empty string,
 without it, it is left undefined.
@@ -677,12 +677,10 @@ my $url = shift;
 my %opt = @_;
 
   eval { require URI };
-  return wantarray ? () : undef
-    if ($@);
+  return  if ($@);
 
   my $uri = URI->new($url);
-  return wantarray ? () : undef
-    unless ($uri && ref($uri) =~ /^URI::ldap[is]?$/);
+  return  unless ($uri && ref($uri) =~ /^URI::ldap[is]?$/);
 
   $opt{defaults} = 1  unless (exists($opt{defaults}));
 
