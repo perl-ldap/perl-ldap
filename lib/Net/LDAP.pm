@@ -424,15 +424,21 @@ sub bind {
       # If we're talking to a round-robin, the canonical name of
       # the host we are talking to might not match the name we
       # requested
-      my $connected_name;
-      if ($ldap->{net_ldap_socket}->can('peerhost')) {
-        $connected_name = $ldap->{net_ldap_socket}->peerhost;
+      my $sasl_host;
+
+      if (exists($arg->{sasl_host})) {
+        if ($arg->{sasl_host}) {
+          $sasl_host = $arg->{sasl_host};
+        }
+        elsif ($ldap->{net_ldap_socket}->can('peerhost')) {
+          $sasl_host = $ldap->{net_ldap_socket}->peerhost;
+        }
       }
-      $connected_name ||= $ldap->{net_ldap_host};
+      $sasl_host ||= $ldap->{net_ldap_host};
 
       $sasl_conn = eval {
         local ($SIG{__DIE__});
-        $sasl->client_new('ldap', $connected_name);
+        $sasl->client_new('ldap', $sasl_host);
       };
     }
     else {
@@ -879,10 +885,8 @@ sub process {
   my $ldap = shift;
   my $what = shift;
   my $sock = $ldap->socket  or return LDAP_SERVER_DOWN;
-  my $sel = IO::Select->new($sock);
-  my $ready;
 
-  for ($ready = 1 ; $ready ; $ready = $sel->can_read(0) || (ref($sock) eq 'IO::Socket::SSL' && $sock->pending())) {
+  for (my $ready = 1; $ready; $ready = $ldap->data_ready) {
     my $pdu;
     asn_read($sock, $pdu)
       or return _drop_conn($ldap, LDAP_OPERATIONS_ERROR, 'Communications Error');

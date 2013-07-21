@@ -15,7 +15,7 @@ a small amount of work to correct any variable assignments and LDAP
 specifics, e.g. Distinguished Name Syntax, related to the user's
 own implementation.
 
-The I<S>tandard I<O>perating I<P>roceedure that is followed here is:
+The I<S>tandard I<O>perating I<P>rocedure that is followed here is:
 
 =over 8
 
@@ -262,7 +262,7 @@ B<What is not covered in these examples at this time:>
  my @AddArray;
 
  push @AddArray, 'cn', "me myself";
- push @ReplaceArray, 'sn', '!@#$%^&*()__+Hello THere';
+ push @ReplaceArray, 'sn', '!@#$%^&*()__+Hello There';
  push @ReplaceArray, 'cn', "me myself I";
  push @DeleteArray, 'cn', "me myself";
 
@@ -425,7 +425,7 @@ information.  You do this by initializing a schema object.
 
 In this case Net::LDAP will attempt to determine the dn under which
 the schema can be found. First it will look for the attribute
-C<subschemasubentry> in the root DSE. If that cannot be found then
+C<subschemaSubentry> in the root DSE. If that cannot be found then
 it will default to the assumption of C<cn=schema>
 
 Alternatively you can specify the dn where the schema is to be found

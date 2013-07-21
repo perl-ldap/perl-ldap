@@ -263,7 +263,7 @@ sub update {
   my $cb = sub { $self->changetype('modify')  unless $_[0]->code;
                  $user_cb->(@_)  if $user_cb };
 
-  if (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP')) {
+  if (eval { $target->isa('Net::LDAP') }) {
     if ($self->{changetype} eq 'add') {
       $mesg = $target->add($self, callback => $cb, %opt);
     }
@@ -286,12 +286,16 @@ sub update {
       $mesg->set_error(LDAP_LOCAL_ERROR, 'No attributes to update');
     }
   }
-  elsif (ref($target) && UNIVERSAL::isa($target, 'Net::LDAP::LDIF')) {
+  elsif (eval { $target->isa('Net::LDAP::LDIF') }) {
     require Net::LDAP::Message;
-    $target->write_entry($self, %opt);
+    $target->write_entry($self);
     $mesg = Net::LDAP::Message::Dummy->new();
     $mesg->set_error(LDAP_OTHER, $target->error())
       if ($target->error());
+  }
+  else {
+    $mesg = Net::LDAP::Message::Dummy->new();
+    $mesg->set_error(LDAP_OTHER, 'illegal update target');
   }
 
   return $mesg;

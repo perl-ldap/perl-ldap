@@ -165,7 +165,7 @@ return C<undef>
 
 =item init ()
 
-C<init> will be called as the last step in both contructors. What it does will depend
+C<init> will be called as the last step in both constructors. What it does will depend
 on the sub-class. It must always return the object.
 
 =item register ( OID )

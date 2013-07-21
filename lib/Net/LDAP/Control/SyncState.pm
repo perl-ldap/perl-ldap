@@ -94,7 +94,7 @@ L<Net::LDAP::Control> the following are provided.
 
 =item state
 
-=item entryUIID
+=item entryUUID
 
 =item cookie
 

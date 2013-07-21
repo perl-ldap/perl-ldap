@@ -190,7 +190,7 @@ ARGS is a list of name/value pairs, valid arguments are:
 
 =item critical
 
-A boolean value, if TRUE and the control is unrecognized by the server or
+A Boolean value, if TRUE and the control is unrecognized by the server or
 is inappropriate for the requested operation then the server will return
 an error and the operation will not be performed.
 
@@ -207,9 +207,9 @@ A dotted-decimal representation of an OBJECT IDENTIFIER which
 uniquely identifies the control. This prevents conflicts between
 control names.
 
-This may be omitted if the contructor is being called on a sub-class of
+This may be omitted if the constructor is being called on a sub-class of
 Net::LDAP::Control which has registered to be associated with an OID.
-If the contructor is being called on the Net::LDAP::Control
+If the constructor is being called on the Net::LDAP::Control
 package, then this argument must be given.  If the given OID has been
 registered by a package, then the returned object will be of the type
 registered to handle that OID.
@@ -251,7 +251,7 @@ return C<undef>
 
 =item init ()
 
-C<init> will be called as the last step in both contructors. What it does will depend
+C<init> will be called as the last step in both constructors. What it does will depend
 on the sub-class. It must always return the object.
 
 =item register ( OID )

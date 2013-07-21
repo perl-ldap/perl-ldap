@@ -145,7 +145,7 @@ by L<Net::LDAP::Control::SortResult>.
 =item order
 
 A string which defines how entries may be sorted. It consists of
-multiple directives, spearated by whitespace. Each directive describes how
+multiple directives, separated by whitespace. Each directive describes how
 to sort entries using a single attribute. If two entries have identical
 attributes, then the next directive in the list is used.
 

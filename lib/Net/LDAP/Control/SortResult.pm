@@ -107,7 +107,7 @@ the name of the attribute causing the problem.
 
 =item result
 
-This is the result code that describes if the sort operation was sucessful. If will
+This is the result code that describes if the sort operation was successful. If will
 be one of the result codes describes below.
 
 =back

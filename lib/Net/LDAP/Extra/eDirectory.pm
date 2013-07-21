@@ -228,7 +228,7 @@ TRUE / FALSE respectively undef on error.
 
 =item list_replicas ( SERVER_DN, OPTIONS )
 
-Query the the replicas on the given server I<SERVER_DN>.
+Query the replicas on the given server I<SERVER_DN>.
 
 On success, the resulting Net::LDAP::Message object supports the method
 C<replicas> that returns the list of replicas on I<SERVER_DN>.

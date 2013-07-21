@@ -300,7 +300,7 @@ called C<name> then $ref will be C<undef>.
 
 B<NOTE>: In the interest of performance the array references returned
 by C<get_value> are references to structures held inside the entry
-object. These values and thier contents should B<NOT> be modified
+object. These values and their contents should B<NOT> be modified
 directly.
 
 =item replace ( ATTR =E<gt> VALUE, ... )

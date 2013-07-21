@@ -40,10 +40,10 @@ sub parse {
 
   my $entry;
   if ( ref $arg ) {
-    if (UNIVERSAL::isa($arg, 'Net::LDAP::Entry')) {
+    if (eval { $arg->isa('Net::LDAP::Entry') }) {
       $entry = $arg;
     }
-    elsif (UNIVERSAL::isa($arg, 'Net::LDAP::Search')) {
+    elsif (eval { $arg->isa('Net::LDAP::Search') }) {
       unless ($entry = $arg->entry) {
 	$schema->_error('Bad Argument');
 	return undef;
@@ -141,7 +141,7 @@ sub _must_or_may {
   #
   # If called with an entry, get the OC names and continue
   #
-  if ( ref($oc[0]) && UNIVERSAL::isa( $oc[0], 'Net::LDAP::Entry' ) ) {
+  if (eval { $oc[0]->isa('Net::LDAP::Entry') }) {
     my $entry = $oc[0];
     @oc = $entry->get_value( 'objectclass' )
       or return;

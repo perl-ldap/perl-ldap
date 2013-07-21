@@ -96,8 +96,8 @@ Example;
 
 =item Git - fork on GitHub
 
-If you have an account on Github (there's a free variant), you can easily
-fork the perl-ldap respository on GitHub.
+If you have an account on GitHub (there's a free variant), you can easily
+fork the perl-ldap repository on GitHub.
 When logged on to GitHub, navigate to the perl-ldap repository
 
  https://github.com/perl-ldap/perl-ldap
@@ -107,7 +107,7 @@ and simply click on the "Fork" button near the top-right corner.
 =item Git - clone repository
 
 You can download latest development version of perl-ldap from
-GitHub by cloning the repsoitory using the command:
+GitHub by cloning the repository using the command:
 
  git clone https://github.com/perl-ldap/perl-ldap.git
 
@@ -297,7 +297,7 @@ Example of a DN:
  RDN => dc=com
 
 RDNs can contain multiple attributes, though this is somewhat
-ususual. They are called multi-AVA RDNs, and each AVA is separated in
+unusual. They are called multi-AVA RDNs, and each AVA is separated in
 the RDN from the others with a plus sign (+).
 
 Example of a DN with a multi-AVA RDN:
@@ -586,7 +586,7 @@ You can obtain the latest releases from
 This optional module is required for JSON-formatted output of perl-ldap's
 LWP::Protocol::ldap, LWP::Protocol::ldaps, or LWP::Protocol::ldapi modules.
 
-If you need it, you can optain the latest releases from
+If you need it, you can obtain the latest releases from
  http://search.cpan.org/search?module=JSON
 
 =item Time::Local
@@ -661,7 +661,7 @@ So, for example, to determine the result of the bind operation.
     # Handle error codes here
   }
 
-=head2 How can I set the LDAP version of a connection to my ldap server?
+=head2 How can I set the LDAP version of a connection to my LDAP server?
 
 This is done by adding the version option when connecting or binding
 to the LDAP server.
@@ -697,7 +697,7 @@ can obtain information about the result and also the individual
 entries.
 
 The first thing to check is if the search was successful. This is done
-with with the method $mesg-E<gt>code. This method will return the
+with the method $mesg-E<gt>code. This method will return the
 status code that the server returned. A success will yield a zero
 value, but there are other values, some of which could also be
 considered a success.  See L<Net::LDAP::Constant>
@@ -829,33 +829,33 @@ Example:
                        scope  => 'sub',
                        filter => "sn=smith",
                       );
-  #
-  # At this point the user can get the returned data as an array
-  # or as a stack.
-  # In this example we will use an array
+ #
+ # At this point the user can get the returned data as an array
+ # or as a stack.
+ # In this example we will use an array
 
-  # How many entries were returned from the search
-  my $max = $mesg->count;
+ # How many entries were returned from the search
+ my $max = $mesg->count;
 
-  for (my $index = 0 ; $index < $max ; $index++)
-  {
-    my $entry = $mesg->entry($index);
-    my $dn = $entry->dn; # Obtain DN of this entry
+ for (my $index = 0 ; $index < $max ; $index++)
+ {
+   my $entry = $mesg->entry($index);
+   my $dn = $entry->dn; # Obtain DN of this entry
 
-    @attrs = $entry->attributes; # Obtain attributes for this entry.
-    foreach my $var (@attrs)
-    {
+   @attrs = $entry->attributes; # Obtain attributes for this entry.
+   foreach my $var (@attrs)
+   {
      #get a list of values for a given attribute
      $attr = $entry->get_value( $var, asref => 1 );
      if ( defined($attr) )
      {
-         foreach my $value ( @$attr )
-         {
-          print "$var: $value\n";  # Print each value for the attribute.
-         }
+       foreach my $value ( @$attr )
+       {
+         print "$var: $value\n";  # Print each value for the attribute.
+       }
      }
-    }
-  }
+   }
+ }
 
 As you can see the example is straightforward, but there is one
 drawback to this approach.  You must wait until all entries for the
@@ -1197,9 +1197,9 @@ in LDAPv2. (A nice incompatibility between LDAPv2 and LDAPv3.)
 
 Since this is a proprietary feature, you will have to check your
 server's documentation. You might find that you need to use a control. If
-there is a control called something like managedsait, that's the one you
+there is a control called something like ManageDsaIT, that's the one you
 should probably use.  For proper operation you will need the oid number
-for managedsait; 2.16.840.1.113730.3.4.2 and do not specify a value for
+for ManageDsaIT; 2.16.840.1.113730.3.4.2 and do not specify a value for
 type.
 
 The code required will look similar to the following code snippet.
@@ -1212,10 +1212,10 @@ perl-ldap?
 
 ACIs and ACLs are proprietary features in LDAP. The following code
 snippet works with a Netscape directory server. You will need the
-specify the correct DN (-DN-) and correct attribute(s) (-nom attr-).
+specify the correct DN (-DN-) and correct attribute(s) (-ATTRNAMEs-).
 
-  my $aci = '(target="ldap:///-DN-")(targetattr="-nom attr-")(version 3.0;
-              acl "-nom acl-"; deny(all) userdn = "ldap:///self";)' ;
+  my $aci = '(target="ldap:///-DN-")(targetattr="-ATTRNAMEs-")(version 3.0;
+              acl "-ACLNAME-"; deny(all) userdn = "ldap:///self";)' ;
 
   $ldap->modify($dn_modif, add => {'aci' => $aci });
 
@@ -1271,7 +1271,7 @@ Similar to accounts, groups need some AD-specific attributes too:
 
 =head2 How do I search for disabled accounts in Active Directory
 
-The bit values in C<userAccountcontrol> require the LDAP_MATCHING_RULE_BIT_AND
+The bit values in C<userAccountControl> require the LDAP_MATCHING_RULE_BIT_AND
 matching rule's OID to be used in an extensible filter term:
 
   $mesg = $ldap->search( base   => 'cn=Users,dc=your,dc=ads,dc=domain',
@@ -1515,7 +1515,7 @@ With Active Directory a user's password is stored in the unicodePwd
 attribute and changed using the regular modify operation.
 
 ADS expects this password to be encoded in Unicode - UTF-16 to be exact.
-Before the unicode conversion is done the password needs to be
+Before the Unicode conversion is done the password needs to be
 surrounded by double quotes which do not belong to the user's password.
 
 For the password modify operation to succeed SSL is required.
@@ -1523,7 +1523,7 @@ For the password modify operation to succeed SSL is required.
 When changing the password for the user bound to the directory
 ADS expects it to be done by deleting the old password and
 adding the new one.
-When doing it as a user with administrative priviledges replacing
+When doing it as a user with administrative privileges replacing
 the unicodePwd's value with a new one is allowed too.
 
 Perl-ldap contains convenience methods for Active Directory that
@@ -1584,7 +1584,7 @@ Here is one possible solution:
   $ldaps = Net::LDAPS->new([ $ldapserverone, $ldapservertwo ],
                            port=>636, timeout=>5)  or  die "$@";
 
-For perl-ldap versions before 0.27, thes same goal can be achieved using:
+For perl-ldap versions before 0.27, the same goal can be achieved using:
 
   unless ( $ldaps =
             Net::LDAPS->new($ldapserverone,
@@ -1745,7 +1745,7 @@ http://java.sun.com/products/jndi/overview.html
 Oracle Directory Server Enterprise Edition, formerly Sun One, formerly iPlanet.
 http://www.oracle.com/technetwork/middleware/id-mgmt/index-085178.html
 
-OptimalIDM - Virtual Identitity Server - .NET LDAP virtual directory
+OptimalIDM - Virtual Identity Server - .NET LDAP virtual directory
 http://www.optimalidm.com/products/vis/Virtual-Directory-Server-VDS.aspx
 
 Quest One Quick Connect Virtual Directory Server - LDAP virtual directory
@@ -1764,7 +1764,7 @@ Eine deutsche LDAP Website
 A german LDAP Website
 http://verzeichnisdienst.de/ldap/Perl/index.html
 
-(non-exhaustive) list of LDAP software on wikipedia
+(non-exhaustive) list of LDAP software on Wikipedia
 http://en.wikipedia.org/wiki/List_of_LDAP_software
 
 "RFC Sourcebook" on LDAP
