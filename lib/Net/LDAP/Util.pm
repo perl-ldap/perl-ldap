@@ -59,7 +59,7 @@ our %EXPORT_TAGS = (
 	time	=> [ qw(generalizedTime_to_time time_to_generalizedTime) ],
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 =item ldap_error_name ( ERR )
 

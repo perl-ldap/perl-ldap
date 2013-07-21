@@ -1,3 +1,29 @@
+0.57 -- Sun Jul 21 18:35:12 CEST 2013
+
+COMPATIBILITY WARNING:
+The bug fix "LDAP.pm: new parameter bind(sasl_host => SASLHOST)"
+is an incompatible change that may break some corner-case configurations
+* that use SASL for authentication and
+* where the SASL host name differs from the host name connecting to.
+
+The incompatible change was necessary as it was not possible to fix
+the issue which was introduced in perl-ldap 0.37 in a compatible way.
+
+See Net::LDAP's manual page for the details on "sasl_host".
+
+Bug Fixes:
+* LDAP.pm: new parameter bind(sasl_host => SASLHOST)
+* Entry.pm: ignore options when update()ing LDIF
+* Entry.pm: let update() fail correctly on illegal target
+* RT#86053: FAQ.pod: fix spelling error
+* *.{pm,pod}: lots of more grammar & spelling fixes / harmonizations
+
+Enhancements:
+* LDAP.pm: use data_ready() in process()
+* Util.pm: simplify return on error
+* Constant.pm: add constant LDAP_CONTROL_NOOP
+* Schema.pm: call isa() as recommented in UNIVERSAL.pm
+
 0.56 -- Sat Jun 8 13:14:47 CEST 2013
 
 Bug Fixes:

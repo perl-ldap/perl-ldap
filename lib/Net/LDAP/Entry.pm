@@ -15,7 +15,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = '0.25';
+our $VERSION = '0.26';
 
 sub new {
   my $self = shift;

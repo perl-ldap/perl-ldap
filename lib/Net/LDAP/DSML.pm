@@ -11,7 +11,7 @@ use XML::SAX::Base;
 use Net::LDAP::Entry;
 
 our @ISA = qw(XML::SAX::Base);
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 # OO purists will hate this :)
 my %schema_typemap = qw(

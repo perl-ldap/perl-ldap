@@ -6,7 +6,7 @@ package Net::LDAP::Schema;
 
 use strict;
 
-our $VERSION = '0.9906';
+our $VERSION = '0.9907';
 
 #
 # Get schema from the server (or read from LDIF) and parse it into
