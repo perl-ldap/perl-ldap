@@ -11,12 +11,11 @@ version_from	'lib/Net/LDAP.pm';
 author		'Graham Barr <gbarr@cpan.org>';
 license		'perl';
 
-resources
-	homepage    => 'http://ldap.perl.org/',
-	repository  => 'https://github.com/perl-ldap/perl-ldap',
-	bugtracker  => 'https://rt.cpan.org/Public/Dist/Display.html?Name=perl-ldap',
-	MailingList => 'http://lists.cpan.org/showlist.cgi?name=perl-ldap',
-	ListArchive => 'http://perl.markmail.org/search/list:perl-ldap';
+homepage    => 'http://ldap.perl.org/';
+repository  => 'https://github.com/perl-ldap/perl-ldap';
+bugtracker  => 'https://rt.cpan.org/Public/Dist/Display.html?Name=perl-ldap';
+#MailingList => 'http://lists.cpan.org/showlist.cgi?name=perl-ldap',
+#ListArchive => 'http://perl.markmail.org/search/list:perl-ldap';
 
 check_nmake;	# check and download nmake.exe for Win32
 
