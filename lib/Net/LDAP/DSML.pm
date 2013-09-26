@@ -296,7 +296,7 @@ sub characters {
   my $state = $self->{reader};
   if (my $sref = $state->{value}) {
     $$sref = ($state->{encoding}||'') eq 'base64'
-	? do { require MIME::Base64; MIME::Base64::decode_base64($data->{Data}) }
+	? do { require MIME::Base64; MIME::Base64::decode($data->{Data}) }
 	: $data->{Data};
   }
 }
