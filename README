@@ -24,13 +24,13 @@ QUICK START GUIDE:
 
     perl-ldap uses the following modules/distributions.
 
+	MIME::Base64      - required, core module since Perl 5.7.3
 	Convert::ASN1     - required
 	IO::Socket::SSL   - optional, for LDAPS / start_tls support
 	IO::Socket::INET6 - optional, for IPv6 support
 	Authen::SASL      - optional, for SASL authentication
 	Digest::MD5       - optional, for SASL DIGEST-MD5 mechanism
 	GSSAPI            - optional, for SASL GSSAPI mechanism
-	MIME::Base64      - optional, for Net::LDAP::LDIF
 	URI::ldap         - optional, for URL parsing
 	XML::SAX::Writer  - optional, for Net::LDAP::DSML
 	Time::Local       - optional, for Net::LDAP::Util's time conversion functions

@@ -194,11 +194,7 @@ sub _read_entry {
   my $dn = shift @ldif;
 
   if (length($1)) {	# $1 is the optional colon from above
-    eval { require MIME::Base64 };
-    if ($@) {
-      $self->_error($@, @ldif);
-      return;
-    }
+    require MIME::Base64;
     $dn = MIME::Base64::decode($dn);
   }
 
@@ -221,11 +217,7 @@ sub _read_entry {
 
       # base64 encoded value: decode it
       if ($prefix && $prefix eq ':') {
-        eval { require MIME::Base64 };
-        if ($@) {
-          $self->_error($@, @ldif);
-          return;
-        }
+        require MIME::Base64;
         $value = MIME::Base64::decode($value);
       }
       # url value: read in file:// url, fail on others
@@ -300,11 +292,7 @@ sub _read_entry {
 
         # base64 encoded attribute: decode it
         if ($xattr eq ':') {
-          eval { require MIME::Base64 };
-          if ($@) {
-            $self->_error($@, @ldif);
-            return;
-          }
+          require MIME::Base64;
           $line = MIME::Base64::decode($line);
         }
         # url attribute: read in file:// url, fail on others
@@ -360,11 +348,7 @@ sub _read_entry {
 
       # base64 encoded attribute: decode it
       if ($xattr eq ':') {
-        eval { require MIME::Base64 };
-        if ($@) {
-          $self->_error($@, @ldif);
-          return;
-        }
+        require MIME::Base64;
         $line = MIME::Base64::decode($line);
       }
       # url attribute: read in file:// url, fail on others
