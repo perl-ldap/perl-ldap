@@ -24,21 +24,24 @@ QUICK START GUIDE:
 
     perl-ldap uses the following modules/distributions.
 
-	Convert::ASN1    - required
-	URI::ldap        - optional, needed for URL parsing
-	Authen::SASL     - optional, needed for SASL authentication
-	Digest::MD5      - optional, needed for SASL DIGEST-MD5 auth
-	IO::Socket::SSL  - optional, needed for Net::LDAPS
-	XML::SAX::Writer - optional, needed for Net::LDAP::DSML
-	MIME::Base64     - optional, needed for Net::LDAP::LDIF
+	Convert::ASN1     - required
+	IO::Socket::SSL   - optional, for LDAPS / start_tls support
+	IO::Socket::INET6 - optional, for IPv6 support
+	Authen::SASL      - optional, for SASL authentication
+	Digest::MD5       - optional, for SASL DIGEST-MD5 mechanism
+	GSSAPI            - optional, for SASL GSSAPI mechanism
+	MIME::Base64      - optional, for Net::LDAP::LDIF
+	URI::ldap         - optional, for URL parsing
+	XML::SAX::Writer  - optional, for Net::LDAP::DSML
+	Time::Local       - optional, for Net::LDAP::Util's time conversion functions
 
     First ensure the above modules/distributions are installed then
     build/test/install Net::LDAP by doing
 
-            perl Makefile.PL
-            make
-            make test
-            make install
+	perl Makefile.PL
+	make
+	make test
+	make install
 
     Several modules in the distribution contain documentation. Once installed
     you can use the 'perldoc Net::LDAP' command to obtain the documentation.
