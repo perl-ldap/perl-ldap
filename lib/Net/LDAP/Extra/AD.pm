@@ -44,8 +44,8 @@ sub change_ADpassword {
   $oldpw = encode('utf16le', '"'.decode('utf8', $oldpw).'"');
   $newpw = encode('utf16le', '"'.decode('utf8', $newpw).'"');
 
-  $self->modify($dn, changes => [ delete => { unicodePwd => $oldpw },
-                                  add    => { unicodePwd => $newpw } ]);
+  $self->modify($dn, changes => [ delete => [ unicodePwd => $oldpw ],
+                                  add    => [ unicodePwd => $newpw ] ]);
 }
 
 1;

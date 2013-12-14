@@ -186,6 +186,8 @@ sub connect_ldaps {
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
+  $arg->{sslserver} = $host  unless defined $arg->{sslserver};
+
   $ldap->{net_ldap_socket} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $port,
@@ -1082,7 +1084,6 @@ sub start_tls {
   $arg->{sslversion} = 'tlsv1'  unless defined $arg->{sslversion};
   $arg->{sslserver} = $ldap->{net_ldap_host}  unless defined $arg->{sslserver};
 
-  IO::Socket::SSL::context_init( { _SSL_context_init_args($arg) } );
   my $sock_class = ref($sock);
 
   return $mesg

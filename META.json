@@ -1,0 +1,81 @@
+{
+   "name" : "perl-ldap",
+   "version" : "0.57",
+   "abstract" : "LDAP client library",
+   "author" : [
+      "Graham Barr <gbarr@cpan.org>"
+   ],
+   "release_status" : "stable",
+   "resources" : {
+      "homepage" : "http://ldap.perl.org/",
+      "repository" : {
+         "url" : "git://github.com/perl-ldap/perl-ldap.git",
+         "web" : "https://github.com/perl-ldap/perl-ldap",
+         "type" : "git"
+      },
+      "bugtracker" : {
+         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=perl-ldap"
+      }
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.42"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "File::Basename" : "0",
+            "File::Compare" : "0",
+            "File::Path" : "0",
+            "IO::File" : "0",
+            "Test::More" : "0",
+            "Text::Soundex" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Convert::ASN1" : "0.2",
+            "MIME::Base64" : "0",
+            "perl" : "5.008001"
+         },
+         "recommends" : {
+            "IO::Socket::INET6" : "0",
+            "IO::Socket::SSL" : "1.26",
+            "Authen::SASL" : "2.00",
+            "URI::ldap" : "1.10",
+            "Time::Local" : "0"
+         },
+         "suggests" : {
+            "XML::SAX::Writer" : "0",
+            "XML::SAX::Base" : "0",
+            "LWP::Protocol" : "0",
+            "LWP::MediaTypes" : "0",
+            "HTTP::Negotiate" : "0",
+            "HTTP::Response" : "0",
+            "HTTP::Status" : "0",
+            "JSON" : "0"
+         }
+      }
+   },
+   "dynamic_config" : 1,
+   "generated_by" : "ExtUtils::MakeMaker version 6.66, hand-edited",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   }
+}

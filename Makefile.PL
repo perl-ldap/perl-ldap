@@ -20,6 +20,7 @@ resources
 
 check_nmake;	# check and download nmake.exe for Win32
 
+requires	'MIME::Base64'	=> 0;	# core module since Perl 5.7.3
 requires	'Convert::ASN1' => 0.20;
 
 test_requires	'Test::More';
@@ -27,6 +28,7 @@ test_requires	'File::Basename';
 test_requires	'File::Compare';
 test_requires	'File::Path';
 test_requires	'IO::File';
+test_requires	'Text::Soundex';
 
 features
         'IPv6 support' => [
@@ -36,10 +38,6 @@ features
 	'LDAPS support' => [
 		-default => 0,
 		'IO::Socket::SSL' => 1.26,
-	],
-	'Read/Write LDIF files' => [
-		-default => 0,
-		'MIME::Base64'  => 0,		# core module since Perl 5.7.3
 	],
 	'SASL authentication' => [
 		-default => 0,
@@ -58,7 +56,6 @@ features
 	],
 	'Read/Write DSML files' => [
 		-default => 0,
-		'MIME::Base64'     => 0,	# core module since Perl 5.7.3
 		'XML::SAX::Writer' => 0,
 		'XML::SAX::Base'   => 0,
 	],
