@@ -36,7 +36,7 @@ our $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
 # Net::LDAP::Extra will only exist is someone use's the module. But we need
 # to ensure the package stash exists or perl will complain that we inherit
-# from a non-existant package. I could just use the module, but I did not
+# from a non-existent package. I could just use the module, but I did not
 # want to.
 
 $Net::LDAP::Extra::create = $Net::LDAP::Extra::create = 0;
@@ -972,7 +972,7 @@ sub _forgetmesg {
 # corrected filter for subschema search.
 # added attributes to retrieve on subschema search.
 # added attributes to retrieve on rootDSE search.
-# changed several double qoute character to single quote
+# changed several double quote character to single quote
 # character, just to be consistent throughout the schema
 # and root_dse functions.
 #
