@@ -32,7 +32,6 @@ If FILTER is given, parse it.
 =item parse ( FILTER )
 
 Parse FILTER, updating the object to represent it.
-The next call to ber will return this filter encoded.
 
 =item as_string
 
