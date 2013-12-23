@@ -1,3 +1,21 @@
+0.58 -- Mon Dec 23 17:35:53 CET 2013
+
+Bug Fixes:
+* RT#91210: Paged.pm: fix example code
+* RT#90459: LDAP.pm: make LDAPS work after LDAP+start_tls
+* RT#91177: AD.pm: fix change_ADpassword()
+* RT#88792: Constant.pm: add LDAP_CONTROL_SORTRESPONSE
+
+Enhancements:
+* Filter.pod: remove misleading text
+* typo fixes
+* RT#91156: add META.json
+* DSML.pm, Protocol/ldap.pm: use MIME::Base64::decode()
+* make MIME::Base64 mandatory
+* README: update optional modules, slight reorganization
+* Entry.pod: update documentation of N:L:E->update
+* Makefile.PL: require Text::Soundex for tests
+
 0.57 -- Sun Jul 21 18:35:12 CEST 2013
 
 COMPATIBILITY WARNING:

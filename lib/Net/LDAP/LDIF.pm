@@ -14,7 +14,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = '0.21';
+our $VERSION = '0.22';
 
 # allow the letters r,w,a as mode letters
 my %modes = qw(r <  r+ +<  w >  w+ +>  a >>  a+ +>>);
