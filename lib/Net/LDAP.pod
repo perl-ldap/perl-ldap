@@ -102,6 +102,10 @@ Failures in changing the socket's SO_KEEPALIVE option are ignored.
 Timeout passed to L<IO::Socket> when connecting the remote server.
 (Default: 120)
 
+As L<IO::Socket::IP> does not support timeouts and recent versions
+of L<IO::Socket::SSL> prefer L<IO::Socket::IP> when it is installed,
+this option may not be fully supported on LDAPS connections.
+
 =item multihomed =E<gt> N
 
 Will be passed to L<IO::Socket> as the C<MultiHomed> parameter
