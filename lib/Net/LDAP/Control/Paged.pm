@@ -99,7 +99,7 @@ Net::LDAP::Control::Paged - LDAPv3 Paged results control object
    $page->cookie($cookie);
  }
 
- if (defined($cookie) && (length($cookie)) {
+ if (defined($cookie) && length($cookie)) {
    # We had an abnormal exit, so let the server know we do not want any more
    $page->cookie($cookie);
    $page->size(0);
