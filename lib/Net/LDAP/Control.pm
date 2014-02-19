@@ -170,13 +170,20 @@ Net::LDAP::Control - LDAPv3 control object base class
 
 =head1 DESCRIPTION
 
-C<Net::LDAP::Control> is a base-class for LDAPv3 control objects.
+C<Net::LDAP::Control> is the base-class for LDAPv3 control objects.
 
-=cut
+Controls provide a mechanism that allows to extend the semantics and
+arguments of LDAP operations.
+Controls may be attached to LDAP operations, and only affect the semantics
+of the operation they are attached to.
 
-##
-## Need more blurb in here about controls
-##
+Controls sent by clients are termed I<request controls>, and are set using
+the C<control> option of the respective LDAP operations.
+Controls sent by servers are called I<response controls>, they can be found
+using the C<control()> method of the response message objects.
+
+Servers announce the controls they support in the attribute C<supportedControls>
+in their L<RootDSE|Net::LDAP::RootDSE>.
 
 =head1 CONSTRUCTORS
 
@@ -301,6 +308,7 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 =head1 SEE ALSO
 
 L<Net::LDAP>
+L<Net::LDAP::RootDSE>
 L<Net::LDAP::Control::Assertion>
 L<Net::LDAP::Control::EntryChange>
 L<Net::LDAP::Control::ManageDsaIT>
