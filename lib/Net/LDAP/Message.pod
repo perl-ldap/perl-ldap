@@ -36,14 +36,11 @@ The code value in the result message from the server. Normally for a
 success zero will be returned. Constants for the result codes can be
 imported from the L<Net::LDAP> or L<Net::LDAP::Constant> module.
 
-=item control ( )
+=item control ( [ OID, ... ] )
 
-Return a list of controls that were returned from the server.
-
-=item control ( OID, ... )
-
-Return a list of controls with the given OIDs that were returned from
-the server.
+Return the list of controls that were returned from the server.
+If one or more OIDs are given as arguments, return only the controls
+of the OIDs given.
 
 =item dn ( )
 
