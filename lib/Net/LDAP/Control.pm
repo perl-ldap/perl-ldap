@@ -156,17 +156,18 @@ Net::LDAP::Control - LDAPv3 control object base class
 =head1 SYNOPSIS
 
  use Net::LDAP::Control;
- use Net::LDAP::Constant qw( LDAP_CONTROL_MATCHEDVALS );
+ use Net::LDAP::Constant qw( LDAP_CONTROL_MANAGEDSAIT );
 
- $ctrl = Net::LDAP::Control->new(
+ my $req_ctrl1 = Net::LDAP::Control->new( type => LDAP_CONTROL_MANAGEDSAIT );
+ my $req_ctrl2 = Net::LDAP::Control->new(
    type     => "1.2.3.4",
    value    => "help",
    critical => 0
  );
 
- $mesg = $ldap->search( @args, control => [ $ctrl ]);
+ $mesg = $ldap->search( @args, control => [ $req_ctrl1, $req_ctrl2 ]);
 
- $ctrl = Net::LDAP::Control->new( type => LDAP_CONTROL_MATCHEDVALS );
+ my @res_ctrls = $mesg->control();
 
 =head1 DESCRIPTION
 
