@@ -38,10 +38,11 @@ sub decode {
   # Put the new layer over the raw socket, to get rid of any old layer,
   # but only if we will be using a new layer. If we rebind but don't
   # negotiate a new security layer, the old layer remains in place.
-  $sasl and $bind->{resultCode} == LDAP_SUCCESS
-    and $sasl->property('ssf')
-    and $ldap->{net_ldap_socket} = 
-        $sasl->securesocket($ldap->{net_ldap_rawsocket});
+  if ($sasl and $bind->{resultCode} == LDAP_SUCCESS) {
+    $sasl->property('ssf', 0)  if !$sasl->property('ssf');
+    $ldap->{net_ldap_socket} = $sasl->securesocket($ldap->{net_ldap_rawsocket})
+      if ($sasl->property('ssf'));
+  }
 
   return $self->SUPER::decode($result)
     unless $bind->{resultCode} == LDAP_SASL_BIND_IN_PROGRESS;
