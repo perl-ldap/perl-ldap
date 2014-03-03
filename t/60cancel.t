@@ -60,7 +60,8 @@ SKIP: {
 
   # cancel the running search => should work [may fail, as it depends on the server's speed]
   $cancel = $ldap->cancel($search);
-  ok(!$cancel->code, "cancel a running operation: " . $cancel->code . ": " . $cancel->error);
+  ok(!$cancel->code, "cancel a running operation: " . $cancel->code . ": " . $cancel->error)
+    or diag("This test may have failed because the server was too fast");
 }
 
 
