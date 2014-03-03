@@ -315,6 +315,10 @@ sub debug {
     : $ldap->{net_ldap_debug};
 }
 
+sub sasl {
+  $_[0]->{sasl};
+}
+
 sub socket {
   my $ldap = shift;
   my %opt = @_;

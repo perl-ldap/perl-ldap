@@ -984,6 +984,11 @@ B<Example>
  # Get the attributes
  @atts = $schema->all_attributes;
 
+=item sasl ( )
+
+Returns the C<Authen::SASL> object associated with the LDAP object,
+or C<undef> if there isn't.
+
 =item socket ( OPTIONS )
 
 Returns the underlying socket object being used.
