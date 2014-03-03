@@ -122,6 +122,7 @@ sub new {
   $obj->{net_ldap_socket}->setsockopt(SOL_SOCKET, SO_KEEPALIVE, $arg->{keepalive} ? 1 : 0)
     if (defined($arg->{keepalive}));
 
+  $obj->{net_ldap_rawsocket} = $obj->{net_ldap_socket};
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
   $obj->{net_ldap_async}   = $arg->{async} ? 1 : 0;
@@ -151,7 +152,6 @@ sub connect_ldap {
     return undef;
   }
 
-  $ldap->{net_ldap_rawsocket} =
   $ldap->{net_ldap_socket} = $class->new(
     PeerAddr   => $host,
     PeerPort   => $port,
@@ -189,7 +189,6 @@ sub connect_ldaps {
 
   $arg->{sslserver} = $host  unless defined $arg->{sslserver};
 
-  $ldap->{net_ldap_rawsocket} =
   $ldap->{net_ldap_socket} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $port,
@@ -270,7 +269,6 @@ sub connect_ldapi {
 
   require IO::Socket::UNIX;
 
-  $ldap->{net_ldap_rawsocket} =
   $ldap->{net_ldap_socket} = IO::Socket::UNIX->new(
     Peer => $peer,
     Timeout  => defined $arg->{timeout}
