@@ -316,7 +316,12 @@ sub debug {
 }
 
 sub socket {
-  $_[0]->{net_ldap_socket};
+  my $ldap = shift;
+  my %opt = @_;
+
+  (exists($opt{sasl_layer}) && !$opt{sasl_layer})
+    ? $ldap->{net_ldap_rawsocket}
+    : $ldap->{net_ldap_socket};
 }
 
 sub host {
