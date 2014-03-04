@@ -1,3 +1,27 @@
+0.59 -- Tue Mar  4 16:21:15 CET 2014
+
+Bug Fixes:
+* Handle SASL security layers correctly on rebind
+  Thanks Ben Morrow <ben@morrow.me.uk>
+* Control/Paged.pm: fix typo in POD sample code
+
+Enhancements:
+* t/60cancel.t: add explanation about potential cause of failure
+* LDAP.pm: accessor method sasl for Authen::SASL object
+* LDAP.pm: adapt socket() to support SASL layers
+* Message.pod: consolidate dcwocumentation of control()
+* Control.pm: documentation update
+* LDAP.pod: add note about IO::Socket::IP and Timeout
+* LDIF.pm: overhaul
+  - set error when write fails
+  - simplify _read_entry
+  - simplify _write_entry
+  - coding style harmonization
+  - error checks when reading changetype: delete
+  - make _error() return undef/empty list, adapt callers
+  - refactor handling DNs when reading
+  - new method _read_attribute_value()
+
 0.58 -- Mon Dec 23 17:35:53 CET 2013
 
 Bug Fixes:
