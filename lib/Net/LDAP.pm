@@ -122,6 +122,7 @@ sub new {
   $obj->{net_ldap_socket}->setsockopt(SOL_SOCKET, SO_KEEPALIVE, $arg->{keepalive} ? 1 : 0)
     if (defined($arg->{keepalive}));
 
+  $obj->{net_ldap_rawsocket} = $obj->{net_ldap_socket};
   $obj->{net_ldap_resp}    = {};
   $obj->{net_ldap_version} = $arg->{version} || $LDAP_VERSION;
   $obj->{net_ldap_async}   = $arg->{async} ? 1 : 0;
@@ -314,8 +315,17 @@ sub debug {
     : $ldap->{net_ldap_debug};
 }
 
+sub sasl {
+  $_[0]->{sasl};
+}
+
 sub socket {
-  $_[0]->{net_ldap_socket};
+  my $ldap = shift;
+  my %opt = @_;
+
+  (exists($opt{sasl_layer}) && !$opt{sasl_layer})
+    ? $ldap->{net_ldap_rawsocket}
+    : $ldap->{net_ldap_socket};
 }
 
 sub host {
@@ -425,15 +435,16 @@ sub bind {
 
       # If we're talking to a round-robin, the canonical name of
       # the host we are talking to might not match the name we
-      # requested
+      # requested. Look at the rawsocket because SASL layer filehandles
+      # don't support socket methods.
       my $sasl_host;
 
       if (exists($arg->{sasl_host})) {
         if ($arg->{sasl_host}) {
           $sasl_host = $arg->{sasl_host};
         }
-        elsif ($ldap->{net_ldap_socket}->can('peerhost')) {
-          $sasl_host = $ldap->{net_ldap_socket}->peerhost;
+        elsif ($ldap->{net_ldap_rawsocket}->can('peerhost')) {
+          $sasl_host = $ldap->{net_ldap_rawsocket}->peerhost;
         }
       }
       $sasl_host ||= $ldap->{net_ldap_host};
@@ -452,8 +463,8 @@ sub bind {
 
     # Tell SASL the local and server IP addresses
     $sasl_conn->property(
-      sockname => $ldap->{net_ldap_socket}->sockname,
-      peername => $ldap->{net_ldap_socket}->peername,
+      sockname => $ldap->{net_ldap_rawsocket}->sockname,
+      peername => $ldap->{net_ldap_rawsocket}->peername,
     );
 
     my $initial = $sasl_conn->client_start;
@@ -940,6 +951,7 @@ sub process {
 sub _drop_conn {
   my ($self, $err, $etxt) = @_;
 
+  delete $self->{net_ldap_rawsocket};
   my $sock = delete $self->{net_ldap_socket};
   close($sock)  if $sock;
 

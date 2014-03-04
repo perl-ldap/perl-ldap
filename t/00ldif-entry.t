@@ -49,8 +49,8 @@ my @entry = ($e, $ldif->read);
 
 ok($ldif->version == 1, "version == 1");
 
-Net::LDAP::LDIF->new($outfile1,"w")->write(@entry);
-Net::LDAP::LDIF->new($outfile2,"w", version => 1)->write(@entry);
+Net::LDAP::LDIF->new($outfile1,"w")->write_entry(@entry);
+Net::LDAP::LDIF->new($outfile2,"w", version => 1)->write_entry(@entry);
 
 ok(!compare_text($cmpfile1,$outfile1), $cmpfile1);
 
@@ -154,7 +154,7 @@ $outfile = "$TEMPDIR/00-out3.ldif";
 $cmpfile = "data/00-cmp2.ldif";
 
 $ldif = Net::LDAP::LDIF->new($outfile,"w");
-$ldif->write($e);
+$ldif->write_entry($e);
 $ldif->write_cmd($e);
 $ldif->done;
 ok(!compare_text($cmpfile,$outfile), $cmpfile);

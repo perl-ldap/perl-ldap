@@ -102,6 +102,10 @@ Failures in changing the socket's SO_KEEPALIVE option are ignored.
 Timeout passed to L<IO::Socket> when connecting the remote server.
 (Default: 120)
 
+As L<IO::Socket::IP> does not support timeouts and recent versions
+of L<IO::Socket::SSL> prefer L<IO::Socket::IP> when it is installed,
+this option may not be fully supported on LDAPS connections.
+
 =item multihomed =E<gt> N
 
 Will be passed to L<IO::Socket> as the C<MultiHomed> parameter
@@ -980,9 +984,34 @@ B<Example>
  # Get the attributes
  @atts = $schema->all_attributes;
 
-=item socket ( )
+=item sasl ( )
 
-Returns the underlying C<IO::Socket> object being used.
+Returns the C<Authen::SASL> object associated with the LDAP object,
+or C<undef> if there isn't.
+
+=item socket ( OPTIONS )
+
+Returns the underlying socket object being used.
+
+The exact object type returned depends on whether SASL layers are
+established.
+Without SASL layers the result is always an C<IO::Socket> object;
+with SASL layers the outcome depends on the options given:
+
+=over 4
+
+=item sasl_layer =E<gt> FLAG
+
+This option is only relevant if SASL layers are established.
+
+If it it missing or if is set to a TRUE value, then the SASL
+layer handle is returned. Depending on the SASL library used,
+the object returned is not necessarily an C<IO::Socket> object.
+
+If it exists, but is set to a value evaluating to FALSE, then the
+base C<IO::Socket> object underneath the SASL layer is returned.
+
+=back
 
 =item host ( )
 
