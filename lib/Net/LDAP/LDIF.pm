@@ -131,7 +131,7 @@ sub _read_lines {
 }
 
 
-# read attribute value from URL (currently only file: URLs)
+# read attribute value from URL
 sub _read_url_attribute {
   my $self = shift;
   my $url = shift;
@@ -148,6 +148,16 @@ sub _read_url_attribute {
       $line = <$fh>;
     }
     close($fh);
+  }
+  elsif ($url =~ /^(https?|ftp|gopher|news:)/ and
+         eval { require LWP::UserAgent; }) {
+    my $ua = LWP::UserAgent->new();
+    my $response = $ua->get($url);
+
+    return $self->_error("can't get data from $url: $!", @ldif)
+      if (!$response->is_success);
+
+    $line = $response->decoded_content();
   }
   else {
     return $self->_error('unsupported URL type', @ldif);
@@ -169,7 +179,7 @@ sub _read_attribute_value {
     require MIME::Base64;
     $value = MIME::Base64::decode($value);
   }
-  # URL value: read in file:// URL, fail on others
+  # URL value: read from URL
   elsif ($type && $type eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
     $value = $self->_read_url_attribute($value, @ldif);
     return  if (!defined($value));
