@@ -59,6 +59,10 @@ features
 		'XML::SAX::Writer' => 0,
 		'XML::SAX::Base'   => 0,
 	],
+	'Extended URL support when reading LDIFs' => [
+		-default => 0,
+		'LWP' => 0,
+	],
 	'LWP support for the LDAP protocol family' => [
 		-default => 0,
 		'LWP::Protocol'   => 0,
