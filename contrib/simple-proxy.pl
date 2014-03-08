@@ -24,10 +24,10 @@ sub handle($$)
   # read from client
   asn_read($clientsocket, my $reqpdu);
   log_request($reqpdu);
-  
+
   # send to server
   print $serversocket $reqpdu or die "Could not send PDU to server\n";
-  
+
   # read from server
   my $ready;
   my $sel = IO::Select->new($serversocket);
@@ -74,7 +74,7 @@ sub run_proxy($$)
   my $targetsock = shift;
 
   return unless ($listenersock && $targetsock);
-  
+
   my $sel = IO::Select->new($listenersock);
   my %Handlers;
   while (my @ready = $sel->can_read) {
@@ -102,7 +102,7 @@ my $listenersock = IO::Socket::INET->new(
 	Proto => 'tcp',
 	Reuse => 1,
 	LocalPort => 7070 )
-  or  die "Could not create listener socket: $!\n";	
+  or  die "Could not create listener socket: $!\n";
 
 
 my $targetsock = IO::Socket::INET->new(
@@ -120,17 +120,17 @@ __END__
 
 Hi,
 
-I noticed in the TODO that there was a request for a simple proxy which 
+I noticed in the TODO that there was a request for a simple proxy which
 can act as a man-in-the-middle.
 
-Well, the attached script provides such a proxy, it is really a simple 
-proxy as it can currently handle only one client at the time, it will 
+Well, the attached script provides such a proxy, it is really a simple
+proxy as it can currently handle only one client at the time, it will
 dump requests and responses to STDOUT both in ASN1 and as perl structure.
 
 Cheers,
 
 Hans
-ps. If you need a little more power like returning entries on a query I 
+ps. If you need a little more power like returning entries on a query I
 suggest to have a look at Net::LDAP::Server on CPAN.
 
 # EOF

@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-#  
+#
 #----------------------------------------------------------------------------
 #
 # This program was written by Clif Harden.
@@ -38,13 +38,13 @@ my $errstr = 0;
 my $errmsg = "";
 
 $errmsg = ldap_error_text($errstr);
-   
+
 #
 # Initialize opt hash.
 # You can change the defaults to match your setup.
 # This can eliminate the need for many of the input
 # options on the command line.
-# 
+#
 my %opt = (
   'b' => 'dc=harden,dc=org',
   'h' => 'localhost',
@@ -56,7 +56,7 @@ my %opt = (
   'v' => 'commonName'
 );
 
-if ( @ARGV == 0 ) 
+if ( @ARGV == 0 )
 {
 #
 # print usage message.
@@ -66,14 +66,14 @@ Usage();
 
 #
 # Get command line options.
-# 
+#
 
 getopts('b:f:h:d:D:w:V:a:v:',\%opt);
 
 
-if ( !defined( $opt{'f'}) || !-e $opt{'f'} ) 
+if ( !defined( $opt{'f'}) || !-e $opt{'f'} )
 {
-# 
+#
 # No jpeg file specified or the file does not exist.
 #
 print "$opt{'f'}\n";
@@ -89,8 +89,8 @@ $, = undef;
 #
 open(IN, "<$opt{'f'}");
 binmode(IN);
-$_ = <IN>;   
-close(IN); 
+$_ = <IN>;
+close(IN);
 
 #
 # build filter string
@@ -116,7 +116,7 @@ my $ldap = new Net::LDAP($opt{'h'},
 $ldap->bind($opt{'D'}, password => "$opt{'w'}", version => $opt{'V'}) or die $@;
 
 #
-# Search directory for record that matches filter 
+# Search directory for record that matches filter
 #
 my $mesg = $ldap->search(
   base   => $opt{'b'},
@@ -164,7 +164,7 @@ if(ref($attr))
   # Entry already has a jpegPhoto, replace it.
   #
   push( @memberChange, "replace" );     # ldap replace operation
-  push( @memberChange, \@addMember );     # ldap data to add 
+  push( @memberChange, \@addMember );     # ldap data to add
 }
 else
 {
@@ -172,18 +172,18 @@ else
   # Entry does not have a jpegPhoto, add it.
   #
   push( @memberChange, "add" );     # ldap add operation
-  push( @memberChange, \@addMember );     # ldap data to add 
-}                                                                          
+  push( @memberChange, \@addMember );     # ldap data to add
+}
 
 $mesg = $ldap->modify( $dn, changes => [ @memberChange ] ) or die $@;
 
-if ( $mesg->code ) 
+if ( $mesg->code )
 {
    $errstr = $mesg->code;
    print "Error code:  $errstr\n";
    $errmsg = ldap_error_text($errstr);
    print "$errmsg\n";
-   
+
 }
 
 $ldap->unbind;
@@ -211,7 +211,7 @@ sub Usage
    print( "\n" );
    print( "\n" );
    exit( 1 );
-}                                                                               
+}
 
 __END__
 
@@ -221,8 +221,8 @@ jpegLoad.pl -  A script to load a jpeg picture into the jpegPhoto attribute of a
 
 =head1 SYNOPSIS
 
-The intent of this script is to show the user how to load a 
-picture that is in jpeg format into the jpegPhoto attribute of 
+The intent of this script is to show the user how to load a
+picture that is in jpeg format into the jpegPhoto attribute of
 a directory entry.
 The entry in question must have the schema defined to
 allow the loading of the jpegPhoto attribute.
@@ -251,8 +251,8 @@ to point to your file pathname of perl.
                     -w <password> -a <attribute> -v <data> \
                     -f <jpeg file>
 
-Inside the script is a opt hash that can be initialized to 
-default values that can eliminate the need for many of the 
+Inside the script is a opt hash that can be initialized to
+default values that can eliminate the need for many of the
 input options on the command line.
 
 -------------------------------------------------------------------

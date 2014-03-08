@@ -12,7 +12,7 @@ The files in this directory are
   jpegLoad.pl     Load JPEG photos into an LDAP directory entry
   ldapmodify.pl   A (simplified) ldapmodify clone written in Perl
   ldifdiff.pl     Generate LDIF change diff between two sorted LDIF files
-  ldifsort.pl	  Sort an LDIF file by the specified key attribute. 
+  ldifsort.pl	  Sort an LDIF file by the specified key attribute.
   ldifuniq.pl	  Cull unique entries from a reference file with
                   respect to a comparison file.
   LWPsearch.pl    A sample application to show the usage of LWP::Protocol::LDAP

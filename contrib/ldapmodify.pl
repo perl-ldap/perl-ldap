@@ -2,7 +2,7 @@
 
 # $Id: ldapmodify.pl,v 1.1 2001/10/23 15:07:41 gbarr Exp $
 
-=head1 NAME 
+=head1 NAME
 
 ldapmodify.pl - A (simplified) ldapmodify clone written in Perl.
 
@@ -12,7 +12,7 @@ ldapmodify.pl is a simplified ldapmodify clone written in Perl.
 
 =head1 SYNOPSIS
 
-ldapmodify.pl [B<-a>] [B<-c>] [B<-e errors>] [B<-f file>] [B<-D binddn>] 
+ldapmodify.pl [B<-a>] [B<-c>] [B<-e errors>] [B<-f file>] [B<-D binddn>]
 [B<-w passwd>] [B<-h ldaphost>] [B<-p port>]
 
 The options have the same meaning as those for the standard ldapmodify command.
@@ -44,7 +44,7 @@ while (my $change = $ldif->read_entry()) {
 		print STDERR "ldapmodify: ", $result->error, "\n";
 		if ($opt{e}) {
 			if (!$ldiferr) {
-				$ldiferr = Net::LDAP::LDIF->new($opt{e}, 'a', change => 1) 
+				$ldiferr = Net::LDAP::LDIF->new($opt{e}, 'a', change => 1)
 					or die "$opt{e}: $!\n";
 			}
 			print { $ldiferr->{fh} } "# Error: ", $result->error;

@@ -8,7 +8,7 @@ version is written to standard output.
 
 =head1 DESCRIPTION
 
-Sorts an LDIF file by the specified key attribute. 
+Sorts an LDIF file by the specified key attribute.
 
 =head1 SYNOPSIS
 
@@ -19,13 +19,13 @@ ldifsort.pl B<-k keyattr> [B<-andc>] file.ldif
 =item B<-k>
 
 Specifies the key attribute for making sort comparisons. If 'dn' is
-specified, sorting is done by the full DN string, which can be composed of 
+specified, sorting is done by the full DN string, which can be composed of
 different attributes for different entries.
 
 =item B<-a>
 
 Specifies that attributes within a given entry should also be sorted. This
-has the side effect of removing all comments and line continuations in the 
+has the side effect of removing all comments and line continuations in the
 LDIF file.
 
 =item B<-n>
@@ -36,7 +36,7 @@ comparisons are done.
 =item B<-d>
 
 Specifies that the key attribute is a DN. Comparisons are done on a
-DN-normalized version of attribute values. This is the default 
+DN-normalized version of attribute values. This is the default
 behavior if 'dn' is passed as the argument to B<-k>.
 
 =item B<-c>
@@ -92,7 +92,7 @@ while (<LDIFH>) {
 sub cmpattr { $a->[0] cmp $b->[0] }
 sub cmpattrnum { $a->[0] <=> $b->[0] }
 my %canonicaldns;
-sub cmpdn { 
+sub cmpdn {
 	my $cadn = ($canonicaldns{$a->[0]} ||= lc(canonical_dn($a->[0])));
 	my $cbdn = ($canonicaldns{$b->[0]} ||= lc(canonical_dn($b->[0])));
 	$cadn cmp $cbdn;

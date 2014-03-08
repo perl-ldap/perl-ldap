@@ -6,8 +6,8 @@ ldifdiff.pl -- Generates LDIF change diff between two sorted LDIF files.
 
 =head1 DESCRIPTION
 
-ldifdiff.pl takes as input two sorted LDIF files, source and target, and 
-generates on standard output the LDIF changes needed to transform the target 
+ldifdiff.pl takes as input two sorted LDIF files, source and target, and
+generates on standard output the LDIF changes needed to transform the target
 into the source.
 
 =head1 SYNOPSIS
@@ -20,9 +20,9 @@ ldifdiff.pl B<-k|--keyattr keyattr> [B<-a|--sourceattrs attr1,attr2,...>] [B<-c|
 
 =item B<-k|--keyattr> keyattr
 
-Specifies the key attribute to use when comparing source and target entries. 
-Entries in both LDIF files must be sorted by this attribute for comparisons to 
-be meaningful. F<ldifsort.pl> can be used to sort LDIF files by a given 
+Specifies the key attribute to use when comparing source and target entries.
+Entries in both LDIF files must be sorted by this attribute for comparisons to
+be meaningful. F<ldifsort.pl> can be used to sort LDIF files by a given
 attribute.
 
 =item B<-a|--sourceattrs attr1,attr2,...>
@@ -32,12 +32,12 @@ source and target entries. By default, all attributes are considered.
 
 =item B<-c|--ciscmp attr1,...>
 
-(Optional) Compare values of the specified attributes case-insensitively. The 
+(Optional) Compare values of the specified attributes case-insensitively. The
 default set is: mail manager member objectclass owner uid uniqueMember
 
 =item B<-n|--numcmp attr1,...>
 
-(Optional) Compare values of the specified attributes numerically. The 
+(Optional) Compare values of the specified attributes numerically. The
 default set is: employeeNumber
 
 =item B<--dnattrs attr1,...>
@@ -49,7 +49,7 @@ compared. The default set is: manager member owner uniqueMember
 
 (Optional) Specifies a list of attribues to be treated as "shared" attributes,
 where the source may not be a sole authoritative source. When modifying
-these attributes, separate "delete" and "add" LDIF changes are generated, 
+these attributes, separate "delete" and "add" LDIF changes are generated,
 instead of a single "replace" change. The default set is objectClass.
 
 =item B<sourcefile>
@@ -129,7 +129,7 @@ sub dnsuperior { my $rv = ($_[0] =~ /^.*?(?<!\\),(.*)/)[0]; $rv }
 sub cmpDNs
 {
 	my ($adn, $bdn) = @_;
-	my $cadn = canonical_dn($adn, casefold => 'lower'); 
+	my $cadn = canonical_dn($adn, casefold => 'lower');
 	my $cbdn = canonical_dn($bdn, casefold => 'lower');
 	my $rdnattr = lc rdnattr($cadn);
 	if ($ciscmp{$rdnattr}) { $cadn = lc($cadn), $cbdn = lc($cbdn) }
@@ -138,14 +138,14 @@ sub cmpDNs
 }
 
 sub cmpEntries
-{ 
+{
 	my ($a, $b) = @_;
 	my $dncmp = cmpDNs($a->dn, $b->dn);
 
-	if (lc($keyattr) eq 'dn') { 
+	if (lc($keyattr) eq 'dn') {
 		return ($dncmp, $dncmp);
 	}
-	else { 
+	else {
 		my $aval = $a->get_value($keyattr);
 		my $bval = $b->get_value($keyattr);
 		if ($ciscmp{$keyattr}) {
@@ -159,7 +159,7 @@ sub cmpEntries
 
 # Diffs two LDIF data sources
 sub diff
-{ 
+{
 	my ($source, $target) = @_;
 	my ($sourceentry, $targetentry, $incr_source, $incr_target, @ldifchanges);
 
@@ -185,15 +185,15 @@ sub diff
 
 		my ($entrycmp, $dncmp) = cmpEntries($sourceentry, $targetentry);
 
-		# Check if the current source entry has a higher sort position than 
-		# the current target. If so, we interpret this to mean that the 
+		# Check if the current source entry has a higher sort position than
+		# the current target. If so, we interpret this to mean that the
 		# target entry no longer exists on the source. Issue a delete to LDAP.
 		if ($entrycmp > 0) {
 			$targetentry->delete;
 			$ldifout->write_entry($targetentry);
             $incr_target = 1, next;
 		}
-		# Check if the current source entry has a lower sort position than 
+		# Check if the current source entry has a lower sort position than
 		# the current target entry. If so, we interpret this to mean that the
 		# source entry doesn't exist on the target. Issue an add to LDAP.
 		elsif ($entrycmp < 0) {
@@ -210,7 +210,7 @@ sub diff
 			my $rdnval = rdnval($sourceentry->dn);
 			my $newsuperior = dnsuperior($sourceentry->dn);
 			my $oldsuperior = dnsuperior($targetentry->dn);
-			my $changetype; 
+			my $changetype;
 
 			if (cmpDNs($oldsuperior, $newsuperior)) {
 				$changetype = 'moddn';
@@ -225,7 +225,7 @@ sub diff
 			$targetentry->delete('deleteoldrdn');
 			$targetentry->delete('newsuperior') if $changetype eq 'moddn';
 			delete($targetentry->{changetype});
-			
+
 			$targetentry->dn($sourceentry->dn);
 			$targetentry->replace($rdnattr, $sourceentry->get_value($rdnattr))
 				if $sourceentry->exists($rdnattr);
@@ -257,8 +257,8 @@ sub updateFromEntry
 		# add all source entry attributes
 		@attrs = $source->attributes;
 		# add any other attributes we haven't seen from the target entry
-		foreach my $tattr ($target->attributes) { 
-			push(@attrs, $tattr) unless grep(/^$tattr$/i, @attrs) 
+		foreach my $tattr ($target->attributes) {
+			push(@attrs, $tattr) unless grep(/^$tattr$/i, @attrs)
 		}
 	}
 
@@ -299,8 +299,8 @@ sub updateFromEntry
 
 		# Make changes as appropriate
 		if ($sharedattrs{$lcattr}) {
-			# For 'shared' attributes (e.g. objectclass) where $source may not 
-			# be a sole authoritative source, we issue separate delete and 
+			# For 'shared' attributes (e.g. objectclass) where $source may not
+			# be a sole authoritative source, we issue separate delete and
 			# add modifications instead of a single replace.
 			$target->delete($attr => [ values(%targetuniqvals) ])
 				if keys(%targetuniqvals);

@@ -27,6 +27,6 @@ my $search      = $ldap->search( base   => $delbranch,
 # trick for the sorting: tr/,// returns number of , (see perlfaq4 for details)
 foreach my $e (sort { $b->dn =~ tr/,// <=> $a->dn =~ tr/,// } $search->entries()) {
   $ldap->delete($e);
-}  
+}
 
 $ldap->unbind();
