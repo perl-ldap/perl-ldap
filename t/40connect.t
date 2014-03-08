@@ -20,8 +20,9 @@ ok($ldap, 'client with IPv4' .
 
 
 SKIP: {
-  skip('IO::Socket::INET6 not installed', 1)
-    unless (eval { require IO::Socket::INET6; });
+  skip('No IPv6 capable IO::Socket module installed', 1)
+    unless (eval { require IO::Socket::INET6; } or
+            eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); });
 
   $ldap = client(inet6 => 1);
   ok($ldap, 'client with IPv6' .

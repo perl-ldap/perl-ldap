@@ -28,7 +28,12 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			   LDAP_UNAVAILABLE
 			);
 
-use constant CAN_IPV6 => eval { require IO::Socket::INET6 } ? 1 : 0;
+# check for IPv6 support: prefer IO::Socket::IP 0.20+ over IO::Socket::INET6
+use constant CAN_IPV6 => eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); }
+			 ? 'IO::Socket::IP'
+			 : eval { require IO::Socket::INET6; }
+			   ? 'IO::Socket::INET6'
+			   : '';
 
 our $VERSION 	= '0.59';
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
@@ -141,7 +146,7 @@ sub new {
 sub connect_ldap {
   my ($ldap, $host, $arg) = @_;
   my $port = $arg->{port} || 389;
-  my $class = (CAN_IPV6) ? 'IO::Socket::INET6' : 'IO::Socket::INET';
+  my $class = (CAN_IPV6) ? CAN_IPV6 : 'IO::Socket::INET';
   my $domain = $arg->{inet4} ? AF_INET : ($arg->{inet6} ? AF_INET6 : AF_UNSPEC);
 
   # separate port from host overwriting given/default port

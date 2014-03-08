@@ -52,6 +52,7 @@
             "Time::Local" : "0"
          },
          "suggests" : {
+            "IO::Socket::IP" : "0.20",
             "XML::SAX::Writer" : "0",
             "XML::SAX::Base" : "0",
             "LWP::Protocol" : "0",

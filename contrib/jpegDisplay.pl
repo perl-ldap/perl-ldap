@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-#  
+#
 #----------------------------------------------------------------------------
 #
 # This program was written by Clif Harden.
@@ -29,7 +29,7 @@ use Getopt::Std;
 use Net::LDAP;
 use Net::LDAP::Filter;
 use Net::LDAP;
-use Net::LDAP::Util qw(ldap_error_name ldap_error_text); 
+use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
 use Tk;
 use Tk::JPEG;
 
@@ -38,7 +38,7 @@ use Tk::JPEG;
 # You can change the defaults to match your setup.
 # This can eliminate the need for many of the input
 # options on the command line.
-# 
+#
 my %opt = (
   'b' => 'dc=harden,dc=org',
   'h' => 'localhost',
@@ -50,7 +50,7 @@ my %opt = (
   'v' => 'commonName'
 );
 
-if ( @ARGV == 0 ) 
+if ( @ARGV == 0 )
 {
 #
 # print usage message.
@@ -60,7 +60,7 @@ Usage();
 
 #
 # Get command line options.
-# 
+#
 
 getopts('b:h:d:D:w:V:a:v:',\%opt);
 
@@ -90,7 +90,7 @@ my $ldap = new Net::LDAP($opt{'h'},
 $ldap->bind($opt{'D'}, password => "$opt{'w'}", version => $opt{'V'}) or die $@;
 
 #
-# Search directory for record that matches filter 
+# Search directory for record that matches filter
 #
 $mesg = $ldap->search(
   base   => $opt{b},
@@ -120,7 +120,7 @@ else
   $dn = $entry->dn();
 
     my $attr = $entry->get_value("jpegPhoto");
-    if(ref($attr)) 
+    if(ref($attr))
       {
       $picture = @$attr[0];
       }
@@ -132,7 +132,7 @@ else
       print "\n";
       $ldap->unbind;
       exit;
-     } 
+     }
 }
 
 #
@@ -161,9 +161,9 @@ $ldap->unbind;
 #
 my $mw  = MainWindow->new();
 
-my $list = $mw ->Listbox( -height => 1, width => length($dn)  );  
-$list->pack( -side => "top" );  
-$list->insert("end", $dn);                                                                                 
+my $list = $mw ->Listbox( -height => 1, width => length($dn)  );
+$list->pack( -side => "top" );
+$list->insert("end", $dn);
 my $image = $mw->Photo(-file => $jpegFile, -format => "jpeg" );
 
 print "\n";
@@ -198,7 +198,7 @@ sub Usage
    print( "\n" );
    print( "\n" );
    exit( 1 );
-}                                                                               
+}
 
 __END__
 
@@ -232,8 +232,8 @@ to point to your file pathname of perl.
  Usage: jpegDisplay.pl -b <base> -h <host> -d <number> -D <DN> \
                     -w <password> -a <attribute> -v <data>
 
-Inside the script is a opt hash that can be initialized to 
-default values that can elminate the need for many of the 
+Inside the script is a opt hash that can be initialized to
+default values that can elminate the need for many of the
 input options on the command line.
 
 -------------------------------------------------------------------

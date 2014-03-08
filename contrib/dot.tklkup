@@ -5,15 +5,15 @@
 #
 # Uncomment and setup the bind DN line if you want to pre-populate
 # the bind DN value.
-# binddn: cn=directory manager, dc=dummy, dc=com 
+# binddn: cn=directory manager, dc=dummy, dc=com
 #
 #
 # Uncomment the followref line if you wish to automatically follow
 # referrals on entry modification.  No value is needed after the
 # colon.
 #
-# followref: 
-# 
+# followref:
+#
 #
 # Default main window width, user may need to adjust
 # Sun systems seem to do best on 600.
@@ -57,20 +57,20 @@ sslport: 636
 # Set up the search attributes you want listed on
 # the Attribute and Select Additional Attributes button.
 #
-attribute: uid 
-attribute: cn 
-attribute: sn 
-attribute: rfc822mailbox 
-attribute: uidNumber 
-attribute: gidNumber 
-attribute: telephonenumber 
-attribute: facsimiletelephonenumber 
-attribute: givenname 
-attribute: fullname 
+attribute: uid
+attribute: cn
+attribute: sn
+attribute: rfc822mailbox
+attribute: uidNumber
+attribute: gidNumber
+attribute: telephonenumber
+attribute: facsimiletelephonenumber
+attribute: givenname
+attribute: fullname
 attribute: firstname
 #
 # Set up the Directory Servers you want listed on
 # the Select Directory Server button.
 #
 server: directory.ucalgary.ca: ou=People,o=ucalgary.ca
-server: www.uark.edu: o=University of Arkansas, c=US 
+server: www.uark.edu: o=University of Arkansas, c=US

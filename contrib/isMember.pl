@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
-#isMember.pl 
-#pass the common name of a group entry (assuming groupOfUniqueNames objectclass) and 
+#isMember.pl
+#pass the common name of a group entry (assuming groupOfUniqueNames objectclass) and
 #a uid, the script will tell you if the uid is a member of the group or not.
 
 $version = 3.0_01;
@@ -52,7 +52,7 @@ my $isMember = 0; # by default you are not a member
 my $ldap = new Net::LDAP ($opt_h, port=> $opt_p);
 
 #will bind as specific user if specified else will be binded anonymously
-$ldap->bind($opt_D, password=> $opt_p) || die "failed to bind as $opt_D"; 
+$ldap->bind($opt_D, password=> $opt_p) || die "failed to bind as $opt_D";
 
 
 #get user DN first
@@ -87,7 +87,7 @@ eval
 
    &getIsMember($groupDN,$userDN);
 
-}; 
+};
 
 
 die $mesg->error if $mesg->code;
@@ -170,9 +170,9 @@ sub getIsMember
 
         #if we find an entry it returns true
 	#else keep searching
-	
+
         eval
-	{ 
+	{
           my $entry = $mesg->pop_entry();
 	  print "ldapurl",$entry->dn,"\n" if $DEBUG;
 
@@ -185,7 +185,7 @@ sub getIsMember
 
 
       my $membervalues = $entry->get_value("uniquemember", asref => 1);
-    
+
      foreach my $val (@{$membervalues})
      {
        my $return= &getIsMember($val,$userDN);
@@ -193,13 +193,13 @@ sub getIsMember
        #stop as soon as we have a winner
        last if $isMember;
      }
-     
+
 
      die $mesg->error if $mesg->code;
 
 
      #if make it this far then you must be a member
-  
+
    };
 
    return $0;

@@ -28,12 +28,16 @@ QUICK START GUIDE:
 	Convert::ASN1     - required
 	IO::Socket::SSL   - optional, for LDAPS / start_tls support
 	IO::Socket::INET6 - optional, for IPv6 support
+	IO::Socket::IP    - optional, for IPv6 support
 	Authen::SASL      - optional, for SASL authentication
 	Digest::MD5       - optional, for SASL DIGEST-MD5 mechanism
 	GSSAPI            - optional, for SASL GSSAPI mechanism
 	URI::ldap         - optional, for URL parsing
 	XML::SAX::Writer  - optional, for Net::LDAP::DSML
 	Time::Local       - optional, for Net::LDAP::Util's time conversion functions
+
+    If IO::Socket::IP 0.20 or higher is installed, it is dynamically (at runtime)
+    preferred over IO::Socket::INET6.
 
     First ensure the above modules/distributions are installed then
     build/test/install Net::LDAP by doing

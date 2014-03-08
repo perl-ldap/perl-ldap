@@ -10,10 +10,10 @@ comparison file.
 =head1 DESCRIPTION
 
 ldifuniq.pl takes as input two LDIF files, a reference file and a comparison
-file. Each entry in the reference file is compared to its counterpart in the 
-comparison file. If it does not have a counterpart, or if the counterpart is 
-not identical, the reference entry is printed to standard output. Otherwise no 
-output is generated. This behavior is analogous to the -u option of the uniq 
+file. Each entry in the reference file is compared to its counterpart in the
+comparison file. If it does not have a counterpart, or if the counterpart is
+not identical, the reference entry is printed to standard output. Otherwise no
+output is generated. This behavior is analogous to the -u option of the uniq
 command.
 
 =head1 SYNOPSIS
@@ -66,7 +66,7 @@ while (<REFFH>) {
 	my $refrec = $_; $refrec .= "\n" if $refrec !~ /\n\n$/;
 	my $dn = getdn($refrec);
 	my $pos = $cmpdnpos{$dn};
-	if ($pos eq undef) { 
+	if ($pos eq undef) {
 		print $refrec; next; # Not in cmpfile, print the entry.
 	}
 	seek(CMPFH, $pos, 0);

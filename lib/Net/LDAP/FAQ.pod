@@ -521,6 +521,15 @@ IO::Socket::INET6 gets installed.
 You can obtain the latest releases from
   http://search.cpan.org/search?module=IO::Socket::INET6
 
+=item IO::Socket::IP
+
+This is an alternative to using IO::Socket::INET6. Like that module, it gets
+detected automatically at runtime. If version 0.20 or higher is installed, is
+is preferred over IO::Socket::INET6 and IO::Socket::INET for all IP connections.
+
+You can obtain the latest releases from
+  http://search.cpan.org/search?module=IO::Socket::IP
+
 =item Authen::SASL
 
 This module is optional.  You only need to install Authen::SASL
