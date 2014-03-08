@@ -6,7 +6,7 @@ package Net::LDAP::Filter;
 
 use strict;
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 # filter       = "(" filtercomp ")"
 # filtercomp   = and / or / not / item
