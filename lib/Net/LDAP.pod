@@ -158,14 +158,12 @@ LDAPv2.
 Use REGEX to denote the names of attributes that are to be considered
 binary in search results.
 
-When running on Perl 5.8 and this option is given Net::LDAP converts all
+When this option is given, Net::LDAP converts all
 values of attributes not matching this REGEX into Perl UTF-8 strings
 so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
 
-If this option is not given or the version of Perl Net::LDAP is running
-on is too old strings are encoded the same as in earlier versions of
-perl-ldap.
+If this option is not given, attribute values are treated as byte strings.
 
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
@@ -727,13 +725,12 @@ See L</CALLBACKS> below.
 Use REGEX to denote the names of attributes that are to be considered
 binary in search results.
 
-When running on Perl 5.8 and this option is given Net::LDAP converts all
+When this option is given, Net::LDAP converts all
 values of attributes not matching this REGEX into Perl UTF-8 strings
 so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
 
-If this option is not given or the version of Perl Net::LDAP is running on
-is too old strings are encoded the same as in earlier versions of perl-ldap.
+If this option is not given, attribute values are treated as byte strings.
 
 The value provided here overwrites the value inherited from the constructor.
 
