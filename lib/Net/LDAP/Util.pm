@@ -753,7 +753,7 @@ my $generalizedTime = shift;
 
     # Time::Local's timegm() interpret years strangely
     if ($year >= 1000) {
-      $dec = "0.$dec";
+      $dec = defined($dec) ? "0.$dec" : 0;
 
       # decimals in case of missing minutes / seconds - see RFC 4517
       if (!defined($min)) {
