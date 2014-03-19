@@ -790,12 +790,15 @@ my $generalizedTime = shift;
 
           # make decimal part directional
           if ($dec != 0) {
+            my $sign = '';
+
             if ($time < 0) {
               $dec = 1 - $dec;
               $time++; 
+              $sign = '-'  if ($time == 0);
             }
             $dec =~ s/^0\.//;
-            $time .= ".$dec";
+            $time = "${sign}${time}.${dec}";
           }
 
           return $time;
@@ -841,18 +844,19 @@ sub time_to_generalizedTime($;@)
 my $arg = shift;
 my %opt = @_;
 
-  if ($arg =~ /^(\-?\d*)(?:[.,](\d*))?$/) {
-    my ($time, $dec) = ($1, $2);
+  if ($arg =~ /^(\-?)(\d*)(?:[.,](\d*))?$/) {
+    my ($sign, $time, $dec) = ($1, $2, $3);
 
     $dec = defined($dec) ? "0.$dec" : 0;
 
     # decimal part of time is directional: make sure to have it positive
-    if ($time < 0 && $dec != 0) {
-      $time--;
-      $dec = 1 - $dec;
+    if ($sign) {
+      if ($dec != 0) {
+        $time++;
+        $dec = 1 - $dec;
+      }
+      $time = -$time;
     }
-
-    $time = int($time);
 
     my ($sec,$min,$hour,$mday,$month,$year,$wday,$yday,$isdst) = gmtime(int($time));
 
