@@ -465,6 +465,34 @@ sub _write_attrs {
   $res;
 }
 
+sub _write_controls {
+  my($self, @ctrls) = @_;
+  my $res = 1;
+  my $fh = $self->{fh};
+
+  require Net::LDAP::Control;
+
+  foreach my $ctrl (@ctrls) {
+    my $ln = 'control: ' . $ctrl->type . ($ctrl->critical ? ' true' : ' false');
+    my $v = $ctrl->value;
+
+    if (defined($v)) {
+      $v = Encode::encode_utf8($v)
+        if (CHECK_UTF8 and Encode::is_utf8($v));
+
+      if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff]| $)/) {
+        require MIME::Base64;
+        $v = MIME::Base64::encode($v, '');
+        $ln .= ':';	# indicate Base64-encoding of $v
+      }
+
+      $ln .= ': ' . $v;
+    }
+    $res &&= print $fh _wrap($ln, $self->{wrap}), "\n";
+  }
+  $res;
+}
+
 sub _write_dn {
   my($self, $dn) = @_;
   my $encode = $self->{encode};
@@ -585,6 +613,11 @@ sub _write_one
     $res &&= $self->write_version()  unless ($self->{write_count}++);
     $res &&= print $fh "\n";
     $res &&= $self->_write_dn($entry->dn);
+
+    $res &&= $self->_write_controls(ref($opt{control}) eq 'ARRAY'
+                                    ? @{$opt{control}}
+                                    : ( $opt{control} ))
+      if ($opt{control});
 
     $res &&= print $fh "changetype: $type\n";
 
