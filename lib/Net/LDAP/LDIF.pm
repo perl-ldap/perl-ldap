@@ -227,13 +227,20 @@ sub _read_entry {
 
     if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
       my($oid,$critical,$value) = ($1,$2,$3);
-      my $type = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
 
       $critical = ($critical && $critical =~ /true/) ? 1 : 0;
 
-      $value = $self->_read_attribute_value($type, $value, @ldif)
-        if (defined($value) && $type);
-      return  if !defined($value);
+      if (defined($value)) {
+        my $type = $1  if ($value =~ s/^([\<\:])\s*//);
+
+        $value =~ s/^\s*//;
+
+        if ($type) {
+          $value = $self->_read_attribute_value($type, $value, @ldif);
+          return $self->_error('Illegal value in control line given', @ldif)
+            if !defined($value);
+        }
+      }
 
       require Net::LDAP::Control;
       my $ctrl = Net::LDAP::Control->new(type     => $oid,
