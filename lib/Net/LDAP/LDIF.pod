@@ -168,9 +168,24 @@ object.
 
 Returns I<true> when the end of the file is reached.
 
-=item write_entry ( ENTRIES )
+=item write_entry ( ENTRY [, OPTIONS ], ... )
 
-Write the entries to the LDIF file.
+Write entries to the LDIF file.
+
+The arguments accepted are a list of entries, optionally interspersed with
+options belonging to the preceding entry.
+
+For each entry, C<OPTIONS> is a list of key-value pairs, recognizing:
+
+=over 4
+
+=item control =E<gt> CONTROL
+
+=item control =E<gt> [ CONTROL, ... ]
+
+See L<Net::LDAP/CONTROLS>.
+
+=back
 
 =item write_version ( )
 
