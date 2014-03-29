@@ -55,6 +55,7 @@
             "IO::Socket::IP" : "0.20",
             "XML::SAX::Writer" : "0",
             "XML::SAX::Base" : "0",
+            "LWP" : "0",
             "LWP::Protocol" : "0",
             "LWP::MediaTypes" : "0",
             "HTTP::Negotiate" : "0",

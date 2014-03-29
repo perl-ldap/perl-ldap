@@ -29,6 +29,18 @@ As when reading an entire file into memory with perl normally, take
 into account the possibility of memory use when loading an LDIF file
 in one go.
 
+
+=head1 SPECIAL FEATURES
+
+By default, Net::LDAP::LDIF supports reading attribute values from
+URLs of type C<file://>.
+
+When Gisle Aas' L<LWP> module package is installed, Net::LDAP::LDIF uses
+it to also support reading data from the URL types supported by these
+modules; most prominently C<http://>, C<https://>, and C<ftp://> resources.
+This extended feature is dynamically detected at runtime.
+
+
 =head1 CONSTRUCTOR
 
 =over 4
@@ -128,15 +140,14 @@ Default is 78. Setting it to 40 or lower inhibits wrapping.
 =item raw =E<gt> REGEX
 
 Use REGEX to denote the names of attributes that are to be considered
-binary in search results.
+binary when reading.
 
-When running on Perl 5.8 and this option is given Net::LDAP converts all
+When this option is given, Net::LDAP converts all
 values of attributes not matching this REGEX into Perl UTF-8 strings
 so that the regular Perl operators (pattern matching, ...) can operate
 as one expects even on strings with international characters.
 
-If this option is not given or the version of Perl Net::LDAP is running on
-is too old strings are encoded the same as in earlier versions of perl-ldap.
+If this option is not given, attribute values are treated as byte strings.
 
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 

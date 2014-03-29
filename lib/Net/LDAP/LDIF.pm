@@ -131,7 +131,7 @@ sub _read_lines {
 }
 
 
-# read attribute value from URL (currently only file: URLs)
+# read attribute value from URL
 sub _read_url_attribute {
   my $self = shift;
   my $url = shift;
@@ -148,6 +148,16 @@ sub _read_url_attribute {
       $line = <$fh>;
     }
     close($fh);
+  }
+  elsif ($url =~ /^(https?|ftp|gopher|news:)/ and
+         eval { require LWP::UserAgent; }) {
+    my $ua = LWP::UserAgent->new();
+    my $response = $ua->get($url);
+
+    return $self->_error("can't get data from $url: $!", @ldif)
+      if (!$response->is_success);
+
+    $line = $response->decoded_content();
   }
   else {
     return $self->_error('unsupported URL type', @ldif);
@@ -169,7 +179,7 @@ sub _read_attribute_value {
     require MIME::Base64;
     $value = MIME::Base64::decode($value);
   }
-  # URL value: read in file:// URL, fail on others
+  # URL value: read from URL
   elsif ($type && $type eq '<' and $value =~ s/^(.*?)\s*$/$1/) {
     $value = $self->_read_url_attribute($value, @ldif);
     return  if (!defined($value));
@@ -227,13 +237,20 @@ sub _read_entry {
 
     if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
       my($oid,$critical,$value) = ($1,$2,$3);
-      my $type = $1  if (defined($value) && $value =~ s/^([\<\:])\s*//);
 
       $critical = ($critical && $critical =~ /true/) ? 1 : 0;
 
-      $value = $self->_read_attribute_value($type, $value, @ldif)
-        if (defined($value) && $type);
-      return  if !defined($value);
+      if (defined($value)) {
+        my $type = $1  if ($value =~ s/^([\<\:])\s*//);
+
+        $value =~ s/^\s*//;
+
+        if ($type) {
+          $value = $self->_read_attribute_value($type, $value, @ldif);
+          return $self->_error('Illegal value in control line given', @ldif)
+            if !defined($value);
+        }
+      }
 
       require Net::LDAP::Control;
       my $ctrl = Net::LDAP::Control->new(type     => $oid,

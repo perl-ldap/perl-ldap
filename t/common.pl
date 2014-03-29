@@ -13,7 +13,7 @@ BEGIN {
   # the Makefile is setup to delete temp/ when make clean is run
   $TEMPDIR  = "./temp";
   $SLAPD_SCHEMA_DIR ||= "./data";
-  $SLAPD_DB ||= 'bdb';
+  $SLAPD_DB ||= 'mdb';
   $SLAPD_MODULE_DIR ||= '';
 
   $TESTDB   = "$TEMPDIR/test-db";
