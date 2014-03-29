@@ -1,3 +1,18 @@
+0.61 -- Sat Mar 29 17:21:45 CET 2014
+
+Enhancements:
+* {LDAP,LDIF}.pod: update documentation of raw => REGEX
+* support LWP-supproted URLs when reading LDIFs (incl. tests)
+* add test for Net::LDAP::Util's time functions
+* tests: set default OpenLDAP DB type to mdb
+
+Bug Fixes:
+* RT#94047: Control.pm: add missing word in POD
+* RT#93945: Util.pm: make sure $dec is defined
+* LDIF.pm: when reading LDIFs, allow control values to be absent
+* Control/ProxyAuth.pm: fix initialization using value => ...
+* Util.pm: fix corner cases in time conversion functions
+
 0.60 -- Sat Mar  8 14:00:02 CET 2014
 
 Enhancements:

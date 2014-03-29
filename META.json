@@ -1,6 +1,6 @@
 {
    "name" : "perl-ldap",
-   "version" : "0.60",
+   "version" : "0.61",
    "abstract" : "LDAP client library",
    "author" : [
       "Graham Barr <gbarr@cpan.org>"

@@ -27,7 +27,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_RELAX
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 my %Pkg2Type = (
 
