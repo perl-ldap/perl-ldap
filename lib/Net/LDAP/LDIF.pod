@@ -29,6 +29,18 @@ As when reading an entire file into memory with perl normally, take
 into account the possibility of memory use when loading an LDIF file
 in one go.
 
+
+=head1 SPECIAL FEATURES
+
+By default, Net::LDAP::LDIF supports reading attribute values from
+URLs of type C<file://>.
+
+When Gisle Aas' L<LWP> module package is installed, Net::LDAP::LDIF uses
+it to also support reading data from the URL types supported by these
+modules; most prominently C<http://>, C<https://>, and C<ftp://> resources.
+This extended feature is dynamically detected at runtime.
+
+
 =head1 CONSTRUCTOR
 
 =over 4
