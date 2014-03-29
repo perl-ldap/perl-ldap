@@ -10,7 +10,7 @@
 # $Id: jpegDisplay.pl,v 1.2 2003/06/18 18:23:31 gbarr Exp $
 #
 # Purpose: This program is designed to retrieve jpeg photo data
-#          from a LDAP directory.
+#          from an LDAP directory.
 #
 #
 # Revisions:
@@ -28,8 +28,6 @@
 use Getopt::Std;
 use Net::LDAP;
 use Net::LDAP::Filter;
-use Net::LDAP;
-use Net::LDAP::Util qw(ldap_error_name ldap_error_text);
 use Tk;
 use Tk::JPEG;
 
@@ -40,99 +38,102 @@ use Tk::JPEG;
 # options on the command line.
 #
 my %opt = (
-  'b' => 'dc=harden,dc=org',
-  'h' => 'localhost',
-  'd' => 0,
-  'D' => 'cn=manager',
-  'w' => 'password',
-  'V' => '3',
-  'a' => 'cn',
-  'v' => 'commonName'
+  b => 'dc=harden,dc=org',
+  h => 'localhost',
+  d => 0,
+  D => 'cn=manager',
+  w => 'password',
+  V => 3,
+  a => 'cn',
+  v => 'commonName'
 );
 
-if ( @ARGV == 0 )
-{
+if (@ARGV == 0) {
 #
 # print usage message.
 #
-Usage();
+  Usage();
 }
 
 #
 # Get command line options.
 #
 
-getopts('b:h:d:D:w:V:a:v:',\%opt);
+getopts('b:h:d:D:w:V:a:v:Z',\%opt);
 
 #
 # build filter string
 #
-my $match = "( $opt{'a'}=$opt{'v'}  )";
+my $match = "( $opt{a}=$opt{v}  )";
 
-$jpegFile = "./$opt{'a'}=$opt{'v'}.jpg";
+my $jpegFile = "./$opt{a}=$opt{v}.jpg";
 
 #
 # create filter object
 #
-my $f = Net::LDAP::Filter->new($match) or die "Bad filter '$match'";
+my $filter = Net::LDAP::Filter->new($match)
+  or die "Bad filter '$match'";
 
 #
 # make ldap connection to directory.
 #
-my $ldap = new Net::LDAP($opt{'h'},
+my $ldap = new Net::LDAP($opt{h},
                          timeout => 10,
-                         debug => $opt{'d'},
-                        ) or die $@;
+                         debug => $opt{d},
+                         version => $opt{V})
+  or die $@;
+
+#
+# call start_tls
+#
+if ($opt{Z}) {
+  $ldap->start_tls();
+}
 
 #
 # Bind to directory.
 #
-$ldap->bind($opt{'D'}, password => "$opt{'w'}", version => $opt{'V'}) or die $@;
+my $mesg = $ldap->bind($opt{D}, password => "$opt{w}");
+die $mesg->error,$mesg->code
+  if $mesg->code;
 
 #
 # Search directory for record that matches filter
 #
-$mesg = $ldap->search(
-  base   => $opt{b},
-  filter => $f,
-  attrs  => ["jpegPhoto"],
-) or die $@;
-
+$mesg = $ldap->search(base   => $opt{b},
+                      filter => $filter,
+                      attrs  => ['jpegPhoto']);
 die $mesg->error,$mesg->code
-	if $mesg->code;
+  if $mesg->code;
 
 #
 # get record entry object
 #
 $entry = $mesg->entry();
 
-if ( !defined($entry) )
-{
-    print "\n";
-    print "No data for filter $match.\n" if ($mesg->count == 0) ;
-    print "\n";
+if ( !defined($entry) ) {
+  print "\n";
+  print "No data for filter $match.\n" if ($mesg->count == 0) ;
+  print "\n";
 }
-else
-{
+else {
   my @attrs = sort $entry->attributes;
   my $max = 0;
 
   $dn = $entry->dn();
 
-    my $attr = $entry->get_value("jpegPhoto");
-    if(ref($attr))
-      {
-      $picture = @$attr[0];
-      }
-    else
-     {
-      print "\n";
-      print "No jpegPhoto attribute for DN\n";
-      print "$dn\n";
-      print "\n";
-      $ldap->unbind;
-      exit;
-     }
+  my @pictures = $entry->get_value('jpegPhoto');
+  if(@pictures) {
+    $picture = $pictures[0];
+  }
+  else {
+    print "\n";
+    print "No jpegPhoto attribute for DN\n";
+    print "$dn\n";
+    print "\n";
+    $ldap->unbind;
+    exit;
+  }
 }
 
 #
@@ -145,13 +146,12 @@ $| = 1;
 print TMP $picture;
 close(TMP);
 
-if ( !-e "$jpegFile" )
-{
-print "\n";
-print "Could not create temporary jpeg file $jpegFile\n";
-print "\n";
-$ldap->unbind;
-exit(1);
+if ( !-e "$jpegFile" ) {
+  print "\n";
+  print "Could not create temporary jpeg file $jpegFile\n";
+  print "\n";
+  $ldap->unbind;
+  exit(1);
 }
 
 $ldap->unbind;
@@ -161,10 +161,10 @@ $ldap->unbind;
 #
 my $mw  = MainWindow->new();
 
-my $list = $mw ->Listbox( -height => 1, width => length($dn)  );
-$list->pack( -side => "top" );
-$list->insert("end", $dn);
-my $image = $mw->Photo(-file => $jpegFile, -format => "jpeg" );
+my $list = $mw->Listbox(-height => 1, -width => length($dn));
+$list->pack(-side => 'top');
+$list->insert('end', $dn);
+my $image = $mw->Photo(-file => $jpegFile, -format => 'jpeg');
 
 print "\n";
 print "Displaying jpegPhoto for\n";
@@ -182,39 +182,40 @@ unlink $jpegFile;
 #----------------------------------------#
 sub Usage
 {
-   print( "Usage: [-b] <base> | [-h] <host> | [-d] <number> | [-D] <DN> | [-w] <password> | [-a] <attribute> | [-v] <data>\n" );
-   print( "\t-b    Search base.\n" );
-   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
-   print( "\t-D    Authenication Distingushed Name.\n" );
-   print( "\t-h    LDAP directory host computer.\n" );
-   print( "\t-w    Authenication password.\n" );
-   print( "\t-a    Attribute that will be incorporated into the search filter.\n" );
-   print( "\t-v    Data that will be incorporated into the search filter.\n" );
-   print( "\t-V    LDAP version of the LDAP directory.\n" );
-   print( "\n" );
-   print( "\t      Perldoc pod documentation is included in this script.\n" );
-   print( "\t      To read the pod documentation do the following;\n" );
-   print( "\t      perldoc <script name>\n" );
-   print( "\n" );
-   print( "\n" );
-   exit( 1 );
+  print( "Usage: [-Z] [-b <base>] [-h <host>] [-d <number>] [-D <DN>] [-w <password>] [-a <attribute>] [-v <data>]\n" );
+  print( "\t-b    Search base.\n" );
+  print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
+  print( "\t-D    Authenication Distingushed Name.\n" );
+  print( "\t-h    LDAP directory host computer.\n" );
+  print( "\t-w    Authenication password.\n" );
+  print( "\t-a    Attribute that will be incorporated into the search filter.\n" );
+  print( "\t-v    Data that will be incorporated into the search filter.\n" );
+  print( "\t-V    LDAP version of the LDAP directory.\n" );
+  print( "\t-Z    start SSL encryption using start_tls.\n" );
+  print( "\n" );
+  print( "\t      Perldoc pod documentation is included in this script.\n" );
+  print( "\t      To read the pod documentation do the following;\n" );
+  print( "\t      perldoc <script name>\n" );
+  print( "\n" );
+  print( "\n" );
+  exit( 1 );
 }
 
 __END__
 
 =head1 NAME
 
-jpegDisplay.pl  -  A script to display a jpeg picture from jpegPhoto attribute of a LDAP directory entry.
+jpegDisplay.pl  -  A script to display a jpeg picture from jpegPhoto attribute of an LDAP directory entry.
 
 =head1 SYNOPSIS
 
 The intent of this script is to show the user how to retrieve and
-display a jpeg photo from a LDAP directory entry.
+display a jpeg photo from an LDAP directory entry.
 
-This script has been tested on a OpenLDAP 2.0.7 directory server
+This script has been tested on OpenLDAP 2.0.7 & 2.4.39 directory servers
 and a Netscape 4.x LDAP directory server.
 
-You may need to change the first line of the PERL jpegDisplay.pl script
+You may need to change the first line of the Perl jpegDisplay.pl script
 to point to your file pathname of perl.
 
 =head1 Input options.
@@ -227,13 +228,13 @@ to point to your file pathname of perl.
  -a    Attribute that will be incorporated into the search filter.
  -v    Data that will be incorporated into the search filter.
  -V    LDAP version of the LDAP directory.
-
+ -Z    start SSL encryption using start_tls
 
  Usage: jpegDisplay.pl -b <base> -h <host> -d <number> -D <DN> \
                     -w <password> -a <attribute> -v <data>
 
 Inside the script is a opt hash that can be initialized to
-default values that can elminate the need for many of the
+default values that can eliminate the need for many of the
 input options on the command line.
 
 -------------------------------------------------------------------
