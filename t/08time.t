@@ -30,7 +30,9 @@ my %testcases = ( g2t => "generalizedTime_to_time",
 
 
 # calculate number of tests:
-plan tests =>  scalar(@tests); 	# @tests is a list of tests
+($] >= 5.012)
+? plan tests =>  scalar(@tests) 	# @tests is a list of tests
+: plan skip_all => 'Perl version too old';
 
 
 foreach my $elem (@tests) {
