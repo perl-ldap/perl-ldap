@@ -1,3 +1,14 @@
+0.62 -- Sun Apr  6 11:25:05 CEST 2014
+
+Enhancements:
+Util.pm: remove superfluous space from POD
+FAQ.pm: update perl-ldap & Perl version numbers
+
+Bug Fixes:
+RT#94357: t/08time.t: skip tests on too old Perl versions
+RT#94341: FAQ.pm: fix incorrect instruction
+jpegDisplay.pl: overhaul to make it work again
+
 0.61 -- Sat Mar 29 17:21:45 CET 2014
 
 Enhancements:
