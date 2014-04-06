@@ -158,6 +158,9 @@ sub _read_url_attribute {
       if (!$response->is_success);
 
     $line = $response->decoded_content();
+
+    return $self->error("decoding data from $url failed: $@", @ldif)
+      if (!defined($line));
   }
   else {
     return $self->_error('unsupported URL type', @ldif);
