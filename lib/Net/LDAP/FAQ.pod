@@ -401,11 +401,11 @@ To install the modules that are in the perl-ldap distribution follow the
 same steps that you would for most other distributions found on CPAN, that
 is
 
-   # replace 0.44 with the version you have
+   # replace 0.62 with the version you have
 
-   gunzip perl-ldap-0.44.tar.gz
-   tar xvf perl-ldap-0.44.tar
-   cd perl-ldap-0.44
+   gunzip perl-ldap-0.62.tar.gz
+   tar xvf perl-ldap-0.62.tar
+   cd perl-ldap-0.62
 
    perl Makefile.PL
    make
@@ -423,13 +423,13 @@ This will output information about the version of Perl you have
 installed. Near the bottom you will find something like
 
   @INC:
-    /usr/local/lib/perl/5.8.3
-    /usr/local/share/perl/5.8.3
+    /usr/local/lib/perl/5.18.2
+    /usr/local/share/perl/5.18.2
     /usr/lib/perl5
     /usr/share/perl5
-    /usr/lib/perl/5.8.3
-    /usr/share/perl/5.8.3
-    /usr/local/lib/site_perl
+    /usr/lib/perl/5.18
+    /usr/share/perl/5.18
+    /usr/local/lib/site_per
 
 This is a list of directories that Perl searches when it is looking for
 a module. The directory you need is the site_perl directory, but without
@@ -437,11 +437,11 @@ the system architecture name, in this case it is
 C</usr/local/lib/site_perl>. The files required
 can then be installed with
 
-   # replace 0.44 with the version you have
+   # replace 0.62 with the version you have
 
-   gunzip perl-ldap-0.44.tar.gz
-   tar xvf perl-ldap-0.44.tar
-   cd perl-ldap-0.44/lib
+   gunzip perl-ldap-0.62.tar.gz
+   tar xvf perl-ldap-0.62.tar
+   cd perl-ldap-0.62/lib
 
    cp -r * /usr/local/lib/site_perl
 
