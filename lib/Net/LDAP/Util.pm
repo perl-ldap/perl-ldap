@@ -833,7 +833,7 @@ Returns the generalizedTime string, or C<undef> on error.
 Times before BC or after year 9999 result in C<undef>
 as they cannot be represented in the generalizedTime format.
 
-B<Note:> this function depends on  Perl's implementation of gmtime.
+B<Note:> this function depends on Perl's implementation of gmtime.
 See L<Time::Local/Limits of time_t>, L<Time::Local/Negative Epoch Values>, and
 L<perlport/gmtime> for restrictions in older versions of Perl.
 
