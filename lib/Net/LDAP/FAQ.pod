@@ -443,7 +443,7 @@ can then be installed with
    tar xvf perl-ldap-0.44.tar
    cd perl-ldap-0.44/lib
 
-   cp * /usr/local/lib/site_perl
+   cp -r * /usr/local/lib/site_perl
 
 =head2 How can I load perl-ldap into an ActiveState Perl installation?
 
