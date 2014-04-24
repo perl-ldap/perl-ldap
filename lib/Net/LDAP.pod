@@ -792,8 +792,8 @@ B<'tlsv1'>.
 
 Specify which subset of cipher suites are permissible for this
 connection, using the standard OpenSSL string format. The default
-value is B<'ALL'>, which permits all ciphers, even those that don't
-encrypt.
+behavior is to keep the decision on the underlying cryptographic
+library.
 
 =item clientcert =E<gt> '/path/to/cert.pem'
 
