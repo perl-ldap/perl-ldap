@@ -214,7 +214,7 @@ sub delete {
 
   unless (@_) {
     $self->changetype('delete');
-    return;
+    return $self;
   }
 
   my $cmd = $self->{changetype} eq 'modify' ? [] : undef;
