@@ -1,3 +1,16 @@
+0.63 -- Sun Jun  1 12:42:59 CEST 2014
+
+Enhancements:
+* Entry.pm: accept options for update() in the LDIF case
+* LDIF.pm:
+  - implement writing controls
+  - refactor _write_entry
+  - check for decoding errors in LWP-based URLs
+
+Bug Fixes:
+* RT#95001: Do not set SSL_ciphers to ALL by default
+* Entry.pm: delete(): return $self if called w/o args
+
 0.62 -- Sun Apr  6 11:25:05 CEST 2014
 
 Enhancements:
