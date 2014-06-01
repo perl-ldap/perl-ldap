@@ -158,6 +158,9 @@ sub _read_url_attribute {
       if (!$response->is_success);
 
     $line = $response->decoded_content();
+
+    return $self->error("decoding data from $url failed: $@", @ldif)
+      if (!defined($line));
   }
   else {
     return $self->_error('unsupported URL type', @ldif);
@@ -462,6 +465,34 @@ sub _write_attrs {
   $res;
 }
 
+sub _write_controls {
+  my($self, @ctrls) = @_;
+  my $res = 1;
+  my $fh = $self->{fh};
+
+  require Net::LDAP::Control;
+
+  foreach my $ctrl (@ctrls) {
+    my $ln = 'control: ' . $ctrl->type . ($ctrl->critical ? ' true' : ' false');
+    my $v = $ctrl->value;
+
+    if (defined($v)) {
+      $v = Encode::encode_utf8($v)
+        if (CHECK_UTF8 and Encode::is_utf8($v));
+
+      if ($v =~ /(^[ :<]|[\x00-\x1f\x7f-\xff]| $)/) {
+        require MIME::Base64;
+        $v = MIME::Base64::encode($v, '');
+        $ln .= ':';	# indicate Base64-encoding of $v
+      }
+
+      $ln .= ': ' . $v;
+    }
+    $res &&= print $fh _wrap($ln, $self->{wrap}), "\n";
+  }
+  $res;
+}
+
 sub _write_dn {
   my($self, $dn) = @_;
   my $encode = $self->{encode};
@@ -522,71 +553,109 @@ sub write_version {
 sub _write_entry {
   my $self = shift;
   my $change = shift;
+  my $res = 1;	# result value
+  my @args = ();
+
+  return $self->_error('LDIF file handle not valid')
+    unless ($self->{fh});
+
+  # parse list of entries optionally interspersed with lists of option pairs
+  # each option-pair list belongs to the preceding entry
+  #  e.g. $entry1, control => $ctrl1, $entry2, $entry3, control => [ $ctrl3a, $ctrl3b ], ...
+  foreach my $elem (@_) {
+    if (ref($elem)) {
+      if (scalar(@args) % 2) {    # odd number of args: $entry + optional args
+        $res &&= $self->_write_one($change, @args);
+        @args = ();
+      }
+    }
+    elsif (!@args) {	# 1st arg needs to be an N:L:E object
+      $self->_error("Entry '$elem' is not a valid Net::LDAP::Entry object.");
+      $res = 0;
+      @args = ();
+      next;	# try to re-sync
+    }
+
+    push(@args, $elem);
+  }
+
+  if (scalar(@args) % 2) {
+    $res &&= $self->_write_one($change, @args);
+  }
+  elsif (@args) {
+    $self->error("Illegal argument list passed");
+    $res = 0;
+  }
+
+  $self->_error($!)  if (!$res && $!);
+
+  $res;
+}
+
+# internal helper to write exactly one entry
+sub _write_one
+{
+  my $self = shift;
+  my $change = shift;
+  my $entry = shift;
+  my %opt = @_;
   my $fh = $self->{fh};
   my $res = 1;	# result value
   local($\, $,); # output field and record separators
 
-  return $self->_error('LDIF file handle not valid')
-    unless ($fh);
+  if ($change) {
+    my @changes = $entry->changes;
+    my $type = $entry->changetype;
 
-  foreach my $entry (@_) {
-    unless (ref $entry) {
-       $self->_error("Entry '$entry' is not a valid Net::LDAP::Entry object.");
-       $res = 0;
-       next;
+    # Skip entry if there is nothing to write
+    next  if ($type eq 'modify' and !@changes);
+
+    $res &&= $self->write_version()  unless ($self->{write_count}++);
+    $res &&= print $fh "\n";
+    $res &&= $self->_write_dn($entry->dn);
+
+    $res &&= $self->_write_controls(ref($opt{control}) eq 'ARRAY'
+                                    ? @{$opt{control}}
+                                    : ( $opt{control} ))
+      if ($opt{control});
+
+    $res &&= print $fh "changetype: $type\n";
+
+    if ($type eq 'delete') {
+      return $res;
     }
-
-    if ($change) {
-      my @changes = $entry->changes;
-      my $type = $entry->changetype;
-
-      # Skip entry if there is nothing to write
-      next  if ($type eq 'modify' and !@changes);
-
-      $res &&= $self->write_version()  unless ($self->{write_count}++);
-      $res &&= print $fh "\n";
-      $res &&= $self->_write_dn($entry->dn);
-
-      $res &&= print $fh "changetype: $type\n";
-
-      if ($type eq 'delete') {
-        next;
-      }
-      elsif ($type eq 'add') {
-        $res &&= $self->_write_attrs($entry);
-        next;
-      }
-      elsif ($type =~ /modr?dn/o) {
-        my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
-        $res &&= $self->_write_attr('newrdn', $entry->get_value('newrdn', asref => 1));
-        $res &&= print $fh 'deleteoldrdn: ', $deleteoldrdn, "\n";
-        my $ns = $entry->get_value('newsuperior', asref => 1);
-        $res &&= $self->_write_attr('newsuperior', $ns)  if (defined $ns);
-        next;
-      }
-
-      my $dash = 0;
-      # changetype: modify
-      while (my($action,$attrs) = splice(@changes, 0, 2)) {
-        my @attrs = @$attrs;
-
-        while (my($attr,$val) = splice(@attrs, 0, 2)) {
-          $res &&= print $fh "-\n"  if (!$self->{version} && $dash++);
-          $res &&= print $fh "$action: $attr\n";
-          $res &&= $self->_write_attr($attr, $val);
-          $res &&= print $fh "-\n"  if ($self->{version});
-        }
-      }
-    }
-    else {
-      $res &&= $self->write_version()  unless ($self->{write_count}++);
-      $res &&= print $fh "\n";
-      $res &&= $self->_write_dn($entry->dn);
+    elsif ($type eq 'add') {
       $res &&= $self->_write_attrs($entry);
+      return $res;
+    }
+    elsif ($type =~ /modr?dn/o) {
+      my $deleteoldrdn = $entry->get_value('deleteoldrdn') || 0;
+      $res &&= $self->_write_attr('newrdn', $entry->get_value('newrdn', asref => 1));
+      $res &&= print $fh 'deleteoldrdn: ', $deleteoldrdn, "\n";
+      my $ns = $entry->get_value('newsuperior', asref => 1);
+      $res &&= $self->_write_attr('newsuperior', $ns)  if (defined $ns);
+      return $res;
+    }
+
+    my $dash = 0;
+    # changetype: modify
+    while (my($action,$attrs) = splice(@changes, 0, 2)) {
+      my @attrs = @$attrs;
+
+      while (my($attr,$val) = splice(@attrs, 0, 2)) {
+        $res &&= print $fh "-\n"  if (!$self->{version} && $dash++);
+        $res &&= print $fh "$action: $attr\n";
+        $res &&= $self->_write_attr($attr, $val);
+        $res &&= print $fh "-\n"  if ($self->{version});
+      }
     }
   }
-
-  $self->_error($!)  if (!$res && $!);
+  else {
+    $res &&= $self->write_version()  unless ($self->{write_count}++);
+    $res &&= print $fh "\n";
+    $res &&= $self->_write_dn($entry->dn);
+    $res &&= $self->_write_attrs($entry);
+  }
 
   $res;
 }

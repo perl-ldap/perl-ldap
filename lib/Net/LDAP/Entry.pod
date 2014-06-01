@@ -334,8 +334,8 @@ by the add, modify or delete method called on CLIENT.
 Alternatively C<CLIENT> can also be a C<Net::LDAP::LDIF> object, that
 must be an LDIF file opened for writing.
 
-In this case, C<OPTIONS> are ignored as the method C<write_entry>
-of C<Net::LDAP::LDIF> does not take options.
+In this case, the entry, together with any C<OPTIONS> is passed as
+arguments to the C<wite_entry> method of the C<CLIENT> object.
 
 Here too, the result is an object class C<Net::LDAP::Message>.
 On error, the error code is C<LDAP_OTHER> with the LDIF error message
