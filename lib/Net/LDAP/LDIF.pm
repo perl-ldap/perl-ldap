@@ -608,7 +608,7 @@ sub _write_one
     my $type = $entry->changetype;
 
     # Skip entry if there is nothing to write
-    next  if ($type eq 'modify' and !@changes);
+    return $res  if ($type eq 'modify' and !@changes);
 
     $res &&= $self->write_version()  unless ($self->{write_count}++);
     $res &&= print $fh "\n";
