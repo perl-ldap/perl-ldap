@@ -866,7 +866,8 @@ sub _sendmesg {
   my $to_send = \( $mesg->pdu );
   my $offset = 0;
   while ($offset < length($$to_send)) {
-    my $n = syswrite($socket, substr($$to_send, $offset, 15000), 15000)
+    my $s = substr($$to_send, $offset, 15000);
+    my $n = syswrite($socket, $s, length($s))
       or return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$!");
     $offset += $n;
   }
