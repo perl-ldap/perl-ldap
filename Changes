@@ -1,3 +1,11 @@
+0.64 -- Thu Jun 19 17:48:08 CEST 2014
+
+Bug Fixes:
+* LDAP.pm: set SSL_cipher_list correctly
+* RT#96203: LDAP.pm: use correct length for syswrite
+* LDIF.pm: fix next outside loop in _write_one_entry
+* Entry.pod: fix typo
+
 0.63 -- Sun Jun  1 12:42:59 CEST 2014
 
 Enhancements:

@@ -35,7 +35,7 @@ use constant CAN_IPV6 => eval { require IO::Socket::IP; IO::Socket::IP->VERSION(
 			   ? 'IO::Socket::INET6'
 			   : '';
 
-our $VERSION 	= '0.63';
+our $VERSION 	= '0.64';
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
 our $LDAP_VERSION 	= 3;      # default LDAP protocol version
 
