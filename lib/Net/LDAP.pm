@@ -252,7 +252,7 @@ sub _SSL_context_init_args {
 
   (
     defined $arg->{ciphers} ?
-        ( SSL_cipher_list     => defined $arg->{ciphers}) : (),
+      ( SSL_cipher_list => $arg->{ciphers} ) : (),
     SSL_ca_file         => exists  $arg->{cafile}  ? $arg->{cafile}  : '',
     SSL_ca_path         => exists  $arg->{capath}  ? $arg->{capath}  : '',
     SSL_key_file        => $clientcert ? $clientkey : undef,
@@ -866,7 +866,8 @@ sub _sendmesg {
   my $to_send = \( $mesg->pdu );
   my $offset = 0;
   while ($offset < length($$to_send)) {
-    my $n = syswrite($socket, substr($$to_send, $offset, 15000), 15000)
+    my $s = substr($$to_send, $offset, 15000);
+    my $n = syswrite($socket, $s, length($s))
       or return _error($ldap, $mesg, LDAP_LOCAL_ERROR, "$!");
     $offset += $n;
   }
