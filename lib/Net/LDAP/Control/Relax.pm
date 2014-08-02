@@ -15,9 +15,7 @@ sub init {
   my($self) = @_;
 
   delete $self->{asn};
-
-  $self->{asn} = {}
-    unless (exists $self->{value});
+  delete $self->{value};
 
   # criticality must be set !
   $self->{critical} = 1;
@@ -25,6 +23,15 @@ sub init {
   $self;
 }
 
+# make sure value does not get set
+sub value {
+  undef;
+}
+
+# make sure criticality remains TRUE
+sub critical {
+  1;
+}
 
 1;
 
