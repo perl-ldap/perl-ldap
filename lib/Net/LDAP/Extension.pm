@@ -18,14 +18,14 @@ sub response_name {
     : undef;
 }
 
-# fetch the response.
+# fetch the response value
 sub response {
   my $self = shift;
 
   $self->sync  unless exists $self->{resultCode};
 
-  exists $self->{response}
-    ? $self->{response}
+  exists $self->{responseValue}
+    ? $self->{responseValue}
     : undef;
 }
 
