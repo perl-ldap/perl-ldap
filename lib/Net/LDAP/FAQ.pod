@@ -1345,7 +1345,7 @@ for e.g. C<member;range=1000-*> where the range starting index increases accordi
     $mesg = $ldap->search( base   => 'cn=Testgroup,dc=your,dc=ads,dc=domain',
                            filter => '(objectclass=group)',
                            scope  => 'base',
-                           attrs  => ($index > 0) ? "member;range=$index-*" : 'member'
+                           attrs  => [ ($index > 0) ? "member;range=$index-*" : 'member' ]
                          );
     if ($mesg->code == LDAP_SUCCESS) {
       my $entry = $mesg->entry(0);
