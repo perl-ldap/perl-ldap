@@ -688,7 +688,7 @@ specific DUA services.
 
 =head2 RFC-4529 Requesting Attributes by Object Class in the Lightweight Directory Access Protocol (LDAP)
 
-http://www.ietf.org/rfc/rfc4829.txt
+http://www.ietf.org/rfc/rfc4529.txt
 
 The Lightweight Directory Access Protocol (LDAP) search operation
 provides mechanisms for clients to request all user application
