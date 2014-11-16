@@ -29,11 +29,15 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			);
 
 # check for IPv6 support: prefer IO::Socket::IP 0.20+ over IO::Socket::INET6
-use constant CAN_IPV6 => eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); }
-			 ? 'IO::Socket::IP'
-			 : eval { require IO::Socket::INET6; }
-			   ? 'IO::Socket::INET6'
-			   : '';
+use constant CAN_IPV6 => do {
+                           local $SIG{__DIE__};
+
+                           eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); }
+                           ? 'IO::Socket::IP'
+                           : eval { require IO::Socket::INET6; }
+                             ? 'IO::Socket::INET6'
+                             : '';
+                         };
 
 our $VERSION 	= '0.64';
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
