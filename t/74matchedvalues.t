@@ -87,12 +87,28 @@ attrs: cn
 cn: Babs Jensen
 
 # one attribute, wildcards
-match: ((cn=Babs Jensen))
+match: ((cn=Babs*Jensen))
 dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
 filter: (mail=bjensen@mailgw.umich.edu)
 scope: base
 attrs: cn
 cn: Babs Jensen
+
+# one attribute, wildcards, attrs beyond match
+match: ((cn=Babs*Jensen))
+dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+filter: (mail=bjensen@mailgw.umich.edu)
+scope: base
+attrs: cn
+attrs: title
+cn: Babs Jensen
+
+# one attribute, wildcards, no matching value
+match: ((description=*LDAP*))
+dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
+filter: (mail=bjensen@mailgw.umich.edu)
+scope: base
+attrs: description
 
 # multiple attributes, wildcards
 match: ((cn=* Jensen)(title=*Myth*))
@@ -104,11 +120,4 @@ attrs: cn
 title: Mythical Manager, Research Systems
 cn: Barbara Jensen
 cn: Babs Jensen
-
-# one attribute, wildcards, no matching value
-match: ((description=*LDAP*))
-dn: cn=Barbara Jensen, ou=Information Technology Division, ou=People, o=University of Michigan, c=US
-filter: (mail=bjensen@mailgw.umich.edu)
-scope: base
-attrs: description
 
