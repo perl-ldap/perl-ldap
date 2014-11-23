@@ -257,6 +257,8 @@ sub _SSL_context_init_args {
   (
     defined $arg->{ciphers} ?
       ( SSL_cipher_list => $arg->{ciphers} ) : (),
+    defined $arg->{sslversion} ?
+      ( SSL_version     => $arg->{sslversion} ) : (),
     SSL_ca_file         => exists  $arg->{cafile}  ? $arg->{cafile}  : '',
     SSL_ca_path         => exists  $arg->{capath}  ? $arg->{capath}  : '',
     SSL_key_file        => $clientcert ? $clientkey : undef,
@@ -265,8 +267,6 @@ sub _SSL_context_init_args {
     SSL_use_cert        => $clientcert ? 1 : 0,
     SSL_cert_file       => $clientcert,
     SSL_verify_mode     => $verify,
-    SSL_version         => defined $arg->{sslversion} ? $arg->{sslversion} :
-                           'sslv23',
     %verifycn_ctx,
   );
 }
