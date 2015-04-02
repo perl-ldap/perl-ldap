@@ -1104,7 +1104,6 @@ sub start_tls {
 
   delete $ldap->{net_ldap_root_dse};
 
-  $arg->{sslversion} = 'tlsv1'  unless defined $arg->{sslversion};
   $arg->{sslserver} = $ldap->{net_ldap_host}  unless defined $arg->{sslserver};
 
   my $sock_class = ref($sock);

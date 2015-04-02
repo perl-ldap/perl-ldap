@@ -783,10 +783,12 @@ The server must provide a certificate, and it must be valid.
 If you set verify to optional or require, you must also set either
 cafile or capath. The most secure option is B<require>.
 
-=item sslversion =E<gt> 'sslv2' | 'sslv3' | 'sslv23' | 'tlsv1'
+=item sslversion =E<gt> 'sslv2' | 'sslv3' | 'sslv23' | 'tlsv1' | 'tlsv1_1' | 'tlsv1_2'
 
-This defines the version of the SSL/TLS protocol to use. Defaults to
-B<'tlsv1'>.
+This defines the version of the SSL/TLS protocol to use.
+Default is to use the value that L<IO::Socket::SSL> uses as default.
+
+See L<IO::Socket::SSL/SSL_version> for more details.
 
 =item ciphers =E<gt> CIPHERS
 
