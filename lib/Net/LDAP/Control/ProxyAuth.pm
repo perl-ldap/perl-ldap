@@ -92,6 +92,11 @@ sub value {
   return $self->{value};
 }
 
+# make sure criticality remains TRUE
+sub critical {
+  1;
+}
+
 1;
 
 __END__

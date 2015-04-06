@@ -25,6 +25,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_SYNC_DONE
   LDAP_CONTROL_ASSERTION
   LDAP_CONTROL_RELAX
+  LDAP_CONTROL_DONTUSECOPY
 );
 
 our $VERSION = '0.17';
@@ -59,6 +60,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::SyncDone'	=> LDAP_CONTROL_SYNC_DONE,
   'Net::LDAP::Control::Assertion'	=> LDAP_CONTROL_ASSERTION,
   'Net::LDAP::Control::Relax'		=> LDAP_CONTROL_RELAX,
+  'Net::LDAP::Control::DontUseCopy'	=> LDAP_CONTROL_DONTUSECOPY,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -311,6 +313,7 @@ for this method is to return TRUE if there is no error, but sub-classes may over
 L<Net::LDAP>,
 L<Net::LDAP::RootDSE>,
 L<Net::LDAP::Control::Assertion>,
+L<Net::LDAP::Control::DontUseCopy>,
 L<Net::LDAP::Control::EntryChange>,
 L<Net::LDAP::Control::ManageDsaIT>,
 L<Net::LDAP::Control::MatchedValues>,

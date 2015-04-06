@@ -15,11 +15,13 @@ sub init {
   my($self) = @_;
 
   delete $self->{asn};
-
-  $self->{asn} = {}
-    unless (exists $self->{value});
+  delete $self->{value};
 
   $self;
+}
+
+sub value {
+  undef;
 }
 
 1;

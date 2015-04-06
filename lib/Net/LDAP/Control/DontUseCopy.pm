@@ -1,13 +1,13 @@
-# Copyright (c) 2013 Peter Marschall <peter@adpm.de>. All rights reserved.
+# Copyright (c) 2014 Peter Marschall <peter@adpm.de>. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 
-package Net::LDAP::Control::Relax;
+package Net::LDAP::Control::DontUseCopy;
 
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = '0.02';
+our $VERSION = '0.01';
 
 use strict;
 
@@ -17,7 +17,6 @@ sub init {
   delete $self->{asn};
   delete $self->{value};
 
-  # criticality must be set !
   $self->{critical} = 1;
 
   $self;
@@ -39,45 +38,43 @@ __END__
 
 =head1 NAME
 
-Net::LDAP::Control::Relax - LDAPv3 Relax control object
+Net::LDAP::Control::DontUseCopy - LDAPv3 Don't Use Copy control object
 
 =head1 SYNOPSIS
 
  use Net::LDAP;
- use Net::LDAP::Control::Relax;
+ use Net::LDAP::Control::DontUseCopy;
 
  $ldap = Net::LDAP->new( "ldap.mydomain.eg" );
 
- $relax = Net::LDAP::Control::Relax->new();
+ $nocopy = Net::LDAP::Control::DontUseCopy->new( critical => 1 );
 
- $msg = $ldap->modify( 'dc=sub,dc=mydomain,dc=eg",
-                       changes => [
-                         replace => { modifyTimestamp => '19700101000000Z' } ],
-                       control  => [ $relax ] );
+ $msg = $ldap->search( base => 'o=University of Michigan,c=US',
+                       filter => '(cn=Barbara Jensen)'
+                       control  => [ $nocopy ] );
 
  die "error: ",$msg->code(),": ",$msg->error()  if ($msg->code());
 
 
 =head1 DESCRIPTION
 
-C<Net::LDAP::Control::Relax> provides an interface for the creation
-and manipulation of objects that represent the C<Relax> control as
-described by draft-zeilenga-ldap-relax-03.txt
+C<Net::LDAP::Control::DontUseCopy> provides an interface for the creation
+and manipulation of objects that represent the C<DontUseCopy> control as
+described by RFC 6171.
 
-The presence of the Relax control in an LDAP update request
-indicates the server temporarily relax X.500 model constraints
-during performance of the directory update.
+It allows the the client to specify that copied information should not be used
+in providing the service.
 
-The control is appropriate for all LDAP update requests, including
-add, delete, modify, and modifyDN (rename) [RFC4511].
+The control is appropriate for LDAP search and compare operations [RFC4511]
+and inappropriate for all other oeprations.
 
-Its criticality is always set to TRUE, and no value.
+Its criticality must be TRUE; it has no value.
 
 There is no corresponding response control.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
-Since the C<Relax> control does not have any values only the
+Since the C<DontUseCopy> control does not have any values only the
 constructor arguments described in L<Net::LDAP::Control> are
 supported
 
@@ -85,7 +82,7 @@ supported
 
 As there are no additional values in the control only the
 methods in L<Net::LDAP::Control> are available for
-C<Net::LDAP::Control::Relax> objects.
+C<Net::LDAP::Control::DontUseCopy> objects.
 
 =head1 SEE ALSO
 
@@ -101,7 +98,7 @@ mailing list E<lt>perl-ldap@perl.orgE<gt>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2013 Peter Marschall. All rights reserved. This program is
+Copyright (c) 2014 Peter Marschall. All rights reserved. This program is
 free software; you can redistribute it and/or modify it under the same
 terms as Perl itself.
 

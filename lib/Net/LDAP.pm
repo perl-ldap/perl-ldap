@@ -29,11 +29,15 @@ use Net::LDAP::Constant qw(LDAP_SUCCESS
 			);
 
 # check for IPv6 support: prefer IO::Socket::IP 0.20+ over IO::Socket::INET6
-use constant CAN_IPV6 => eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); }
-			 ? 'IO::Socket::IP'
-			 : eval { require IO::Socket::INET6; }
-			   ? 'IO::Socket::INET6'
-			   : '';
+use constant CAN_IPV6 => do {
+                           local $SIG{__DIE__};
+
+                           eval { require IO::Socket::IP; IO::Socket::IP->VERSION(0.20); }
+                           ? 'IO::Socket::IP'
+                           : eval { require IO::Socket::INET6; }
+                             ? 'IO::Socket::INET6'
+                             : '';
+                         };
 
 our $VERSION 	= '0.64';
 our @ISA     	= qw(Tie::StdHash Net::LDAP::Extra);
@@ -253,6 +257,8 @@ sub _SSL_context_init_args {
   (
     defined $arg->{ciphers} ?
       ( SSL_cipher_list => $arg->{ciphers} ) : (),
+    defined $arg->{sslversion} ?
+      ( SSL_version     => $arg->{sslversion} ) : (),
     SSL_ca_file         => exists  $arg->{cafile}  ? $arg->{cafile}  : '',
     SSL_ca_path         => exists  $arg->{capath}  ? $arg->{capath}  : '',
     SSL_key_file        => $clientcert ? $clientkey : undef,
@@ -261,8 +267,6 @@ sub _SSL_context_init_args {
     SSL_use_cert        => $clientcert ? 1 : 0,
     SSL_cert_file       => $clientcert,
     SSL_verify_mode     => $verify,
-    SSL_version         => defined $arg->{sslversion} ? $arg->{sslversion} :
-                           'sslv23',
     %verifycn_ctx,
   );
 }
@@ -1100,7 +1104,6 @@ sub start_tls {
 
   delete $ldap->{net_ldap_root_dse};
 
-  $arg->{sslversion} = 'tlsv1'  unless defined $arg->{sslversion};
   $arg->{sslserver} = $ldap->{net_ldap_host}  unless defined $arg->{sslserver};
 
   my $sock_class = ref($sock);
