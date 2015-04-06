@@ -5,7 +5,7 @@
 package Net::LDAP::Extension;
 
 our @ISA = qw(Net::LDAP::Message);
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 #fetch the response name
 sub response_name {

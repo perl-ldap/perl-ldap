@@ -28,7 +28,7 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_DONTUSECOPY
 );
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 my %Pkg2Type = (
 

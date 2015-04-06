@@ -7,7 +7,7 @@ package Net::LDAP::Control::ProxyAuth;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = '1.08';
+our $VERSION = '1.09';
 
 use Net::LDAP::Constant qw(LDAP_CONTROL_PROXYAUTHORIZATION);
 use Net::LDAP::ASN qw(proxyAuthValue);

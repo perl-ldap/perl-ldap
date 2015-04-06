@@ -1,3 +1,23 @@
+0.65 -- Mon Apr  6 19:43:37 CEST 2015
+
+Enhancements:
+* t/74matchedvalues.t: more tests
+* {ASN,Extension}.pm: update ExtendedResponse to RFC 4511
+* Constant.pm: add LDAP_NOTICE_OF_DISCONNECTION
+* Control/DontUseCopy.pm: new
+* Control/ProxyAuth.pm: make sure criticality does not get changed
+* Control/Relax.pm: make sure value & criticality do not get changed
+* Control/ManageDsaIT.pm: make sure value never gets set
+
+Bug Fixes
+* LDAP.pm: do not set default sslversion for start_tls() & LDAPS
+  Instead of second-guessing a default sslversion for start_tls() and LDAPS,
+  rely on the - known to be sane - default value used by IO::Socket::SSL.
+* RT#100151: LDAP.pm: localize $SIG{__DIE__} in IPv6 support check
+  Thanks to Troy Loveday <troyl@ti.com> for the detailed bug report and patch.
+* FAQ.pod: fix error in search() example
+* RFC.pod: typo fix
+
 0.64 -- Thu Jun 19 17:48:08 CEST 2014
 
 Bug Fixes:
