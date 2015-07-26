@@ -1,5 +1,4 @@
 #! /usr/bin/perl
-# $Id: ldifsort.pl,v 1.9 2005/04/03 20:20:24 subbarao Exp $
 
 =head1 NAME
 
@@ -12,7 +11,7 @@ Sorts an LDIF file by the specified key attribute.
 
 =head1 SYNOPSIS
 
-ldifsort.pl B<-k keyattr> [B<-andc>] file.ldif
+ldifsort.pl B<-k keyattr> [B<-acdhn>] file.ldif
 
 =over 4
 
@@ -28,10 +27,10 @@ Specifies that attributes within a given entry should also be sorted. This
 has the side effect of removing all comments and line continuations in the
 LDIF file.
 
-=item B<-n>
+=item B<-c>
 
-Specifies numeric comparisons on the key attribute. Otherwise string
-comparisons are done.
+Specifies case-insensitive comparisons on the key attribute. This is the
+default behavior if 'dn' is passed as the argument to B<-k>.
 
 =item B<-d>
 
@@ -39,10 +38,16 @@ Specifies that the key attribute is a DN. Comparisons are done on a
 DN-normalized version of attribute values. This is the default
 behavior if 'dn' is passed as the argument to B<-k>.
 
-=item B<-c>
+=item B<-h>
 
-Specifies case-insensitive comparisons on the key attribute. This is the
-default behavior if 'dn' is passed as the argument to B<-k>.
+When the key attribute is a DN, sorts hierarchically superior values before
+subordinate values. For example, dc=example,dc=com is sorted before
+cn=test,dc=example,dc=com.
+
+=item B<-n>
+
+Specifies numeric comparisons on the key attribute. Otherwise string
+comparisons are done.
 
 =back
 
@@ -61,14 +66,15 @@ use Getopt::Std;
 use strict;
 
 my %args;
-getopts("k:andc", \%args);
+getopts("k:acdhn", \%args);
 
 my $keyattr = $args{k};
 my $sortattrs = $args{a};
 my $ciscmp = $args{c};
 my $ldiffile = $ARGV[0];
+my $sorthier = $args{h};
 
-die "usage: $0 -k keyattr [-n] [-d] [-c] ldiffile\n"
+die "usage: $0 -k keyattr [-acdhn] ldiffile\n"
 	unless $keyattr && $ldiffile;
 
 $/ = "";
@@ -85,6 +91,9 @@ while (<LDIFH>) {
 		$value = decode_base64($value) if $1 eq '::';
 	}
 	$value = lc($value) if $ciscmp;
+	# To simplify hierarchical sorting, replace escaped commas in the sort key
+	# with dash (the next ASCII character)
+	$value =~ s/\\,/-/g if $args{h};
 	push @valuepos, [ $value, $pos ];
 	$pos = tell;
 }
@@ -95,6 +104,11 @@ my %canonicaldns;
 sub cmpdn {
 	my $cadn = ($canonicaldns{$a->[0]} ||= lc(canonical_dn($a->[0])));
 	my $cbdn = ($canonicaldns{$b->[0]} ||= lc(canonical_dn($b->[0])));
+	if ($args{h} && $cadn ne $cbdn) {
+		# Sort superior entries before subordinate entries
+		while (substr($cadn,-1,1) eq substr($cbdn,-1,1)) { chop($cadn, $cbdn) }
+		$cadn =~ s/^.*,(?=.)//; $cbdn =~ s/^.*,(?=.)//;
+	}
 	$cadn cmp $cbdn;
 }
 
