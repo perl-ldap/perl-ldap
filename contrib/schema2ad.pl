@@ -106,12 +106,10 @@ my $ldif = Net::LDAP::LDIF->new($ldifhandle,"w", change => 1, wrap => 0, version
 # http://msdn.microsoft.com/en-us/library/windows/desktop/ms675578.aspx
 foreach my $at ($schema->all_attributes) {
   my $cn = $at->{name};
-  my $syntax = $schema->attribute_syntax($cn);
+  my $syntax = $schema->attribute_syntax_oid($cn);
 
   die "Syntax not known for attribute $cn\n"
     if (!$syntax);
-
-  $syntax = $syntax->{name};
 
   die "Unknown syntax $syntax for attribute $cn\n"
     if (!exists($syntaxMap{$syntax}));
@@ -250,6 +248,29 @@ sub updateSchemaCache($)
   #-
 
   $entry->update($ldif);
+}
+
+
+## Net::LDAP::Schema extension
+package Net::LDAP::Schema;
+
+# get an attribute's syntax's OID taking into account attribute supertype
+# based on: Net::LDAP::Schema's attribute_syntax()
+sub attribute_syntax_oid
+{
+    my $self = shift;
+    my $attr = shift;
+    my $syntax;
+
+    while ($attr) {
+        my $elem = $self->attribute( $attr ) or return undef;
+
+        $syntax = $elem->{syntax}  and  return $syntax;
+
+        $attr = ${$elem->{sup} || []}[0];
+    }
+
+    return undef;
 }
 
 
