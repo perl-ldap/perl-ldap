@@ -299,8 +299,10 @@ schema2ad.pl takes two arguments:
 
 =item I<schema-file>
 
-Input file containing a schema entry with its I<attributeTypes> and
-I<objectClasses> attributes.
+Input file in LDIF format containing a schema entry with its I<attributeTypes>
+and I<objectClasses> attributes, as e.g. returned by
+L<Net::LDAP::Schema's dump()|Net::LDAP::Schema/"dump ( )">
+method.
 
 =item I<AD-schema-file>
 
@@ -314,7 +316,7 @@ Peter Marschall <peter@adpm.de>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2012 Peter Marschall All rights reserved.
+Copyright (c) 2012-2015 Peter Marschall. All rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
