@@ -6,42 +6,46 @@ Net::LDAP - Lightweight Directory Access Protocol
 
  use Net::LDAP;
 
- $ldap = Net::LDAP->new( 'ldap.bigfoot.com' ) or die "$@";
+ $ldap = Net::LDAP->new( 'ldap.example.com' )  or  die "$@";
 
- $mesg = $ldap->bind ;    # an anonymous bind
+ $mesg = $ldap->bind;                         # anonymous bind
 
- $mesg = $ldap->search( # perform a search
-                        base   => "c=US",
+ $mesg->code  and  die $mesg->error;          # check for errors
+
+ $srch = $ldap->search( base   => "c=US",     # perform a search
                         filter => "(&(sn=Barr)(o=Texas Instruments))"
                       );
 
- $mesg->code && die $mesg->error;
+ $srch->code  and  die $srch->error;          # check for errors
 
- foreach $entry ($mesg->entries) { $entry->dump; }
+ foreach $entry ($srch->entries) { $entry->dump; }
 
- $mesg = $ldap->unbind;   # take down session
+ $mesg = $ldap->unbind;                       # take down session
 
 
- $ldap = Net::LDAP->new( 'ldap.umich.edu' );
+ $ldap = Net::LDAP->new( 'ldaps://ldap.example.com' )  or  die "$@";
 
- # bind to a directory with dn and password
+ # simple bind with DN and password
  $mesg = $ldap->bind( 'cn=root, o=University of Michigan, c=us',
                       password => 'secret'
                     );
 
+ $mesg->code  and  die $mesg->error;          # check for errors
+
  $result = $ldap->add( 'cn=Barbara Jensen, o=University of Michigan, c=US',
                        attrs => [
-                         'cn'   => ['Barbara Jensen', 'Barbs Jensen'],
-                	 'sn'   => 'Jensen',
-                	 'mail' => 'b.jensen@umich.edu',
-                	 'objectclass' => ['top', 'person',
-                                           'organizationalPerson',
-                                           'inetOrgPerson' ],
+                         cn          => ['Barbara Jensen', 'Barbs Jensen'],
+                	 sn          => 'Jensen',
+                	 mail        => 'b.jensen@umich.edu',
+                	 objectclass => ['top', 'person',
+                                         'organizationalPerson',
+                                         'inetOrgPerson' ],
                        ]
                      );
 
- $result->code && warn "failed to add entry: ", $result->error ;
- $mesg = $ldap->unbind;  # take down session
+ $result->code  and  warn "failed to add entry: ", $result->error;
+
+ $mesg = $ldap->unbind;                       # take down session
 
 =head1 DESCRIPTION
 
