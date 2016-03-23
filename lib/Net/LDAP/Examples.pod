@@ -343,7 +343,7 @@ B<What is not covered in these examples at this time:>
    cn => "Jane User",
    uid => "0000001",
    sn => "User",
-   mail => "JaneUser@mycompany.com"
+   mail => 'JaneUser@mycompany.com'
  ];
 
  #
