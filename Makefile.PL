@@ -28,7 +28,6 @@ test_requires	'File::Basename';
 test_requires	'File::Compare';
 test_requires	'File::Path';
 test_requires	'IO::File';
-test_requires	'Text::Soundex';
 
 features
         'IPv6 support' => [
