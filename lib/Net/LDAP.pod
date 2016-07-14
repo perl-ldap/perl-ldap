@@ -120,7 +120,7 @@ Set the debug level. See the L<debug|/debug> method for details.
 
 Perform all operations asynchronously.
 
-=item onerror =E<gt> 'die' | 'warn' | undef | sub { ... }
+=item onerror =E<gt> 'die' | 'warn' | 'undef' | sub { ... }
 
 In synchronous mode, change what happens when an error is detected.
 
@@ -134,10 +134,12 @@ Net::LDAP will croak whenever an error is detected.
 
 Net::LDAP will warn whenever an error is detected.
 
-=item undef
+=item 'undef'
 
 Net::LDAP will warn whenever an error is detected and C<-w> is in
 effect. The method that was called will return C<undef>.
+
+Note this value is the string C<'undef'>, not the C<undef> value.
 
 =item sub { ... }
 
