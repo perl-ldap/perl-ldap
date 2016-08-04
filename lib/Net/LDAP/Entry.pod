@@ -189,6 +189,16 @@ specified by setting the entry attributes newrdn, deleteoldrdn, and
 
 =back
 
+=item comments ( )
+
+Returns an array reference of comments read by Net::LDAP::LDIF.
+
+=item comments ( ARRAYREF )
+
+Set an array reference of comments for this entry.
+NB: This setter is mainly used used by Net::LDAP::LDIF. 
+Comments are ignored by other methods in this class.
+
 =item delete ( )
 
 Delete the entry from the server on the next call to C<update>.

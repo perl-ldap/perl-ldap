@@ -151,6 +151,11 @@ If this option is not given, attribute values are treated as byte strings.
 
 Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 
+=item comments =E<gt> 1
+
+Read comments (lines starting with '#') from the LDIF file and add them to
+the Net::LDAP::Entry object.
+
 =back
 
 =back

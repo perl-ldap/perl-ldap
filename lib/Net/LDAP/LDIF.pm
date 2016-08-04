@@ -64,6 +64,7 @@ sub new {
   $opt{change} ||= 0;
   $opt{sort} ||= 0;
   $opt{version} ||= 0;
+  $opt{comments} ||= 0;
 
   my $self = {
     changetype => 'modify',
@@ -86,6 +87,7 @@ sub _read_lines {
   my @ldif = ();
   my $entry = '';
   my $in_comment = 0;
+  my @comments = ();
   my $entry_completed = 0;
   my $ln;
 
@@ -93,35 +95,34 @@ sub _read_lines {
 
   while (defined($ln = $self->{_buffered_line} || scalar <$fh>)) {
     delete($self->{_buffered_line});
-    if ($ln =~ /^#/o) {		# ignore 1st line of comments
-      $in_comment = 1;
+    if ($entry_completed) {
+      # Buffer line and end entry
+      $self->{_buffered_line} = $ln;
+      last;
+    }
+    elsif ($ln =~ /^#/o) {
+      # save comments
+      push @comments, $ln if $self->{comments};
+    }
+    elsif ($ln =~ /^\r?\n$/o) {
+      # ignore empty line on start of entry
+      # empty line at non-empty entry indicate entry completion
+      $entry_completed++  if (length($entry));
     }
     else {
-      if ($ln =~ /^[ \t]/o) {	# append wrapped line (if not in a comment)
-        $entry .= $ln  if (!$in_comment);
+      if ($ln =~ /^[ \t]/o) {	# append wrapped line
+        $entry .= $ln;
       }
       else {
-        $in_comment = 0;
-        if ($ln =~ /^\r?\n$/o) {
-          # ignore empty line on start of entry
-          # empty line at non-empty entry indicate entry completion
-          $entry_completed++  if (length($entry));
-	}
-        else {
-	  if ($entry_completed) {
-	    $self->{_buffered_line} = $ln;
-	    last;
-	  }
-	  else {
-            # append non-empty line
-            $entry .= $ln;
-	  }
-        }
+        # append non-empty line
+        $entry .= $ln;
       }
     }
   }
   $self->eof(1)  if (!defined($ln));
   $self->{_current_lines} = $entry;
+  # Keep comments here to add to Net::LDAP::Entry
+  $self->{_comments} = \@comments;
   $entry =~ s/\r?\n //sgo;	# un-wrap wrapped lines
   $entry =~ s/\r?\n\t/ /sgo;	# OpenLDAP extension !!!
   @ldif = split(/^/, $entry);
@@ -231,6 +232,8 @@ sub _read_entry {
   $dn = Encode::decode_utf8($dn)
     if (CHECK_UTF8 && $self->{raw} && ('dn' !~ /$self->{raw}/));
   $entry->dn($dn);
+
+  $entry->comments($self->{_comments}); # Pass the comments to entry
 
   my @controls = ();
 

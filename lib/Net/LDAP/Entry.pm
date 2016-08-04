@@ -147,6 +147,13 @@ sub changetype {
 }
 
 
+sub comments {
+  # Set or get comments read by Net::LDAP::LDIF as an arrayref.
+  my $self = shift;
+  return $self->{comments} unless @_;
+  $self->{comments} = shift;
+  return $self;
+}
 
 sub add {
   my $self  = shift;
