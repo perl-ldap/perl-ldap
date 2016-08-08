@@ -1,0 +1,16 @@
+{
+	"perl" : "6.c",
+    "name" : "Net::LDAP",
+    "version" : "0.1.0",
+    "description" : "Port (work in progress) of Perl 5 Net::LDAP, a client interface for LDAP servers",
+    "authors" : [ "Claudio Ramirez" ],
+    "provides" : {
+    	"Net::LDAP"          : "lib/Net/LDAP.pm6",
+    	"Net::LDAP::Contant" : "lib/Net/LDAP/Contant.pm6",
+		"Net::LDAP::Entry"   : "lib/Net/LDAP/Entry.pm6",
+    	"Net::LDAP::LDIF"    : "lib/Net/LDAP/LDIF.pm6"
+    },
+    "depends" : [ ],
+    "resources" : [ ],
+    "source-url" : "git://github.com/nxadm/perl6-ldap.git"
+}
