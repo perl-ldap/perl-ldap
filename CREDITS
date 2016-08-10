@@ -1,3 +1,12 @@
+Perl 6 port of Perl 5 Net::LDAP
+
+Claudio Ramirez <pub.claudio@gmail.com>
+< Your name here >
+
+__________________________________________________
+
+Original Perl 5 Net::LDAP credits
+
 Although the Net::LDAP module was originally written by Graham Barr it
 has grown far beyond initial expectations and scope. In fact it has gone
 far beyond a lot of things.
