@@ -40,6 +40,12 @@ default set is: mail manager member objectclass owner uid uniqueMember
 (Optional) Compare values of the specified attributes numerically. The
 default set is: employeeNumber
 
+=item B<-x|--xattrs attr1,attr2,...>
+
+(Optional) Specifies a list of attributes to be ignored when comparing
+source and target entries. By default, modifyTimestamp and createTimestap
+attributes are ignored.
+
 =item B<--dnattrs attr1,...>
 
 (Optional) Specifies a list of attributes to be treated as DNs when being
@@ -72,14 +78,15 @@ use Getopt::Long;
 use strict;
 
 my @sourceattrs;
-my (%ciscmp, %numcmp, %dnattrs, %sharedattrs);
+my (%ciscmp, %numcmp, %dnattrs, %sharedattrs, %xattrs);
 my $keyattr;
 GetOptions('a|sourceattrs=s' => sub { @sourceattrs = split(/,/, $_[1]) },
 	'c|ciscmp=s' => sub { my @a = split(/,/,lc $_[1]); @ciscmp{@a} = (1) x @a },
 	'dnattrs=s' => sub { my @a = split(/,/,lc $_[1]); @dnattrs{@a} = (1) x @a },
 	'k|keyattr=s' => \$keyattr,
 	'n|numcmp=s' => sub { my @a = split(/,/,lc $_[1]); @numcmp{@a} = (1) x @a },
-	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a}
+	'sharedattrs=s' => sub {my @a=split(/,/,lc $_[1]);@sharedattrs{@a}=(1) x @a},
+	'x|xattrs=s' => sub { my @a = split(/,/, $_[1]); @xattrs{@a} = (1) x @a }
 	);
 unless (keys %ciscmp) {
 	foreach (qw(cn mail manager member o ou objectclass owner uid uniquemember))
@@ -95,12 +102,17 @@ unless (keys %dnattrs) {
 }
 %sharedattrs = (objectclass => 1)
 	unless keys %sharedattrs;
-
+# Default attributes to be ignored in modification diff:
+unless (keys %xattrs) {
+	foreach (qw(modifyTimestamp createTimestamp)) {
+		$xattrs{lc $_} = 1;
+	}
+}
 
 my ($sourcefile, $targetfile);
 $sourcefile = shift; $targetfile = shift;
 
-die "usage: $0 -k|--keyattr keyattr [-a|--sourceattrs attr1,attr2,...] [-c|--ciscmp attr1,...] [--dnattrs attr1,...] [--sharedattrs attr1,...] sourcefile targetfile\n"
+die "usage: $0 -k|--keyattr keyattr [-a|--sourceattrs attr1,attr2,...] [-c|--ciscmp attr1,...] [-x|--xattrs attr1,...] [--dnattrs attr1,...] [--sharedattrs attr1,...] sourcefile targetfile\n"
 	unless $keyattr && $sourcefile && $targetfile;
 
 my $source = Net::LDAP::LDIF->new($sourcefile)
@@ -267,6 +279,15 @@ sub updateFromEntry
 	foreach $attr (@attrs) {
 		my $lcattr = lc $attr;
 		next if $lcattr eq 'dn'; # Can't handle modrdn here
+
+		# Check for attributes to be ignored in diff list (for example modifyTimestamp).
+		# Default behaviour is sometime ldifdiff.pl generates LDIF modifications for
+		# entries with only "modifyTimestamp" changed, when the diff is applied to source
+		# LDAP the server replies with "server unwilling to perform (53), which is logical
+		# since we shouldn't play directly with modifyTimestamp.
+		if ($xattrs{lc $attr}) {
+			next;
+		}
 
 		# Build lists of unique values in the source and target, to
 		# speed up comparisons.
