@@ -32,7 +32,7 @@ may be an object class, attribute or syntax) then a case-insensitive name
 or raw OID (object identifier, in dotted numeric string form, e.g. 2.5.4.0)
 may be supplied.
 
-Each returned item of schema (eg an attribute definition) is returned
+Each returned item of schema (e.g. an attribute definition) is returned
 in a HASH. The keys in the returned HASH are lowercase versions of
 the keys read from the server. Here's a partial list (not all HASHes
 define all keys) although note that RFC 4512 permits other keys as

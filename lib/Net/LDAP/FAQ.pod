@@ -1195,7 +1195,7 @@ attribute name and no values.
 In LDAPv3, this is defined to always work even if that attribute
 doesn't exist in the entry.
 
-ie:
+I.e.:
 
   my $mesg = $ldap->modify( $entry, replace => { %qv_del_arry } );
 
@@ -1770,7 +1770,7 @@ eldapo - a directory manager's blog
 http://eldapo.blogspot.de/
 
 Eine deutsche LDAP Website
-A german LDAP Website
+A German LDAP Website
 http://verzeichnisdienst.de/ldap/Perl/index.html
 
 (non-exhaustive) list of LDAP software on Wikipedia
