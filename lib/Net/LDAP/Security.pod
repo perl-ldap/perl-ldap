@@ -130,7 +130,7 @@ standardized version of SSL.
 
 You can only use TLS with an LDAPv3 server. That is because the
 standard (RFC 4511) for LDAP and TLS requires that the I<normal> LDAP
-connection (ie., on port 389) can be switched on demand from plain text
+connection (i.e., on port 389) can be switched on demand from plain text
 into a TLS connection. The switching mechanism uses a special extended
 LDAP operation, and since these are not legal in LDAPv2, you can only
 switch to TLS on an LDAPv3 connection.
@@ -151,18 +151,18 @@ I<mechanism>. A number of mechanisms are defined, such as CRAM-MD5.
 
 The use of a mechanism like CRAM-MD5 provides a solution to the
 password sniffing vulnerability, because these mechanisms typically do
-not require the user to send across a secret (eg., a password) in the
+not require the user to send across a secret (e.g., a password) in the
 clear across the network. Instead, authentication is carried out in a
 clever way which avoids this, and so prevents passwords from being
 sniffed.
 
 B<Net::LDAP> supports SASL using the B<Authen::SASL> class. Currently the
-only B<Authen::SASL> subclasses (ie., SASL mechanism) available are
+only B<Authen::SASL> subclasses (i.e., SASL mechanism) available are
 CRAM-MD5 and EXTERNAL.
 
 Some SASL mechanisms provide a general solution to the sniffing of all
 data on the network vulnerability, as they can negotiate confidential
-(ie., encrypted) network connections. Note that this is over and above
+(i.e., encrypted) network connections. Note that this is over and above
 any SSL or TLS encryption! Unfortunately, perl's B<Authen::SASL> code
 cannot negotiate this.
 

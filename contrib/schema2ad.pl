@@ -106,12 +106,10 @@ my $ldif = Net::LDAP::LDIF->new($ldifhandle,"w", change => 1, wrap => 0, version
 # http://msdn.microsoft.com/en-us/library/windows/desktop/ms675578.aspx
 foreach my $at ($schema->all_attributes) {
   my $cn = $at->{name};
-  my $syntax = $schema->attribute_syntax($cn);
+  my $syntax = $schema->attribute_syntax_oid($cn);
 
   die "Syntax not known for attribute $cn\n"
     if (!$syntax);
-
-  $syntax = $syntax->{name};
 
   die "Unknown syntax $syntax for attribute $cn\n"
     if (!exists($syntaxMap{$syntax}));
@@ -253,6 +251,29 @@ sub updateSchemaCache($)
 }
 
 
+## Net::LDAP::Schema extension
+package Net::LDAP::Schema;
+
+# get an attribute's syntax's OID taking into account attribute supertype
+# based on: Net::LDAP::Schema's attribute_syntax()
+sub attribute_syntax_oid
+{
+    my $self = shift;
+    my $attr = shift;
+    my $syntax;
+
+    while ($attr) {
+        my $elem = $self->attribute( $attr ) or return undef;
+
+        $syntax = $elem->{syntax}  and  return $syntax;
+
+        $attr = ${$elem->{sup} || []}[0];
+    }
+
+    return undef;
+}
+
+
 =head1 NAME
 
 schema2ad.pl -- convert standard LDAP schema into a format that AD can digest
@@ -278,8 +299,10 @@ schema2ad.pl takes two arguments:
 
 =item I<schema-file>
 
-Input file containing a schema entry with its I<attributeTypes> and
-I<objectClasses> attributes.
+Input file in LDIF format containing a schema entry with its I<attributeTypes>
+and I<objectClasses> attributes, as e.g. returned by
+L<Net::LDAP::Schema's dump()|Net::LDAP::Schema/"dump ( )">
+method.
 
 =item I<AD-schema-file>
 
@@ -293,7 +316,7 @@ Peter Marschall <peter@adpm.de>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright (c) 2012 Peter Marschall All rights reserved.
+Copyright (c) 2012-2015 Peter Marschall. All rights reserved.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
