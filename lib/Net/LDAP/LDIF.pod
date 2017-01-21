@@ -85,7 +85,7 @@ Use base64.
 
 =back
 
-=item onerror =E<gt> 'die' | 'warn' | undef
+=item onerror =E<gt> 'die' | 'warn' | 'undef'
 
 Specify what happens when an error is detected.
 
@@ -99,10 +99,12 @@ C<Net::LDAP::LDIF> will croak with an appropriate message.
 
 C<Net::LDAP::LDIF> will warn with an appropriate message.
 
-=item undef
+=item 'undef'
 
 C<Net::LDAP::LDIF> will warn with an appropriate message if C<-w> is
 in effect.  The method that was called will return C<undef>.
+
+Note this value is the string C<'undef'>, not the C<undef> value.
 
 =back
 
