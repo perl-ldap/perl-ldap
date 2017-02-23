@@ -45,7 +45,7 @@ splice(@entries, 2, 0, control => [ $auth1 ]);
 splice(@entries, 1, 0, control => [ $manage, $auth2 ]);
 push(@entries, control => $manage);
 
-my $manage = $entries[-1];
+$manage = $entries[-1];
 isa_ok($manage, Net::LDAP::Control::ManageDsaIT, "control object read");
 
 my $ldifout = Net::LDAP::LDIF->new($outfile1, 'w', change => 1);
