@@ -239,12 +239,14 @@ sub delete {
 	if $cmd;
     }
     else {
-      delete $attrs->{$lc_type};
+      if (exists $attrs->{$lc_type} ) {
+        delete $attrs->{$lc_type};
 
-      @{$self->{asn}{attributes}}
-	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
+        @{$self->{asn}{attributes}}
+        = grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
-      push @$cmd, $type, []  if $cmd;
+        push @$cmd, $type, []  if $cmd;
+      }
     }
   }
 
