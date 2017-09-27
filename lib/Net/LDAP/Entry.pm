@@ -146,31 +146,37 @@ sub changetype {
   return $self;
 }
 
-
-
 sub add {
   my $self  = shift;
   my $cmd   = $self->{changetype} eq 'modify' ? [] : undef;
   my $attrs = $self->{attrs} ||= _build_attrs($self);
 
+  my $add   = 0;
+
   while (my($type, $val) = splice(@_, 0, 2)) {
     my $lc_type = lc $type;
+    my %values;
+    @values{(ref($val) ? @$val : $val)} = ();
 
-    push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
-      unless exists $attrs->{$lc_type};
+    unless (@{$attrs->{$lc_type}}
+              = grep { exists $values{$_} } @{$attrs->{$lc_type}})
+    {
+      $add = 1;
 
-    push @{$attrs->{$lc_type}}, ref($val) ? @$val : $val;
+      push @{$self->{asn}{attributes}}, { type => $type, vals => ($attrs->{$lc_type}=[])}
+        unless exists $attrs->{$lc_type};
 
-    push @$cmd, $type, [ ref($val) ? @$val : $val ]
-      if $cmd;
+      push @{$attrs->{$lc_type}}, ref($val) ? @$val : $val;
 
+      push @$cmd, $type, [ ref($val) ? @$val : $val ]
+        if $cmd;
+    }
   }
 
-  push(@{$self->{changes}}, 'add', $cmd)  if $cmd;
+  push(@{$self->{changes}}, 'add', $cmd)  if ($cmd and $add);
 
   return $self;
 }
-
 
 sub replace {
   my $self  = shift;
@@ -239,12 +245,14 @@ sub delete {
 	if $cmd;
     }
     else {
-      delete $attrs->{$lc_type};
+      if (exists $attrs->{$lc_type} ) {
+        delete $attrs->{$lc_type};
 
-      @{$self->{asn}{attributes}}
-	= grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
+        @{$self->{asn}{attributes}}
+        = grep { $lc_type ne lc($_->{type}) } @{$self->{asn}{attributes}};
 
-      push @$cmd, $type, []  if $cmd;
+        push @$cmd, $type, []  if $cmd;
+      }
     }
   }
 
