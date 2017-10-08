@@ -430,6 +430,18 @@ Refresh Required.
 
 =back
 
+=head2 Search Scopes
+
+=over 4
+
+=item LDAP_SEARCH_SCOPE_BASE_OBJECT (0)
+
+=item LDAP_SEARCH_SCOPE_ONE_LEVEL (1)
+
+=item LDAP_SEARCH_SCOPE_SUBTREE (2)
+
+=back
+
 =head2 Control OIDs
 
 =over 4
