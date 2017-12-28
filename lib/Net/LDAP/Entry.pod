@@ -33,7 +33,7 @@ Net::LDAP::Entry - An LDAP entry object
  $entry->delete ( 'unwanted' );
 
  $entry->replace (
-   attr1 => 'newvalue'
+   attr1 => 'newvalue',
    attr2 => [ qw(new values) ]
  );
 
