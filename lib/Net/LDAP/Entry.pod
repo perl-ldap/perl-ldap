@@ -43,14 +43,12 @@ Net::LDAP::Entry - An LDAP entry object
 
  # new alternate syntax
 
- $entry = Net::LDAP::Entry->new ( $dn
-   , attr1 => 'value1'
-   , attr2 => [ qw(value1 value2) ]
+ $entry = Net::LDAP::Entry->new ( $dn,
+   attr1 => 'value1',
+   attr2 => [ qw(value1 value2) ]
  )->add(
    attr3   => 'value'
  )->update( $ldap );
-
-
 
 
 =head1 DESCRIPTION
