@@ -14,7 +14,7 @@ $refreshReq->prepare(q<SEQUENCE {
 
 my $refreshResp = Convert::ASN1->new;
 $refreshResp->prepare(q<SEQUENCE {
-                      responseTtl [0] INTEGER
+                      responseTtl [1] INTEGER
                       }>);
 
 sub Net::LDAP::refresh {
