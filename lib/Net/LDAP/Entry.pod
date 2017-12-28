@@ -219,7 +219,8 @@ the directory server until the C<update> method is called.
 
 =item ldif ( OPTION =E<gt> VALUE, ... )
 
-Returns the entry as an LDIF string. Possible options are
+Returns the entry as an LDIF string. Possible options are all options
+L<Net::LDAP::LDIF/new> allows, with one being treated special:
 
 =over
 
