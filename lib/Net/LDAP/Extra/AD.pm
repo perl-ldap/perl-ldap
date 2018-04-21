@@ -92,7 +92,7 @@ it works without being bound to the directory.
 
 Tell if the LDAP server queried is running AD LDS
 (Active Directory Lightweight Directory Services),
-previously known as ADAM (Active Directoy Application Mode).
+previously known as ADAM (Active Directory Application Mode).
 
 As the check is done by querying the root DSE of the directory,
 it works without being bound to the directory.

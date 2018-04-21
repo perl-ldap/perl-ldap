@@ -280,7 +280,7 @@ control. See L<Net::LDAP::Control::Sort>
 
 ##
 ## Need some blurb here to describe the VLV control. Maybe extract some simple
-## describtion from the draft RFC
+## description from the draft RFC
 ##
 
 =head1 CONSTRUCTOR ARGUMENTS
