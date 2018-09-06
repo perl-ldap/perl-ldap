@@ -242,6 +242,8 @@ Dump the entry to the given filehandle.
 
 This method is intended for debugging purposes and does not
 treat binary attributes specially.
+It also does not deal properly with entries resulting from
+LDIF change records.
 
 See L<Net::LDAP::LDIF> on how to generate LDIF output.
 
