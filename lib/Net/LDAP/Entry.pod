@@ -33,7 +33,7 @@ Net::LDAP::Entry - An LDAP entry object
  $entry->delete ( 'unwanted' );
 
  $entry->replace (
-   attr1 => 'newvalue'
+   attr1 => 'newvalue',
    attr2 => [ qw(new values) ]
  );
 
@@ -43,14 +43,12 @@ Net::LDAP::Entry - An LDAP entry object
 
  # new alternate syntax
 
- $entry = Net::LDAP::Entry->new ( $dn
-   , attr1 => 'value1'
-   , attr2 => [ qw(value1 value2) ]
+ $entry = Net::LDAP::Entry->new ( $dn,
+   attr1 => 'value1',
+   attr2 => [ qw(value1 value2) ]
  )->add(
    attr3   => 'value'
  )->update( $ldap );
-
-
 
 
 =head1 DESCRIPTION
@@ -219,7 +217,8 @@ the directory server until the C<update> method is called.
 
 =item ldif ( OPTION =E<gt> VALUE, ... )
 
-Returns the entry as an LDIF string. Possible options are
+Returns the entry as an LDIF string. Possible options are all options
+L<Net::LDAP::LDIF/new> allows, with one being treated special:
 
 =over
 
