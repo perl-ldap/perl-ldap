@@ -17,12 +17,11 @@ package Module::Install;
 #     3. The ./inc/ version of Module::Install loads
 # }
 
-use 5.005;
+use 5.006;
 use strict 'vars';
 use Cwd        ();
 use File::Find ();
 use File::Path ();
-use FindBin;
 
 use vars qw{$VERSION $MAIN};
 BEGIN {
@@ -32,7 +31,7 @@ BEGIN {
 	# This is not enforced yet, but will be some time in the next few
 	# releases once we can make sure it won't clash with custom
 	# Module::Install extensions.
-	$VERSION = '0.95';
+	$VERSION = '1.19';
 
 	# Storage for the pseudo-singleton
 	$MAIN    = undef;
@@ -127,6 +126,11 @@ END_DIE
 	#-------------------------------------------------------------
 
 	unless ( -f $self->{file} ) {
+		foreach my $key (keys %INC) {
+			delete $INC{$key} if $key =~ /Module\/Install/;
+		}
+
+		local $^W;
 		require "$self->{path}/$self->{dispatch}.pm";
 		File::Path::mkpath("$self->{prefix}/$self->{author}");
 		$self->{admin} = "$self->{name}::$self->{dispatch}"->new( _top => $self );
@@ -135,12 +139,13 @@ END_DIE
 		goto &{"$self->{name}::import"};
 	}
 
+	local $^W;
 	*{"${who}::AUTOLOAD"} = $self->autoload;
 	$self->preload;
 
 	# Unregister loader and worker packages so subdirs can use them again
-	delete $INC{"$self->{file}"};
-	delete $INC{"$self->{path}.pm"};
+	delete $INC{'inc/Module/Install.pm'};
+	delete $INC{'Module/Install.pm'};
 
 	# Save to the singleton
 	$MAIN = $self;
@@ -151,15 +156,29 @@ END_DIE
 sub autoload {
 	my $self = shift;
 	my $who  = $self->_caller;
-	my $cwd  = Cwd::cwd();
+	my $cwd  = Cwd::getcwd();
 	my $sym  = "${who}::AUTOLOAD";
 	$sym->{$cwd} = sub {
-		my $pwd = Cwd::cwd();
+		my $pwd = Cwd::getcwd();
 		if ( my $code = $sym->{$pwd} ) {
 			# Delegate back to parent dirs
 			goto &$code unless $cwd eq $pwd;
 		}
-		$$sym =~ /([^:]+)$/ or die "Cannot autoload $who - $sym";
+		unless ($$sym =~ s/([^:]+)$//) {
+			# XXX: it looks like we can't retrieve the missing function
+			# via $$sym (usually $main::AUTOLOAD) in this case.
+			# I'm still wondering if we should slurp Makefile.PL to
+			# get some context or not ...
+			my ($package, $file, $line) = caller;
+			die <<"EOT";
+Unknown function is found at $file line $line.
+Execution of $file aborted due to runtime errors.
+
+If you're a contributor to a project, you may need to install
+some Module::Install extensions from CPAN (or other repository).
+If you're a user of a module, please contact the author.
+EOT
+		}
 		my $method = $1;
 		if ( uc($method) eq $method ) {
 			# Do nothing
@@ -200,6 +219,7 @@ sub preload {
 
 	my $who = $self->_caller;
 	foreach my $name ( sort keys %seen ) {
+		local $^W;
 		*{"${who}::$name"} = sub {
 			${"${who}::AUTOLOAD"} = "${who}::$name";
 			goto &{"${who}::AUTOLOAD"};
@@ -210,13 +230,21 @@ sub preload {
 sub new {
 	my ($class, %args) = @_;
 
-	# ignore the prefix on extension modules built from top level.
-	my $base_path = Cwd::abs_path($FindBin::Bin);
-	unless ( Cwd::abs_path(Cwd::cwd()) eq $base_path ) {
-		delete $args{prefix};
+	delete $INC{'FindBin.pm'};
+	{
+		# to suppress the redefine warning
+		local $SIG{__WARN__} = sub {};
+		require FindBin;
 	}
 
+	# ignore the prefix on extension modules built from top level.
+	my $base_path = Cwd::abs_path($FindBin::Bin);
+	unless ( Cwd::abs_path(Cwd::getcwd()) eq $base_path ) {
+		delete $args{prefix};
+	}
 	return $args{_self} if $args{_self};
+
+	$base_path = VMS::Filespec::unixify($base_path) if $^O eq 'VMS';
 
 	$args{dispatch} ||= 'Admin';
 	$args{prefix}   ||= 'inc';
@@ -268,8 +296,10 @@ END_DIE
 sub load_extensions {
 	my ($self, $path, $top) = @_;
 
+	my $should_reload = 0;
 	unless ( grep { ! ref $_ and lc $_ eq lc $self->{prefix} } @INC ) {
 		unshift @INC, $self->{prefix};
+		$should_reload = 1;
 	}
 
 	foreach my $rv ( $self->find_extensions($path) ) {
@@ -277,12 +307,13 @@ sub load_extensions {
 		next if $self->{pathnames}{$pkg};
 
 		local $@;
-		my $new = eval { require $file; $pkg->can('new') };
+		my $new = eval { local $^W; require $file; $pkg->can('new') };
 		unless ( $new ) {
 			warn $@ if $@;
 			next;
 		}
-		$self->{pathnames}{$pkg} = delete $INC{$file};
+		$self->{pathnames}{$pkg} =
+			$should_reload ? delete $INC{$file} : $INC{$file};
 		push @{$self->{extensions}}, &{$new}($pkg, _top => $top );
 	}
 
@@ -293,7 +324,7 @@ sub find_extensions {
 	my ($self, $path) = @_;
 
 	my @found;
-	File::Find::find( sub {
+	File::Find::find( {no_chdir => 1, wanted => sub {
 		my $file = $File::Find::name;
 		return unless $file =~ m!^\Q$path\E/(.+)\.pm\Z!is;
 		my $subpath = $1;
@@ -307,9 +338,9 @@ sub find_extensions {
 		# correctly.  Otherwise, root through the file to locate the case-preserved
 		# version of the package name.
 		if ( $subpath eq lc($subpath) || $subpath eq uc($subpath) ) {
-			my $content = Module::Install::_read($subpath . '.pm');
+			my $content = Module::Install::_read($File::Find::name);
 			my $in_pod  = 0;
-			foreach ( split //, $content ) {
+			foreach ( split /\n/, $content ) {
 				$in_pod = 1 if /^=\w/;
 				$in_pod = 0 if /^=cut/;
 				next if ($in_pod || /^=cut/);  # skip pod text
@@ -322,7 +353,7 @@ sub find_extensions {
 		}
 
 		push @found, [ $file, $pkg ];
-	}, $path ) if -d $path;
+	}}, $path ) if -d $path;
 
 	@found;
 }
@@ -344,24 +375,14 @@ sub _caller {
 	return $call;
 }
 
-# Done in evals to avoid confusing Perl::MinimumVersion
-eval( $] >= 5.006 ? <<'END_NEW' : <<'END_OLD' ); die $@ if $@;
 sub _read {
 	local *FH;
 	open( FH, '<', $_[0] ) or die "open($_[0]): $!";
+	binmode FH;
 	my $string = do { local $/; <FH> };
 	close FH or die "close($_[0]): $!";
 	return $string;
 }
-END_NEW
-sub _read {
-	local *FH;
-	open( FH, "< $_[0]"  ) or die "open($_[0]): $!";
-	my $string = do { local $/; <FH> };
-	close FH or die "close($_[0]): $!";
-	return $string;
-}
-END_OLD
 
 sub _readperl {
 	my $string = Module::Install::_read($_[0]);
@@ -382,30 +403,19 @@ sub _readpod {
 	return $string;
 }
 
-# Done in evals to avoid confusing Perl::MinimumVersion
-eval( $] >= 5.006 ? <<'END_NEW' : <<'END_OLD' ); die $@ if $@;
 sub _write {
 	local *FH;
 	open( FH, '>', $_[0] ) or die "open($_[0]): $!";
+	binmode FH;
 	foreach ( 1 .. $#_ ) {
 		print FH $_[$_] or die "print($_[0]): $!";
 	}
 	close FH or die "close($_[0]): $!";
 }
-END_NEW
-sub _write {
-	local *FH;
-	open( FH, "> $_[0]"  ) or die "open($_[0]): $!";
-	foreach ( 1 .. $#_ ) {
-		print FH $_[$_] or die "print($_[0]): $!";
-	}
-	close FH or die "close($_[0]): $!";
-}
-END_OLD
 
 # _version is for processing module versions (eg, 1.03_05) not
 # Perl versions (eg, 5.8.1).
-sub _version ($) {
+sub _version {
 	my $s = shift || 0;
 	my $d =()= $s =~ /(\.)/g;
 	if ( $d >= 2 ) {
@@ -421,12 +431,12 @@ sub _version ($) {
 	return $l + 0;
 }
 
-sub _cmp ($$) {
-	_version($_[0]) <=> _version($_[1]);
+sub _cmp {
+	_version($_[1]) <=> _version($_[2]);
 }
 
 # Cloned from Params::Util::_CLASS
-sub _CLASS ($) {
+sub _CLASS {
 	(
 		defined $_[0]
 		and
@@ -438,4 +448,4 @@ sub _CLASS ($) {
 
 1;
 
-# Copyright 2008 - 2010 Adam Kennedy.
+# Copyright 2008 - 2012 Adam Kennedy.

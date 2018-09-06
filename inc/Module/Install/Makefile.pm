@@ -4,10 +4,11 @@ package Module::Install::Makefile;
 use strict 'vars';
 use ExtUtils::MakeMaker   ();
 use Module::Install::Base ();
+use Fcntl qw/:flock :seek/;
 
 use vars qw{$VERSION @ISA $ISCORE};
 BEGIN {
-	$VERSION = '0.95';
+	$VERSION = '1.19';
 	@ISA     = 'Module::Install::Base';
 	$ISCORE  = 1;
 }
@@ -101,24 +102,26 @@ sub makemaker_args {
 	my ($self, %new_args) = @_;
 	my $args = ( $self->{makemaker_args} ||= {} );
 	foreach my $key (keys %new_args) {
-		if ($makemaker_argtype{$key} eq 'ARRAY') {
-			$args->{$key} = [] unless defined $args->{$key};
-			unless (ref $args->{$key} eq 'ARRAY') {
-				$args->{$key} = [$args->{$key}]
+		if ($makemaker_argtype{$key}) {
+			if ($makemaker_argtype{$key} eq 'ARRAY') {
+				$args->{$key} = [] unless defined $args->{$key};
+				unless (ref $args->{$key} eq 'ARRAY') {
+					$args->{$key} = [$args->{$key}]
+				}
+				push @{$args->{$key}},
+					ref $new_args{$key} eq 'ARRAY'
+						? @{$new_args{$key}}
+						: $new_args{$key};
 			}
-			push @{$args->{$key}},
-				ref $new_args{$key} eq 'ARRAY'
-					? @{$new_args{$key}}
-					: $new_args{$key};
-		}
-		elsif ($makemaker_argtype{$key} eq 'HASH') {
-			$args->{$key} = {} unless defined $args->{$key};
-			foreach my $skey (keys %{ $new_args{$key} }) {
-				$args->{$key}{$skey} = $new_args{$key}{$skey};
+			elsif ($makemaker_argtype{$key} eq 'HASH') {
+				$args->{$key} = {} unless defined $args->{$key};
+				foreach my $skey (keys %{ $new_args{$key} }) {
+					$args->{$key}{$skey} = $new_args{$key}{$skey};
+				}
 			}
-		}
-		elsif ($makemaker_argtype{$key} eq 'APPENDABLE') {
-			$self->makemaker_append($key => $new_args{$key});
+			elsif ($makemaker_argtype{$key} eq 'APPENDABLE') {
+				$self->makemaker_append($key => $new_args{$key});
+			}
 		}
 		else {
 			if (defined $args->{$key}) {
@@ -130,7 +133,7 @@ sub makemaker_args {
 	return $args;
 }
 
-# For mm args that take multiple space-seperated args,
+# For mm args that take multiple space-separated args,
 # append an argument to the current list.
 sub makemaker_append {
 	my $self = shift;
@@ -178,28 +181,22 @@ sub inc {
 	$self->makemaker_args( INC => shift );
 }
 
-my %test_dir = ();
-
 sub _wanted_t {
-	/\.t$/ and -f $_ and $test_dir{$File::Find::dir} = 1;
 }
 
 sub tests_recursive {
 	my $self = shift;
-	if ( $self->tests ) {
-		die "tests_recursive will not work if tests are already defined";
-	}
 	my $dir = shift || 't';
 	unless ( -d $dir ) {
 		die "tests_recursive dir '$dir' does not exist";
 	}
-	%test_dir = ();
+	my %tests = map { $_ => 1 } split / /, ($self->tests || '');
 	require File::Find;
-	File::Find::find( \&_wanted_t, $dir );
-	if ( -d 'xt' and ($Module::Install::AUTHOR or $ENV{RELEASE_TESTING}) ) {
-		File::Find::find( \&_wanted_t, 'xt' );
-	}
-	$self->tests( join ' ', map { "$_/*.t" } sort keys %test_dir );
+	File::Find::find(
+        sub { /\.t$/ and -f $_ and $tests{"$File::Find::dir/*.t"} = 1 },
+        $dir
+    );
+	$self->tests( join ' ', sort keys %tests );
 }
 
 sub write {
@@ -218,18 +215,22 @@ sub write {
 	require ExtUtils::MakeMaker;
 
 	if ( $perl_version and $self->_cmp($perl_version, '5.006') >= 0 ) {
-		# MakeMaker can complain about module versions that include
-		# an underscore, even though its own version may contain one!
-		# Hence the funny regexp to get rid of it.  See RT #35800
-		# for details.
-		my $v = $ExtUtils::MakeMaker::VERSION =~ /^(\d+\.\d+)/;
-		$self->build_requires(     'ExtUtils::MakeMaker' => $v );
-		$self->configure_requires( 'ExtUtils::MakeMaker' => $v );
+		# This previous attempted to inherit the version of
+		# ExtUtils::MakeMaker in use by the module author, but this
+		# was found to be untenable as some authors build releases
+		# using future dev versions of EU:MM that nobody else has.
+		# Instead, #toolchain suggests we use 6.59 which is the most
+		# stable version on CPAN at time of writing and is, to quote
+		# ribasushi, "not terminally fucked, > and tested enough".
+		# TODO: We will now need to maintain this over time to push
+		# the version up as new versions are released.
+		$self->build_requires(     'ExtUtils::MakeMaker' => 6.59 );
+		$self->configure_requires( 'ExtUtils::MakeMaker' => 6.59 );
 	} else {
 		# Allow legacy-compatibility with 5.005 by depending on the
 		# most recent EU:MM that supported 5.005.
-		$self->build_requires(     'ExtUtils::MakeMaker' => 6.42 );
-		$self->configure_requires( 'ExtUtils::MakeMaker' => 6.42 );
+		$self->build_requires(     'ExtUtils::MakeMaker' => 6.36 );
+		$self->configure_requires( 'ExtUtils::MakeMaker' => 6.36 );
 	}
 
 	# Generate the MakeMaker params
@@ -244,13 +245,15 @@ in a module, and provide its file path via 'version_from' (or
 'all_from' if you prefer) in Makefile.PL.
 EOT
 
-	$DB::single = 1;
 	if ( $self->tests ) {
 		my @tests = split ' ', $self->tests;
 		my %seen;
 		$args->{test} = {
 			TESTS => (join ' ', grep {!$seen{$_}++} @tests),
 		};
+    } elsif ( $Module::Install::ExtraTests::use_extratests ) {
+        # Module::Install::ExtraTests doesn't set $self->tests and does its own tests via harness.
+        # So, just ignore our xt tests here.
 	} elsif ( -d 'xt' and ($Module::Install::AUTHOR or $ENV{RELEASE_TESTING}) ) {
 		$args->{test} = {
 			TESTS => join( ' ', map { "$_/*.t" } grep { -d $_ } qw{ t xt } ),
@@ -297,13 +300,22 @@ EOT
 	# Remove any reference to perl, BUILD_REQUIRES doesn't support it
 	delete $args->{BUILD_REQUIRES}->{perl};
 
-	# Delete bundled dists from prereq_pm
-	my $subdirs = ($args->{DIR} ||= []);
+	# Delete bundled dists from prereq_pm, add it to Makefile DIR
+	my $subdirs = ($args->{DIR} || []);
 	if ($self->bundles) {
+		my %processed;
 		foreach my $bundle (@{ $self->bundles }) {
-			my ($file, $dir) = @$bundle;
-			push @$subdirs, $dir if -d $dir;
-			delete $build_prereq->{$file}; #Delete from build prereqs only
+			my ($mod_name, $dist_dir) = @$bundle;
+			delete $prereq->{$mod_name};
+			$dist_dir = File::Basename::basename($dist_dir); # dir for building this module
+			if (not exists $processed{$dist_dir}) {
+				if (-d $dist_dir) {
+					# List as sub-directory to be processed by make
+					push @$subdirs, $dist_dir;
+				}
+				# Else do nothing: the module is already present on the system
+				$processed{$dist_dir} = undef;
+			}
 		}
 	}
 
@@ -356,9 +368,9 @@ sub fix_up_makefile {
 		. ($self->postamble || '');
 
 	local *MAKEFILE;
-	open MAKEFILE, "< $makefile_name" or die "fix_up_makefile: Couldn't open $makefile_name: $!";
+	open MAKEFILE, "+< $makefile_name" or die "fix_up_makefile: Couldn't open $makefile_name: $!";
+	eval { flock MAKEFILE, LOCK_EX };
 	my $makefile = do { local $/; <MAKEFILE> };
-	close MAKEFILE or die $!;
 
 	$makefile =~ s/\b(test_harness\(\$\(TEST_VERBOSE\), )/$1'inc', /;
 	$makefile =~ s/( -I\$\(INST_ARCHLIB\))/ -Iinc$1/g;
@@ -378,7 +390,8 @@ sub fix_up_makefile {
 	# XXX - This is currently unused; not sure if it breaks other MM-users
 	# $makefile =~ s/^pm_to_blib\s+:\s+/pm_to_blib :: /mg;
 
-	open  MAKEFILE, "> $makefile_name" or die "fix_up_makefile: Couldn't open $makefile_name: $!";
+	seek MAKEFILE, 0, SEEK_SET;
+	truncate MAKEFILE, 0;
 	print MAKEFILE  "$preamble$makefile$postamble" or die $!;
 	close MAKEFILE  or die $!;
 
@@ -402,4 +415,4 @@ sub postamble {
 
 __END__
 
-#line 531
+#line 544
