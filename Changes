@@ -1,3 +1,17 @@
+0.66 -- Tue Apr 16 11:23:55 CEST 2019
+
+Enhancements
+* Entry.pm: accept more options in ldif()
+* inc/: refresh install tools
+* contrib/ldifsort: new option -h
+* documentation extensions
+* typo fixes
+
+Bug Fixes
+* contrib/schema2ad: fix syntax calculation
+* Refresh.pm: fix get_ttl() method
+* DSML: fix detection of auxiliary object classes
+
 0.65 -- Mon Apr  6 19:43:37 CEST 2015
 
 Enhancements:

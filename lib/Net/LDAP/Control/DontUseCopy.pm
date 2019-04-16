@@ -7,7 +7,7 @@ package Net::LDAP::Control::DontUseCopy;
 use Net::LDAP::Control;
 
 our @ISA = qw(Net::LDAP::Control);
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use strict;
 
