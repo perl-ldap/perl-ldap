@@ -158,7 +158,7 @@ my @err2desc = (
   undef,
   'Naming violation',                                    # 0x40 LDAP_NAMING_VIOLATION
   'Object class violation',                              # 0x41 LDAP_OBJECT_CLASS_VIOLATION
-  'Operation not allowed on nonleaf',                    # 0x42 LDAP_NOT_ALLOWED_ON_NONLEAF
+  'Operation not allowed on non-leaf',                   # 0x42 LDAP_NOT_ALLOWED_ON_NONLEAF
   'Operation not allowed on RDN',                        # 0x43 LDAP_NOT_ALLOWED_ON_RDN
   'Already exists',                                      # 0x44 LDAP_ALREADY_EXISTS
   'Cannot modify object class',                          # 0x45 LDAP_NO_OBJECT_CLASS_MODS

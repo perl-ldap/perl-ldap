@@ -218,7 +218,7 @@ the directory server until the C<update> method is called.
 =item ldif ( OPTION =E<gt> VALUE, ... )
 
 Returns the entry as an LDIF string. Possible options are all options
-L<Net::LDAP::LDIF/new> allows, with one being treated special:
+L<Net::LDAP::LDIF/new> allows, with two being treated special:
 
 =over
 
@@ -229,6 +229,11 @@ If false, then the LDIF generated will represent the entry content. If
 unspecified then it will default to true if the entry has changes and
 false if no changes have been applied to the entry.
 
+=item version =E<gt> VALUE
+
+No matter what value is passed, it will be ignored, and treated as if 0
+were given.
+
 =back
 
 =item dump ( [ FILEHANDLE ] )
@@ -237,6 +242,8 @@ Dump the entry to the given filehandle.
 
 This method is intended for debugging purposes and does not
 treat binary attributes specially.
+It also does not deal properly with entries resulting from
+LDIF change records.
 
 See L<Net::LDAP::LDIF> on how to generate LDIF output.
 

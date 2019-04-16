@@ -542,7 +542,7 @@ sub write_schema {
 	Name  => 'superior'
       };
     }
-    if (my $type = (grep { $oc->{$_} } qw(structural abstract auxilary))[0]) {
+    if (my $type = (grep { $oc->{$_} } qw(structural abstract auxiliary))[0]) {
       $attr{'{}type'} = {
 	Value => $type,
 	Name  => 'type',

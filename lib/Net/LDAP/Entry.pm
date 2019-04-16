@@ -308,7 +308,7 @@ sub ldif {
   require Net::LDAP::LDIF;
   open(my $fh, '>', \my $buffer);
   my $change = exists $opt{change} ? $opt{change} : $self->changes ? 1 : 0;
-  my $ldif = Net::LDAP::LDIF->new($fh, 'w', %opt, change => $change);
+  my $ldif = Net::LDAP::LDIF->new($fh, 'w', %opt, version => 0, change => $change);
   $ldif->write_entry($self);
   return $buffer;
 }

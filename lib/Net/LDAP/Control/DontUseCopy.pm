@@ -66,7 +66,7 @@ It allows the the client to specify that copied information should not be used
 in providing the service.
 
 The control is appropriate for LDAP search and compare operations [RFC4511]
-and inappropriate for all other oeprations.
+and inappropriate for all other operations.
 
 Its criticality must be TRUE; it has no value.
 
