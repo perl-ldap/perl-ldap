@@ -120,7 +120,7 @@ sub cmpdn {
 		$cadn =~ s/^.*,(?=.)//; $cbdn =~ s/^.*,(?=.)//;
 	}
 	# reverse sort order if hierarchical sorting and delete entries for modify ldifs
-	if ($args{h} && $args{r} && $a->[2] == "delete" && $b->[2] == "delete") {
+	if ($args{h} && $args{r} && $a->[2] eq "delete" && $b->[2] eq "delete") {
 	    $cbdn cmp $cadn;
 	} else {
         $cadn cmp $cbdn;
