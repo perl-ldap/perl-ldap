@@ -44,6 +44,12 @@ When the key attribute is a DN, sorts hierarchically superior values before
 subordinate values. For example, dc=example,dc=com is sorted before
 cn=test,dc=example,dc=com.
 
+=item B<-r>
+
+When hierarchically sorting according to DN, reverse sort entries where
+changetype: delete. This is useful for sorting diffed ldifs for import
+with ldapmodify as childs have to be deleted before parent nodes.
+
 =item B<-n>
 
 Specifies numeric comparisons on the key attribute. Otherwise string
@@ -66,7 +72,7 @@ use Getopt::Std;
 use strict;
 
 my %args;
-getopts("k:acdhn", \%args);
+getopts("k:acdhrn", \%args);
 
 my $keyattr = $args{k};
 my $sortattrs = $args{a};
@@ -74,7 +80,7 @@ my $ciscmp = $args{c};
 my $ldiffile = $ARGV[0];
 my $sorthier = $args{h};
 
-die "usage: $0 -k keyattr [-acdhn] ldiffile\n"
+die "usage: $0 -k keyattr [-acdhrn] ldiffile\n"
 	unless $keyattr && $ldiffile;
 
 $/ = "";
@@ -85,7 +91,11 @@ my $pos = 0;
 my @valuepos;
 while (<LDIFH>) {
 	my $value;
+	my $changetype = "unknown";
 	1 while s/^($keyattr:.*)?\n /$1/im; # Handle line continuations
+    if (/^changetype: (.*)$/im) {
+        $changetype = lc($1);
+    }
 	if (/^$keyattr(::?) (.*)$/im) {
 		$value = $2;
 		$value = decode_base64($value) if $1 eq '::';
@@ -94,7 +104,7 @@ while (<LDIFH>) {
 	# To simplify hierarchical sorting, replace escaped commas in the sort key
 	# with dash (the next ASCII character)
 	$value =~ s/\\,/-/g if $args{h};
-	push @valuepos, [ $value, $pos ];
+	push @valuepos, [ $value, $pos, $changetype ];
 	$pos = tell;
 }
 
@@ -109,7 +119,12 @@ sub cmpdn {
 		while (substr($cadn,-1,1) eq substr($cbdn,-1,1)) { chop($cadn, $cbdn) }
 		$cadn =~ s/^.*,(?=.)//; $cbdn =~ s/^.*,(?=.)//;
 	}
-	$cadn cmp $cbdn;
+	# reverse sort order if hierarchical sorting and delete entries for modify ldifs
+	if ($args{h} && $args{r} && $a->[2] == "delete" && $b->[2] == "delete") {
+	    $cbdn cmp $cadn;
+	} else {
+        $cadn cmp $cbdn;
+	}
 }
 
 my $cmpfunc;
