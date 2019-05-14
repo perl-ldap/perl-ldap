@@ -4,16 +4,17 @@ BEGIN {
   require "t/common.pl";
 }
 
-use Test::More tests => 16;
+use Test::More tests => 17;
 use File::Compare qw(compare_text);
 
 use Net::LDAP::LDIF;
 
-my $infile   = "data/00-in.ldif";
-my $outfile1 = "$TEMPDIR/00-out1.ldif";
-my $outfile2 = "$TEMPDIR/00-out2.ldif";
-my $cmpfile1 = "data/00-cmp.ldif";
-my $cmpfile2 = $infile;
+my $infile        = "data/00-in.ldif";
+my $outfile1      = "$TEMPDIR/00-out1.ldif";
+my $outfile2      = "$TEMPDIR/00-out2.ldif";
+my $cmpfile1      = "data/00-cmp.ldif";
+my $cmpfile2      = $infile;
+my $comments_file = "data/00-comments.ldif";
 
 my $ldif = Net::LDAP::LDIF->new($infile,"r");
 
@@ -182,4 +183,9 @@ ok(($r and  join("*", sort keys %$r) eq "*;en-us"), "name keys");
 ok(($r and $r->{''} and @{$r->{''}} == 1 and $r->{''}[0] eq 'Graham Barr'), "name alloptions");
 
 ok(($r and $r->{';en-us'} and @{$r->{';en-us'}} == 1 and $r->{';en-us'}[0] eq 'Bob'), "name alloptions Bob");
+
+# Test comments
+my $ldif_comments = Net::LDAP::LDIF->new($comments_file,"r");
+my $e_comments    = $ldif_comments->read_entry;
+ok( (grep /^#/, @{ $e_comments->comments()}), "Comments found" );
 

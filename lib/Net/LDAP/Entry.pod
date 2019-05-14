@@ -187,6 +187,16 @@ specified by setting the entry attributes newrdn, deleteoldrdn, and
 
 =back
 
+=item comments ( )
+
+The comments methods will return an array reference with (string) comments 
+read by L<Net::LDAP::LDIF>.
+
+=item comments ( ARRAYREF )
+
+The comments method setter accepts an array reference with (string)
+comments. Specifically, this method is called by L<Net::LDAP::LDIF>.
+
 =item delete ( )
 
 Delete the entry from the server on the next call to C<update>.

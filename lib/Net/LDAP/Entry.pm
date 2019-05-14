@@ -29,6 +29,15 @@ sub new {
   return $entry;
 }
 
+# API addition to support LDIF comments
+sub comments {
+  # Set or get comments read by Net::LDAP::LDIF as an arrayref.
+  my $self = shift;
+  return $self->{comments} unless @_;
+  $self->{comments} = shift;
+  return $self;
+}
+
 sub clone {
   my $self  = shift;
   my $clone = $self->new();

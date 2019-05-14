@@ -1,0 +1,44 @@
+# add 1470034845 dc=acme,dc=com cn=foo,ou=admins,dc=acme,dc=com  conn=-1
+dn: uid=coyote004,ou=roadrunners,dc=acme,dc=com
+changetype: add
+uid: 004
+mail: coyote@acme.com
+cn: Coyote
+sn: De la mancha
+givenName: Coyote
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: eduPerson
+objectClass: sambaSamAccount
+structuralObjectClass: eduPerson
+creatorsName: cn=foo,ou=admins,dc=acme,dc=com
+createTimestamp: 20160801070045Z
+entryCSN: 20160801070445.104180Z#000000#001#000000
+modifiersName: cn=foo,ou=admins,dc=acme,dc=com
+modifyTimestamp: 20160801070045Z
+# end add 1470034845
+
+# add 1470034847 dc=acme,dc=com cn=foo,ou=admins,dc=acme,dc=com  conn=-1
+dn: uid=coyote006, ou=roadrunners,dc=acme,dc=com
+changetype: add
+uid: 004
+mail: coyote@acme.com
+cn: Coyote
+sn: De la mancha
+givenName: Coyote
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+objectClass: eduPerson
+objectClass: sambaSamAccount
+structuralObjectClass: eduPerson
+creatorsName: cn=foo,ou=admins,dc=acme,dc=com
+createTimestamp: 20160801070045Z
+entryCSN: 20160801070445.104180Z#000000#001#000000
+modifiersName: cn=foo,ou=admins,dc=acme,dc=com
+modifyTimestamp: 20160801070045Z
+# end add 1470034847
+
