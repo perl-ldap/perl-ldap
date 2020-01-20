@@ -166,7 +166,7 @@ sub connect_ldap {
     PeerPort   => $port,
     LocalAddr  => $arg->{localaddr} || undef,
     Proto      => 'tcp',
-    Domain     => $domain,
+    ($class eq 'IO::Socket::IP' ? 'Family' : 'Domain')     => $domain,
     MultiHomed => $arg->{multihomed},
     Timeout    => defined $arg->{timeout}
 		 ? $arg->{timeout}
