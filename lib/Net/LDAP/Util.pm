@@ -31,6 +31,8 @@ the L<Net::LDAP> modules.
 
 =cut
 
+use Encode qw/ encode decode /;
+
 require Exporter;
 require Net::LDAP::Constant;
 our @ISA = qw(Exporter);
@@ -570,8 +572,11 @@ sub escape_dn_value(@)
 {
 my @values = @_;
 
-  map { $_ =~ s/([\\",=+<>#;])/\\$1/og;
-        $_ =~ s/([\x00-\x1F])/'\\'.unpack('H2', $1)/oge;
+  # We conservatively encode all non-ASCII characters, beyond those explicitly
+  # required by RFC2253, but as performed in the examples in section 5.
+  map { $_=encode('utf-8', $_);
+        $_ =~ s/([\\",=+<>#;])/\\$1/og;
+        $_ =~ s/([^\x20-\x7f])/"\\".uc(unpack("H2",$1))/oge;
         $_ =~ s/(^ +| +$)/'\\20' x length($1)/oge; } @values;
 
   return(wantarray ? @values : $values[0]);
@@ -598,8 +603,10 @@ sub unescape_dn_value(@)
 my @values = @_;
 
   map { $_ =~ s/\\([\\",=+<>#;]|[0-9a-fA-F]{2})
-               /(length($1)==1) ? $1 : pack('H2', $1)
-               /ogex; } @values;
+               /(length($1)==1) ? $1 : pack("H2", $1)
+               /ogex;
+        $_ = decode('utf-8', $_);
+      } @values;
 
   return(wantarray ? @values : $values[0]);
 }
