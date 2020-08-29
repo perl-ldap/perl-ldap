@@ -16,7 +16,7 @@
 # Revisions:
 # $Log: jpegDisplay.pl,v $
 # Revision 1.2  2003/06/18 18:23:31  gbarr
-# Remove all references to :all as it is not recomended
+# Remove all references to :all as it is not recommended
 #
 # Revision 1.1  2001/03/12 14:01:46  gbarr
 # New contrib scripts from Clif Harden
@@ -185,9 +185,9 @@ sub Usage
   print( "Usage: [-Z] [-b <base>] [-h <host>] [-d <number>] [-D <DN>] [-w <password>] [-a <attribute>] [-v <data>]\n" );
   print( "\t-b    Search base.\n" );
   print( "\t-d    Debug mode.  Display debug messages to stdout.\n" );
-  print( "\t-D    Authenication Distingushed Name.\n" );
+  print( "\t-D    Authentication Distinguished Name.\n" );
   print( "\t-h    LDAP directory host computer.\n" );
-  print( "\t-w    Authenication password.\n" );
+  print( "\t-w    Authentication password.\n" );
   print( "\t-a    Attribute that will be incorporated into the search filter.\n" );
   print( "\t-v    Data that will be incorporated into the search filter.\n" );
   print( "\t-V    LDAP version of the LDAP directory.\n" );
@@ -222,9 +222,9 @@ to point to your file pathname of perl.
 
  -b    Search base.
  -d    Debug mode.  Display debug messages to stdout.
- -D    Distingushed Name for authenication purposes.
+ -D    Distinguished Name for authentication purposes.
  -h    LDAP directory host computer.
- -w    Authenication password.
+ -w    Authentication password.
  -a    Attribute that will be incorporated into the search filter.
  -v    Data that will be incorporated into the search filter.
  -V    LDAP version of the LDAP directory.

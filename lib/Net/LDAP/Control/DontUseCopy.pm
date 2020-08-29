@@ -62,7 +62,7 @@ C<Net::LDAP::Control::DontUseCopy> provides an interface for the creation
 and manipulation of objects that represent the C<DontUseCopy> control as
 described by RFC 6171.
 
-It allows the the client to specify that copied information should not be used
+It allows the client to specify that copied information should not be used
 in providing the service.
 
 The control is appropriate for LDAP search and compare operations [RFC4511]

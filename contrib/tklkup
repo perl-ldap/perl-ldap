@@ -6,7 +6,7 @@
 #----------------------------------------------------------------------------
 #
 # This program was originally written by Clif Harden.
-# Some of the software in the LDAP search subroutine was orginally
+# Some of the software in the LDAP search subroutine was originally
 # written by Graham Barr.  It is based on Graham Barr's PERL LDAP
 # module and the PERL TK module.
 # Both modules are available from the CPAN.org system.
@@ -2077,7 +2077,7 @@ $results = $Global{'searchResults'};
 @dnKeys = sort(keys(%$results));
 
 #
-# build the hierachical list using the DN
+# build the hierarchical list using the DN
 #
 foreach my $dnvar ( @dnKeys )
 {
@@ -2171,7 +2171,7 @@ sub print_entry {
   }
  }
 push(@$data, $dn);   # dn of entry
-push(@$data, $max);  # max attribute string lenght
+push(@$data, $max);  # max attribute string length
 push(@$data, $information);
 ${$Global{'searchResults'}}{$dn} = $data;
 }
@@ -2599,7 +2599,7 @@ else
 
 #
 # Record only dn that start with ou=, or in some cases nismapname.
-# Normal entrys can be mixed in with these objects.
+# Normal entries can be mixed in with these objects.
 #
  if ( $Global{'nismapname'} && ( /^ou=/ || /^nismapname/i || /^automountMapName/i ) )
  {
@@ -3082,7 +3082,7 @@ $msgbox->update;
 
 
 &schema_clear();
-$Global{'max'} = 0;  # Reset objectclass name lenght.
+$Global{'max'} = 0;  # Reset objectclass name length.
 
 my $dt = "/tmp/schema.dat.$$";
 
@@ -4168,7 +4168,7 @@ delete($Global{'ldapActionDN'});
 # clear the entry data display window.
 if ( $display_clear ) { &display_clear(); }
 #
-# Format and display the data associcated with the dn
+# Format and display the data associated with the dn
 # passed to this subroutine.
 #
 @DNs = split(/$sepChar/,$objects); # split base from dn.
@@ -4176,7 +4176,7 @@ if ( $display_clear ) { &display_clear(); }
 $dataArray = $Global{'searchResults'};
 $data = $$dataArray{$DNs[1]}; # get data associated with this dn
 $dn = $$data[0];     # get DN
-$max = $$data[1];    # get max size of atttributes
+$max = $$data[1];    # get max size of attributes
 $info = $$data[2];   # get data hash address.
 @infoKeys = sort(keys(%$info));  # get a list of all attributes.
 $text = sprintf "%${max}s: %s\n",'dn',$dn;
@@ -4268,7 +4268,7 @@ return if Tk::Exists($Global{'editWindow'});
 # clear the entry data display window.
 
 #
-# Format and display the data associcated with the dn
+# Format and display the data associated with the dn
 # passed to this subroutine.
 #
 @DNs = split(/$sepChar/,$objects); # split base from dn.
@@ -4278,7 +4278,7 @@ $data = $$dataArray{$DNs[1]}; # get data associated with this dn
 $dn = $$data[0];     # get DN
 my $tmpdn = $dn;     # save DN
 $Global{'entryDN'} = $dn;     # save DN
-$max = $$data[1];    # get max size of atttributes
+$max = $$data[1];    # get max size of attributes
 $info = $$data[2];   # get data hash address.
 @tmp1 = sort(keys(%$info));  # get a list of all attributes.
 
@@ -4747,7 +4747,7 @@ while ($do_it == 1 )
    #
 
     &dirRUConn();
-    $errstr = "There has been a major referral error deleteing this DN.";
+    $errstr = "There has been a major referral error deleting this DN.";
     $errstr .= "The following referrals were tried;\n";
     foreach  my $rref (@referral )
     {
@@ -5818,7 +5818,7 @@ if ( $mesg->code )
     #
 
      &dirRUConn();
-     $errstr = "There has been a major referral error deleteing an attribute on this DN.";
+     $errstr = "There has been a major referral error deleting an attribute on this DN.";
      $errstr .= "The following referrals were tried;\n";
      foreach  my $rref (@referral )
      {

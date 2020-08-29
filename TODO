@@ -29,7 +29,7 @@ Documentation,
   FAQ
     Need an active maintainer
   Examples
-    Needs to be rewritten so that all code is in a consistant format.
+    Needs to be rewritten so that all code is in a consistent format.
   Net::LDAP::Intro
     An introduction to LDAP POD
 

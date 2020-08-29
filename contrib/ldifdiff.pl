@@ -53,7 +53,7 @@ compared. The default set is: manager member owner uniqueMember
 
 =item B<--sharedattrs attr1,...>
 
-(Optional) Specifies a list of attribues to be treated as "shared" attributes,
+(Optional) Specifies a list of attributes to be treated as "shared" attributes,
 where the source may not be a sole authoritative source. When modifying
 these attributes, separate "delete" and "add" LDIF changes are generated,
 instead of a single "replace" change. The default set is objectClass.

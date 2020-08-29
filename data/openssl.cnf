@@ -12,7 +12,7 @@ RANDFILE		= $ENV::HOME/.rnd
 default_bits		= 2048
 default_keyfile 	= privkey.pem
 distinguished_name	= req_distinguished_name
-x509_extensions		= server_cert	# The extentions to add to the self signed cert
+x509_extensions		= server_cert	# The extensions to add to the self signed cert
 
 # This sets a mask for permitted string types. There are several options. 
 string_mask = utf8only

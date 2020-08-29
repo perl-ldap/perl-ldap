@@ -13,7 +13,7 @@ use Net::LDAP::Util qw(:time);
 # - RESULT is the expected result, one of:
 #     yes   TESTCASE succeeds and matches EXPECTED
 #     no    TESTCASE succeeds, but may not match EXPECTED
-#     fail  TESTCASE failes
+#     fail  TESTCASE failures
 # - DATETIME is a date-time combination to be checked.
 #   Depending on TESTCASE it may be either a string in LDAP's generalizedTime
 #   format or a UNIX time string denoting the seconds since the epoch,
@@ -70,7 +70,7 @@ gt2:yes		1970010101.1Z			3960
 gt2:yes		197001010106Z			3960
 gt2:yes		197001010106.1Z			3966
 
-# formats wih offsets
+# formats with offsets
 g2t:yes		19700101000000+0130		-5400
 g2t:yes		19700101000000+01		-3600
 g2t:yes		19700101000000-01		3600

@@ -304,7 +304,7 @@ and may not be able to be released, but since I work for a university I
 don't think there will be a problem):
 
 1) script to add/remove members to a group
-2) script to send mail to a list as long as the orignal email address is
+2) script to send mail to a list as long as the original email address is
 from the owner of the group
 3) a web LDAP management system. I've written a bare bones one in
 Netscape's PerLDAP API, but I'd like to write something closer to

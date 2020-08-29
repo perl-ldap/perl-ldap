@@ -11,7 +11,7 @@ that is
   make install
 
 If you are on a system where this is not possible you will need to perform
-the following, after ensuring that any dependant libraries are installed
+the following, after ensuring that any dependent libraries are installed
 (see README)
 
   perl -V
@@ -38,6 +38,6 @@ distribution with the equivalent of the following for your platform.
   cd perl-ldap-*.**/lib
   cp -r * /usr/local/lib/perl5/site_perl/5.6.0
 
-To use the basics of perl-ldap there is only one dependancy,
+To use the basics of perl-ldap there is only one dependency,
 Convert::ASN1, all others are optional depending on if you want to use
 a given functionality. See the README file for a list.

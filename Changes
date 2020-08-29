@@ -154,7 +154,7 @@ Enhancements:
 * LDAP.pm: use data_ready() in process()
 * Util.pm: simplify return on error
 * Constant.pm: add constant LDAP_CONTROL_NOOP
-* Schema.pm: call isa() as recommented in UNIVERSAL.pm
+* Schema.pm: call isa() as recommended in UNIVERSAL.pm
 
 0.56 -- Sat Jun 8 13:14:47 CEST 2013
 
@@ -391,7 +391,7 @@ Enhancements
 
 0.41 -- Sat Sep 3 07:37:31 CDT 2011
 
-  * use of non-localised $_ in Net::LDAP::Constant causes prolems in lemonldap-ng [Damyan Ivanov]
+  * use of non-localised $_ in Net::LDAP::Constant causes problems in lemonldap-ng [Damyan Ivanov]
   * Added cn,o,ou to the default set of case-insensitive attributes [Kartik Subbarao]
   * Entry.pod: fix typos [Peter Marschall]
   * extend Net::LDAP::Entry->update() to take LDIF objects [Peter Marschall]
@@ -471,9 +471,9 @@ perl-ldap 0.35 -- Sun Mar 30 13:35:04 CDT 2008
 Bug Fixes
  * Fix wrapping in Net::LDAP::LDIF
  * Patch from Gergely Santa to allow entries with no attributes in LDIF
- * Fix modr?dn to fetch values in sclar context
+ * Fix modr?dn to fetch values in scalar context
  * send packets in sizes that IO::Socket::SSL can chew
- * Avoid attept to use undef as hash reference in ->sync
+ * Avoid attempt to use undef as hash reference in ->sync
  * Ensure Bind.pm presents final server response to SASL object
 
 Enhancements
@@ -505,7 +505,7 @@ Enhancements
   * Option 'raw' to return Perl UTF-8 strings from queries (requires Perl 5.8)
   * Support  Active Directory's extendedAttributeInfo schema information
   * Method to find matchingrule for an attribute in Net::LDAP:Schema
-  * Updated build dependecies: GSSAPI support, ..
+  * Updated build dependencies: GSSAPI support, ..
 
 
 perl-ldap 0.33 -- Mon Apr 25 08:02:26 CDT 2005
@@ -534,7 +534,7 @@ Bug Fixes
 perl-ldap 0.3201 -- Wed Jul 14 21:52:59 BST 2004
 
 Bug Fixes
-  * Fixed dependancies in Makefile.PL
+  * Fixed dependencies in Makefile.PL
 
 perl-ldap 0.32 --
 
@@ -646,7 +646,7 @@ perl-ldap 0.23 April 20 2001
 * Fixed bug in Net::LDAP::Filter when the filter contained an escaped *
 * Fixed SASL bind to call challenge with serverSaslCreds
 * Fixed some uninit errors in Net::LDAP::Entry
-* Various documention updates
+* Various documentation updates
 * Added Net::LDAP::Util::canonical_dn
 * Net::LDAP::LDIF will now call canonical_dn for any DN which
   contains non-printable characters
@@ -654,7 +654,7 @@ perl-ldap 0.23 April 20 2001
   and nameForms into Net::LDAP::Schema
 * The ->schema method in Net::LDAP has changed how it finds the
   schema to return. The new method is more correct, but there may
-  be a possibility that this change has created an incompatability.
+  be a possibility that this change has created an incompatibility.
 * New control module Net::LDAP::Control::ProxyAuth from
   Olivier Dubois added
 * Added support for moddn in Net::LDAP::LDIF.
@@ -701,7 +701,7 @@ perl-ldap 0.18 May 22 2000
 
 * Now passes -wc with 5.004, 5.005_03 and 5.6.0
 * Bundle now correctly references Convert::ASN1 instead of
-  the non-existant Convert::ASN
+  the non-existent Convert::ASN
 * Net::LDAP::Filter will now catch the case of unmatched
   ()'s and return an error
 * as_struct, which was broken in the changeover to Convert::ASN1,

@@ -189,7 +189,7 @@ sub _filterMatch($@)
       $match = '_' . $mr;
     }
     else {
-      # fall back on build-in logic
+      # fall back on built-in logic
       $match='_cis_' . $op;
     }
 
@@ -224,7 +224,7 @@ sub _filterMatch($@)
       $match = '_'.$mr;
     }
     else {
-      # fall back on build-in logic
+      # fall back on built-in logic
       $match = '_cis_equalityMatch';
     }
 
