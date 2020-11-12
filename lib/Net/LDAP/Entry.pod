@@ -127,7 +127,7 @@ example for the entry
 
   name: Graham Barr
   name;en-us: Bob
-  jpeg;binary: **binary data**
+  jpegPhoto;binary: **binary data**
 
 then
 
@@ -139,8 +139,8 @@ then
 
 will output
 
-  default: name name;en-us jpeg;binary
-  nooptions: name jpeg
+  default: name name;en-us jpegPhoto;binary
+  nooptions: name jpegPhoto
 
 =back
 
