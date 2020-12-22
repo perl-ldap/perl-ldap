@@ -15,7 +15,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 sub new {
   my $self = shift;
@@ -127,7 +127,20 @@ sub get_value {
   }
 
   my $attrs = $self->{attrs} ||= _build_attrs($self);
-  my $attr  = $attrs->{$type} or return;
+  my $attr;
+
+  if ($opt{nooptions}) {
+    my @vals = map {
+                 $_->{type} =~ /^\Q$type\E((?:;.*)?)$/i ? @{$_->{vals}} : ()
+               } @{$self->{asn}{attributes}};
+
+    return  unless @vals;
+
+    $attr = \@vals;
+  }
+  else {
+    $attr = $attrs->{$type} or return;
+  }
 
   return $opt{asref}
 	  ? $attr

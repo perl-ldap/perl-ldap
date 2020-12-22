@@ -4,7 +4,7 @@ BEGIN {
   require "t/common.pl";
 }
 
-use Test::More tests => 16;
+use Test::More tests => 19;
 use File::Compare qw(compare_text);
 
 use Net::LDAP::LDIF;
@@ -182,4 +182,13 @@ ok(($r and  join("*", sort keys %$r) eq "*;en-us"), "name keys");
 ok(($r and $r->{''} and @{$r->{''}} == 1 and $r->{''}[0] eq 'Graham Barr'), "name alloptions");
 
 ok(($r and $r->{';en-us'} and @{$r->{';en-us'}} == 1 and $r->{';en-us'}[0] eq 'Bob'), "name alloptions Bob");
+
+$r = $e->get_value('name', nooptions => 1, debug => 1);
+ok(($r and !ref($r) and ($r eq "Bob" or $r eq "Graham Barr")), "name mergeoptions");
+
+@r = $e->get_value('name', nooptions => 1);
+ok((@r and @r == 2 && join("*", sort @r) eq "Bob*Graham Barr"), "name mergeoptions values");
+
+$r = $e->get_value('name', nooptions => 1, asref => 1);
+ok(($r and @$r == 2 && join("*", sort @$r) eq "Bob*Graham Barr"), "name mergeoptions;asref values");
 

@@ -286,6 +286,21 @@ will return a hash reference that would be like
 If alloptions is not set or is set to false only the attribute values
 for the exactly matching name are returned.
 
+=item nooptions =E<gt> 1
+
+Instead of only returning the values of the exactly matching attribute name,
+get the attribute values of all attributes with the base name given.
+I.e. in the example above, calling
+
+ @array = $entry->get_value ( 'name', nooptions => 1 );
+
+will yield
+
+ ( 'Graham Barr', 'Bob' )
+
+The name of this option has neen chosen for consistency with the
+equally named option in the L<attributes|/attributes> method.
+
 =item asref =E<gt> 1
 
 The result will be a reference to an array containing all the values
@@ -305,7 +320,7 @@ called C<name> then $ref will be C<undef>.
 =back
 
 B<NOTE>: In the interest of performance the array references returned
-by C<get_value> are references to structures held inside the entry
+by C<get_value> may be references to structures held inside the entry
 object. These values and their contents should B<NOT> be modified
 directly.
 
