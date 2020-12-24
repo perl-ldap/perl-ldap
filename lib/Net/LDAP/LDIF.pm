@@ -238,10 +238,10 @@ sub _read_entry {
   while (@ldif && ($ldif[0] =~ /^control:\s*/)) {
     my $control = shift(@ldif);
 
-    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?::([:<])?\s*(.*))?$/) {
+    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(?i)(true|false))?(?:\s*:([:<])?\s*(.*))?$/) {
       my($oid,$critical, $type, $value) = ($1,$2,$3, $4);
 
-      $critical = ($critical && $critical =~ /true/) ? 1 : 0;
+      $critical = ($critical && $critical =~ /true/i) ? 1 : 0;
 
       if (defined($value)) {
         if ($type) {
