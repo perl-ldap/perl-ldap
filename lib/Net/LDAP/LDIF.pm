@@ -238,16 +238,12 @@ sub _read_entry {
   while (@ldif && ($ldif[0] =~ /^control:\s*/)) {
     my $control = shift(@ldif);
 
-    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?:\s*\:(.*))?$/) {
-      my($oid,$critical,$value) = ($1,$2,$3);
+    if ($control =~ /^control:\s*(\d+(?:\.\d+)*)(?:\s+(true|false))?(?::([:<])?\s*(.*))?$/) {
+      my($oid,$critical, $type, $value) = ($1,$2,$3, $4);
 
       $critical = ($critical && $critical =~ /true/) ? 1 : 0;
 
       if (defined($value)) {
-        my $type = $1  if ($value =~ s/^([\<\:])\s*//);
-
-        $value =~ s/^\s*//;
-
         if ($type) {
           $value = $self->_read_attribute_value($type, $value, @ldif);
           return $self->_error('Illegal value in control line given', @ldif)
