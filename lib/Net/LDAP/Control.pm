@@ -26,9 +26,10 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_ASSERTION
   LDAP_CONTROL_RELAX
   LDAP_CONTROL_DONTUSECOPY
+  LDAP_CONTROL_TREE_DELETE
 );
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 my %Pkg2Type = (
 
@@ -61,6 +62,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::Assertion'	=> LDAP_CONTROL_ASSERTION,
   'Net::LDAP::Control::Relax'		=> LDAP_CONTROL_RELAX,
   'Net::LDAP::Control::DontUseCopy'	=> LDAP_CONTROL_DONTUSECOPY,
+  'Net::LDAP::Control::TreeDelete'	=> LDAP_CONTROL_TREE_DELETE,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
@@ -329,6 +331,7 @@ L<Net::LDAP::Control::SortResult>,
 L<Net::LDAP::Control::SyncDone>,
 L<Net::LDAP::Control::SyncRequest>,
 L<Net::LDAP::Control::SyncState>,
+L<Net::LDAP::Control::TreeDelete>,
 L<Net::LDAP::Control::VLV>,
 L<Net::LDAP::Control::VLVResponse>
 
