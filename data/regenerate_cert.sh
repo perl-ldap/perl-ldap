@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 # regenerate server certificate for the SSL tests
 
 if [ -e openssl.cnf ]; then
