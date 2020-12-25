@@ -6,7 +6,7 @@ use File::Compare qw(compare_text);
 BEGIN { require "t/common.pl" }
 
 
-plan tests => 9;
+plan tests => 21;
 
 
 require Net::LDAP::LDIF;
@@ -21,32 +21,23 @@ my $ldifin = Net::LDAP::LDIF->new($infile,"r");
 isa_ok($ldifin, Net::LDAP::LDIF, 'input object');
 
 my @entries = ();
-while (my $entry = $ldifin->read_entry) {
+while (my ($entry, @controls) = $ldifin->read_entry) {
   push(@entries, $entry);
-#  push(@entries, control => \@controls)  if (@controls);
+  push(@entries, control => \@controls)  if (@controls);
 }
-is(scalar(@entries), 6, 'entries read');
+is(scalar(@entries), 12, 'entries read');
 
 $ldifin->done;
 
-#use Data::Dumper;
-#print STDERR Dumper(@entries);
+map { chomp(my $t = <DATA>); ref($_) ? isa_ok($_, $t, "structure") : is($_, $t, "structure"); } @entries;
 
-my $manage = Net::LDAP::Control::ManageDsaIT->new(critical => 1);
-isa_ok($manage, Net::LDAP::Control::ManageDsaIT, "control object");
+isa_ok($entries[0], 'Net::LDAP::Entry', "1st entry");
 
-my $auth1 = Net::LDAP::Control::ProxyAuth->new(authzID => 'dn:cn=me,ou=people,o=myorg.com');
-isa_ok($auth1, Net::LDAP::Control::ProxyAuth, "control object");
+ok(@{$entries[2]} == 2 and ref($entries[2][0]) eq 'Net::LDAP::Control::ManageDsaIT', "1st entry's control");
 
-my $auth2 = Net::LDAP::Control::ProxyAuth->new(authzID => 'dn:cn=Hägar,ou=people,o=myorg.com');
-isa_ok($auth2, Net::LDAP::Control::ProxyAuth, "control object");
+ok(@{$entries[2]} == 2 and ref($entries[2][1]) eq 'Net::LDAP::Control::ProxyAuth', "1st entry's control");
 
-splice(@entries, 2, 0, control => [ $auth1 ]);
-splice(@entries, 1, 0, control => [ $manage, $auth2 ]);
-push(@entries, control => $manage);
-
-$manage = $entries[-1];
-isa_ok($manage, Net::LDAP::Control::ManageDsaIT, "control object read");
+ok(@{$entries[-1]} == 1 and ref($entries[-1][0]) eq 'Net::LDAP::Control::ManageDsaIT', "last entry's control");
 
 my $ldifout = Net::LDAP::LDIF->new($outfile1, 'w', change => 1);
 isa_ok($ldifout, Net::LDAP::LDIF, 'output object');
@@ -59,3 +50,16 @@ $ldifout->done;
 
 ok(!compare_text($cmpfile1,$outfile1), $cmpfile1);
 
+__DATA__
+Net::LDAP::Entry
+control
+ARRAY
+Net::LDAP::Entry
+control
+ARRAY
+Net::LDAP::Entry
+Net::LDAP::Entry
+Net::LDAP::Entry
+Net::LDAP::Entry
+control
+ARRAY

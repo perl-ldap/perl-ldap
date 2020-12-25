@@ -14,7 +14,7 @@ BEGIN {
     if (CHECK_UTF8);
 }
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 # allow the letters r,w,a as mode letters
 my %modes = qw(r <  r+ +<  w >  w+ +>  a >>  a+ +>>);
@@ -275,7 +275,7 @@ sub _read_entry {
     if ($changetype eq 'delete') {
       return $self->_error('LDIF "delete" entry is not valid', @ldif)
         if (@ldif);
-      return $entry;
+      return wantarray ? ($entry, @controls) : $entry;
     }
 
     return $self->_error('LDAP entry is not valid', @ldif)
@@ -372,7 +372,7 @@ sub _read_entry {
 
   $self->{_current_entry} = $entry;
 
-  $entry;
+  return wantarray ? ($entry, @controls) : $entry;
 }
 
 sub read_entry {

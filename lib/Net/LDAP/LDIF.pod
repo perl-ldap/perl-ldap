@@ -166,6 +166,12 @@ Example: raw =E<gt> qr/(?i:^jpegPhoto|;binary)/
 Read one entry from the file and return it as a C<Net::LDAP::Entry>
 object.
 
+In scalar mode, the C<Net::LDAP::Entry> object is returned alone,
+while in list mode a list is returned consisting of the
+C<Net::LDAP::Entry> object as first element followed by  all
+C<Net::LDAP::Control> objects that were part of the LDIF entry.
+See RFC 2849 for details.
+
 =item eof ( )
 
 Returns I<true> when the end of the file is reached.
