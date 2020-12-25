@@ -196,8 +196,6 @@ sub connect_ldaps {
   # separate port from host overwriting given/default port
   $host =~ s/^([^:]+|\[.*\]):(\d+)$/$1/ and $port = $2;
 
-  $arg->{sslserver} = $host  unless defined $arg->{sslserver};
-
   $ldap->{net_ldap_socket} = IO::Socket::SSL->new(
     PeerAddr 	    => $host,
     PeerPort 	    => $port,
@@ -205,7 +203,7 @@ sub connect_ldaps {
     Proto    	    => 'tcp',
     Domain          => $domain,
     Timeout  	    => defined $arg->{timeout} ? $arg->{timeout} : 120,
-    _SSL_context_init_args($arg)
+    _SSL_context_init_args({sslserver => $host, %$arg})
   ) or return undef;
 
   $ldap->{net_ldap_host} = $host;
