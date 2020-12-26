@@ -1,3 +1,17 @@
+0.67 -- Sat Dec 26 14:50:55 CEST 2020
+
+Enhancements
+* Makefile.PL: update author & bugtracker
+* LDIF.pm: support controls when reading
+* Control/TreeDelete.pm: new
+* Entry.pm: new option 'nooptions' for get_value()
+* various typo fixes
+
+Bug Fixes
+* LDAP.pm: do not persist the default sslserver
+* LDAP.pm: correct parapmeter to restrict IP family with IO::Socket::IP
+* data/regenerate_cert.sh: fix shebang
+
 0.66 -- Tue Apr 16 11:23:55 CEST 2019
 
 Enhancements
