@@ -9,7 +9,7 @@ Enhancements
 
 Bug Fixes
 * LDAP.pm: do not persist the default sslserver
-* LDAP.pm: correct parapmeter to restrict IP family with IO::Socket::IP
+* LDAP.pm: correct parameter to restrict IP family with IO::Socket::IP
 * data/regenerate_cert.sh: fix shebang
 
 0.66 -- Tue Apr 16 11:23:55 CEST 2019
