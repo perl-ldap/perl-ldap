@@ -9,13 +9,13 @@ name		'perl-ldap';
 module_name	'Net::LDAP';
 abstract	'LDAP client library';
 version_from	'lib/Net/LDAP.pm';
-author		'Graham Barr <gbarr@cpan.org>';
+author		'Peter Marschall <peter@adpm.de>';
 license		'perl';
 
 resources
 	homepage    => 'http://ldap.perl.org/',
 	repository  => 'https://github.com/perl-ldap/perl-ldap',
-	bugtracker  => 'https://rt.cpan.org/Public/Dist/Display.html?Name=perl-ldap',
+	bugtracker  => 'https://github.com/perl-ldap/perl-ldap/issues/',
 	MailingList => 'http://lists.cpan.org/showlist.cgi?name=perl-ldap',
 	ListArchive => 'http://perl.markmail.org/search/list:perl-ldap';
 
