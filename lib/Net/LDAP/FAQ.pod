@@ -1447,7 +1447,7 @@ replace the placeholders.
 Most LDAP servers use the standard userPassword attribute as the
 attribute to set when you want to change a user's password.
 
-They usually allow to set the password either using the regular
+They usually allow one to set the password either using the regular
 modify operation on the userPassword attribute or using the
 extended LDAP Password Modify operation defined in RFC3062.
 
