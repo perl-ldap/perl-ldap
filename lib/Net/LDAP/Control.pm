@@ -27,9 +27,10 @@ use Net::LDAP::Constant qw(
   LDAP_CONTROL_RELAX
   LDAP_CONTROL_DONTUSECOPY
   LDAP_CONTROL_TREE_DELETE
+  LDAP_CONTROL_SUBENTRIES
 );
 
-our $VERSION = '0.19';
+our $VERSION = '0.20';
 
 my %Pkg2Type = (
 
@@ -63,6 +64,7 @@ my %Pkg2Type = (
   'Net::LDAP::Control::Relax'		=> LDAP_CONTROL_RELAX,
   'Net::LDAP::Control::DontUseCopy'	=> LDAP_CONTROL_DONTUSECOPY,
   'Net::LDAP::Control::TreeDelete'	=> LDAP_CONTROL_TREE_DELETE,
+  'Net::LDAP::Control::Subentries'	=> LDAP_CONTROL_SUBENTRIES,
   #
   #LDAP_CONTROL_PWEXPIRED
   #LDAP_CONTROL_PWEXPIRING
