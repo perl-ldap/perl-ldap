@@ -1,7 +1,7 @@
 
 package Net::LDAP::ASN;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 use Convert::ASN1;
 
@@ -477,6 +477,14 @@ $asn->prepare(<<LDAP_ASN) or die $asn->error;
 	    syncUUIDs      SET OF syncUUID
 	}
     }
+
+    -- RFC-3672 Subentries Control
+    -- Current parser does not allow a named entity following the ::=
+    -- so we use a COMPONENTS OF hack
+    SubentriesValueDummy ::= SEQUENCE {
+	visibility BOOLEAN
+    }
+    SubentriesValue ::= COMPONENTS OF SubentriesValueDummy
 
 LDAP_ASN
 
