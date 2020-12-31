@@ -4,7 +4,7 @@
 
 package Net::LDAP::Constant;
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 use Exporter qw(import);
 
@@ -483,6 +483,8 @@ Refresh Required.
 =item LDAP_CONTROL_DONTUSECOPY (1.3.6.1.1.22)
 
 =item LDAP_CONTROL_NOOP (1.3.6.1.4.1.4203.666.5.2)
+
+=item LDAP_CONTROL_SUBENTRIES (1.3.6.1.4.1.4203.1.10.1)
 
 =item LDAP_CONTROL_SYNC (1.3.6.1.4.1.4203.1.9.1.1)
 
