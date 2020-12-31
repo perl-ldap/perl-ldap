@@ -146,7 +146,7 @@ extended operation.
 
 As required by the RFC, the criticality of this control is automatically set to
 TRUE in order to protect clients from submitting requests with other identities
-that they intend to.
+than they intend to.
 
 
 =head1 CONSTRUCTOR ARGUMENTS
