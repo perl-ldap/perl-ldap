@@ -64,26 +64,26 @@ C<Net::LDAP::Control::Relax> provides an interface for the creation
 and manipulation of objects that represent the C<Relax> control as
 described by draft-zeilenga-ldap-relax-03.txt
 
+The control, which has no corresponding response control,
+is appropriate for all LDAP update requests, including
+L<add|Net::LDAP/add>, L<delete|Net::LDAP/delete>,
+L<modify|Net::LDAP/modify>, and L<moddn|Net::LDAP/moddn>.
+
 The presence of the Relax control in an LDAP update request
 indicates the server temporarily relax X.500 model constraints
 during performance of the directory update.
 
-The control is appropriate for all LDAP update requests, including
-add, delete, modify, and modifyDN (rename) [RFC4511].
-
-Its criticality is always set to TRUE, and no value.
-
-There is no corresponding response control.
+It does not have a value and its criticality is always set to C<TRUE>.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
-Since the C<Relax> control does not have any values only the
+Since the C<Relax> control does not have any values, only the
 constructor arguments described in L<Net::LDAP::Control> are
-supported
+supported.
 
 =head1 METHODS
 
-As there are no additional values in the control only the
+As there are no additional values in the control, only the
 methods in L<Net::LDAP::Control> are available for
 C<Net::LDAP::Control::Relax> objects.
 
