@@ -468,6 +468,13 @@ Refresh Required.
 
 =head2 Control OIDs
 
+B<Control OIDs> identify L<LDAP Controls|Net::LDAP::Control>.
+
+By announcing the respective OIDs in the operational attribute
+C<supportedControls> of the L<Root DSE|Net::LDAP::RootDSE>
+an LDAP server indicates which L<LDAP Controls|Net::LDAP::Control>
+it supports.
+
 =over 4
 
 =item LDAP_CONTROL_SORTREQUEST (1.2.840.113556.1.4.473)
@@ -612,8 +619,12 @@ The new password was used too recently.
 
 =head2 Extension OIDs
 
-B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
-extension OIDs.
+B<Extension OIDs> identify L<LDAP Extended operations|Net::LDAP::Extension>.
+
+By announcing the respective OIDs in the operational attribute
+C<supportedExtension> of the L<Root DSE|Net::LDAP::RootDSE>
+an LDAP server indicates which L<LDAP Extended operations|Net::LDAP::Extension>
+it supports.
 
 =over 4
 
@@ -755,8 +766,11 @@ Indicates the server supports the Cancel extension (RFC 3909)
 
 =head2 Feature OIDs
 
-B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
-feature OIDs.
+B<Feature OIDs> identify LDAP features.
+
+By announcing the respective OIDs in the operational attribute
+C<supportedFeature> of the L<Root DSE|Net::LDAP::RootDSE>
+an LDAP server indicates which LDAP features it supports.
 
 =over 4
 
@@ -793,8 +807,9 @@ Indicates if the server supports the Modify Increment extension (RFC 4525)
 =head2 Active Directory Capability OIDs
 
 The following constants are specific to Microsoft Active Directory.
-They serve to denote capabilities via the non-standard attribute
-C<supportedCapabilities> in the Root DSE.
+They serve to denote capabilities via the non-standard operational attribute
+C<supportedCapabilities> in the L<Root DSE|Net::LDAP::RootDSE> of an
+an LDAP server.
 
 =over 4
 
