@@ -795,6 +795,19 @@ See L<Net::LDAP::Extension::Cancel>.
 
 =back
 
+=head3 Active Directory Extension OIDs
+
+See section I<LDAP Extended Operations> in
+L<https://winprotocoldoc.blob.core.windows.net/productionwindowsarchives/MS-ADTS/[MS-ADTS].pdf>.
+
+=over 4
+
+=item LDAP_EXTENSION_FAST_BIND (1.2.840.113556.1.4.1781)
+
+=item LDAP_EXTENSION_BATCH_REQUEST (1.2.840.113556.1.4.2212)
+
+=back
+
 =head3 Novell eDirectory Extension OIDs
 
 =over 4
