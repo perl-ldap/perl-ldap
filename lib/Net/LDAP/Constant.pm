@@ -18,6 +18,11 @@ while (<DATA>) {
   my ($name, $value) = ($1, $2);
   *{$name} = sub () { $value };
   push @EXPORT_OK, $name;
+  push @{$EXPORT_TAGS{codes}}, $name  if $protocol_const;
+  push @{$EXPORT_TAGS{controls}}, $name      if ($name =~ /^LDAP_CONTROL_/);
+  push @{$EXPORT_TAGS{features}}, $name      if ($name =~ /^LDAP_FEATURE_/);
+  push @{$EXPORT_TAGS{extensions}}, $name    if ($name =~ /^LDAP_EXTENSION_/);
+  push @{$EXPORT_TAGS{capabilities}}, $name  if ($name =~ /^LDAP_CAP_/);
   $err2name[$value] = $name  if $protocol_const;
 }
 
@@ -81,8 +86,39 @@ Net::LDAP::Constant - Constants for use with Net::LDAP
 
 =head1 DESCRIPTION
 
-B<Net::LDAP::Constant> exports constant subroutines for the following LDAP
-error codes.
+B<Net::LDAP::Constant> exports constants, technically: constant subroutines,
+for the LDAP status codes and OIDs listed in the sections below.
+
+In addition to exporting individual constants, the following tags can be used to
+export groups of constants.
+
+=over 4
+
+=item :all
+
+Export all constants known to C<Net::LDAP::Constant>.
+
+=item C<:codes>
+
+Export all LDAP status codes mentioned in the section L</Protocol Constants>.
+
+=item C<:controls>
+
+Export all C<LDAP_CONTROL_*> constants.
+
+=item C<:extensions>
+
+Export all C<LDAP_EXTENSION_*> constants.
+
+=item C<:features>
+
+Export all C<LDAP_FEATURE_*> constants.
+
+=item C<:capabilities>
+
+Export all C<LDAP_CAP_*> constants.
+
+=back
 
 =head2 Protocol Constants
 
