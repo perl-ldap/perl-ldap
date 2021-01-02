@@ -564,6 +564,8 @@ See L<Net::LDAP::Control::DontUseCopy>.
 
 =item LDAP_CONTROL_NOOP (1.3.6.1.4.1.4203.666.5.2)
 
+See L<Net::LDAP::Control::NoOp>.
+
 =item LDAP_CONTROL_SUBENTRIES (1.3.6.1.4.1.4203.1.10.1)
 
 See L<Net::LDAP::Control::Subentries>.
