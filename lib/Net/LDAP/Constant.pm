@@ -479,31 +479,56 @@ it supports.
 
 =item LDAP_CONTROL_SORTREQUEST (1.2.840.113556.1.4.473)
 
+See L<Net::LDAP::Control::Sort>.
+
 =item LDAP_CONTROL_SORTRESULT (1.2.840.113556.1.4.474)
 
 =item LDAP_CONTROL_SORTRESPONSE (1.2.840.113556.1.4.474)
 
+See L<Net::LDAP::Control::SortResult>.
+
 =item LDAP_CONTROL_VLVREQUEST (2.16.840.1.113730.3.4.9)
 
+See L<Net::LDAP::Control::VLV>.
+
 =item LDAP_CONTROL_VLVRESPONSE (2.16.840.1.113730.3.4.10)
+
+See L<Net::LDAP::Control::VLVResponse>.
 
 =item LDAP_CONTROL_PROXYAUTHORIZATION (2.16.840.1.113730.3.4.18)
 
 =item LDAP_CONTROL_PROXYAUTHENTICATION (2.16.840.1.113730.3.4.18)
 
+See L<Net::LDAP::Control::ProxyAuth>.
+
 =item LDAP_CONTROL_PAGED (1.2.840.113556.1.4.319)
+
+See L<Net::LDAP::Control::Paged>.
 
 =item LDAP_CONTROL_TREE_DELETE (1.2.840.113556.1.4.805)
 
+See L<Net::LDAP::Control::TreeDelete>.
+
 =item LDAP_CONTROL_MATCHEDVALS (1.2.826.0.1.3344810.2.2)
+
+Outdated OID mentioned in predecessors to RFC 3876.
+Superseded by C<LDAP_CONTROL_MATCHEDVALUES>.
 
 =item LDAP_CONTROL_MATCHEDVALUES (1.2.826.0.1.3344810.2.3)
 
+See L<Net::LDAP::Control::MatchedValues>.
+
 =item LDAP_CONTROL_MANAGEDSAIT (2.16.840.1.113730.3.4.2)
+
+See L<Net::LDAP::Control::ManageDsaIT>.
 
 =item LDAP_CONTROL_PERSISTENTSEARCH (2.16.840.1.113730.3.4.3)
 
+See L<Net::LDAP::Control::PersistentSearch>.
+
 =item LDAP_CONTROL_ENTRYCHANGE (2.16.840.1.113730.3.4.7)
+
+See L<Net::LDAP::Control::EntryChange>.
 
 =item LDAP_CONTROL_PWEXPIRED (2.16.840.1.113730.3.4.4)
 
@@ -513,27 +538,47 @@ it supports.
 
 =item LDAP_CONTROL_RELAX (1.3.6.1.4.1.4203.666.5.12)
 
+See L<Net::LDAP::Control::Relax>.
+
 =item LDAP_CONTROL_PASSWORDPOLICY (1.3.6.1.4.1.42.2.27.8.5.1)
+
+See L<Net::LDAP::Control::PasswordPolicy>.
 
 =item LDAP_CONTROL_PERMISSIVEMODIFY (1.2.840.113556.1.4.1413)
 
 =item LDAP_CONTROL_PREREAD (1.3.6.1.1.13.1)
 
+See L<Net::LDAP::Control::PreRead>.
+
 =item LDAP_CONTROL_POSTREAD (1.3.6.1.1.13.2)
+
+See L<Net::LDAP::Control::PostRead>.
 
 =item LDAP_CONTROL_ASSERTION (1.3.6.1.1.12)
 
+See L<Net::LDAP::Control::Assertion>.
+
 =item LDAP_CONTROL_DONTUSECOPY (1.3.6.1.1.22)
+
+See L<Net::LDAP::Control::DontUseCopy>.
 
 =item LDAP_CONTROL_NOOP (1.3.6.1.4.1.4203.666.5.2)
 
 =item LDAP_CONTROL_SUBENTRIES (1.3.6.1.4.1.4203.1.10.1)
 
+See L<Net::LDAP::Control::Subentries>.
+
 =item LDAP_CONTROL_SYNC (1.3.6.1.4.1.4203.1.9.1.1)
+
+See L<Net::LDAP::Control::SyncRequest>.
 
 =item LDAP_CONTROL_SYNC_STATE (1.3.6.1.4.1.4203.1.9.1.2)
 
+See L<Net::LDAP::Control::SyncState>.
+
 =item LDAP_CONTROL_SYNC_DONE (1.3.6.1.4.1.4203.1.9.1.3)
+
+See L<Net::LDAP::Control::SyncDone>.
 
 =item LDAP_SYNC_INFO (1.3.6.1.4.1.4203.1.9.1.4)
 
@@ -630,27 +675,32 @@ it supports.
 
 =item LDAP_NOTICE_OF_DISCONNECTION (1.3.6.1.4.1.1466.20036)
 
-Indicates that the server is about to close the connection due to an error (RFC 4511)
+Indicates that the server is about to close the connection due to an error (RFC 4511).
 
 =item LDAP_EXTENSION_START_TLS (1.3.6.1.4.1.1466.20037)
 
-Indicates if the server supports the Start TLS extension (RFC 4513)
+Indicates if the server supports the Start TLS extension (RFC 4513).
+See L<Net::LDAP/start_tls>.
 
 =item LDAP_EXTENSION_PASSWORD_MODIFY (1.3.6.1.4.1.4203.1.11.1)
 
-Indicates that the server supports the Password Modify extension (RFC 3062)
+Indicates that the server supports the Password Modify extension (RFC 3062).
+See L<Net::LDAP::Extension::SetPassword>.
 
 =item LDAP_EXTENSION_WHO_AM_I (1.3.6.1.4.1.4203.1.11.3)
 
-Indicates that the server supports the "Who am I?" extension (RFC 4532)
+Indicates that the server supports the "Who am I?" extension (RFC 4532).
+See L<Net::LDAP::Extension::WhoAmI>.
 
 =item LDAP_EXTENSION_REFRESH (1.3.6.1.4.1.1466.101.119.1)
 
-Indicates that the server supports the Refresh extension (RFC 2589)
+Indicates that the server supports the Refresh extension (RFC 2589).
+See L<Net::LDAP::Extension::Refresh>.
 
 =item LDAP_EXTENSION_CANCEL (1.3.6.1.1.8)
 
-Indicates the server supports the Cancel extension (RFC 3909)
+Indicates the server supports the Cancel extension (RFC 3909).
+See L<Net::LDAP::Extension::Cancel>.
 
 =back
 
@@ -800,7 +850,8 @@ Indicates that the server supports language tag range options (RFC 3866)
 
 =item LDAP_FEATURE_MODIFY_INCREMENT (1.3.6.1.1.14)
 
-Indicates if the server supports the Modify Increment extension (RFC 4525)
+Indicates if the server supports the Modify Increment extension (RFC 4525).
+See L<Net::LDAP/modify>.
 
 =back
 
