@@ -3,7 +3,7 @@
    "version" : "0.67",
    "abstract" : "LDAP client library",
    "author" : [
-      "Graham Barr <gbarr@cpan.org>"
+      "Peter Marschall <peter@adpm.de>"
    ],
    "release_status" : "stable",
    "resources" : {
@@ -14,7 +14,7 @@
          "type" : "git"
       },
       "bugtracker" : {
-         "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=perl-ldap"
+         "web" : "https://github.com/perl-ldap/perl-ldap/issues/"
       }
    },
    "prereqs" : {
