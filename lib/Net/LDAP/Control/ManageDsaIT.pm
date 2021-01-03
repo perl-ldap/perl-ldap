@@ -66,13 +66,13 @@ Its criticality may be TRUE or FALSE; it has no value.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
-Since the C<ManageDsaIT> control does not have any values only the
+Since the C<ManageDsaIT> control does not have any values, only the
 constructor arguments described in L<Net::LDAP::Control> are
 supported
 
 =head1 METHODS
 
-As there are no additional values in the control only the
+As there are no additional values in the control, only the
 methods in L<Net::LDAP::Control> are available for
 C<Net::LDAP::Control::ManageDsaIT> objects.
 

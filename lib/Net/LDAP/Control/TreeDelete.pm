@@ -65,13 +65,13 @@ There is no corresponding response control.
 
 =head1 CONSTRUCTOR ARGUMENTS
 
-Since the C<TreeDelete> control does not have any values only the
+Since the C<TreeDelete> control does not have any values, only the
 constructor arguments described in L<Net::LDAP::Control> are
 supported
 
 =head1 METHODS
 
-As there are no additional values in the control only the
+As there are no additional values in the control, only the
 methods in L<Net::LDAP::Control> are available for
 C<Net::LDAP::Control::TreeDelete> objects.
 
