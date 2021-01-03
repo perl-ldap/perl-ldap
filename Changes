@@ -1,3 +1,19 @@
+0.68 -- Sun Jan  3 17:58:18 CET 2021
+
+Enhancements
+* Control/NoOp.pm: new
+* Control/Subentries.pm: new
+* Constant.pm: add tags to allow exporting groups of constants
+* Constant.pm: add Active Directory Control & Extension OIDs
+* Constant.pm: add references to perl-ldap's modules
+
+Bug Fixes
+* META.json: update author & bugtracker
+* Control/*.pm: typo & grammar fixes
+* Control/Relax.pm: slight rephrasing
+* FAQ.pod: fix spelling/grammar error
+* Changes: fix typo
+
 0.67 -- Sat Dec 26 14:50:55 CEST 2020
 
 Enhancements
