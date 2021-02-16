@@ -167,6 +167,9 @@ sub connect_ldap {
     LocalAddr  => $arg->{localaddr} || undef,
     Proto      => 'tcp',
     ($class eq 'IO::Socket::IP' ? 'Family' : 'Domain')     => $domain,
+    # Work around IO::Socket::IP defaulting to AI_ADDRCONFIG which breaks
+    # resolution if only a loopback interface is available. CPAN RT#104793.
+    ($class eq 'IO::Socket::IP' and $domain ne AF_UNSPEC ? ('GetAddrInfoFlags' => 0) : ()),
     MultiHomed => $arg->{multihomed},
     Timeout    => defined $arg->{timeout}
 		 ? $arg->{timeout}
