@@ -47,8 +47,8 @@ our @EXPORT_OK = qw(
   ldap_url_parse
   generalizedTime_to_time
   time_to_generalizedTime
-	filetime_to_time
-	time_to_filetime
+  filetime_to_time
+  time_to_filetime
 );
 our %EXPORT_TAGS = (
 	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
@@ -59,7 +59,7 @@ our %EXPORT_TAGS = (
 	                escape_dn_value unescape_dn_value) ],
 	url   	=> [ qw(ldap_url_parse) ],
 	time	=> [ qw(generalizedTime_to_time time_to_generalizedTime
-								filetime_to_time time_to_filetime) ],
+			filetime_to_time time_to_filetime) ],
 );
 
 our $VERSION = '0.21';
