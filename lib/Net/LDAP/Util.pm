@@ -897,7 +897,7 @@ not validate whether its return value is a true 32-bit UNIX timestamp or not.
 
 =cut
 
-sub filetime_to_time($) {
+sub filetime_to_time {
 	use bigint;
 	my $filetime = shift;
 	return undef unless( $filetime );
@@ -927,7 +927,7 @@ precise to the second.
 
 =cut
 
-sub time_to_filetime($) {
+sub time_to_filetime {
 	use bigint;
 	my $time = shift;
 	return undef unless $time;
