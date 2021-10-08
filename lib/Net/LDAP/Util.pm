@@ -47,6 +47,8 @@ our @EXPORT_OK = qw(
   ldap_url_parse
   generalizedTime_to_time
   time_to_generalizedTime
+	filetime_to_time
+	time_to_filetime
 );
 our %EXPORT_TAGS = (
 	error	=> [ qw(ldap_error_name ldap_error_text ldap_error_desc) ],
@@ -56,10 +58,11 @@ our %EXPORT_TAGS = (
 	escape 	=> [ qw(escape_filter_value unescape_filter_value
 	                escape_dn_value unescape_dn_value) ],
 	url   	=> [ qw(ldap_url_parse) ],
-	time	=> [ qw(generalizedTime_to_time time_to_generalizedTime) ],
+	time	=> [ qw(generalizedTime_to_time time_to_generalizedTime
+								filetime_to_time time_to_filetime) ],
 );
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 =item ldap_error_name ( ERR )
 
@@ -872,6 +875,69 @@ my %opt = @_;
   }
 
   return undef;
+}
+
+=item filetime_to_time ( FILETIME )
+
+Convert a WIN32 FILETIME B<FILETIME> to a UNIX timestamp.
+
+FILETIMEs (aka SYSTEMTIMEs) are used for several timestamp attributes in
+Microsoft's Active Directory, such as L<lastLogon|https://docs.microsoft.com/en-us/windows/win32/adschema/a-lastlogon>.
+
+B<FILETIME> must be a positive 64-bit integer, representing the number of
+100 nanosecond intervals since midnight, January 1, 1601 UTC.
+
+Returns C<undef> if a value before January 1, 1601 is provided, if the
+provided B<FILETIME> is larger than the maximum size of an unsigned
+64-bit integer, or if any other error occurs. Otherwise, a UNIX timestamp
+is returned (see Note below).
+
+B<Note:> much like the generalizedTime functions, this function does
+not validate whether its return value is a true 32-bit UNIX timestamp or not.
+
+=cut
+
+sub filetime_to_time($) {
+	use bigint;
+	my $filetime = shift;
+	return undef unless( $filetime );
+	
+	my $big = Math::BigInt->new( $filetime );
+	if( $big->is_int && $big->is_pos && $big < 2**64 ) {
+		my $ret = $big / 10_000_000 - 11_644_473_600;
+		# generalizedTime_to_time doesn't check if it's a valid epoch,
+		# so I don't either
+		return $ret;
+	}
+	return undef;
+}
+
+=item time_to_filetime ( TIME )
+
+Convert a UNIX timestamp B<TIME> to a WIN32 FILETIME.
+
+B<TIME> must be an integer.
+
+Returns C<undef> if the return value would not not be a valid unsigned 64-bit
+integer, or if any other error occurs. Otherwise, an integer representing a
+FILETIME is returned.
+
+B<Note:> due to the limits of UNIX timestamps, returned values are only
+precise to the second.
+
+=cut
+
+sub time_to_filetime($) {
+	use bigint;
+	my $time = shift;
+	return undef unless $time;
+	
+	my $big = Math::BigInt->new( $time );
+	if( $big->is_int ) {
+		my $ret = ($big + 11_644_473_600) * 10_000_000;
+		return $ret unless $ret >= 2**64 || $ret->is_neg;;
+	}
+	return undef;
 }
 
 
