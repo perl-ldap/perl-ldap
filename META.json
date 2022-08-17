@@ -7,7 +7,7 @@
    ],
    "release_status" : "stable",
    "resources" : {
-      "homepage" : "http://ldap.perl.org/",
+      "homepage" : "https://ldap.perl.org/",
       "repository" : {
          "url" : "git://github.com/perl-ldap/perl-ldap.git",
          "web" : "https://github.com/perl-ldap/perl-ldap",
