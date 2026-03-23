@@ -862,6 +862,21 @@ is the hash over the issuer's DN and B<num> is a number starting with 0.
 
 See L<IO::Socket::SSL/SSL_check_crl> for further information.
 
+=item sslargs =E<gt> HASHREF
+
+A hash reference of extra options to pass directly to
+L<IO::Socket::SSL>.  These will override any options that
+Net::LDAP sets by default.
+
+This can be used, for example, to disable SNI (Server Name Indication)
+when connecting to servers that do not support it:
+
+ $ldap = Net::LDAP->new( 'ldaps://example.com',
+                          sslargs => { SSL_hostname => '' } );
+
+Or to pass any other L<IO::Socket::SSL> option not directly
+exposed by Net::LDAP.
+
 =back
 
 =item unbind ( )
