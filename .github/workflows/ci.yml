@@ -9,39 +9,43 @@ on:
   pull_request:
 
 jobs:
-  perl:
+  perl-versions:
+    runs-on: ubuntu-latest
+    name: List Perl versions
+    outputs:
+      perl-versions: ${{ steps.action.outputs.perl-versions }}
+    steps:
+      - id: action
+        uses: perl-actions/perl-versions@v2
+        with:
+          since-perl: 5.10
+          with-devel: true
+
+  linux:
+    name: "Perl ${{ matrix.perl-version }}"
+    needs: [perl-versions]
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        perl-version:
-          - '5.10'
-          - '5.14'
-          - '5.20'
-          - '5.26'
-          - '5.30'
-          - '5.32'
-          - '5.34'
-          - '5.36'
-          - '5.38'
-          - '5.40'
+        perl-version: ${{ fromJson(needs.perl-versions.outputs.perl-versions) }}
 
-    name: Perl ${{ matrix.perl-version }}
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up perl
-        uses: shogo82148/actions-setup-perl@v1
-        with:
-          perl-version: ${{ matrix.perl-version }}
-
+      - name: perl -V
+        run: perl -V
       - name: Install dependencies
-        run: |
-          cpanm --quiet --notest --installdeps .
-
-      - name: Run tests
-        run: |
-          perl Makefile.PL
-          make
-          make test
+        uses: perl-actions/install-with-cpm@v1
+        with:
+          sudo: false
+          global: false
+      - name: Set PERL5LIB to local lib
+        run: echo "PERL5LIB=$(pwd)/local/lib/perl5" >> $GITHUB_ENV
+      - name: Makefile.PL
+        run: perl Makefile.PL
+      - name: make test
+        run: make test
