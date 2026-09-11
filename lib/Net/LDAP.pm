@@ -266,6 +266,7 @@ sub _SSL_context_init_args {
     SSL_cert_file       => $clientcert,
     SSL_verify_mode     => $verify,
     %verifycn_ctx,
+    (ref($arg->{sslargs}) eq 'HASH' ? %{$arg->{sslargs}} : ()),
   );
 }
 
