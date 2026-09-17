@@ -1,0 +1,272 @@
+=head1 NAME
+
+Net::LDAP::DN - Handling of LDAP distinguished names
+
+=head1 SYNOPSIS
+
+ use Net::LDAP::DN;
+ use Net::LDAP::Entry;
+
+ my $user      = Net::LDAP::DN->
+                    new('UID=username,OU=users,DC=example,DC=org');
+ my $someone   = Net::LDAP::DN->
+                    new('UID=someone,OU=users,DC=example,DC=org');
+ my $user_base = Net::LDAP::DN->new('OU=users,DC=example,DC=org');
+ my $base      = Net::LDAP::DN->new('DC=example,DC=org');
+ my $disabled  = Net::LDAP::DN->new('OU=disabled,DC=example,DC=org');
+
+ if ($user->parent eq $user_base) {
+   # ... do something;
+ }
+ if ($user->is_subordinate($base)) {
+   # ...
+ }
+ my $common = $user & $someone;
+ print "common parent is $common\n";
+
+ my $moved = $user->clone->move($disabled);
+ my $entry = Net::LDAP::Entry->new("$user");
+ $entry->changetype('moddn');
+ $entry->add(
+            newrdn => $moved->rdn(1),
+            newsuperior => $moved->parent->as_string, # or "$disabled"
+            deleteoldrdn => 1,
+        )->update( $conn );
+
+ print for sort { $b cmp $a } (($user, $someone, $user_base, $base, $disabled));
+
+=head1 DESCRIPTION
+
+The B<Net::LDAP::DN> object represents a single distinguished name. It is used
+to compare DNs and do some basic operations like finding if they share a common
+parent.
+
+This module is a wrapper around L<Net::LDAP::Util>'s I<ldap_explode_dn> and
+I<canonical_dn>.
+
+This module does not update the LDAP server, it just operates on DNs and
+helps you with setting up arguments for e.g. L<Net::LDAP::Entry>.
+
+For convenience some methods are overloaded via the L<overload> class:
+
+=over 4
+
+=item ""
+
+$dn-E<gt>as_string()
+
+=item cmp
+
+$dn-E<gt>compare(OTHER)
+
+=item eq
+
+$dn-E<gt>equal(OTHER)
+
+=item ne
+
+not $dn-E<gt>equal(OTHER)
+
+=item lt
+
+$dn-E<gt>is_subordinate(OTHER)
+
+=item gt
+
+OTHER-E<gt>is_subordinate($dn)
+
+=item le
+
+Like expected C<lt or eq>.
+
+=item ge
+
+Like expected C<gt or eq>.
+
+=item &
+
+$dn-E<gt>common_base(OTHER)
+
+=item -
+
+$dn-E<gt>strip(OTHER)
+
+=item +
+
+$dn-E<gt>append(OTHER)
+
+=back
+
+=head1 CONSTRUCTORS
+
+=over 4
+
+=item new ( )
+
+Create a new object. Optionally you can provide a DN as a string or an
+array ref like L<Net::LDAP::Util>'s I<ldap_explode_dn> and a pair of
+options like I<ldap_explode_dn> / I<canonical_dn> support them. One extra
+option C<case_insensitive> may be given to compare the RDN values case
+insensitive.
+
+ Net::LDAP::DN->new()
+
+ # or
+ Net::LDAP::DN->new('uid=someone,dc=example,dc=org');
+
+ # or
+ Net::LDAP::DN->new('uid=someone,dc=example,dc=org', casefold => 'lower');
+
+=item clone ( [DN] )
+
+Returns a copy of the B<Net::LDAP::DN> object, optionally set a new DN
+as well.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item options ( )
+
+Returns or sets the options which are passed to the underlying functions
+from L<Net::LDAP::Util>.
+
+=item case_insensitive ( )
+
+Get or set if the values should be compared case insensitive.
+
+=item dn ( )
+
+Returns or sets the DN as array ref like L<Net::LDAP::Util>'s
+I<ldap_explode_dn> returns it.
+
+=item as_string ( )
+
+Returns the DN as string - wrapper for L<Net::LDAP::Util>'s I<canonical_dn>,
+options passed are the ones you gave earlier.
+
+=item parent ( )
+
+Returns the direct parent of the DN as new B<Net::LDAP::DN> object.
+
+=item rdn ( )
+
+Returns the first RDN of the DN, when passed a true value as argument, this
+includes the attribute.
+
+NOTE: when no or a false value is passed the values of a multivalued RDN
+are joined by C<+>.
+
+To get the RDN as a new B<Net::LDAP::DN> object use
+
+ my $rdn = $user->clone;
+ $rdn = $clone->dn($user->dn->[0]);
+
+=item attr ( )
+
+Returns the attribute of the RDN.
+
+The attributes of a multivalued RDN are joined by C<+>.
+
+=item attributes ( )
+
+Returns all attributes of the DN
+
+=item values ( )
+
+Returns all values of the DN
+
+=item append ( DN )
+
+Returns a new object with the given DN appended, also available with
+the overloaded C<+> operator:
+
+ my $moved = ( $user_dn - $user_dn->parent ) + $new_base;
+
+=item strip ( DN )
+
+Returns a new object with the given DN stripped, see above in L</append>
+for usage with the overloaded C<-> operator.
+
+=item pretty ( SEP, [FUNC] )
+
+Returns a C<pretty> name of the DN in reverse order, intended usage is like
+
+ my $adm = Net::LDAP::DN->new('cn=admin,ou=groups,ou=myapp,dc=example,dc=org');
+ my $base = Net::LDAP::DN->new('DC=example,DC=org');
+ print $adm->strip($base)->pretty("/", sub { ucfirst shift }), "\n";
+ # prints "Myapp/Groups/Admin\n"
+
+Default separator SEP is a C</>.
+
+FUNC is a code ref which is called for each element before joining, the
+default is C<sub { $_[0]; }>, i.e. a no-op.
+
+=item common_base ( OTHER )
+
+Returns the common base which the object and OTHER share.
+
+=item equal ( OTHER )
+
+Returns true if the object's DN and OTHER's DN are equal.
+
+=item compare ( OTHER )
+
+Returns C<-1> if the object is a subordinate of OTHER, C<1> if OTHER is a
+subordinate of the object, otherwise C<0>.
+
+=item is_subordinate ( OTHER )
+
+Returns true when OTHER is a parent of the object (not necessarily a direct
+parent), i.e. C<uid=user,ou=users,dc=example,dc=org> is a subordinate of
+C<dc=example,dc=org>.
+
+=item rename ( NEWRDN )
+
+Renames RDN to NEWRDN. NEWRDN must be a hashref like
+
+ { uid => "user" }
+
+or two arguments like
+
+ $user->rename(cn => "New Name");
+
+Note: to move and rename, just combine with L</move>:
+
+ $user->rename(cn => "New Name")->move($new_base);
+
+=item move ( BASE )
+
+Moves RDN to the new base BASE.
+
+=back
+
+=head1 EXAMPLES
+
+ use Net::LDAP::DN;
+ $dn   = Net::LDAP::DN->new("uid=foo", casefold => "lower");
+ $base = Net::LDAP::DN->new("dc=example,dc=org");
+ $ppl  = [ { OU => "people" }, { ou => "users" } ];
+ $spec = { ou=>"special" };
+ $adm  = "OU=admin";
+ print $dn + $adm + $spec + $ppl + $base,"\n";
+ # uid=foo,ou=admin,ou=special,ou=people,ou=users,dc=example,dc=org
+
+=head1 SEE ALSO
+
+L<Net::LDAP>,
+L<Net::LDAP::Util>,
+L<Net::LDAP::Entry>,
+
+=head1 AUTHOR
+
+Hanno Hecker E<lt>vetinari@ankh-morp.orgE<gt>.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2014 Hanno Hecker. All rights reserved. This program
+is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself.
+
